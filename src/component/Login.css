@@ -1,0 +1,50 @@
+.login-wrapper {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #fff;
+}
+
+.login-container {
+  width: 350px;
+}
+
+.login-title {
+  text-align: center;
+}
+
+.forgot-password {
+  text-align: right;
+  margin-bottom: 16px;
+}
+
+.login-button {
+  background-color: #4bac4f;
+  border-color: #4bac4f;
+  color: #fff;
+  font-weight: 500;
+  height: 40px;
+  border-radius: 8px;
+}
+
+.google-button {
+  background-color: #f2fef2;
+  border-color: #d0f0d0;
+  color: #333;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  height: 40px;
+}
+
+.google-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.signup-text {
+  margin-top: 24px;
+  text-align: center;
+}
