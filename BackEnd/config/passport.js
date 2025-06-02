@@ -1,3 +1,4 @@
+//config/passport.js
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const JwtStrategy = require('passport-jwt').Strategy;
@@ -7,13 +8,15 @@ const { sql, dbConfig } = require('./database');
 const jwtSecret = process.env.JWT_SECRET || 'fallback_secret';
 console.log('JWT_SECRET:', jwtSecret);
 
-// Xử lý callbackURL an toàn tuyệt đối
+// Xây dựng URL callback Google OAuth dựa trên biến môi trường SERVER_URL
 const baseUrl = (process.env.SERVER_URL || '').replace(/\/+$/, '');
 const callbackPath = '/api/auth/google/callback';
 const callbackURL = `${baseUrl}${callbackPath}`;
 console.log('Google Callback URL:', callbackURL);
 
-// JWT Strategy
+/**
+ * JWT Strategy: Xác thực người dùng bằng token JWT
+ */
 passport.use(new JwtStrategy({
   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
   secretOrKey: jwtSecret
@@ -33,7 +36,9 @@ passport.use(new JwtStrategy({
   }
 }));
 
-// Google OAuth Strategy
+/**
+ * Google OAuth Strategy: Đăng nhập bằng Google OAuth 2.0
+ */
 passport.use(new GoogleStrategy({
   clientID: process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
@@ -42,6 +47,7 @@ passport.use(new GoogleStrategy({
   try {
     const pool = await sql.connect(dbConfig);
 
+    // Tìm user theo google_id hoặc email đã có trong database
     const result = await pool.request()
       .input('email', sql.VarChar, profile.emails[0].value)
       .input('google_id', sql.VarChar, profile.id)
@@ -50,6 +56,7 @@ passport.use(new GoogleStrategy({
     if (result.recordset.length > 0) {
       const user = result.recordset[0];
 
+      // Cập nhật lại thông tin Google ID và tên đầy đủ
       await pool.request()
         .input('id', sql.Int, user.user_id)
         .input('google_id', sql.VarChar, profile.id)
@@ -68,7 +75,7 @@ passport.use(new GoogleStrategy({
       });
     }
 
-    // Chưa tồn tại: chèn mới
+    // Nếu chưa có user, tạo mới trong database
     const username = profile.emails[0].value.split('@')[0];
 
     const insertResult = await pool.request()
@@ -97,11 +104,17 @@ passport.use(new GoogleStrategy({
   }
 }));
 
-// Serialize & Deserialize
+/**
+ * Serialize User: Lưu user ID vào session
+ */
 passport.serializeUser((user, done) => {
   done(null, user.id);
 });
 
+
+/**
+ * Deserialize User: Lấy thông tin user từ session ID
+ */
 passport.deserializeUser(async (id, done) => {
   try {
     const pool = await sql.connect(dbConfig);

@@ -3,13 +3,28 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { sql, dbConfig } = require('../config/database');
 
+// Hàm tạo JWT token dựa trên user id
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRE || '30d',
   });
 };
 
-// Đăng ký
+// Gửi response kèm token và thông tin user
+const sendTokenWithUser = (res, user) => { 
+  const token = generateToken(user.user_id || user.id);
+  res.json({
+    success: true,
+    token,
+    user: {
+      id: user.user_id || user.id,
+      email: user.email,
+      name: user.full_name || user.name
+    }
+  });
+};
+
+// Đăng ký người dùng mới
 const register = async (req, res) => {
   try {
     const { email, password, name } = req.body;
@@ -18,16 +33,20 @@ const register = async (req, res) => {
       return res.status(400).json({ message: 'Vui lòng điền đầy đủ thông tin' });
     }
 
+    // Kiểm tra dữ liệu đầu vào
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({ message: 'Email không hợp lệ' });
     }
 
+    // Kiểm tra độ dài mật khẩu
     if (password.length < 6) {
       return res.status(400).json({ message: 'Mật khẩu phải có ít nhất 6 ký tự' });
     }
 
     const pool = await sql.connect(dbConfig);
+
+    // Kiểm tra email đã tồn tại trong DB chưa
     const checkUser = await pool.request()
       .input('email', sql.VarChar, email)
       .query('SELECT * FROM CUSTOMER WHERE email = @email');
@@ -36,9 +55,11 @@ const register = async (req, res) => {
       return res.status(400).json({ message: 'Email đã được sử dụng' });
     }
 
+     // Mã hóa mật khẩu
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-
+    
+    // Thêm user mới vào DB
     const insertResult = await pool.request()
       .input('email', sql.VarChar, email)
       .input('password', sql.VarChar, hashedPassword)
@@ -70,21 +91,25 @@ const register = async (req, res) => {
   }
 };
 
-// Đăng nhập
+// Đăng nhập người dùng
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // Kiểm tra dữ liệu đầu vào
     if (!email || !password) {
       return res.status(400).json({ message: 'Vui lòng điền email và mật khẩu' });
     }
 
+    // Kiểm tra định dạng email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({ message: 'Email không hợp lệ' });
     }
 
     const pool = await sql.connect(dbConfig);
+
+    // Tìm user theo email
     const result = await pool.request()
       .input('email', sql.VarChar, email)
       .query('SELECT * FROM CUSTOMER WHERE email = @email');
@@ -95,29 +120,22 @@ const login = async (req, res) => {
 
     const user = result.recordset[0];
 
+    // So sánh mật khẩu nhập vào và mật khẩu đã mã hóa trong DB
     const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) {
       return res.status(400).json({ message: 'Email hoặc mật khẩu không đúng' });
     }
 
-    const token = generateToken(user.user_id);
+    // Trả về token và thông tin user nếu đăng nhập thành công
+    sendTokenWithUser(res, user);
 
-    res.json({
-      success: true,
-      token,
-      user: {
-        id: user.user_id,
-        email: user.email,
-        name: user.full_name
-      }
-    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Lỗi server' });
   }
 };
 
-// Lấy thông tin user
+// Lấy thông tin user hiện tại (dựa trên session hoặc token đã xác thực)
 const getMe = async (req, res) => {
   res.json({
     success: true,
@@ -125,25 +143,45 @@ const getMe = async (req, res) => {
   });
 };
 
-// Google login callback
+// Callback xử lý khi đăng nhập bằng Google thành công
 const googleSuccess = (req, res) => {
   try {
     if (!req.user) {
       return res.redirect(`${process.env.CLIENT_URL}/login?error=auth_failed`);
     }
-    const token = generateToken(req.user.id);
-    res.json({ success: true, token }); //Demo\
-    //CHính thức
-    // res.redirect(`${process.env.CLIENT_URL}/auth/success?token=${token}`);
+     sendTokenWithUser(res, req.user);
   } catch (error) {
     console.error('Google success error:', error);
     res.redirect(`${process.env.CLIENT_URL}/login?error=server_error`);
   }
 };
 
+// Logout
+const logout = (req, res) => {
+  // Nếu dùng session (cho Google OAuth), hủy session
+  req.logout?.(); // nếu dùng passport
+  req.session?.destroy(err => {
+    if (err) {
+      console.error('Logout error:', err);
+      return res.status(500).json({ message: 'Lỗi server khi đăng xuất' });
+    }
+    // Xóa cookie session
+    res.clearCookie('connect.sid');
+    return res.json({ success: true, message: 'Đã đăng xuất thành công' });
+  });
+
+  // Nếu không có session, trả về thành công
+  if (!req.session) {
+    return res.json({ success: true, message: 'Đã đăng xuất thành công' });
+  }
+};
+
+
+
 module.exports = {
   register,
   login,
   getMe,
-  googleSuccess
+  googleSuccess,
+  logout,
 };
