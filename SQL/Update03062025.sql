@@ -1,0 +1,26 @@
+
+--UpdateGoogleAndPassword
+ALTER TABLE CUSTOMER ADD google_id VARCHAR(255);
+ALTER TABLE CUSTOMER
+ALTER COLUMN password_hash VARCHAR(255) NULL;
+ALTER TABLE CUSTOMER ADD login_provider VARCHAR(20) NULL;
+
+--Merge PLAN_REASON into CESSATION_PLAN
+ALTER TABLE CESSATION_PLAN
+ADD quit_reason_summary TEXT NULL;
+DROP TABLE IF EXISTS PLAN_REASON;
+
+--Edit RESOURCE is admin added not CUSTOMER
+EXEC sp_rename 'RESOURCE.created_by', 'admin_id', 'COLUMN';
+ALTER TABLE RESOURCE
+ADD added_by_role VARCHAR(20) DEFAULT 'admin';
+
+--WEEKLY QUOTA table: track quota by week
+CREATE TABLE WEEKLY_QUOTA (
+  quota_id INT IDENTITY(1,1) PRIMARY KEY,
+  plan_id INT NOT NULL,
+  week_number INT NOT NULL,
+  max_cigarettes INT NOT NULL,
+  created_at DATETIME DEFAULT GETDATE(),
+  CONSTRAINT fk_weeklyquota_plan FOREIGN KEY (plan_id) REFERENCES CESSATION_PLAN(plan_id) ON DELETE CASCADE
+);
