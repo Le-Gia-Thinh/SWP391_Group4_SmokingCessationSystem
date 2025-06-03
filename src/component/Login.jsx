@@ -2,6 +2,7 @@ import React from "react";
 import { Form, Input, Button, Typography, Divider } from "antd";
 import { MailOutlined } from "@ant-design/icons";
 import axios from "axios";
+import { Link as RouterLink } from "react-router-dom"; // đổi tên để tránh trùng
 import "./Login.css";
 
 const { Title, Text, Link } = Typography;
@@ -77,7 +78,7 @@ const Login = () => {
 
           <div className="signup-text">
             <Text>
-              Don’t have an account? <Link href="#">Sign up</Link>
+              Don’t have an account? <RouterLink to="/register">Sign up</RouterLink>
             </Text>
           </div>
         </Form>

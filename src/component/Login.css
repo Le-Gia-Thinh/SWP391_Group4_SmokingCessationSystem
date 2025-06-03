@@ -1,10 +1,14 @@
 .login-wrapper {
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #fff;
+  background-color: #ffffff;
+  /* hoặc bỏ nếu đã set body trắng */
+  overflow: hidden;
 }
+
+
 
 .login-container {
   width: 350px;
