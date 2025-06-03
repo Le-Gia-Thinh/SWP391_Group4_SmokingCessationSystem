@@ -1,19 +1,47 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Form, Input, Button, Typography, Divider } from "antd";
 import { MailOutlined } from "@ant-design/icons";
 import axios from "axios";
-import { Link as RouterLink } from "react-router-dom"; // đổi tên để tránh trùng
+import { useNavigate, Link as RouterLink } from "react-router-dom";
+
 import "./Login.css";
 
 const { Title, Text, Link } = Typography;
 
+
+
 const Login = () => {
+  const navigate = useNavigate();
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, []);
   const onFinish = async (values) => {
     try {
-      const res = await axios.post("http://localhost:3000/api/login", values);
-      console.log("Đăng nhập thành công:", res.data);
+      const res = await axios.get("https://682d41af4fae188947555b7a.mockapi.io/users", {
+        params: {
+          email: values.email,
+          password: values.password
+        }
+      });
+
+      if (res.data.length > 0) {
+        const user = res.data[0];
+        console.log("Đăng nhập thành công:", user);
+
+        // lưu thông tin user (nếu cần)
+        localStorage.setItem("user", JSON.stringify(user));
+
+        // chuyển về homepage
+        navigate("/home");
+      } else {
+        alert("Sai email hoặc mật khẩu");
+      }
+
     } catch (err) {
-      console.error("Đăng nhập thất bại:", err.response?.data || err.message);
+      console.error("Lỗi login:", err.response?.data || err.message);
     }
   };
 
