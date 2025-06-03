@@ -9,10 +9,19 @@ import {
 } from "@ant-design/icons";
 import axios from "axios";
 import "./Register.css";
+import { useEffect } from "react";
 
 const { Title, Text, Link } = Typography;
 
 const Register = () => {
+
+    useEffect(() => {
+        document.body.style.overflow = "hidden";
+        return () => {
+            document.body.style.overflow = "auto"; 
+        };
+    }, []);
+
     const onFinish = async (values) => {
         try {
             const res = await axios.post("http://localhost:3000/api/register", values);
