@@ -4,22 +4,37 @@ const jwt = require('jsonwebtoken');
 const { sql, dbConfig } = require('../config/database');
 
 // Hàm tạo JWT token dựa trên user id
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRE || '30d',
-  });
-};
 
+// Hàm tạo JWT token dựa trên object user (id, email, name, avatar)
+const generateToken = (userData) => {
+  return jwt.sign(
+    {
+      id: userData.id,
+      email: userData.email,
+      name: userData.name,
+      //avatar: userData.avatar || null // nếu bạn muốn kèm avatar
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_EXPIRE || '30d' }
+  );
+};
 // Gửi response kèm token và thông tin user
 const sendTokenWithUser = (res, user) => {
-  const token = generateToken(user.user_id || user.id);
+  // user trả về từ DB có { user_id, email, full_name }
+  const token = generateToken({
+    id: user.user_id || user.id,
+    email: user.email,
+    name: user.full_name || user.name,
+    //avatar: user.avatar_url || null 
+  });
   res.json({
     success: true,
     token,
     user: {
       id: user.user_id || user.id,
       email: user.email,
-      name: user.full_name || user.name
+      name: user.full_name || user.name,
+      //avatar: user.avatar_url || null
     }
   });
 };
@@ -159,7 +174,13 @@ const googleSuccess = (req, res) => {
 
     // Tạo token JWT
     const user = req.user;
-    const token = generateToken(user.id);
+   const token = generateToken({
+     id: user.id,
+     email: user.email,
+     name: user.name,
+     // Nếu trong database bạn lưu avatarUrl, gán vào đây:
+     // avatar: user.avatar  (nếu bảng CUSTOMER có field này)
+   });
 
     console.log('✅ User found:', { id: user.id, email: user.email, name: user.name });
     console.log('🔑 Generated token:', token.substring(0, 20) + '...');

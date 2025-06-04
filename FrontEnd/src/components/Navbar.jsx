@@ -1,10 +1,11 @@
+// components/Navbar.jsx
 import React from "react";
 import { Link } from "react-router-dom";
-import Avatar from "./Avatar"; // ⬅️ Avatar component bạn đã tạo
+import Avatar from "./Avatar";
 import "./Navbar.css";
 
 const Navbar = () => {
-  const user = JSON.parse(localStorage.getItem("user")); // lấy user từ localStorage
+  const user = JSON.parse(localStorage.getItem("user")); // Lấy object user nếu có
 
   return (
     <header className="navbar">

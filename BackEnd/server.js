@@ -13,7 +13,7 @@ const app = express();
 
 // CORS middleware cho phép frontend (CLIENT_URL) truy cập API, cho phép gửi cookie
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:3000',
+  origin: ['http://localhost:5173', 'http://localhost:3000'], // ✅ Cho phép cả 5173 và 3000
   credentials: true
 }));
 

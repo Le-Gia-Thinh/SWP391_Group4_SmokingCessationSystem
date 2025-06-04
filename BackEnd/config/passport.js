@@ -48,7 +48,9 @@ passport.use(new GoogleStrategy({
     console.log('Profile ID:', profile.id);
     console.log('Profile Email:', profile.emails[0].value);
     console.log('Profile Name:', profile.displayName);
-
+    //const googleAvatar = profile.photos && profile.photos.length > 0
+     // ? profile.photos[0].value
+     // : null;
     const pool = await sql.connect(dbConfig);
 
     // Tìm user theo google_id hoặc email đã có trong database
@@ -76,7 +78,8 @@ passport.use(new GoogleStrategy({
       return done(null, {
         id: user.user_id,
         email: user.email,
-        name: user.full_name || profile.displayName
+        name: user.full_name || profile.displayName //,
+        //avatar: userFromDb.avatar_url 
       });
     }
 

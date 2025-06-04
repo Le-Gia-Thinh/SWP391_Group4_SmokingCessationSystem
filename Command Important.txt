@@ -1,0 +1,7 @@
+		FE:
+npm i (để cài đặt thư viện react)
+npm i axios antd (để cài thư viện giao diện và lấy api nếu pull bị thiếu)
+npm run dev (để deloy web)
+		BE:
+npm i 
+npm server.js (để deloy api)
