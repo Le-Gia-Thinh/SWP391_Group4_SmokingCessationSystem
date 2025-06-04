@@ -8,8 +8,6 @@ import "./Login.css";
 
 const { Title, Text, Link } = Typography;
 
-
-
 const Login = () => {
   const navigate = useNavigate();
   useEffect(() => {
@@ -20,12 +18,15 @@ const Login = () => {
   }, []);
   const onFinish = async (values) => {
     try {
-      const res = await axios.get("https://682d41af4fae188947555b7a.mockapi.io/users", {
-        params: {
-          email: values.email,
-          password: values.password
+      const res = await axios.get(
+        "https://682d41af4fae188947555b7a.mockapi.io/users",
+        {
+          params: {
+            email: values.email,
+            password: values.password,
+          },
         }
-      });
+      );
 
       if (res.data.length > 0) {
         const user = res.data[0];
@@ -39,7 +40,6 @@ const Login = () => {
       } else {
         alert("Sai email hoặc mật khẩu");
       }
-
     } catch (err) {
       console.error("Lỗi login:", err.response?.data || err.message);
     }
@@ -74,7 +74,9 @@ const Login = () => {
           </Form.Item>
 
           <div className="forgot-password">
-            <Link href="#">Forget password?</Link>
+            <Text>
+              <RouterLink to="/ForgetPassword">Forget Password</RouterLink>
+            </Text>
           </div>
 
           <Form.Item>
@@ -106,7 +108,8 @@ const Login = () => {
 
           <div className="signup-text">
             <Text>
-              Don’t have an account? <RouterLink to="/register">Sign up</RouterLink>
+              Don’t have an account?{" "}
+              <RouterLink to="/register">Sign up</RouterLink>
             </Text>
           </div>
         </Form>
