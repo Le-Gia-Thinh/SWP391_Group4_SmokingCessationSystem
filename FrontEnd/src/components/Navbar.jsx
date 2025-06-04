@@ -1,16 +1,48 @@
-// components/Navbar.jsx
+// FrontEnd/src/components/Navbar.jsx
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Avatar from "./Avatar";
+import axios from "axios";
 import "./Navbar.css";
 
 const Navbar = () => {
-  const user = JSON.parse(localStorage.getItem("user")); // Lấy object user nếu có
+  const navigate = useNavigate();
+
+  // Lấy user từ localStorage
+  const storedUser = localStorage.getItem("user");
+  const user = storedUser ? JSON.parse(storedUser) : null;
+
+  // ====== BẮT ĐẦU PHẦN THÊM ======
+  // Hàm xử lý logout
+  const handleLogout = async () => {
+    try {
+      // Gửi request POST /logout để server destroy session (nếu có)
+      await axios.post(
+        "http://localhost:5000/api/auth/logout",
+        {},
+        {
+          withCredentials: true, // bắt buộc nếu server cần cookie để hủy session
+        }
+      );
+    } catch (err) {
+      console.error("Error when calling /api/auth/logout:", err);
+      // dù có lỗi vẫn tiếp tục xóa localStorage bên client
+    }
+
+    // Xóa user khỏi localStorage
+    localStorage.removeItem("user");
+
+    // Chuyển về trang login
+    navigate("/login");
+  };
+  // ====== KẾT THÚC PHẦN THÊM ======
 
   return (
     <header className="navbar">
       <div className="navbar-logo">
-        <Link to="/" className="logo-text">QuitSmoking</Link>
+        <Link to="/" className="logo-text">
+          QuitSmoking
+        </Link>
       </div>
 
       <nav className="navbar-links">
@@ -24,11 +56,23 @@ const Navbar = () => {
       <div className="navbar-actions">
         {!user ? (
           <>
-            <Link to="/login" className="btn-outline">Sign in</Link>
-            <Link to="/register" className="btn-solid">Sign up</Link>
+            <Link to="/login" className="btn-outline">
+              Sign in
+            </Link>
+            <Link to="/register" className="btn-solid">
+              Sign up
+            </Link>
           </>
         ) : (
-          <Avatar name={user.name} avatarUrl={user.avatar} />
+          <>
+            {/* Giữ nguyên code Avatar cũ */}
+            <Avatar name={user.name || user.email} avatarUrl={user.avatar} />
+
+            {/* ====== THÊM NÚT Logout ====== */}
+            <button onClick={handleLogout} className="btn-logout">
+              Logout
+            </button>
+          </>
         )}
       </div>
     </header>

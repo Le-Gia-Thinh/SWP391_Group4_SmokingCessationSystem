@@ -10,6 +10,12 @@
   z-index: 999;
 }
 
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .navbar-logo .logo-text {
   font-size: 22px;
   font-weight: bold;
@@ -55,4 +61,24 @@
 
 .btn-solid:hover {
   opacity: 0.9;
+}
+
+/* Thay đổi đoạn CSS .btn-logout như sau: */
+
+.btn-logout {
+  padding: 6px 16px;
+  border-radius: 4px;
+  font-weight: 500;
+  border: 1px solid #15803d;
+  /* viền xanh giống btn-outline */
+  color: #15803d;
+  /* chữ xanh */
+  background-color: transparent;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-logout:hover {
+  background-color: #e6f4ec;
+  /* hover nền xanh nhạt */
 }

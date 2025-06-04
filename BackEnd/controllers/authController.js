@@ -3,8 +3,6 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { sql, dbConfig } = require('../config/database');
 
-// Hàm tạo JWT token dựa trên user id
-
 // Hàm tạo JWT token dựa trên object user (id, email, name, avatar)
 const generateToken = (userData) => {
   return jwt.sign(
@@ -83,10 +81,10 @@ const register = async (req, res) => {
       .input('status', sql.VarChar, 'active')
       .input('created', sql.Date, new Date())
       .query(`
-        INSERT INTO CUSTOMER (email, password_hash, full_name, user_role, account_status, registration_date)
-        OUTPUT INSERTED.user_id
-        VALUES (@email, @password, @name, @role, @status, @created)
-      `);
+          INSERT INTO CUSTOMER (email, password_hash, full_name, user_role, account_status, registration_date)
+          OUTPUT INSERTED.user_id
+          VALUES (@email, @password, @name, @role, @status, @created)
+        `);
 
     const userId = insertResult.recordset[0].user_id;
     const token = generateToken(userId);
@@ -113,43 +111,44 @@ const login = async (req, res) => {
 
     // Kiểm tra dữ liệu đầu vào
     if (!email || !password) {
-      return res.status(400).json({ message: 'Vui lòng điền email và mật khẩu' });
+      return res.status(400).json({ success: false, message: 'Vui lòng điền email và mật khẩu' });
     }
-
-    // Kiểm tra định dạng email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({ message: 'Email không hợp lệ' });
-    }
-
-    const pool = await sql.connect(dbConfig);
 
     // Tìm user theo email
+    const pool = await sql.connect(dbConfig);
     const result = await pool.request()
       .input('email', sql.VarChar, email)
       .query('SELECT * FROM CUSTOMER WHERE email = @email');
 
     if (result.recordset.length === 0) {
-      return res.status(400).json({ message: 'Email hoặc mật khẩu không đúng' });
+      return res.status(400).json({ success: false, message: 'Email hoặc mật khẩu không đúng' });
     }
 
     const user = result.recordset[0];
+    const stored = user.password_hash; // có thể là hash của bcrypt hoặc plain‐text (khi bạn test)
 
-    // So sánh mật khẩu nhập vào và mật khẩu đã mã hóa trong DB
-    const isMatch = await bcrypt.compare(password, user.password_hash);
-    if (!isMatch) {
-      return res.status(400).json({ message: 'Email hoặc mật khẩu không đúng' });
+    let isMatch = false;
+
+    // Nếu stored bắt đầu bằng "$2a$" / "$2b$" / "$2y$" → dùng bcrypt.compare
+    if (typeof stored === 'string' && (stored.startsWith('$2a$') || stored.startsWith('$2b$') || stored.startsWith('$2y$'))) {
+      isMatch = await bcrypt.compare(password, stored);
+    } else {
+      // Ngược lại, giả sử đây là plain‐text password, so sánh thẳng
+      isMatch = (password === stored);
     }
 
-    // Trả về token và thông tin user nếu đăng nhập thành công
+    if (!isMatch) {
+      return res.status(400).json({ success: false, message: 'Email hoặc mật khẩu không đúng' });
+    }
+
+    // Nếu match thì gửi token
     sendTokenWithUser(res, user);
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Lỗi server' });
+    res.status(500).json({ success: false, message: 'Lỗi server' });
   }
 };
-
 // Lấy thông tin user hiện tại (dựa trên session hoặc token đã xác thực)
 const getMe = async (req, res) => {
   res.json({
@@ -174,13 +173,13 @@ const googleSuccess = (req, res) => {
 
     // Tạo token JWT
     const user = req.user;
-   const token = generateToken({
-     id: user.id,
-     email: user.email,
-     name: user.name,
-     // Nếu trong database bạn lưu avatarUrl, gán vào đây:
-     // avatar: user.avatar  (nếu bảng CUSTOMER có field này)
-   });
+    const token = generateToken({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      // Nếu trong database bạn lưu avatarUrl, gán vào đây:
+      // avatar: user.avatar  (nếu bảng CUSTOMER có field này)
+    });
 
     console.log('✅ User found:', { id: user.id, email: user.email, name: user.name });
     console.log('🔑 Generated token:', token.substring(0, 20) + '...');
@@ -202,30 +201,23 @@ const googleSuccess = (req, res) => {
 const logout = (req, res) => {
   console.log('Logout called');
 
-  // Nếu dùng session (cho Google OAuth), hủy session
-  if (req.logout) {
-    req.logout((err) => {
-      if (err) {
-        console.error('Passport logout error:', err);
-      }
-    });
-  }
-
+  // Nếu session tồn tại, destroy nó và xóa cookie
   if (req.session) {
     req.session.destroy(err => {
       if (err) {
         console.error('Session destroy error:', err);
-        return res.status(500).json({ message: 'Lỗi server khi đăng xuất' });
+        return res.status(500).json({ success: false, message: 'Lỗi server khi đăng xuất' });
       }
-      // Xóa cookie session
+      // Xóa cookie session (mặc định tên connect.sid)
       res.clearCookie('connect.sid');
       return res.json({ success: true, message: 'Đã đăng xuất thành công' });
     });
   } else {
-    // Nếu không có session, trả về thành công
+    // Nếu không có session (ví dụ user login bằng JWT-only), trả về thành công
     return res.json({ success: true, message: 'Đã đăng xuất thành công' });
   }
 };
+
 
 module.exports = {
   register,
