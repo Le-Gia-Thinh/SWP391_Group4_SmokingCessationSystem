@@ -20,7 +20,7 @@ const Login = () => {
   }, []);
   const onFinish = async (values) => {
     try {
-      const res = await axios.get("https://682d41af4fae188947555b7a.mockapi.io/users", {
+      const res = await axios.get("http://localhost:5000/api/auth/login", {
         params: {
           email: values.email,
           password: values.password
