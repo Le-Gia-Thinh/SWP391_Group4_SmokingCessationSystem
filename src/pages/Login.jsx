@@ -91,18 +91,16 @@ const Login = () => {
           <Divider>or continue with</Divider>
 
           <Button
-            icon={
-              <img
-                src="https://developers.google.com/identity/images/g-logo.png"
-                alt="google"
-                className="google-icon"
-              />
-            }
+            icon={<img src="https://developers.google.com/identity/images/g-logo.png" alt="google" className="google-icon" />}
             block
             className="google-button"
+            onClick={() => {
+              window.location.href = "http://localhost:5000/api/auth/google"; 
+            }}
           >
             Google
           </Button>
+
 
           <div className="signup-text">
             <Text>
