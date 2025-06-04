@@ -1,0 +1,64 @@
+.homepage {
+  background-color: #f9fff9;
+  min-height: 100vh;
+  font-family: "Segoe UI", sans-serif;
+}
+
+.hero-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 80px 60px;
+  flex-wrap: wrap;
+}
+
+.hero-text {
+  max-width: 50%;
+}
+
+.hero-text h1 {
+  font-size: 48px;
+  font-weight: bold;
+  margin: 0;
+}
+
+.highlight {
+  color: #d22f2f;
+}
+
+.slogan {
+  font-size: 32px;
+  margin-top: -10px;
+  margin-bottom: 16px;
+}
+
+.subtext {
+  font-size: 16px;
+  line-height: 1.5;
+  color: #333;
+}
+
+.hero-btn {
+  background-color: #4bac4f;
+  border-color: #4bac4f;
+  margin-top: 24px;
+  font-weight: 500;
+  padding: 8px 24px;
+}
+
+.below-button-text {
+  font-size: 13px;
+  margin-top: 8px;
+  color: #666;
+}
+
+.hero-video {
+  width: 40%;
+  text-align: center;
+  font-size: 24px;
+  font-weight: 600;
+  color: #111;
+  border: 2px dashed #ccc;
+  padding: 40px;
+  background-color: #fff;
+}

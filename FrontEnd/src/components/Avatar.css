@@ -1,0 +1,15 @@
+.avatar-circle {
+    background-color: #4bac4f;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.avatar-img {
+    border-radius: 50%;
+    object-fit: cover;
+}
