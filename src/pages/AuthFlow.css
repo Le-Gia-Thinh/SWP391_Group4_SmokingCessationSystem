@@ -1,39 +1,33 @@
-/* Toàn màn hình nền trắng */
-.forget-outer-wrapper {
+.auth-outer-wrapper {
   background-color: white;
   min-height: 100vh;
   width: 100%;
 }
 
-/* Căn giữa khối form */
-.forget-wrapper {
+.auth-wrapper {
   min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-/* Container chính */
-.forget-container {
+.auth-container {
   width: 400px;
   text-align: center;
 }
 
-/* Tiêu đề */
-.forget-title {
+.auth-title {
   margin-bottom: 8px;
 }
 
-/* Mô tả dưới tiêu đề */
-.forget-subtitle {
+.auth-subtitle {
   font-size: 14px;
   color: #555;
   display: block;
   margin-bottom: 24px;
 }
 
-/* Nút reset password */
-.forget-button {
+.auth-button {
   background-color: #2f6b3f;
   border-color: #2f6b3f;
   height: 40px;
@@ -42,8 +36,7 @@
   color: #fff;
 }
 
-/* Chữ gợi ý phía dưới */
-.forget-note {
+.auth-note {
   display: block;
   margin-top: 16px;
   color: #888;
