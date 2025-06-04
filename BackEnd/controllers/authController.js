@@ -1,4 +1,4 @@
-//// controllers/authController.js
+// controllers/authController.js
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { sql, dbConfig } = require('../config/database');
@@ -11,7 +11,7 @@ const generateToken = (id) => {
 };
 
 // Gửi response kèm token và thông tin user
-const sendTokenWithUser = (res, user) => { 
+const sendTokenWithUser = (res, user) => {
   const token = generateToken(user.user_id || user.id);
   res.json({
     success: true,
@@ -55,10 +55,10 @@ const register = async (req, res) => {
       return res.status(400).json({ message: 'Email đã được sử dụng' });
     }
 
-     // Mã hóa mật khẩu
+    // Mã hóa mật khẩu
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-    
+
     // Thêm user mới vào DB
     const insertResult = await pool.request()
       .input('email', sql.VarChar, email)
@@ -145,38 +145,66 @@ const getMe = async (req, res) => {
 
 // Callback xử lý khi đăng nhập bằng Google thành công
 const googleSuccess = (req, res) => {
+  console.log('=== GOOGLE SUCCESS CALLBACK ===');
+  console.log('req.user:', req.user);
+  console.log('CLIENT_URL:', process.env.CLIENT_URL);
+
   try {
     if (!req.user) {
-      return res.redirect(`${process.env.CLIENT_URL}/login?error=auth_failed`);
+      console.error('❌ No user in request');
+      const redirectUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}/login?error=auth_failed`;
+      console.log('🔄 Redirecting to:', redirectUrl);
+      return res.redirect(redirectUrl);
     }
-     sendTokenWithUser(res, req.user);
+
+    // Tạo token JWT
+    const user = req.user;
+    const token = generateToken(user.id);
+
+    console.log('✅ User found:', { id: user.id, email: user.email, name: user.name });
+    console.log('🔑 Generated token:', token.substring(0, 20) + '...');
+
+    // Redirect về React route với token
+    const redirectUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}/auth/google/redirect?token=${token}`;
+    console.log('🔄 Final redirect URL:', redirectUrl);
+
+    // QUAN TRỌNG: Sử dụng res.redirect() thay vì res.json()
+    return res.redirect(redirectUrl);
+
   } catch (error) {
-    console.error('Google success error:', error);
-    res.redirect(`${process.env.CLIENT_URL}/login?error=server_error`);
+    console.error('❌ Google success error:', error);
+    const errorUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}/login?error=server_error`;
+    return res.redirect(errorUrl);
   }
 };
-
 // Logout
 const logout = (req, res) => {
-  // Nếu dùng session (cho Google OAuth), hủy session
-  req.logout?.(); // nếu dùng passport
-  req.session?.destroy(err => {
-    if (err) {
-      console.error('Logout error:', err);
-      return res.status(500).json({ message: 'Lỗi server khi đăng xuất' });
-    }
-    // Xóa cookie session
-    res.clearCookie('connect.sid');
-    return res.json({ success: true, message: 'Đã đăng xuất thành công' });
-  });
+  console.log('Logout called');
 
-  // Nếu không có session, trả về thành công
-  if (!req.session) {
+  // Nếu dùng session (cho Google OAuth), hủy session
+  if (req.logout) {
+    req.logout((err) => {
+      if (err) {
+        console.error('Passport logout error:', err);
+      }
+    });
+  }
+
+  if (req.session) {
+    req.session.destroy(err => {
+      if (err) {
+        console.error('Session destroy error:', err);
+        return res.status(500).json({ message: 'Lỗi server khi đăng xuất' });
+      }
+      // Xóa cookie session
+      res.clearCookie('connect.sid');
+      return res.json({ success: true, message: 'Đã đăng xuất thành công' });
+    });
+  } else {
+    // Nếu không có session, trả về thành công
     return res.json({ success: true, message: 'Đã đăng xuất thành công' });
   }
 };
-
-
 
 module.exports = {
   register,

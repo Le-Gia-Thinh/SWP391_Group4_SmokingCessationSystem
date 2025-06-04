@@ -5,7 +5,7 @@ require('./config/passport'); // Khởi tạo Passport, cần JWT_SECRET từ en
 const express = require('express');
 const session = require('express-session');
 const cors = require('cors');
-const passport = require('passport');
+const passport = require('./config/passport');
 
 const authRoutes = require('./routes/auth');
 
@@ -36,6 +36,8 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
+// Đăng ký route cho auth
+app.use('/api/auth', authRoutes);
 
 // Middleware debug log request mỗi khi có request đến server
 app.use((req, res, next) => {
@@ -43,8 +45,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Đăng ký route cho auth
-app.use('/api/auth', authRoutes);
 
 // Route gốc test server
 app.get('/', (req, res) => {

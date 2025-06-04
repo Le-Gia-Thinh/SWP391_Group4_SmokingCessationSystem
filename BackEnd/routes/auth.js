@@ -34,12 +34,31 @@ router.get('/google',
   passport.authenticate('google', { scope: ['profile', 'email'] })
 );
 
-
-// Google OAuth callback
+// Google OAuth callback - SỬA LẠI TEMPLATE STRING
 router.get('/google/callback',
-  passport.authenticate('google', { failureRedirect: `${process.env.CLIENT_URL}/login?error=google_auth_failed` }),
+  (req, res, next) => {
+    console.log('=== GOOGLE CALLBACK RECEIVED ===');
+    console.log('Query params:', req.query);
+    next();
+  },
+  passport.authenticate('google', {
+    failureRedirect: `${process.env.CLIENT_URL || 'http://localhost:3000'}/login?error=google_auth_failed`
+  }),
+  (req, res, next) => {
+    console.log('=== AFTER PASSPORT AUTH ===');
+    console.log('req.user:', req.user);
+    next();
+  },
   googleSuccess
 );
+
+// Route test redirect - THÊM ROUTE NÀY
+router.get('/test-redirect', (req, res) => {
+  console.log('Testing redirect...');
+  const testUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}/auth/google/redirect?token=test123`;
+  console.log('Test redirect URL:', testUrl);
+  res.redirect(testUrl);
+});
 
 // Route logout
 router.post('/logout', logout);
