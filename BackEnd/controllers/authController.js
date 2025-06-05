@@ -75,13 +75,14 @@ const register = async (req, res) => {
     // Thêm user mới vào DB
     const insertResult = await pool.request()
       .input('email', sql.VarChar, email)
+      .input('username', sql.VarChar, username)
       .input('password', sql.VarChar, hashedPassword)
       .input('name', sql.VarChar, name)
       .input('role', sql.VarChar, 'local')
       .input('status', sql.VarChar, 'active')
       .input('created', sql.Date, new Date())
       .query(`
-          INSERT INTO CUSTOMER (email, password_hash, full_name, user_role, account_status, registration_date)
+          INSERT INTO CUSTOMER (email, password_hash, full_name, username, user_role, account_status, registration_date)
           OUTPUT INSERTED.user_id
           VALUES (@email, @password, @name, @role, @status, @created)
         `);
