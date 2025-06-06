@@ -97,3 +97,11 @@ CHECK (
   OR
   (login_provider = 'google' AND google_id IS NOT NULL)
 )
+
+--Check xem có password_hash chưa Customer
+SELECT * FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_NAME = 'CUSTOMER'
+
+--Thêm vào
+ALTER TABLE CUSTOMER ADD password_hash VARCHAR(255);
+ALTER TABLE CUSTOMER ADD phone_number VARCHAR(20);

@@ -18,32 +18,33 @@ const Login = () => {
       document.body.style.overflow = "auto";
     };
   }, []);
+
   const onFinish = async (values) => {
-    try {
-      const res = await axios.get("http://localhost:5000/api/auth/login", {
-        params: {
-          email: values.email,
-          password: values.password
-        }
-      });
+  try {
+    const res = await axios.post("http://localhost:5000/api/auth/login", {
+      email: values.email,
+      password: values.password
+    });
 
-      if (res.data.length > 0) {
-        const user = res.data[0];
-        console.log("Đăng nhập thành công:", user);
+    if (res.data.success) {
+      const { user, token } = res.data;
+      console.log("Đăng nhập thành công:", user);
 
-        // lưu thông tin user (nếu cần)
-        localStorage.setItem("user", JSON.stringify(user));
+      // Lưu thông tin user và token nếu cần
+      localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("token", token);
 
-        // chuyển về homepage
-        navigate("/home");
-      } else {
-        alert("Sai email hoặc mật khẩu");
-      }
-
-    } catch (err) {
-      console.error("Lỗi login:", err.response?.data || err.message);
+      // chuyển về homepage
+      navigate("/home");
+    } else {
+      alert("Sai email hoặc mật khẩu");
     }
-  };
+
+  } catch (err) {
+    console.error("Lỗi login:", err.response?.data || err.message);
+    alert(err.response?.data?.message || "Lỗi đăng nhập");
+  }
+};
 
   return (
     <div className="login-wrapper">

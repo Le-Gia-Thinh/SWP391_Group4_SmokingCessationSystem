@@ -24,7 +24,7 @@ const Register = () => {
 
     const onFinish = async (values) => {
         try {
-            const res = await axios.post("http://localhost:3000/api/register", values);
+            const res = await axios.post("http://localhost:5000/api/auth/register", values);
             console.log("Đăng ký thành công:", res.data);
         } catch (err) {
             console.error("Đăng ký thất bại:", err.response?.data || err.message);

@@ -40,7 +40,7 @@ const sendTokenWithUser = (res, user) => {
 // Đăng ký người dùng mới
 const register = async (req, res) => {
   try {
-    const { email, password, name } = req.body;
+    const { email, password, name , mobile} = req.body;
 
     if (!email || !password || !name) {
       return res.status(400).json({ message: 'Vui lòng điền đầy đủ thông tin' });
@@ -72,19 +72,43 @@ const register = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    // Tạo username từ email
+    const usernameBase = email.split('@')[0];
+    let username = usernameBase;
+    let isUnique = false;
+    let suffix = 1;
+
+    while (!isUnique) {
+    const checkUsername = await pool.request()
+      .input('username', sql.VarChar, username)
+      .query('SELECT COUNT(*) AS count FROM CUSTOMER WHERE username = @username');
+
+    if (checkUsername.recordset[0].count === 0) {
+      isUnique = true;
+    } else {
+      username = `${usernameBase}_${suffix}`;
+      suffix++;
+    }
+  }
+
     // Thêm user mới vào DB
     const insertResult = await pool.request()
       .input('email', sql.VarChar, email)
       .input('username', sql.VarChar, username)
-      .input('password', sql.VarChar, hashedPassword)
+      .input('password_hash', sql.VarChar, hashedPassword)
       .input('name', sql.VarChar, name)
+      .input('phone_number', sql.VarChar, mobile)
       .input('role', sql.VarChar, 'local')
       .input('status', sql.VarChar, 'active')
       .input('created', sql.Date, new Date())
       .query(`
-          INSERT INTO CUSTOMER (email, password_hash, full_name, username, user_role, account_status, registration_date)
+          INSERT INTO CUSTOMER (
+            email, password_hash, full_name, username, phone_number, user_role, account_status, registration_date
+          )
           OUTPUT INSERTED.user_id
-          VALUES (@email, @password, @name, @role, @status, @created)
+          VALUES (
+            @email, @password_hash, @name, @username, @phone_number, @role, @status, @created
+          )
         `);
 
     const userId = insertResult.recordset[0].user_id;
