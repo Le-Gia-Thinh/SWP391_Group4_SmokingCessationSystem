@@ -14,12 +14,11 @@ const ForgetPassword = () => {
   const onFinish = async (values) => {
     try {
       // Gửi API đến backend
-      const res = await axios.post(
-        "http://localhost:3000/api/forgot-password",
-        {
-          email: values.email,
-        }
-      );
+      const res = await axios.post("http://localhost:5000/api/auth/request-reset-password",
+    {
+      email: values.email,
+    }
+  );
 
       console.log("Yêu cầu gửi email đặt lại mật khẩu:", res.data);
 
@@ -28,8 +27,6 @@ const ForgetPassword = () => {
 
       alert("Email hướng dẫn đặt lại mật khẩu đã được gửi.");
 
-      // 👉 Điều hướng sang bước tiếp theo (ví dụ: /verify-code hoặc /reset-password)
-      navigate("/verify-code"); // bạn có thể đổi sang "/reset-password" nếu không dùng mã xác nhận
     } catch (err) {
       console.error("Lỗi gửi email:", err.response?.data || err.message);
       alert("Gửi email thất bại. Vui lòng thử lại.");
