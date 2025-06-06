@@ -18,18 +18,31 @@ const Register = () => {
     useEffect(() => {
         document.body.style.overflow = "hidden";
         return () => {
-            document.body.style.overflow = "auto"; 
+            document.body.style.overflow = "auto";
         };
     }, []);
 
     const onFinish = async (values) => {
         try {
-            const res = await axios.post("http://localhost:3000/api/register", values);
+            const checkEmail = await axios.get("https://682d41af4fae188947555b7a.mockapi.io/register", {
+                params: { email: values.email }
+            });
+
+            if (checkEmail.data.length > 0) {
+                alert("Email đã được đăng ký.");
+                return;
+            }
+
+            const res = await axios.post("https://682d41af4fae188947555b7a.mockapi.io/register", values);
+            
             console.log("Đăng ký thành công:", res.data);
+            alert("Đăng ký thành công!");
         } catch (err) {
             console.error("Đăng ký thất bại:", err.response?.data || err.message);
+            alert("Đăng ký thất bại!");
         }
     };
+
 
     return (
         <div className="register-wrapper">
