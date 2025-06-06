@@ -1,5 +1,4 @@
-// FrontEnd/src/pages/Login.jsx
-import React from "react";
+import React, { useEffect } from "react";
 import { Form, Input, Button, Typography, Divider } from "antd";
 import { MailOutlined } from "@ant-design/icons";
 import axios from "axios";
@@ -7,30 +6,42 @@ import { useNavigate, Link as RouterLink } from "react-router-dom";
 
 import "./Login.css";
 
-const { Title, Text } = Typography;
+const { Title, Text, Link } = Typography;
+
+
 
 const Login = () => {
   const navigate = useNavigate();
-
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, []);
   const onFinish = async (values) => {
     try {
-      // Gửi POST lên server
-      const res = await axios.post("http://localhost:5000/api/auth/login", {
-        email: values.email,
-        password: values.password
+      const res = await axios.get("http://localhost:5000/api/auth/login", {
+        params: {
+          email: values.email,
+          password: values.password
+        }
       });
 
-      // Nếu login thành công
-      if (res.data.success) {
-        const { token, user } = res.data;
-        // Lưu user + token vào localStorage
-        localStorage.setItem("user", JSON.stringify({ ...user, token }));
+      if (res.data.length > 0) {
+        const user = res.data[0];
+        console.log("Đăng nhập thành công:", user);
+
+        // lưu thông tin user (nếu cần)
+        localStorage.setItem("user", JSON.stringify(user));
+
+        // chuyển về homepage
         navigate("/home");
       } else {
-        alert("Email hoặc mật khẩu không đúng");
+        alert("Sai email hoặc mật khẩu");
       }
+
     } catch (err) {
-      alert(err.response?.data?.message || "Đăng nhập thất bại");
+      console.error("Lỗi login:", err.response?.data || err.message);
     }
   };
 
@@ -59,11 +70,11 @@ const Login = () => {
             label="Password"
             rules={[{ required: true, message: "Please input your password!" }]}
           >
-            <Input.Password placeholder="•••••••" />
+            <Input.Password placeholder="**********" />
           </Form.Item>
 
           <div className="forgot-password">
-            <RouterLink to="/forget-password">Forget password?</RouterLink>
+            <Link href="#">Forget password?</Link>
           </div>
 
           <Form.Item>
@@ -80,18 +91,11 @@ const Login = () => {
           <Divider>or continue with</Divider>
 
           <Button
-            icon={
-              <img
-                src="https://developers.google.com/identity/images/g-logo.png"
-                alt="google"
-                className="google-icon"
-                style={{ width: 20, marginRight: 8 }}
-              />
-            }
+            icon={<img src="https://developers.google.com/identity/images/g-logo.png" alt="google" className="google-icon" />}
             block
             className="google-button"
             onClick={() => {
-              window.location.href = "http://localhost:5000/api/auth/google";
+              window.location.href = "http://localhost:5000/api/auth/google"; // hoặc domain backend của bạn
             }}
           >
             Google
@@ -109,4 +113,3 @@ const Login = () => {
 };
 
 export default Login;
-  

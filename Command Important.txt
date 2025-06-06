@@ -5,3 +5,4 @@ npm run dev (để deloy web)
 		BE:
 npm i 
 npm server.js (để deloy api)
+node sever.js 
