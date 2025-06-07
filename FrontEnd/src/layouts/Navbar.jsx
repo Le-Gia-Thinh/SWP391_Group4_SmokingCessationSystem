@@ -1,7 +1,7 @@
 // FrontEnd/src/components/Navbar.jsx
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import Avatar from "./Avatar";
+import Avatar from "../components/Avatar";
 import axios from "axios";
 import "./Navbar.css";
 
@@ -50,7 +50,11 @@ const Navbar = () => {
         <Link to="/ranking">Ranking</Link>
         <Link to="/blog">Blog</Link>
         <Link to="/membership">Membership</Link>
-        <Link to="/coaches">Coaches</Link>
+        {user?.role === "coach" ? (
+          <Link to="/my-appointments">My Schedule</Link>
+        ) : (
+          <Link to="/coaches">Coaches</Link>
+        )}
       </nav>
 
       <div className="navbar-actions">

@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Button, Row, Col, Typography, Card, Collapse, List, Avatar, Layout, Space, Tag } from "antd";
 import { AimOutlined, SolutionOutlined, UserSwitchOutlined, CheckCircleOutlined } from "@ant-design/icons";
-import Navbar from "../components/Navbar";
+import Navbar from "../../layouts/Navbar";
 import { Link } from "react-router-dom";
 
 const { Title, Paragraph, Text } = Typography;
