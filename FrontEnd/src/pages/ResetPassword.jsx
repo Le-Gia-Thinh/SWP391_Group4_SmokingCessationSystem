@@ -11,10 +11,9 @@ const ResetPassword = () => {
 
   const onFinish = async (values) => {
     try {
-      const res = await axios.post(
-        `http://localhost:3000/api/reset-password/${token}`,
-        { newPassword: values.newPassword }
-      );
+      await axios.post(`http://localhost:5000/api/auth/reset-password/${token}`, {
+        newPassword: values.newPassword
+      });
 
       message.success("Đặt lại mật khẩu thành công!");
       navigate("/login"); // về trang login
