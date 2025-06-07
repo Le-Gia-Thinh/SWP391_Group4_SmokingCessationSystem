@@ -1,11 +1,11 @@
 
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import HomePage from "./pages/HomePage";
-import ForgetPassword from "./pages/ForgetPassword";
-import ResetPassword from "./pages/ResetPassword";
+import Login from "./pages/Login/Login";
+import Register from "./pages/Register/Register";
+import HomePage from "./pages/HomePage/HomePage";
+import ForgetPassword from "./pages/ResetPassword/ForgetPassword";
+import ResetPassword from "./pages/ResetPassword/ResetPassword";
 import GoogleRedirectHandler from "./components/GoogleRedirectHandler";
 import "./App.css";
 
