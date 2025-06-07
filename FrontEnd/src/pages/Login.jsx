@@ -63,7 +63,7 @@ const Login = () => {
           </Form.Item>
 
           <div className="forgot-password">
-            <RouterLink to="/forget-password">Forget password?</RouterLink>
+            <RouterLink to="/ForgetPassword">Forget password?</RouterLink>
           </div>
 
           <Form.Item>
