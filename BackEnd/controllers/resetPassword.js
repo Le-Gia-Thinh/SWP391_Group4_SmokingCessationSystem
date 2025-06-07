@@ -23,7 +23,7 @@ const requestResetPassword = async (req, res) => {
     console.log('📩 Email gửi reset:', email);
 
     const token = crypto.randomBytes(32).toString('hex');
-    const resetLink = `http://localhost:3000/reset-password/${token}`;
+    const resetLink = `http://localhost:5173/reset-password/${token}`;
 
     // ✅ Lưu token vào DB
     await saveResetToken(token, email);
