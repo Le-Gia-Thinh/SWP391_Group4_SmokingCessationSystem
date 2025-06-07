@@ -40,9 +40,9 @@ const sendTokenWithUser = (res, user) => {
 // Đăng ký người dùng mới
 const register = async (req, res) => {
   try {
-    const { email, password, name , mobile} = req.body;
+    const { email, password, name, mobile} = req.body;
 
-    if (!email || !password || !name) {
+    if (!email || !password || !name || mobile) {
       return res.status(400).json({ message: 'Vui lòng điền đầy đủ thông tin' });
     }
 
@@ -50,6 +50,11 @@ const register = async (req, res) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({ message: 'Email không hợp lệ' });
+    }
+    // Kiểm tra định dạng số điện thoạithoại
+    const phoneRegex = /^\d{10}$/;
+    if (!phoneRegex.test(sdt)) {
+      return res.status(400).json({ message: 'Số điện thoại không hợp lệ' });
     }
 
     // Kiểm tra độ dài mật khẩu
