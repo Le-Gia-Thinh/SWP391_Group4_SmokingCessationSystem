@@ -39,3 +39,24 @@
 .week-row-4 td {
   border-left: 4px solid #FFD700; /* vàng */
 }
+.shake {
+  animation: shake 0.3s;
+}
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  50% { transform: translateX(4px); }
+  75% { transform: translateX(-4px); }
+  100% { transform: translateX(0); }
+}
+.highlight {
+  box-shadow: 0 0 8px #1890ff;
+  border-color: #1890ff !important;
+}
+.badge-blink {
+  animation: blink 1s infinite;
+}
+@keyframes blink {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(2); }
+}

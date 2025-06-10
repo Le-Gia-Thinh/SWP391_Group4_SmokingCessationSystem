@@ -9,8 +9,24 @@ import {
   Typography,
   Input,
   Button,
+  Tooltip,
+  Badge,
+  Progress,
+  Alert,
+  Tag,
+  Divider,
+  Card,
+  Empty,
+  Spin,
+  Popover,
+  Row,
+  Col,
 } from "antd";
-import { CalendarOutlined } from "@ant-design/icons";
+import {
+  CalendarOutlined,
+  CheckCircleTwoTone,
+  InfoCircleOutlined,
+} from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import "./QuitPlanCalendar.css";
@@ -106,10 +122,10 @@ const distributeDailyQuota = (weeklyCigs) => {
 const QuitPlan = () => {
   const [startDate, setStartDate] = useState(dayjs("2025-06-08"));
   const [months, setMonths] = useState(7);
-  const level = "medium";
-  const [viewMode, setViewMode] = useState("day");
-  const [smokingLog, setSmokingLog] = useState({});
-  const [weeklyUsage, setWeeklyUsage] = useState({});
+  const level = "medium",
+    [viewMode, setViewMode] = useState("day"),
+    [smokingLog, setSmokingLog] = useState({}),
+    [weeklyUsage, setWeeklyUsage] = useState({});
   const navigate = useNavigate();
 
   const totalDays = months * 30;
@@ -123,14 +139,20 @@ const QuitPlan = () => {
     });
   };
 
-  const getRemainingCigs = (dateStr, weeklyQuota, log = smokingLog) => {
+  const getRemainingCigs = (
+    dateStr,
+    weeklyQuota,
+    log = smokingLog,
+    excludeCurrent = false
+  ) => {
     const date = dayjs(dateStr, "DD/MM/YYYY");
     const weekIndex = Math.floor(date.diff(startDate, "day") / 7);
 
     const weekData = Object.entries(log).filter(([key]) => {
       const d = dayjs(key, "DD/MM/YYYY");
       const wi = Math.floor(d.diff(startDate, "day") / 7);
-      return wi === weekIndex && key !== dateStr; // ⚠️ loại trừ chính ngày đang xét
+      // Nếu excludeCurrent = true thì loại ngày hiện tại, ngược lại giữ lại
+      return wi === weekIndex && (!excludeCurrent || key !== dateStr);
     });
 
     const used = weekData.reduce((sum, [, val]) => sum + Number(val || 0), 0);
@@ -138,9 +160,13 @@ const QuitPlan = () => {
     return Math.max(0, quota - used);
   };
 
+  const weeklyQuota = useMemo(
+    () => generateWeeklyQuota(months, level),
+    [months, level]
+  );
+
   const planData = useMemo(() => {
     const data = [];
-    const weeklyQuota = generateWeeklyQuota(months, level);
 
     for (let i = 0; i < totalDays; i++) {
       const currentDate = startDate.add(i, "day");
@@ -168,7 +194,7 @@ const QuitPlan = () => {
         phase: `${phase.phase} – ${phase.goal}`,
         suggestedCigs: dailyQuota,
         actualCigs: smokingLog[formattedDate] || "",
-        remainingCigs: getRemainingCigs(formattedDate, weeklyQuota),
+        remainingCigs: getRemainingCigs(formattedDate, weeklyQuota, smokingLog),
         weekIndex,
         weekDayLabel: label,
         detailPlan: BEHAVIOR_PLAN,
@@ -185,112 +211,242 @@ const QuitPlan = () => {
       title: "Ngày kế hoạch",
       dataIndex: "weekDayLabel",
       key: "weekDayLabel",
-      render: (text) => <strong>{text}</strong>,
+      render: (text) => (
+        <Tag color="geekblue" style={{ fontWeight: 600 }}>
+          {text}
+        </Tag>
+      ),
     },
     { title: "Ngày", dataIndex: "date", key: "date" },
-    { title: "Tiến trình", dataIndex: "progress", key: "progress" },
-    { title: "Giai đoạn", dataIndex: "phase", key: "phase" },
+    {
+      title: "Tiến trình",
+      dataIndex: "progress",
+      key: "progress",
+      render: (val) => (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            justifyContent: "center",
+          }}
+        >
+          <Progress
+            type="circle"
+            percent={parseInt(val)}
+            size="small" // Sửa width thành size
+            strokeColor="#52c41a"
+            format={(p) => <span style={{ fontSize: 12 }}>{p}%</span>}
+          />
+          {parseInt(val) === 100 && (
+            <CheckCircleTwoTone
+              twoToneColor="#52c41a"
+              style={{ fontSize: 20 }}
+            />
+          )}
+        </div>
+      ),
+    },
+    {
+      title: "Giai đoạn",
+      dataIndex: "phase",
+      key: "phase",
+      render: (val) => {
+        let color = "blue";
+        if (val.includes("quyết liệt")) color = "orange";
+        if (val.includes("chuẩn bị cai")) color = "purple";
+        if (val.includes("hoàn toàn")) color = "red";
+        if (val.includes("Củng cố")) color = "green";
+        return <Tag color={color}>{val}</Tag>;
+      },
+    },
     {
       title: "Gợi ý",
       dataIndex: "suggestedCigs",
       key: "suggestedCigs",
       render: (val, record) => (
-        <div>
-          Gợi ý: {val} điếu
+        <Popover
+          title="Chi tiết hành vi thay thế"
+          content={
+            <div>
+              {record.detailPlan.map((item, idx) => (
+                <div key={idx} style={{ marginBottom: 4 }}>
+                  <b>{item.time}:</b> {item.behavior} <br />
+                  <span style={{ color: "#52c41a" }}>{item.replacement}</span>
+                </div>
+              ))}
+            </div>
+          }
+          trigger="hover"
+        >
           <Button
             size="small"
-            onClick={(e) => {
-              e.stopPropagation();
-              setSmokingLog((prev) => ({ ...prev, [record.date]: val }));
-              updateWeeklyCigUsage(record.date, val);
-            }}
+            icon={<InfoCircleOutlined />}
+            style={{ marginBottom: 4 }}
           >
-            Theo Hệ Thống
+            Gợi ý: {val} điếu
           </Button>
-        </div>
+        </Popover>
       ),
     },
     {
       title: "Bạn hút",
       dataIndex: "date",
       key: "actualCigs",
-      render: (date) => (
-        <div onClick={(e) => e.stopPropagation()}>
-          <Input
-            type="number"
-            min={0}
-            style={{ width: 60 }}
-            value={smokingLog[date] || ""}
-            onChange={(e) => {
-              let value = Number(e.target.value);
-              const simulatedLog = { ...smokingLog, [date]: value };
-              const remaining = getRemainingCigs(
-                date,
-                generateWeeklyQuota(months, level),
-                simulatedLog
-              );
-              if (value > remaining) value = remaining;
-              setSmokingLog((prev) => ({ ...prev, [date]: value }));
-              updateWeeklyCigUsage(date, value);
-            }}
-          />
-        </div>
-      ),
+      render: (date) => {
+        const max = getRemainingCigs(date, weeklyQuota, smokingLog, true);
+        return (
+          <div onClick={(e) => e.stopPropagation()}>
+            <Tooltip title="Nhập số điếu bạn đã hút hôm nay">
+              <InputNumber
+                min={0}
+                max={max}
+                step={1}
+                style={{ width: 70 }}
+                value={smokingLog[date] || ""}
+                onChange={(value) => {
+                  setSmokingLog((prev) => ({ ...prev, [date]: value }));
+                  updateWeeklyCigUsage(date, value);
+                }}
+              />
+            </Tooltip>
+          </div>
+        );
+      },
     },
     {
       title: "Còn lại",
       dataIndex: "remainingCigs",
       key: "remainingCigs",
-      render: (val) => `${val} điếu`,
+      render: (val, record) => {
+        let color = "green";
+        if (val <= 10) color = "orange";
+        if (val <= 3) color = "red";
+        const weekQuota = weeklyQuota[record.weekIndex]?.maxCigs || 0;
+        const used = weekQuota - val;
+        return (
+          <Tooltip title={`Còn lại trong tuần này`}>
+            <Badge
+              count={val}
+              style={{ backgroundColor: color, marginRight: 8 }}
+              showZero
+            />
+            <Progress
+              percent={weekQuota ? Math.round((used / weekQuota) * 100) : 0}
+              size="small"
+              status={val === 0 ? "exception" : "active"}
+              style={{ width: 60, display: "inline-block" }}
+              showInfo={false}
+            />
+            <span style={{ marginLeft: 8, color }}>{val} điếu</span>
+          </Tooltip>
+        );
+      },
     },
   ];
 
   return (
-    <div className="quit-plan-wrapper">
-      <Title level={3}>
-        <CalendarOutlined style={{ marginRight: 8 }} /> Kế hoạch cai nghiện
-        thuốc lá
-      </Title>
-      <p>
-        <strong>Mức độ nghiện hiện tại:</strong> Trung bình
-      </p>
+    <div
+      className="quit-plan-wrapper"
+      style={{ maxWidth: 1200, margin: "0 auto", padding: 24 }}
+    >
+      <Row justify="center">
+        <Col xs={24} md={22} lg={20}>
+          <Card variant="outlined" hoverable style={{ marginBottom: 24 }}>
+            <Title level={3} style={{ marginBottom: 0, textAlign: "center" }}>
+              <CalendarOutlined style={{ marginRight: 8 }} /> Kế hoạch cai
+              nghiện thuốc lá
+            </Title>
+            <Divider style={{ margin: "12px 0" }} />
+            <Alert
+              message={
+                <span style={{ fontWeight: 500 }}>
+                  Mức độ nghiện hiện tại: Trung bình
+                </span>
+              }
+              description={
+                <span>
+                  <b>Hãy tuân thủ kế hoạch</b> để đạt hiệu quả tốt nhất!
+                  <Tag color="success" style={{ marginLeft: 8 }}>
+                    Đang thực hiện
+                  </Tag>
+                </span>
+              }
+              type="info"
+              showIcon
+              style={{ marginBottom: 16, textAlign: "center" }}
+            />
+            <div
+              className="quit-plan-controls"
+              style={{
+                marginBottom: 16,
+                display: "flex",
+                gap: 12,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <DatePicker
+                value={startDate}
+                onChange={setStartDate}
+                format="YYYY-MM-DD"
+              />
+              <InputNumber
+                min={1}
+                value={months}
+                onChange={setMonths}
+                addonAfter="tháng"
+              />
+              <Select
+                value={viewMode}
+                onChange={setViewMode}
+                options={[
+                  { label: "Xem theo ngày", value: "day" },
+                  { label: "Xem theo tuần", value: "week" },
+                  { label: "Xem theo tháng", value: "month" },
+                ]}
+                style={{ minWidth: 140 }}
+              />
+              <Popover
+                content="Chọn ngày bắt đầu, số tháng và chế độ xem để cá nhân hóa kế hoạch."
+                title="Hướng dẫn nhanh"
+              >
+                <Button type="link" style={{ marginLeft: 8 }}>
+                  ?
+                </Button>
+              </Popover>
+            </div>
+          </Card>
 
-      <div className="quit-plan-controls">
-        <DatePicker
-          value={startDate}
-          onChange={setStartDate}
-          format="YYYY-MM-DD"
-        />
-        <InputNumber
-          min={1}
-          value={months}
-          onChange={setMonths}
-          addonAfter="tháng"
-        />
-        <Select
-          value={viewMode}
-          onChange={setViewMode}
-          options={[
-            { label: "Xem theo ngày", value: "day" },
-            { label: "Xem theo tuần", value: "week" },
-            { label: "Xem theo tháng", value: "month" },
-          ]}
-        />
-      </div>
-
-      <Table
-        columns={columns}
-        dataSource={planData}
-        pagination={{ pageSize: 10 }}
-        rowClassName={(record) => `week-row-${record.weekIndex % 5}`}
-        onRow={(record) => ({
-          onClick: () => {
-            navigate(`/quit-plan-detail/${record.date.replaceAll("/", "-")}`, {
-              state: record,
-            });
-          },
-        })}
-      />
+          <Card variant="outlined">
+            <Divider orientation="left" plain>
+              <Tag color="blue" style={{ fontSize: 16 }}>
+                Bảng kế hoạch chi tiết
+              </Tag>
+            </Divider>
+            <Table
+              columns={columns}
+              dataSource={planData}
+              pagination={{ pageSize: 10 }}
+              rowClassName={(record) => `week-row-${record.weekIndex % 5}`}
+              locale={{
+                emptyText: <Empty description="Không có dữ liệu kế hoạch" />,
+              }}
+              onRow={(record) => ({
+                onClick: () => {
+                  navigate(
+                    `/quit-plan-detail/${record.date.replaceAll("/", "-")}`,
+                    {
+                      state: record,
+                    }
+                  );
+                },
+              })}
+              style={{ background: "#fff" }}
+            />
+          </Card>
+        </Col>
+      </Row>
     </div>
   );
 };
