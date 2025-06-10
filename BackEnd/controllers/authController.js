@@ -10,6 +10,7 @@ const generateToken = (userData) => {
       id: userData.id,
       email: userData.email,
       name: userData.name,
+      role: userData.role || userData.user_role
       //avatar: userData.avatar || null // nếu bạn muốn kèm avatar
     },
     process.env.JWT_SECRET,
@@ -42,7 +43,7 @@ const register = async (req, res) => {
   try {
     const { email, password, name, mobile} = req.body;
 
-    if (!email || !password || !name || mobile) {
+    if (!email?.trim() || !password?.trim() || !name?.trim() || !mobile?.trim())  {
       return res.status(400).json({ message: 'Vui lòng điền đầy đủ thông tin' });
     }
 
@@ -51,7 +52,7 @@ const register = async (req, res) => {
     if (!emailRegex.test(email)) {
       return res.status(400).json({ message: 'Email không hợp lệ' });
     }
-    // Kiểm tra định dạng số điện thoạithoại
+    // Kiểm tra định dạng số điện thoại
     const phoneRegex = /^\d{10}$/;
     if (!phoneRegex.test(sdt)) {
       return res.status(400).json({ message: 'Số điện thoại không hợp lệ' });

@@ -29,7 +29,7 @@ const auth = async (req, res, next) => {
     const pool = await sql.connect(dbConfig);
     const result = await pool.request()
       .input('id', sql.Int, decoded.id)
-      .query('SELECT user_id AS id, email, full_name AS name, NULL AS avatar FROM CUSTOMER WHERE user_id = @id');
+      .query('SELECT user_id AS id, email, full_name AS name, user_role AS role, NULL AS avatar FROM CUSTOMER WHERE user_id = @id');
 
        // Nếu user không tồn tại, từ chối truy cập
     if (result.recordset.length === 0) {
