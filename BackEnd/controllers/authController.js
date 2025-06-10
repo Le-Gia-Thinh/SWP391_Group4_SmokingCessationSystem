@@ -98,7 +98,7 @@ const register = async (req, res) => {
       .input('password_hash', sql.VarChar, hashedPassword)
       .input('name', sql.VarChar, name)
       .input('phone_number', sql.VarChar, mobile)
-      .input('role', sql.VarChar, 'local')
+      .input('role', sql.VarChar, 'member')
       .input('status', sql.VarChar, 'active')
       .input('created', sql.Date, new Date())
       .query(`
@@ -112,7 +112,23 @@ const register = async (req, res) => {
         `);
 
     const userId = insertResult.recordset[0].user_id;
-    const token = generateToken(userId);
+
+    await pool.request()
+  .input('user_id', sql.Int, userId)
+  .input('provider', sql.VarChar, 'local')
+  .input('username', sql.VarChar, username)
+  .input('password_hash', sql.VarChar, hashedPassword)
+  .query(`
+    INSERT INTO USER_LOGIN (user_id, login_provider, username, password_hash)
+    VALUES (@user_id, @provider, @username, @password_hash)
+  `);
+
+    const token = generateToken({
+  id: userId,
+  email,
+  name
+});
+    
 
     res.status(201).json({
       success: true,

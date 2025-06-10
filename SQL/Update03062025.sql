@@ -24,31 +24,6 @@ CREATE TABLE WEEKLY_QUOTA (
   CONSTRAINT fk_weeklyquota_plan FOREIGN KEY (plan_id) REFERENCES CESSATION_PLAN(plan_id) ON DELETE CASCADE
 );
 
---Info member 
-INSERT INTO CUSTOMER (
-  username,
-  password_hash,
-  full_name,
-  email,
-  phone_number,
-  date_of_birth,
-  registration_date,
-  user_role,
-  account_status,
-  login_provider
-) VALUES (
-  'member_test',
-  CONVERT(VARCHAR(255), HASHBYTES('SHA1', '12345'), 2),
-  'Member Test',
-  'member_test@example.com',
-  '0123456789',
-  '2000-01-01',
-  GETDATE(),
-  'member',
-  'active',
-  'local'
-);
-
 -- Update ngày 6/6/2025
 -- Nội dung: Tách login google khỏi bảng Customer
 -- Tạo bảng USER_LOGIN để lưu thông tin đăng nhập
