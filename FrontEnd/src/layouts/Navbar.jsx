@@ -2,40 +2,18 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Avatar from "../components/Avatar";
-import axios from "axios";
+import { useAuth } from "../contexts/AuthContext";
 import "./Navbar.css";
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const { user, logout, isCoach, isUser, isAdmin } = useAuth();
 
-  // Lấy user từ localStorage
-  const storedUser = localStorage.getItem("user");
-  const user = storedUser ? JSON.parse(storedUser) : null;
-
-  // ====== BẮT ĐẦU PHẦN THÊM ======
-  // Hàm xử lý logout
-  const handleLogout = async () => {
-    try {
-      // Gửi request POST /logout để server destroy session (nếu có)
-      await axios.post(
-        "http://localhost:5000/api/auth/logout",
-        {},
-        {
-          withCredentials: true, // bắt buộc nếu server cần cookie để hủy session
-        }
-      );
-    } catch (err) {
-      console.error("Error when calling /api/auth/logout:", err);
-      // dù có lỗi vẫn tiếp tục xóa localStorage bên client
-    }
-
-    // Xóa user khỏi localStorage
-    localStorage.removeItem("user");
-
-    // Chuyển về trang login
+  // Handle logout - Xử lý đăng xuất
+  const handleLogout = () => {
+    logout();
     navigate("/login");
   };
-  // ====== KẾT THÚC PHẦN THÊM ======
 
   return (
     <header className="navbar">
@@ -50,6 +28,20 @@ const Navbar = () => {
         <Link to="/ranking">Ranking</Link>
         <Link to="/blog">Blog</Link>
         <Link to="/membership">Membership</Link>
+
+        {/* Show menu based on role - Hiển thị menu theo vai trò */}
+        {isAdmin() && (
+          <Link to="/admin-dashboard">Admin Dashboard</Link>
+        )}
+
+        {isCoach() && (
+          <Link to="/coach-dashboard">Coach Dashboard</Link>
+        )}
+
+        {isUser() && (
+          <Link to="/user-dashboard">User Dashboard</Link>
+        )}
+
         <Link to="/coaches">Coaches</Link>
       </nav>
 
@@ -65,10 +57,25 @@ const Navbar = () => {
           </>
         ) : (
           <>
-            {/* Giữ nguyên code Avatar cũ */}
+            {/* Show role badge - Hiển thị badge vai trò */}
+            <div className="role-badge" style={{
+              background: user.role === 'admin' ? '#dc2626' :
+                user.role === 'coach' ? '#10b981' : '#3b82f6',
+              color: 'white',
+              padding: '4px 8px',
+              borderRadius: '4px',
+              fontSize: '12px',
+              fontWeight: '500',
+              marginRight: '12px'
+            }}>
+              {user.role === 'admin' ? 'Admin' :
+                user.role === 'coach' ? 'Coach' : 'User'}
+            </div>
+
+            {/* Avatar */}
             <Avatar name={user.name || user.email} avatarUrl={user.avatar} />
 
-            {/* ====== THÊM NÚT Logout ====== */}
+            {/* Logout button */}
             <button onClick={handleLogout} className="btn-logout">
               Logout
             </button>
