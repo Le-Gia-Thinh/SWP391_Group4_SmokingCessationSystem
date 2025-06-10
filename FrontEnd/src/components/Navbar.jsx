@@ -1,41 +1,52 @@
-// FrontEnd/src/components/Navbar.jsx
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import Avatar from "./Avatar";
 import axios from "axios";
 import "./Navbar.css";
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // Lấy user từ localStorage
   const storedUser = localStorage.getItem("user");
   const user = storedUser ? JSON.parse(storedUser) : null;
 
-  // ====== BẮT ĐẦU PHẦN THÊM ======
-  // Hàm xử lý logout
   const handleLogout = async () => {
     try {
-      // Gửi request POST /logout để server destroy session (nếu có)
       await axios.post(
         "http://localhost:5000/api/auth/logout",
         {},
         {
-          withCredentials: true, // bắt buộc nếu server cần cookie để hủy session
+          withCredentials: true,
         }
       );
     } catch (err) {
       console.error("Error when calling /api/auth/logout:", err);
-      // dù có lỗi vẫn tiếp tục xóa localStorage bên client
     }
 
-    // Xóa user khỏi localStorage
     localStorage.removeItem("user");
-
-    // Chuyển về trang login
     navigate("/login");
   };
-  // ====== KẾT THÚC PHẦN THÊM ======
+
+  const handlePlanClick = async () => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const res = await axios.get(
+        `http://localhost:5000/api/ftnd/exists/${user.id}`,
+        { withCredentials: true }
+      );
+
+      const hasFtnd = res.data?.exists;
+      navigate(hasFtnd ? "/quit-plan" : "/FtndTest");
+    } catch (err) {
+      console.error("Lỗi khi kiểm tra FTND:", err);
+      navigate("/FtndTest");
+    }
+  };
 
   return (
     <header className="navbar">
@@ -47,6 +58,19 @@ const Navbar = () => {
 
       <nav className="navbar-links">
         <Link to="/">Home</Link>
+
+        <span
+          onClick={handlePlanClick}
+          className={`nav-link ${
+            location.pathname.startsWith("/FtndTest") ||
+            location.pathname.startsWith("/quit-plan")
+              ? "active"
+              : ""
+          }`}
+        >
+          Plan
+        </span>
+
         <Link to="/ranking">Ranking</Link>
         <Link to="/blog">Blog</Link>
         <Link to="/membership">Membership</Link>
@@ -65,10 +89,7 @@ const Navbar = () => {
           </>
         ) : (
           <>
-            {/* Giữ nguyên code Avatar cũ */}
             <Avatar name={user.name || user.email} avatarUrl={user.avatar} />
-
-            {/* ====== THÊM NÚT Logout ====== */}
             <button onClick={handleLogout} className="btn-logout">
               Logout
             </button>

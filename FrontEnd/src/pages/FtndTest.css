@@ -1,0 +1,39 @@
+.ftnd-wrapper {
+  background-color: white;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* ✅ Thêm viền và bo góc cho container */
+.ftnd-container {
+  width: 100%;
+  max-width: 480px;
+  padding: 32px;
+  background-color: white;
+  border: 1px solid #d9d9d9; /* Viền xám nhẹ */
+  border-radius: 12px;        /* Bo góc */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); /* Đổ bóng nhẹ */
+}
+
+/* Tiêu đề */
+.ftnd-title {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+/* Nhóm radio */
+.ftnd-options label {
+  display: inline-block;
+  margin-right: 16px;
+  margin-top: 4px;
+}
+
+/* Nút gửi */
+.ftnd-submit-button {
+  width: 100%;
+  height: 40px;
+  font-weight: 500;
+  background-color: #4BAC4F;
+}
