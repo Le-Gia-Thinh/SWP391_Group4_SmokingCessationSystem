@@ -41,9 +41,10 @@ const sendTokenWithUser = (res, user) => {
 // Đăng ký người dùng mới
 const register = async (req, res) => {
   try {
-    const { email, password, name, mobile} = req.body;
-
-    if (!email?.trim() || !password?.trim() || !name?.trim() || !mobile?.trim())  {
+    const { email, password, name, phone_number} = req.body;
+    
+    // Kiểm tra rỗng
+    if (!email?.trim() || !password?.trim() || !name?.trim() || !phone_number?.trim())  {
       return res.status(400).json({ message: 'Vui lòng điền đầy đủ thông tin' });
     }
 
@@ -54,7 +55,7 @@ const register = async (req, res) => {
     }
     // Kiểm tra định dạng số điện thoại
     const phoneRegex = /^\d{10}$/;
-    if (!phoneRegex.test(sdt)) {
+    if (!phoneRegex.test(phone_number)) {
       return res.status(400).json({ message: 'Số điện thoại không hợp lệ' });
     }
 
@@ -75,8 +76,10 @@ const register = async (req, res) => {
     }
 
     // Mã hóa mật khẩu
-    const salt = await bcrypt.genSalt(10);
+    //const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
+
+    const username = email.split('@')[0]; // tạo username từ email
 
     // Thêm user mới vào DB
     const insertResult = await pool.request()
@@ -84,13 +87,14 @@ const register = async (req, res) => {
       .input('username', sql.VarChar, username)
       .input('password', sql.VarChar, hashedPassword)
       .input('name', sql.VarChar, name)
-      .input('role', sql.VarChar, 'local')
+      .input('phone_number', sql.VarChar, phone_number)
+      .input('role', sql.VarChar, 'member')
       .input('status', sql.VarChar, 'active')
       .input('created', sql.Date, new Date())
       .query(`
-          INSERT INTO CUSTOMER (email, password_hash, full_name, username, user_role, account_status, registration_date)
+          INSERT INTO CUSTOMER (email, password_hash, full_name, username, phone_number, user_role, account_status, registration_date)
           OUTPUT INSERTED.user_id
-          VALUES (@email, @password, @name, @role, @status, @created)
+          VALUES (@email, @password, @name, @username, @phone_number,@role, @status, @created)
         `);
 
     const userId = insertResult.recordset[0].user_id;

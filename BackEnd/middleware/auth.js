@@ -19,11 +19,11 @@ const auth = async (req, res, next) => {
 
      // Xác thực token với JWT_SECRET
     let decoded;
-  try {
-    decoded = jwt.verify(token, process.env.JWT_SECRET);
-  } catch (err) {
-    return res.status(401).json({ message: 'Token không hợp lệ hoặc đã hết hạn' });
-  }
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+      return res.status(401).json({ message: 'Token không hợp lệ hoặc đã hết hạn' });
+    }
 
      // Kết nối DB và tìm user theo id trong payload token
     const pool = await sql.connect(dbConfig);
@@ -45,5 +45,21 @@ const auth = async (req, res, next) => {
     res.status(401).json({ message: 'Token không hợp lệ hoặc lỗi server' });
   }
 };
+  
+  // Middleware phân quyền: Kiểm tra role có nằm trong allowedRoles không
+const authorize = (allowedRoles) => {
+    if (typeof allowedRoles === 'string') {
+      allowedRoles = [allowedRoles];
+    }
 
-module.exports = auth;
+    return (req, res, next) => {
+      const user = req.user;
+
+      if (!user || !allowedRoles.includes(user.role)) {
+        return res.status(403).json({ message: 'Bạn không có quyền truy cập chức năng này' });
+      }
+
+      next();
+    };
+};
+module.exports = { auth, authorize };

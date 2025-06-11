@@ -24,6 +24,7 @@ const Register = () => {
 
     const onFinish = async (values) => {
         try {
+            /*
             const checkEmail = await axios.get("https://682d41af4fae188947555b7a.mockapi.io/register", {
                 params: { email: values.email }
             });
@@ -32,8 +33,8 @@ const Register = () => {
                 alert("Email đã được đăng ký.");
                 return;
             }
-
-            const res = await axios.post("https://682d41af4fae188947555b7a.mockapi.io/register", values);
+            */
+            const res = await axios.post("http://localhost:5000/api/auth/register", values);
             
             console.log("Đăng ký thành công:", res.data);
             alert("Đăng ký thành công!");
@@ -60,7 +61,7 @@ const Register = () => {
 
                     <Form.Item
                         label="Mobile no."
-                        name="mobile"
+                        name="phone_number"
                         rules={[{ required: true, message: "Please enter your phone number!" }]}
                     >
                         <Input placeholder="0123456789" suffix={<PhoneOutlined />} />

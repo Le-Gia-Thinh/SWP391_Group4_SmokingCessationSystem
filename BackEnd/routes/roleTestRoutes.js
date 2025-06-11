@@ -2,8 +2,7 @@
 const express = require('express');
 const router = express.Router();
 
-const auth = require('../middleware/auth');
-const authorize = require('../middleware/authorize');
+const { auth, authorize } = require('../middleware/auth');
 
 // Admin truy cập
 router.get('/admin', auth, authorize('admin'), (req, res) => {

@@ -1,7 +1,7 @@
 // routes/auth.js
 const express = require('express');
 const passport = require('passport');
-const auth = require('../middleware/auth');
+const { auth } = require('../middleware/auth');
 const { requestResetPassword, resetPassword } = require('../controllers/resetPassword');
 const { register, login, getMe, googleSuccess, logout } = require('../controllers/authController');
 
