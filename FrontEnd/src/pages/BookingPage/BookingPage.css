@@ -1,6 +1,6 @@
 .booking-page {
     min-height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background-color: #f9fff9;
 }
 
 .booking-container {
@@ -26,11 +26,45 @@
     opacity: 0.9;
 }
 
-.coaches-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: 30px;
-    margin-top: 40px;
+/* Date Selection */
+.date-selection {
+    margin-bottom: 40px;
+}
+
+.date-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    border: none;
+}
+
+.date-picker-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.date-picker-container .ant-typography {
+    margin-bottom: 0;
+}
+
+/* Available Coaches */
+.available-coaches {
+    margin-bottom: 40px;
+    min-height: 200px;
+}
+
+.no-availability-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    border: none;
+}
+
+/* All Coaches */
+.all-coaches {
+    margin-bottom: 40px;
+    min-height: 200px;
 }
 
 .coach-card {
@@ -39,6 +73,8 @@
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     overflow: hidden;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+    height: 100%;
 }
 
 .coach-card:hover {
@@ -108,12 +144,40 @@
     margin-bottom: 12px;
     color: #333;
     font-weight: 600;
+    display: flex;
+    align-items: center;
 }
 
 .slots-grid {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
+}
+
+.time-slot {
+    font-weight: 500;
+    padding: 4px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, opacity 0.2s ease;
+}
+
+.time-slot:hover {
+    opacity: 0.8;
+}
+
+.time-slot-disabled {
+    background-color: #f0f0f0 !important;
+    color: #999 !important;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.coach-card-footer {
+    padding: 20px 24px;
+    background: #f8f9fa;
+    text-align: center;
+    border-top: 1px solid #f0f0f0;
 }
 
 .coach-card .ant-card-body {
@@ -126,6 +190,13 @@
     font-size: 1.1rem;
     font-weight: 600;
     border-radius: 8px;
+    background: #52c41a;
+    border-color: #52c41a;
+}
+
+.coach-card .ant-btn:hover {
+    background: #73d13d;
+    border-color: #73d13d;
 }
 
 .modal-actions {
@@ -153,9 +224,9 @@
         font-size: 1rem;
     }
 
-    .coaches-grid {
-        grid-template-columns: 1fr;
-        gap: 20px;
+    .date-picker-container {
+        flex-direction: column;
+        text-align: center;
     }
 
     .coach-info {
@@ -190,4 +261,21 @@
     .available-slots {
         padding: 16px;
     }
+
+    .coach-card-footer {
+        padding: 16px;
+    }
+}
+
+/* Fallback Section */
+.fallback-section {
+    margin-bottom: 40px;
+    min-height: 200px;
+}
+
+.fallback-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    border: none;
 }

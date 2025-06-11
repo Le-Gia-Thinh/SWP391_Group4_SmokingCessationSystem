@@ -1,57 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-// MockData for User and Coach - Dữ liệu mẫu cho User và Coach
-// Note: 
-// - User accounts: Self-registered by users
-// - Coach accounts: Created by Admin and provided to coaches
-// - Admin accounts: System accounts
-// Lưu ý:
-// - Tài khoản User: Tự đăng ký bởi user
-// - Tài khoản Coach: Được Admin tạo và cung cấp cho coach
-// - Tài khoản Admin: Tài khoản hệ thống
-const mockUsers = {
-    user: {
-        id: 1,
-        email: 'user@example.com',
-        name: 'John Doe',
-        role: 'member',
-        coach_id: null,
-        account_status: 'active',
-        registration_type: 'self', // User tự đăng ký
-        created_at: '2024-01-01'
-    },
-    coach: {
-        id: 2,
-        email: 'coach@example.com',
-        name: 'Coach Sarah Wilson',
-        role: 'coach',
-        coach_id: 1,
-        account_status: 'active',
-        registration_type: 'admin_created', // Được Admin tạo
-        created_by_admin: 'admin@example.com',
-        created_at: '2024-01-05',
-        specialization: 'Smoking Cessation',
-        experience_years: 5,
-        verified: true,
-        // Admin provided these credentials to the coach
-        // Admin đã cung cấp thông tin đăng nhập này cho coach
-        provided_credentials: {
-            email: 'coach@example.com',
-            temporary_password: 'Coach123!' // Coach sẽ đổi mật khẩu lần đầu đăng nhập
-        }
-    },
-    admin: {
-        id: 3,
-        email: 'admin@example.com',
-        name: 'System Administrator',
-        role: 'admin',
-        coach_id: null,
-        account_status: 'active',
-        registration_type: 'system', // Tài khoản hệ thống
-        created_at: '2024-01-01'
-    }
-};
-
 const AuthContext = createContext();
 
 export const useAuth = () => {

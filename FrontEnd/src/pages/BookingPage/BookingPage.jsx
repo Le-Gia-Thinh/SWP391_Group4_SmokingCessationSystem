@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Button, Modal, Form, Input, Select, DatePicker, TimePicker, message, Avatar, Rate, Tag } from 'antd';
+import { Card, Button, Modal, Form, Input, Select, DatePicker, TimePicker, message, Avatar, Rate, Tag, Row, Col, Typography } from 'antd';
 import { CalendarOutlined, ClockCircleOutlined, UserOutlined, StarFilled } from '@ant-design/icons';
 import Navbar from '../../layouts/Navbar';
 import { useAuth } from '../../contexts/AuthContext';
 import './BookingPage.css';
+import moment from 'moment';
 
 const { TextArea } = Input;
 const { Option } = Select;
+const { Title, Text } = Typography;
 
 const BookingPage = () => {
     const { user } = useAuth();
@@ -15,8 +17,11 @@ const BookingPage = () => {
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [bookingForm] = Form.useForm();
     const [loading, setLoading] = useState(false);
+    const [selectedDate, setSelectedDate] = useState(null);
+    const [availableCoaches, setAvailableCoaches] = useState([]);
+    const [selectedSlot, setSelectedSlot] = useState(null);
 
-    // Mock data for coaches
+    // Mock data for coaches with detailed availability
     const mockCoaches = [
         {
             id: 1,
@@ -29,13 +34,28 @@ const BookingPage = () => {
             successRate: 85,
             avatar: null,
             bio: 'Certified smoking cessation specialist with 5 years of experience helping people quit smoking.',
-            availableSlots: [
-                { day: 'Monday', time: '09:00-10:00' },
-                { day: 'Tuesday', time: '14:00-15:00' },
-                { day: 'Wednesday', time: '16:00-17:00' },
-                { day: 'Thursday', time: '10:00-11:00' },
-                { day: 'Friday', time: '15:00-16:00' }
-            ]
+            availability: {
+                '2025-06-11': [
+                    { time: '09:00', duration: 60, available: true },
+                    { time: '14:00', duration: 60, available: true },
+                    { time: '16:00', duration: 60, available: false }
+                ],
+                '2025-06-12': [
+                    { time: '10:00', duration: 60, available: true },
+                    { time: '15:00', duration: 60, available: true },
+                    { time: '17:00', duration: 60, available: true }
+                ],
+                '2025-06-13': [
+                    { time: '09:00', duration: 60, available: true },
+                    { time: '13:00', duration: 60, available: false },
+                    { time: '16:00', duration: 60, available: true }
+                ],
+                '2025-06-14': [
+                    { time: '11:00', duration: 60, available: true },
+                    { time: '14:00', duration: 60, available: true },
+                    { time: '18:00', duration: 60, available: true }
+                ]
+            }
         },
         {
             id: 2,
@@ -48,23 +68,113 @@ const BookingPage = () => {
             successRate: 90,
             avatar: null,
             bio: 'Expert in behavioral therapy and addiction counseling with 8 years of experience.',
-            availableSlots: [
-                { day: 'Monday', time: '13:00-14:00' },
-                { day: 'Tuesday', time: '09:00-10:00' },
-                { day: 'Wednesday', time: '14:00-15:00' },
-                { day: 'Thursday', time: '16:00-17:00' },
-                { day: 'Friday', time: '11:00-12:00' }
-            ]
+            availability: {
+                '2025-06-11': [
+                    { time: '10:00', duration: 60, available: true },
+                    { time: '15:00', duration: 60, available: true },
+                    { time: '17:00', duration: 60, available: true }
+                ],
+                '2025-06-12': [
+                    { time: '09:00', duration: 60, available: false },
+                    { time: '14:00', duration: 60, available: true },
+                    { time: '16:00', duration: 60, available: true }
+                ],
+                '2025-06-13': [
+                    { time: '11:00', duration: 60, available: true },
+                    { time: '14:00', duration: 60, available: true },
+                    { time: '18:00', duration: 60, available: true }
+                ],
+                '2025-06-14': [
+                    { time: '08:00', duration: 60, available: true },
+                    { time: '12:00', duration: 60, available: true },
+                    { time: '15:00', duration: 60, available: false }
+                ]
+            }
+        },
+        {
+            id: 3,
+            name: 'Dr. Emily Johnson',
+            email: 'emily.johnson@example.com',
+            specialization: 'Cognitive Behavioral Therapy',
+            experience: 6,
+            rating: 4.7,
+            totalSessions: 180,
+            successRate: 88,
+            avatar: null,
+            bio: 'Specialist in cognitive behavioral therapy for smoking cessation and addiction recovery.',
+            availability: {
+                '2025-06-11': [
+                    { time: '08:00', duration: 60, available: true },
+                    { time: '12:00', duration: 60, available: true },
+                    { time: '15:00', duration: 60, available: false }
+                ],
+                '2025-06-12': [
+                    { time: '09:00', duration: 60, available: true },
+                    { time: '13:00', duration: 60, available: true },
+                    { time: '16:00', duration: 60, available: true }
+                ],
+                '2025-06-13': [
+                    { time: '10:00', duration: 60, available: true },
+                    { time: '14:00', duration: 60, available: true },
+                    { time: '17:00', duration: 60, available: true }
+                ],
+                '2025-06-14': [
+                    { time: '09:00', duration: 60, available: true },
+                    { time: '13:00', duration: 60, available: true },
+                    { time: '16:00', duration: 60, available: true }
+                ]
+            }
         }
     ];
 
     useEffect(() => {
         // Simulate API call to fetch coaches
+        console.log('Loading coaches...');
         setCoaches(mockCoaches);
+        console.log('Coaches loaded:', mockCoaches.length);
     }, []);
 
-    const handleBookCoach = (coach) => {
+    // Filter available coaches based on selected date
+    useEffect(() => {
+        console.log('Selected date:', selectedDate);
+        console.log('Coaches state:', coaches.length);
+
+        if (selectedDate) {
+            const dateStr = selectedDate.format('YYYY-MM-DD');
+            console.log('Date string:', dateStr);
+            console.log('All coaches:', coaches);
+
+            const available = coaches.filter(coach => {
+                const dayAvailability = coach.availability[dateStr];
+                console.log(`Coach ${coach.name} availability for ${dateStr}:`, dayAvailability);
+                return dayAvailability && dayAvailability.some(slot => slot.available);
+            });
+
+            console.log('Available coaches:', available);
+            setAvailableCoaches(available);
+        } else {
+            console.log('No date selected, clearing available coaches');
+            setAvailableCoaches([]);
+        }
+    }, [selectedDate, coaches]);
+
+    const handleDateChange = (date) => {
+        console.log('Date changed to:', date);
+        setSelectedDate(date);
+    };
+
+    const getAvailableSlots = (coach, date) => {
+        if (!date) return [];
+        const dateStr = date.format('YYYY-MM-DD');
+        return coach.availability[dateStr]?.filter(slot => slot.available) || [];
+    };
+
+    const handleSelectSlotForBooking = (coach, slot) => {
         setSelectedCoach(coach);
+        setSelectedSlot(slot);
+        bookingForm.setFieldsValue({
+            duration: slot.duration,
+        });
         setIsModalVisible(true);
     };
 
@@ -81,14 +191,32 @@ const BookingPage = () => {
                 coachName: selectedCoach.name,
                 userName: user.name,
                 userEmail: user.email,
-                date: values.date.format('YYYY-MM-DD'),
-                time: values.time.format('HH:mm'),
+                date: selectedDate.format('YYYY-MM-DD'),
+                time: selectedSlot.time,
                 duration: values.duration,
-                sessionType: values.sessionType,
                 notes: values.notes,
                 status: 'pending',
                 createdAt: new Date().toISOString()
             };
+
+            // Mark the booked slot as unavailable in mock data
+            const updatedCoaches = coaches.map(c => {
+                if (c.id === selectedCoach.id) {
+                    const updatedAvailability = { ...c.availability };
+                    const dateStr = selectedDate.format('YYYY-MM-DD');
+                    if (updatedAvailability[dateStr]) {
+                        updatedAvailability[dateStr] = updatedAvailability[dateStr].map(s => {
+                            if (s.time === selectedSlot.time) {
+                                return { ...s, available: false };
+                            }
+                            return s;
+                        });
+                    }
+                    return { ...c, availability: updatedAvailability };
+                }
+                return c;
+            });
+            setCoaches(updatedCoaches); // Update coaches state
 
             // Save booking to localStorage (in real app, this would be API call)
             const existingBookings = JSON.parse(localStorage.getItem('bookings') || '[]');
@@ -116,56 +244,154 @@ const BookingPage = () => {
 
             <div className="booking-container">
                 <div className="booking-header">
-                    <h1>Book a Coach</h1>
-                    <p>Choose a certified coach to help you quit smoking</p>
+                    <Title level={1} style={{ color: '#333', marginBottom: 10 }}>
+                        Book a Coach
+                    </Title>
+                    <Text style={{ color: '#666', fontSize: '1.2rem' }}>
+                        Choose a certified coach to help you quit smoking
+                    </Text>
                 </div>
 
-                <div className="coaches-grid">
-                    {coaches.map((coach) => (
-                        <Card key={coach.id} className="coach-card">
-                            <div className="coach-info">
-                                <div className="coach-avatar">
-                                    <Avatar size={80} icon={<UserOutlined />} />
-                                </div>
-                                <div className="coach-details">
-                                    <h3>{coach.name}</h3>
-                                    <p className="specialization">{coach.specialization}</p>
-                                    <div className="rating">
-                                        <Rate disabled defaultValue={coach.rating} />
-                                        <span className="rating-text">{coach.rating}</span>
-                                    </div>
-                                    <div className="stats">
-                                        <Tag color="blue">{coach.experience} years exp.</Tag>
-                                        <Tag color="green">{coach.successRate}% success rate</Tag>
-                                        <Tag color="orange">{coach.totalSessions} sessions</Tag>
-                                    </div>
-                                    <p className="bio">{coach.bio}</p>
-                                </div>
+                {/* Date Selection */}
+                <div className="date-selection">
+                    <Card className="date-card">
+                        <div className="date-picker-container">
+                            <CalendarOutlined style={{ fontSize: '24px', color: '#52c41a', marginRight: 12 }} />
+                            <div>
+                                <Title level={4} style={{ marginBottom: 8 }}>Select Your Preferred Date</Title>
+                                <Text type="secondary">Choose a date to see available coaches and time slots</Text>
                             </div>
+                        </div>
+                        <DatePicker
+                            size="large"
+                            style={{ width: '100%', marginTop: 16 }}
+                            placeholder="Select date"
+                            onChange={handleDateChange}
+                            disabledDate={(current) => current && current < moment().startOf('day')}
+                        />
+                    </Card>
+                </div>
 
-                            <div className="available-slots">
-                                <h4>Available Slots:</h4>
-                                <div className="slots-grid">
-                                    {coach.availableSlots.map((slot, index) => (
-                                        <Tag key={index} color="cyan">
-                                            {slot.day} {slot.time}
-                                        </Tag>
-                                    ))}
+                {/* Available Coaches */}
+                {selectedDate && (
+                    <div className="available-coaches">
+                        <Title level={2} style={{ color: '#333', marginBottom: 20 }}>
+                            Available Coaches for {selectedDate.format('MMMM DD, YYYY')}
+                        </Title>
+
+                        {availableCoaches.length === 0 ? (
+                            <Card className="no-availability-card">
+                                <div style={{ textAlign: 'center', padding: '40px' }}>
+                                    <CalendarOutlined style={{ fontSize: '48px', color: '#ccc', marginBottom: 16 }} />
+                                    <Title level={4} type="secondary">No coaches available on this date</Title>
+                                    <Text type="secondary">Please select a different date</Text>
                                 </div>
-                            </div>
+                            </Card>
+                        ) : (
+                            <Row gutter={[24, 24]}>
+                                {availableCoaches.map((coach) => (
+                                    <Col xs={24} md={12} lg={8} key={coach.id}>
+                                        <Card className="coach-card">
+                                            <div className="coach-info">
+                                                <div className="coach-avatar">
+                                                    <Avatar size={80} icon={<UserOutlined />} />
+                                                </div>
+                                                <div className="coach-details">
+                                                    <h3>{coach.name}</h3>
+                                                    <p className="specialization">{coach.specialization}</p>
+                                                    <div className="rating">
+                                                        <Rate disabled defaultValue={coach.rating} />
+                                                        <span className="rating-text">{coach.rating}</span>
+                                                    </div>
+                                                    <div className="stats">
+                                                        <Tag color="blue">{coach.experience} years exp.</Tag>
+                                                        <Tag color="green">{coach.successRate}% success rate</Tag>
+                                                        <Tag color="orange">{coach.totalSessions} sessions</Tag>
+                                                    </div>
+                                                    <p className="bio">{coach.bio}</p>
+                                                </div>
+                                            </div>
 
-                            <Button
-                                type="primary"
-                                size="large"
-                                block
-                                onClick={() => handleBookCoach(coach)}
-                                icon={<CalendarOutlined />}
-                            >
-                                Book Session
-                            </Button>
+                                            <div className="available-slots">
+                                                <h4>
+                                                    <ClockCircleOutlined style={{ marginRight: 8 }} />
+                                                    Available Time Slots:
+                                                </h4>
+                                                <div className="slots-grid">
+                                                    {getAvailableSlots(coach, selectedDate).map((slot, index) => (
+                                                        <Tag
+                                                            key={index}
+                                                            color={slot.available ? "blue" : "default"}
+                                                            className={`time-slot ${!slot.available ? 'time-slot-disabled' : ''}`}
+                                                            onClick={slot.available ? () => handleSelectSlotForBooking(coach, slot) : null}
+                                                        >
+                                                            {slot.time} ({slot.duration} min)
+                                                        </Tag>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </Card>
+                                    </Col>
+                                ))}
+                            </Row>
+                        )}
+                    </div>
+                )}
+
+                {/* Show all coaches when no date is selected */}
+                {!selectedDate && (
+                    <div className="all-coaches">
+                        <Title level={2} style={{ color: '#333', marginBottom: 20 }}>
+                            All Available Coaches
+                        </Title>
+                        <Row gutter={[24, 24]}>
+                            {coaches.map((coach) => (
+                                <Col xs={24} md={12} lg={8} key={coach.id}>
+                                    <Card className="coach-card">
+                                        <div className="coach-info">
+                                            <div className="coach-avatar">
+                                                <Avatar size={80} icon={<UserOutlined />} />
+                                            </div>
+                                            <div className="coach-details">
+                                                <h3>{coach.name}</h3>
+                                                <p className="specialization">{coach.specialization}</p>
+                                                <div className="rating">
+                                                    <Rate disabled defaultValue={coach.rating} />
+                                                    <span className="rating-text">{coach.rating}</span>
+                                                </div>
+                                                <div className="stats">
+                                                    <Tag color="blue">{coach.experience} years exp.</Tag>
+                                                    <Tag color="green">{coach.successRate}% success rate</Tag>
+                                                    <Tag color="orange">{coach.totalSessions} sessions</Tag>
+                                                </div>
+                                                <p className="bio">{coach.bio}</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="coach-card-footer">
+                                            <Text type="secondary">
+                                                Select a date to see available time slots
+                                            </Text>
+                                        </div>
+                                    </Card>
+                                </Col>
+                            ))}
+                        </Row>
+                    </div>
+                )}
+
+                {/* Fallback - Always show if something goes wrong */}
+                {!selectedDate && coaches.length === 0 && (
+                    <div className="fallback-section">
+                        <Card className="fallback-card">
+                            <div style={{ textAlign: 'center', padding: '40px' }}>
+                                <CalendarOutlined style={{ fontSize: '48px', color: '#52c41a', marginBottom: 16 }} />
+                                <Title level={4}>Loading coaches...</Title>
+                                <Text type="secondary">Please wait while we load the available coaches</Text>
+                            </div>
                         </Card>
-                    ))}
-                </div>
+                    </div>
+                )}
             </div>
 
             {/* Booking Modal */}
@@ -182,51 +408,13 @@ const BookingPage = () => {
                     onFinish={handleBookingSubmit}
                 >
                     <Form.Item
-                        name="date"
-                        label="Preferred Date"
-                        rules={[{ required: true, message: 'Please select a date' }]}
-                    >
-                        <DatePicker
-                            style={{ width: '100%' }}
-                            placeholder="Select date"
-                            disabledDate={(current) => current && current < new Date().startOf('day')}
-                        />
-                    </Form.Item>
-
-                    <Form.Item
-                        name="time"
-                        label="Preferred Time"
-                        rules={[{ required: true, message: 'Please select a time' }]}
-                    >
-                        <TimePicker
-                            style={{ width: '100%' }}
-                            format="HH:mm"
-                            placeholder="Select time"
-                        />
-                    </Form.Item>
-
-                    <Form.Item
                         name="duration"
                         label="Session Duration"
                         rules={[{ required: true, message: 'Please select duration' }]}
                     >
                         <Select placeholder="Select duration">
-                            <Option value="30">30 minutes</Option>
-                            <Option value="60">1 hour</Option>
-                            <Option value="90">1.5 hours</Option>
-                        </Select>
-                    </Form.Item>
-
-                    <Form.Item
-                        name="sessionType"
-                        label="Session Type"
-                        rules={[{ required: true, message: 'Please select session type' }]}
-                    >
-                        <Select placeholder="Select session type">
-                            <Option value="initial">Initial Consultation</Option>
-                            <Option value="followup">Follow-up Session</Option>
-                            <Option value="emergency">Emergency Support</Option>
-                            <Option value="group">Group Session</Option>
+                            <Option value={30}>30 minutes</Option>
+                            <Option value={60}>1 hour</Option>
                         </Select>
                     </Form.Item>
 
