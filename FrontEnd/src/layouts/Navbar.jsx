@@ -15,9 +15,14 @@ const Navbar = () => {
   const { user, logout, isCoach, isAdmin } = useAuth();
 
   // Handle logout - Xử lý đăng xuất
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate("/login");
+    } catch (error) {
+      console.error('Logout error:', error);
+      navigate("/login");
+    }
   };
 
   // Menu items based on user role
@@ -108,7 +113,7 @@ const Navbar = () => {
             <Space wrap={false}>
               {/* Show role badge */}
               <Badge
-                count={user.role === 'admin' ? 'Admin' : user.role === 'coach' ? 'Coach' : 'User'}
+                count={user.role === 'admin' ? 'Admin' : user.role === 'coach' ? 'Coach' : 'Member'}
                 style={{
                   backgroundColor: user.role === 'admin' ? '#ff4d4f' :
                     user.role === 'coach' ? '#52c41a' : '#52c41a',

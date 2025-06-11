@@ -14,7 +14,7 @@ const mockUsers = {
         id: 1,
         email: 'user@example.com',
         name: 'John Doe',
-        role: 'user',
+        role: 'member',
         coach_id: null,
         account_status: 'active',
         registration_type: 'self', // User tự đăng ký
@@ -75,35 +75,59 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
     }, []);
 
-    // Login with MockData - Đăng nhập với dữ liệu mẫu
+    // Login with real API - Đăng nhập với API thực tế
     const login = async (email, password) => {
-        // Simulate API call delay - Giả lập độ trễ API
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        try {
+            const response = await fetch('http://localhost:5000/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, password }),
+            });
 
-        // Mock login logic - Logic đăng nhập mẫu
-        let userData = null;
+            const data = await response.json();
 
-        if (email === 'user@example.com' && password === '123456') {
-            userData = mockUsers.user;
-        } else if (email === 'coach@example.com' && password === '123456') {
-            userData = mockUsers.coach;
-        } else if (email === 'admin@example.com' && password === '123456') {
-            userData = mockUsers.admin;
-        } else {
-            throw new Error('Invalid email or password');
+            if (!response.ok) {
+                throw new Error(data.message || 'Login failed');
+            }
+
+            if (!data.success) {
+                throw new Error(data.message || 'Login failed');
+            }
+
+            // Save user to localStorage - Lưu user vào localStorage
+            localStorage.setItem('user', JSON.stringify(data.user));
+            localStorage.setItem('token', data.token);
+            setUser(data.user);
+
+            return data.user;
+        } catch (error) {
+            console.error('Login error:', error);
+            throw error;
         }
-
-        // Save user to localStorage - Lưu user vào localStorage
-        localStorage.setItem('user', JSON.stringify(userData));
-        setUser(userData);
-
-        return userData;
     };
 
     // Logout - Đăng xuất
-    const logout = () => {
-        localStorage.removeItem('user');
-        setUser(null);
+    const logout = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            if (token) {
+                await fetch('http://localhost:5000/api/auth/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                });
+            }
+        } catch (error) {
+            console.error('Logout error:', error);
+        } finally {
+            localStorage.removeItem('user');
+            localStorage.removeItem('token');
+            setUser(null);
+        }
     };
 
     // Check permissions - Kiểm tra quyền
@@ -113,7 +137,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     // Check if is regular User - Kiểm tra là User thường
-    const isUser = () => hasRole(['user', 'coach', 'admin']);
+    const isUser = () => hasRole(['member', 'coach', 'admin']);
 
     // Check if is Coach - Kiểm tra là Coach
     const isCoach = () => hasRole(['coach']);

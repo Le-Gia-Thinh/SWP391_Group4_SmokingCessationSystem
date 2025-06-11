@@ -25,8 +25,10 @@ const Login = () => {
         navigate("/admin-dashboard");
       } else if (user.role === 'coach') {
         navigate("/coach-dashboard");
+      } else if (user.role === 'member') {
+        navigate("/"); // Redirect to home page for regular members
       } else {
-        navigate("/"); // Redirect to home page for regular users
+        navigate("/"); // Fallback for any other roles
       }
 
       message.success("Login successful!");

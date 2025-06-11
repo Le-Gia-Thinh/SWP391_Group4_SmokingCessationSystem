@@ -41,11 +41,11 @@ const sendTokenWithUser = (res, user) => {
 // Đăng ký người dùng mới
 const register = async (req, res) => {
   try {
-    const { email, password, name, phone_number} = req.body;
-    
+    const { email, password, name, phone_number } = req.body;
+
     // Kiểm tra rỗng
-    if (!email?.trim() || !password?.trim() || !name?.trim() || !phone_number?.trim())  {
-      return res.status(400).json({ message: 'Vui lòng điền đầy đủ thông tin' });
+    if(!email?.trim()     || !password?.trim() || !name?.trim() || !phone_number?.trim()) {
+      return res.status(400).json({ message:  'Vui lòng điền đầy đủ thông tin' });
     }
 
     // Kiểm tra dữ liệu đầu vào
@@ -76,7 +76,7 @@ const register = async (req, res) => {
     }
 
     // Mã hóa mật khẩu
-    //const salt = await bcrypt.genSalt(10);
+    const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
     const username = email.split('@')[0]; // tạo username từ email
