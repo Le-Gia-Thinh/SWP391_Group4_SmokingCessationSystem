@@ -1,6 +1,4 @@
-// ✅ Fixed version of QuitPlan component
-
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   DatePicker,
   InputNumber,
@@ -17,10 +15,11 @@ import {
   Divider,
   Card,
   Empty,
-  Spin,
   Popover,
   Row,
   Col,
+  message,
+  Spin,
 } from "antd";
 import {
   CalendarOutlined,
@@ -30,6 +29,8 @@ import {
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import "./QuitPlanCalendar.css";
+import PlanSetupModal from "../pages/PlanSetupModal";
+import axios from "axios";
 
 const { Title } = Typography;
 
@@ -51,62 +52,25 @@ const PHASES = [
 
 const BEHAVIOR_PLAN = [
   {
-    time: "7h – Sau khi thức dậy",
+    time: "7h",
     behavior: "Cơn thèm do phản xạ",
-    replacement: "Uống nước + đi bộ nếu trì hoãn được",
+    replacement: "Uống nước + đi bộ",
   },
-  {
-    time: "8h – Sau ăn sáng",
-    behavior: "Thói quen sau ăn",
-    replacement: "Có thể thay bằng thiền hoặc kẹo bạc hà",
-  },
-  {
-    time: "10h – Giữa buổi sáng",
-    behavior: "Căng thẳng nhẹ",
-    replacement: "Kẹo không đường, đi quanh phòng",
-  },
-  {
-    time: "12h – Sau ăn trưa",
-    behavior: "Nguy cơ cao",
-    replacement: "Nên thay bằng trái cây/di chuyển",
-  },
-  {
-    time: "14h – Đầu giờ chiều",
-    behavior: "Buồn ngủ / mệt mỏi",
-    replacement: "Nghe nhạc, tập giãn cơ",
-  },
-  {
-    time: "16h – Cuối giờ làm việc",
-    behavior: "Stress cuối ngày",
-    replacement: "Tập thở 4–7–8 hoặc vươn vai 5 phút",
-  },
-  {
-    time: "18h – Trước ăn tối",
-    behavior: "Chuyển đổi môi trường",
-    replacement: "Đi dạo nhanh thay thế",
-  },
-  {
-    time: "20h – Sau ăn tối",
-    behavior: "Nguy cơ cao",
-    replacement: "Chuyển sang uống trà, đọc sách",
-  },
-  {
-    time: "22h – Trước khi ngủ",
-    behavior: "Cảm giác trống trải cuối ngày",
-    replacement: "Ghi nhật ký, nghe podcast thư giãn",
-  },
+  { time: "8h", behavior: "Sau ăn sáng", replacement: "Thiền hoặc kẹo bạc hà" },
+  { time: "10h", behavior: "Căng thẳng nhẹ", replacement: "Kẹo không đường" },
+  { time: "12h", behavior: "Sau ăn trưa", replacement: "Trái cây/di chuyển" },
+  { time: "14h", behavior: "Buồn ngủ", replacement: "Nghe nhạc, giãn cơ" },
+  { time: "16h", behavior: "Stress", replacement: "Thở 4-7-8, vươn vai" },
+  { time: "18h", behavior: "Trước ăn tối", replacement: "Đi dạo nhanh" },
+  { time: "20h", behavior: "Sau ăn tối", replacement: "Trà, đọc sách" },
+  { time: "22h", behavior: "Trống trải", replacement: "Ghi nhật ký" },
 ];
 
 const generateWeeklyQuota = (months, level) => {
   const totalWeeks = Math.round(months * 4.3);
-  const startingQuota = {
-    light: 35,
-    medium: 70,
-    heavy: 119,
-  };
+  const startingQuota = { light: 35, medium: 70, heavy: 119 };
   const start = startingQuota[level];
   const step = start / totalWeeks;
-
   return Array.from({ length: totalWeeks }, (_, i) => ({
     week: i + 1,
     maxCigs: Math.round(Math.max(0, start - step * i)),
@@ -120,25 +84,61 @@ const distributeDailyQuota = (weeklyCigs) => {
 };
 
 const QuitPlan = () => {
-  const [startDate, setStartDate] = useState(dayjs("2025-06-08"));
-  const [months, setMonths] = useState(7);
-  const level = "medium",
-    [viewMode, setViewMode] = useState("day"),
-    [smokingLog, setSmokingLog] = useState({}),
-    [weeklyUsage, setWeeklyUsage] = useState({});
+  const [startDate, setStartDate] = useState(null);
+  const [months, setMonths] = useState(null);
+  const [showModal, setShowModal] = useState(true);
+  const [user, setUser] = useState(null);
+  const [viewMode, setViewMode] = useState("week");
+  const [smokingLog, setSmokingLog] = useState({});
+  const [weeklyUsage, setWeeklyUsage] = useState({});
+  const [currentWeekPage, setCurrentWeekPage] = useState(1);
   const navigate = useNavigate();
 
-  const totalDays = months * 30;
-
-  const updateWeeklyCigUsage = (dateStr, value) => {
-    const date = dayjs(dateStr, "DD/MM/YYYY");
-    const weekIndex = Math.floor(date.diff(startDate, "day") / 7);
-    setWeeklyUsage((prev) => {
-      const currentWeek = prev[weekIndex] || {};
-      return { ...prev, [weekIndex]: { ...currentWeek, [dateStr]: value } };
-    });
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    if (!storedUser) return;
+    setUser(storedUser);
+    axios
+      .get(`http://localhost:5000/api/quitplan/exists/${storedUser.id}`)
+      .then((res) => {
+        if (res.data.hasPlan) {
+          setStartDate(dayjs(res.data.start_date));
+          setMonths(res.data.quit_months);
+          setShowModal(false);
+        } else {
+          setShowModal(true);
+        }
+      })
+      .catch((err) => {
+        console.error("Lỗi kiểm tra kế hoạch:", err);
+        message.error("Không thể kiểm tra kế hoạch");
+      });
+  }, []);
+  const handlePlanReady = ({ startDate, months }) => {
+    setStartDate(dayjs(startDate));
+    setMonths(months);
+    setShowModal(false);
   };
 
+  const handleResetPlan = async () => {
+    try {
+      await axios.post("http://localhost:5000/api/quitplan/reset", {
+        user_id: user.id,
+      });
+      message.success("Đã đặt lại kế hoạch");
+      setShowModal(true);
+    } catch (err) {
+      console.error("Lỗi reset kế hoạch:", err);
+      message.error("Không thể đặt lại kế hoạch");
+    }
+  };
+
+  const totalDays = months ? months * 30 : 0;
+  const level = "medium";
+  const weeklyQuota = useMemo(
+    () => generateWeeklyQuota(months, level),
+    [months, level]
+  );
   const getRemainingCigs = (
     dateStr,
     weeklyQuota,
@@ -147,27 +147,20 @@ const QuitPlan = () => {
   ) => {
     const date = dayjs(dateStr, "DD/MM/YYYY");
     const weekIndex = Math.floor(date.diff(startDate, "day") / 7);
-
     const weekData = Object.entries(log).filter(([key]) => {
       const d = dayjs(key, "DD/MM/YYYY");
       const wi = Math.floor(d.diff(startDate, "day") / 7);
-      // Nếu excludeCurrent = true thì loại ngày hiện tại, ngược lại giữ lại
       return wi === weekIndex && (!excludeCurrent || key !== dateStr);
     });
-
     const used = weekData.reduce((sum, [, val]) => sum + Number(val || 0), 0);
     const quota = weeklyQuota[weekIndex]?.maxCigs || 0;
     return Math.max(0, quota - used);
   };
 
-  const weeklyQuota = useMemo(
-    () => generateWeeklyQuota(months, level),
-    [months, level]
-  );
-
+  // Sau đó mới khai báo planData
   const planData = useMemo(() => {
+    if (!startDate || !months) return [];
     const data = [];
-
     for (let i = 0; i < totalDays; i++) {
       const currentDate = startDate.add(i, "day");
       const formattedDate = currentDate.format("DD/MM/YYYY");
@@ -176,16 +169,13 @@ const QuitPlan = () => {
         ({ range }) => progress >= range[0] && progress <= range[1]
       );
       const weekIndex = Math.floor(i / 7);
-
       const weeklyCigs = weeklyQuota[weekIndex]?.maxCigs || 0;
       const dailyPattern = distributeDailyQuota(weeklyCigs);
       const dailyQuota = dailyPattern[i % 7] || 0;
-
       const label =
         viewMode === "month"
           ? `Tháng ${Math.floor(i / 30) + 1} – Ngày ${(i % 30) + 1}`
           : `Tuần ${weekIndex + 1} – Ngày ${i - weekIndex * 7 + 1}`;
-
       data.push({
         key: i,
         date: formattedDate,
@@ -200,11 +190,17 @@ const QuitPlan = () => {
         detailPlan: BEHAVIOR_PLAN,
       });
     }
-
-    if (viewMode === "week") return data.filter((_, i) => i % 7 === 0);
-    if (viewMode === "month") return data.filter((_, i) => i % 30 === 0);
     return data;
   }, [startDate, months, viewMode, smokingLog, weeklyUsage]);
+
+  const updateWeeklyCigUsage = (dateStr, value) => {
+    const date = dayjs(dateStr, "DD/MM/YYYY");
+    const weekIndex = Math.floor(date.diff(startDate, "day") / 7);
+    setWeeklyUsage((prev) => {
+      const currentWeek = prev[weekIndex] || {};
+      return { ...prev, [weekIndex]: { ...currentWeek, [dateStr]: value } };
+    });
+  };
 
   const columns = [
     {
@@ -234,7 +230,7 @@ const QuitPlan = () => {
           <Progress
             type="circle"
             percent={parseInt(val)}
-            size="small" // Sửa width thành size
+            size="small"
             strokeColor="#52c41a"
             format={(p) => <span style={{ fontSize: 12 }}>{p}%</span>}
           />
@@ -279,11 +275,7 @@ const QuitPlan = () => {
           }
           trigger="hover"
         >
-          <Button
-            size="small"
-            icon={<InfoCircleOutlined />}
-            style={{ marginBottom: 4 }}
-          >
+          <Button size="small" icon={<InfoCircleOutlined />}>
             Gợi ý: {val} điếu
           </Button>
         </Popover>
@@ -293,23 +285,44 @@ const QuitPlan = () => {
       title: "Bạn hút",
       dataIndex: "date",
       key: "actualCigs",
-      render: (date) => {
-        const max = getRemainingCigs(date, weeklyQuota, smokingLog, true);
+      render: (date, record) => {
+        const value = smokingLog[date] || 0;
+        const suggested = record.suggestedCigs;
+        const isOverLimit = value > suggested;
         return (
-          <div onClick={(e) => e.stopPropagation()}>
-            <Tooltip title="Nhập số điếu bạn đã hút hôm nay">
+          <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <Tooltip
+              title={
+                isOverLimit
+                  ? `Vượt quá gợi ý (${suggested} điếu)`
+                  : "Nhập số điếu bạn đã hút"
+              }
+            >
               <InputNumber
                 min={0}
-                max={max}
-                step={1}
-                style={{ width: 70 }}
-                value={smokingLog[date] || ""}
-                onChange={(value) => {
-                  setSmokingLog((prev) => ({ ...prev, [date]: value }));
-                  updateWeeklyCigUsage(date, value);
+                value={value}
+                style={{
+                  width: 70,
+                  borderColor: isOverLimit ? "red" : undefined,
+                  background: isOverLimit ? "#fff1f0" : undefined,
+                }}
+                onChange={(val) => {
+                  setSmokingLog((prev) => ({ ...prev, [date]: val }));
+                  updateWeeklyCigUsage(date, val);
                 }}
               />
             </Tooltip>
+            <Button
+              size="small"
+              type="link"
+              onClick={() => {
+                setSmokingLog((prev) => ({ ...prev, [date]: suggested }));
+                updateWeeklyCigUsage(date, suggested);
+              }}
+              style={{ padding: 0 }}
+            >
+              Theo gợi ý
+            </Button>
           </div>
         );
       },
@@ -344,6 +357,22 @@ const QuitPlan = () => {
       },
     },
   ];
+
+  const weekPageSize = 7; // Số ngày trong 1 tuần
+  const weekTotal = weeklyQuota.length; // Tổng số tuần dựa trên weeklyQuota
+
+  if (showModal && user) {
+    return (
+      <PlanSetupModal
+        userId={user.id}
+        onPlanReady={handlePlanReady}
+        onResetPlan={handleResetPlan}
+      />
+    );
+  }
+
+  if (!startDate || !months)
+    return <Spin fullscreen tip="Đang tải kế hoạch..." />;
 
   return (
     <div
@@ -386,35 +415,64 @@ const QuitPlan = () => {
                 alignItems: "center",
               }}
             >
-              <DatePicker
-                value={startDate}
-                onChange={setStartDate}
-                format="YYYY-MM-DD"
-              />
-              <InputNumber
-                min={1}
-                value={months}
-                onChange={setMonths}
-                addonAfter="tháng"
-              />
+              <div
+                style={{
+                  background: "#f5f7fa",
+                  borderRadius: 8,
+                  padding: "12px 24px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 24,
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+                  fontWeight: 600,
+                  fontSize: 18,
+                }}
+              >
+                <span>
+                  <span style={{ color: "#888" }}>Ngày bắt đầu:</span>{" "}
+                  <span style={{ color: "#1890ff" }}>
+                    {startDate?.format("YYYY-MM-DD")}
+                  </span>
+                </span>
+                <span>
+                  <span style={{ color: "#888" }}>Thời gian:</span>{" "}
+                  <span style={{ color: "#52c41a" }}>{months} tháng</span>
+                </span>
+              </div>
               <Select
                 value={viewMode}
-                onChange={setViewMode}
+                onChange={(val) => {
+                  setViewMode(val);
+                  setCurrentWeekPage(1);
+                }}
                 options={[
-                  { label: "Xem theo ngày", value: "day" },
                   { label: "Xem theo tuần", value: "week" },
                   { label: "Xem theo tháng", value: "month" },
                 ]}
-                style={{ minWidth: 140 }}
+                size="large"
+                style={{
+                  height: 48,
+                  minWidth: 160,
+                  fontWeight: 600,
+                  fontSize: 16,
+                  borderRadius: 8,
+                  background: "#fff",
+                }}
               />
-              <Popover
-                content="Chọn ngày bắt đầu, số tháng và chế độ xem để cá nhân hóa kế hoạch."
-                title="Hướng dẫn nhanh"
+              <Button
+                danger
+                onClick={handleResetPlan}
+                style={{
+                  height: 48,
+                  fontWeight: 600,
+                  fontSize: 16,
+                  borderRadius: 8,
+                  marginLeft: 8,
+                }}
+                size="large"
               >
-                <Button type="link" style={{ marginLeft: 8 }}>
-                  ?
-                </Button>
-              </Popover>
+                Đặt lại kế hoạch
+              </Button>
             </div>
           </Card>
 
@@ -427,18 +485,36 @@ const QuitPlan = () => {
             <Table
               columns={columns}
               dataSource={planData}
-              pagination={{ pageSize: 10 }}
+              pagination={
+                viewMode === "week"
+                  ? {
+                      current: currentWeekPage,
+                      pageSize: weekPageSize,
+                      total: planData.length,
+                      showSizeChanger: false,
+                      onChange: (page) => setCurrentWeekPage(page),
+                      showTotal: () => `Tuần ${currentWeekPage} / ${weekTotal}`,
+                    }
+                  : { pageSize: 30 }
+              }
               rowClassName={(record) => `week-row-${record.weekIndex % 5}`}
               locale={{
                 emptyText: <Empty description="Không có dữ liệu kế hoạch" />,
               }}
               onRow={(record) => ({
-                onClick: () => {
+                onClick: (e) => {
+                  // Nếu click vào input, button, select thì không chuyển trang
+                  if (
+                    e.target.closest("input") ||
+                    e.target.closest("button") ||
+                    e.target.closest(".ant-input-number") ||
+                    e.target.closest(".ant-select")
+                  ) {
+                    return;
+                  }
                   navigate(
                     `/quit-plan-detail/${record.date.replaceAll("/", "-")}`,
-                    {
-                      state: record,
-                    }
+                    { state: record }
                   );
                 },
               })}

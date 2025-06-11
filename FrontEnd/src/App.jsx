@@ -15,7 +15,6 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<QuitPlanCalendar />} />
         <Route path="/" element={<HomePage />} />
         <Route path="/home" element={<HomePage />} />
         <Route path="/login" element={<Login />} />
@@ -23,6 +22,7 @@ function App() {
         <Route path="/ForgetPassword" element={<ForgetPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/FtndTest" element={<FtndTest />} />
+        <Route path="/QuitPlanCalendar" element={<QuitPlanCalendar />} />
         <Route path="/quit-plan-detail/:date" element={<QuitPlanDetail />} />
         {/* Route này phải được đặt TRƯỚC route wildcard (*) */}
         <Route

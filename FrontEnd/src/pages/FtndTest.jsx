@@ -2,34 +2,41 @@ import React from "react";
 import { Form, Radio, Button, Typography } from "antd";
 import axios from "axios";
 import "./FTNDTest.css";
+import { useNavigate } from "react-router-dom";
 
 const { Title } = Typography;
 
 const FTNDTest = () => {
+  const navigate = useNavigate();
   const onFinish = async (values) => {
-    let score = 0;
+    const storedUser = localStorage.getItem("user");
+    const user = storedUser ? JSON.parse(storedUser) : null;
 
-    // Tính điểm từ các câu hỏi
+    if (!user) {
+      alert("Bạn cần đăng nhập để gửi đánh giá.");
+      return;
+    }
+
+    let score = 0;
     score += parseInt(values.q1);
     ["q2", "q3", "q5", "q6"].forEach((key) => {
       score += parseInt(values[key]);
     });
     score += parseInt(values.q4);
 
-    // Phân loại mức độ nghiện
     let level = "";
-    if (score <= 3) level = "Mức độ nhẹ";
-    else if (score <= 6) level = "Mức độ trung bình";
-    else level = "Mức độ nặng";
+    if (score <= 3) level = "Low";
+    else if (score <= 6) level = "Medium";
+    else level = "High";
 
     try {
-      // Gửi lên backend
-      const res = await axios.post("http://localhost:5000/api/ftnd-result", {
+      await axios.post("http://localhost:5000/api/ftnd/result", {
+        user_id: user.id,
         level,
       });
-      console.log("Kết quả gửi:", res.data);
 
       alert(`Đánh giá gửi thành công!\nMức độ: ${level}`);
+      navigate("/QuitPlanCalendar"); // ✅ chuyển trang sau khi thành công
     } catch (err) {
       console.error("Lỗi gửi dữ liệu:", err);
       alert("Gửi đánh giá thất bại.");
@@ -114,13 +121,35 @@ const FTNDTest = () => {
           </Form.Item>
 
           <Form.Item>
-            <Button
-              type="primary"
-              htmlType="submit"
-              className="ftnd-submit-button"
-            >
-              Gửi đánh giá
-            </Button>
+            <div style={{ display: "flex", justifyContent: "center", gap: 16 }}>
+              <Button
+                type="primary"
+                htmlType="submit"
+                className="ftnd-submit-button"
+                style={{
+                  background: "#52c41a",
+                  borderColor: "#52c41a",
+                  fontWeight: 600,
+                  minWidth: 140,
+                  fontSize: 16,
+                  borderRadius: 8,
+                }}
+              >
+                Gửi đánh giá
+              </Button>
+              <Button
+                type="default"
+                onClick={() => navigate("/")}
+                style={{
+                  fontWeight: 600,
+                  minWidth: 140,
+                  fontSize: 16,
+                  borderRadius: 8,
+                }}
+              >
+                Hủy
+              </Button>
+            </div>
           </Form.Item>
         </Form>
       </div>

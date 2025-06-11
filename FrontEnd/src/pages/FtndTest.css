@@ -36,4 +36,9 @@
   height: 40px;
   font-weight: 500;
   background-color: #4BAC4F;
+  transition: background 0.2s;
+}
+.ftnd-submit-button:hover {
+  background: #389e0d !important;
+  border-color: #389e0d !important;
 }

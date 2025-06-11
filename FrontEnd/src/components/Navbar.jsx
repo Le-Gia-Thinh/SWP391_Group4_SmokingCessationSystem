@@ -41,7 +41,7 @@ const Navbar = () => {
       );
 
       const hasFtnd = res.data?.exists;
-      navigate(hasFtnd ? "/quit-plan" : "/FtndTest");
+      navigate(hasFtnd ? "/QuitPlanCalendar" : "/FtndTest");
     } catch (err) {
       console.error("Lỗi khi kiểm tra FTND:", err);
       navigate("/FtndTest");
