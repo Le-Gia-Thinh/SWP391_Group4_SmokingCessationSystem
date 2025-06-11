@@ -6,6 +6,7 @@ const session = require('express-session');
 const cors = require('cors');
 const passport = require('./config/passport');
 const authRoutes = require('./routes/auth');
+const roleRoutes = require('./routes/roleTestRoutes');
 
 const app = express();
 
@@ -41,6 +42,8 @@ app.use(passport.session());
 
 // 5) Đăng ký route auth
 app.use('/api/auth', authRoutes);
+// 5.1) Route phân quyền
+app.use('/api/role', roleRoutes);
 
 // 6) Middleware log request
 app.use((req, res, next) => {
@@ -63,6 +66,7 @@ app.use((err, req, res, next) => {
 app.use('*', (req, res) => {
   res.status(404).json({ success: false, message: 'Endpoint không tồn tại' });
 });
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
