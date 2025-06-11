@@ -26,7 +26,7 @@ const Login = () => {
       } else if (user.role === 'coach') {
         navigate("/coach-dashboard");
       } else {
-        navigate("/user-dashboard");
+        navigate("/"); // Redirect to home page for regular users
       }
 
       message.success("Login successful!");
@@ -43,29 +43,6 @@ const Login = () => {
         <Title level={2} className="login-title">
           Login
         </Title>
-
-        {/* Demo credentials - Thông tin đăng nhập demo */}
-        <div style={{
-          background: '#f0f9ff',
-          border: '1px solid #0ea5e9',
-          borderRadius: '8px',
-          padding: '16px',
-          marginBottom: '24px'
-        }}>
-          <Text strong style={{ color: '#0c4a6e' }}>Demo Credentials:</Text>
-          <br />
-          <Text style={{ color: '#0369a1' }}>
-            User: user@example.com / 123456
-          </Text>
-          <br />
-          <Text style={{ color: '#0369a1' }}>
-            Coach: coach@example.com / 123456
-          </Text>
-          <br />
-          <Text style={{ color: '#0369a1' }}>
-            Admin: admin@example.com / 123456
-          </Text>
-        </div>
 
         <Form name="login" layout="vertical" onFinish={onFinish}>
           <Form.Item

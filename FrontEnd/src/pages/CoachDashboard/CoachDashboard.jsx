@@ -1,8 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Tabs, Card, Row, Col, Statistic, Table, Button, Tag, Avatar, Progress, Space, Typography } from 'antd';
+import { UserOutlined, CheckCircleOutlined, TrophyOutlined, RiseOutlined, MessageOutlined, PlusOutlined, EyeOutlined } from '@ant-design/icons';
 import { useAuth } from '../../contexts/AuthContext';
+import BookingManagement from '../BookingManagement/BookingManagement';
+import Navbar from '../../layouts/Navbar';
+
+const { Title, Text } = Typography;
+const { TabPane } = Tabs;
 
 const CoachDashboard = () => {
     const { user } = useAuth();
+    const [activeTab, setActiveTab] = useState('overview');
 
     // Mock data for Coach - Dữ liệu mẫu cho Coach
     const mockStudents = [
@@ -19,190 +27,204 @@ const CoachDashboard = () => {
         averageProgress: 68
     };
 
+    const getStatusColor = (status) => {
+        switch (status) {
+            case 'active': return 'green';
+            case 'completed': return 'blue';
+            case 'inactive': return 'default';
+            default: return 'default';
+        }
+    };
+
+    const getStatusText = (status) => {
+        switch (status) {
+            case 'active': return 'Active';
+            case 'completed': return 'Completed';
+            case 'inactive': return 'Inactive';
+            default: return status;
+        }
+    };
+
+    const studentColumns = [
+        {
+            title: 'Student',
+            dataIndex: 'name',
+            key: 'name',
+            render: (name) => (
+                <Space>
+                    <Avatar icon={<UserOutlined />} />
+                    <Text strong>{name}</Text>
+                </Space>
+            ),
+        },
+        {
+            title: 'Progress',
+            dataIndex: 'progress',
+            key: 'progress',
+            render: (progress) => (
+                <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                    <Progress percent={progress} size="small" />
+                    <Text type="secondary">{progress}%</Text>
+                </Space>
+            ),
+        },
+        {
+            title: 'Last Contact',
+            dataIndex: 'lastContact',
+            key: 'lastContact',
+            render: (contact) => <Text type="secondary">{contact}</Text>,
+        },
+        {
+            title: 'Status',
+            dataIndex: 'status',
+            key: 'status',
+            render: (status) => (
+                <Tag color={getStatusColor(status)}>
+                    {getStatusText(status)}
+                </Tag>
+            ),
+        },
+        {
+            title: 'Actions',
+            key: 'actions',
+            render: () => (
+                <Space>
+                    <Button type="link" icon={<EyeOutlined />} size="small">
+                        View Details
+                    </Button>
+                    <Button type="link" icon={<MessageOutlined />} size="small">
+                        Message
+                    </Button>
+                </Space>
+            ),
+        },
+    ];
+
+    const OverviewTab = () => (
+        <div style={{ padding: '24px 0' }}>
+            {/* Header */}
+            <Card style={{ marginBottom: 24 }}>
+                <Title level={2}>Welcome, {user?.name}!</Title>
+                <Text type="secondary">
+                    This is the Coach Dashboard. You can manage students and track their smoking cessation progress.
+                </Text>
+            </Card>
+
+            {/* Stats Cards */}
+            <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+                <Col xs={24} sm={12} lg={6}>
+                    <Card>
+                        <Statistic
+                            title="Total Students"
+                            value={mockStats.totalStudents}
+                            prefix={<UserOutlined />}
+                            valueStyle={{ color: '#1890ff' }}
+                        />
+                    </Card>
+                </Col>
+                <Col xs={24} sm={12} lg={6}>
+                    <Card>
+                        <Statistic
+                            title="Active Students"
+                            value={mockStats.activeStudents}
+                            prefix={<CheckCircleOutlined />}
+                            valueStyle={{ color: '#52c41a' }}
+                        />
+                    </Card>
+                </Col>
+                <Col xs={24} sm={12} lg={6}>
+                    <Card>
+                        <Statistic
+                            title="Completed Plans"
+                            value={mockStats.completedPlans}
+                            prefix={<TrophyOutlined />}
+                            valueStyle={{ color: '#722ed1' }}
+                        />
+                    </Card>
+                </Col>
+                <Col xs={24} sm={12} lg={6}>
+                    <Card>
+                        <Statistic
+                            title="Average Progress"
+                            value={mockStats.averageProgress}
+                            suffix="%"
+                            prefix={<RiseOutlined />}
+                            valueStyle={{ color: '#fa8c16' }}
+                        />
+                    </Card>
+                </Col>
+            </Row>
+
+            {/* Students List */}
+            <Card
+                title="Students List"
+                extra={
+                    <Button type="primary" icon={<PlusOutlined />}>
+                        Add New Student
+                    </Button>
+                }
+                style={{ marginBottom: 24 }}
+            >
+                <Table
+                    columns={studentColumns}
+                    dataSource={mockStudents}
+                    rowKey="id"
+                    pagination={{
+                        pageSize: 10,
+                        showSizeChanger: true,
+                        showQuickJumper: true,
+                        showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} students`,
+                    }}
+                />
+            </Card>
+
+            {/* Quick Actions */}
+            <Card title="Quick Actions">
+                <Row gutter={[16, 16]}>
+                    <Col xs={24} md={8}>
+                        <Card hoverable>
+                            <Space direction="vertical" align="center" style={{ width: '100%' }}>
+                                <PlusOutlined style={{ fontSize: 24, color: '#1890ff' }} />
+                                <Text strong>Create New Plan</Text>
+                            </Space>
+                        </Card>
+                    </Col>
+                    <Col xs={24} md={8}>
+                        <Card hoverable>
+                            <Space direction="vertical" align="center" style={{ width: '100%' }}>
+                                <MessageOutlined style={{ fontSize: 24, color: '#52c41a' }} />
+                                <Text strong>Send Bulk Message</Text>
+                            </Space>
+                        </Card>
+                    </Col>
+                    <Col xs={24} md={8}>
+                        <Card hoverable>
+                            <Space direction="vertical" align="center" style={{ width: '100%' }}>
+                                <TrophyOutlined style={{ fontSize: 24, color: '#722ed1' }} />
+                                <Text strong>View Reports</Text>
+                            </Space>
+                        </Card>
+                    </Col>
+                </Row>
+            </Card>
+        </div>
+    );
+
     return (
-        <div className="min-h-screen bg-gray-50 py-8">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                {/* Header - Tiêu đề */}
-                <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                        Welcome, {user?.name}!
-                    </h1>
-                    <p className="text-gray-600">
-                        This is the Coach Dashboard. You can manage students and track their smoking cessation progress.
-                    </p>
-                </div>
-
-                {/* Stats Cards - Thẻ thống kê */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-                    <div className="bg-white rounded-lg shadow-sm p-6">
-                        <div className="flex items-center">
-                            <div className="p-2 bg-blue-100 rounded-lg">
-                                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                </svg>
-                            </div>
-                            <div className="ml-4">
-                                <p className="text-sm font-medium text-gray-600">Total Students</p>
-                                <p className="text-2xl font-semibold text-gray-900">{mockStats.totalStudents}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-white rounded-lg shadow-sm p-6">
-                        <div className="flex items-center">
-                            <div className="p-2 bg-green-100 rounded-lg">
-                                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                            </div>
-                            <div className="ml-4">
-                                <p className="text-sm font-medium text-gray-600">Active</p>
-                                <p className="text-2xl font-semibold text-gray-900">{mockStats.activeStudents}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-white rounded-lg shadow-sm p-6">
-                        <div className="flex items-center">
-                            <div className="p-2 bg-purple-100 rounded-lg">
-                                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                                </svg>
-                            </div>
-                            <div className="ml-4">
-                                <p className="text-sm font-medium text-gray-600">Completed</p>
-                                <p className="text-2xl font-semibold text-gray-900">{mockStats.completedPlans}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-white rounded-lg shadow-sm p-6">
-                        <div className="flex items-center">
-                            <div className="p-2 bg-orange-100 rounded-lg">
-                                <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                                </svg>
-                            </div>
-                            <div className="ml-4">
-                                <p className="text-sm font-medium text-gray-600">Avg Progress</p>
-                                <p className="text-2xl font-semibold text-gray-900">{mockStats.averageProgress}%</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Students List - Danh sách học viên */}
-                <div className="bg-white rounded-lg shadow-sm p-6">
-                    <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-lg font-semibold text-gray-900">Students List</h3>
-                        <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                            Add New Student
-                        </button>
-                    </div>
-
-                    <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Student
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Progress
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Last Contact
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Status
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Actions
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                                {mockStudents.map((student) => (
-                                    <tr key={student.id} className="hover:bg-gray-50">
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="flex items-center">
-                                                <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                                                    <span className="text-sm font-medium text-gray-700">
-                                                        {student.name.split(' ').map(n => n[0]).join('')}
-                                                    </span>
-                                                </div>
-                                                <div className="ml-4">
-                                                    <div className="text-sm font-medium text-gray-900">{student.name}</div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="flex items-center">
-                                                <div className="w-16 bg-gray-200 rounded-full h-2 mr-2">
-                                                    <div
-                                                        className="bg-blue-600 h-2 rounded-full"
-                                                        style={{ width: `${student.progress}%` }}
-                                                    ></div>
-                                                </div>
-                                                <span className="text-sm text-gray-900">{student.progress}%</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {student.lastContact}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${student.status === 'active' ? 'bg-green-100 text-green-800' :
-                                                student.status === 'completed' ? 'bg-blue-100 text-blue-800' :
-                                                    'bg-gray-100 text-gray-800'
-                                                }`}>
-                                                {student.status === 'active' ? 'Active' :
-                                                    student.status === 'completed' ? 'Completed' : 'Inactive'}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <button className="text-blue-600 hover:text-blue-900 mr-3">
-                                                View Details
-                                            </button>
-                                            <button className="text-green-600 hover:text-green-900">
-                                                Message
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                {/* Quick Actions - Hành động nhanh */}
-                <div className="mt-6 bg-white rounded-lg shadow-sm p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left">
-                            <div className="flex items-center">
-                                <svg className="w-6 h-6 text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                </svg>
-                                <span>Create New Plan</span>
-                            </div>
-                        </button>
-                        <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left">
-                            <div className="flex items-center">
-                                <svg className="w-6 h-6 text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                </svg>
-                                <span>Send Bulk Message</span>
-                            </div>
-                        </button>
-                        <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left">
-                            <div className="flex items-center">
-                                <svg className="w-6 h-6 text-purple-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                                </svg>
-                                <span>View Reports</span>
-                            </div>
-                        </button>
-                    </div>
+        <div>
+            <Navbar />
+            <div style={{ minHeight: '100vh', backgroundColor: '#f0f2f5' }}>
+                <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px' }}>
+                    <Card>
+                        <Tabs activeKey={activeTab} onChange={setActiveTab} size="large">
+                            <TabPane tab="Overview" key="overview">
+                                <OverviewTab />
+                            </TabPane>
+                            <TabPane tab="Booking Management" key="bookings">
+                                <BookingManagement />
+                            </TabPane>
+                        </Tabs>
+                    </Card>
                 </div>
             </div>
         </div>

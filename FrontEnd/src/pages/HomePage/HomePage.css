@@ -1,6 +1,7 @@
 .homepage {
   background-color: #f9fff9;
   min-height: 100vh;
+  width: 100%;
   font-family: "Segoe UI", sans-serif;
 }
 
@@ -10,10 +11,14 @@
   align-items: center;
   padding: 80px 60px;
   flex-wrap: wrap;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 .hero-text {
   max-width: 50%;
+  flex: 1;
 }
 
 .hero-text h1 {
@@ -61,4 +66,45 @@
   border: 2px dashed #ccc;
   padding: 40px;
   background-color: #fff;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 40px 24px;
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .hero-text {
+    max-width: 100%;
+    margin-bottom: 40px;
+  }
+
+  .hero-text h1 {
+    font-size: 36px;
+  }
+
+  .slogan {
+    font-size: 24px;
+  }
+
+  .hero-video {
+    width: 100%;
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-section {
+    padding: 20px 16px;
+  }
+
+  .hero-text h1 {
+    font-size: 28px;
+  }
+
+  .slogan {
+    font-size: 20px;
+  }
 }

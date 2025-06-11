@@ -1,13 +1,18 @@
 // FrontEnd/src/components/Navbar.jsx
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
-import Avatar from "../components/Avatar";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Layout, Menu, Button, Avatar, Space, Typography, Badge } from "antd";
+import { UserOutlined, LogoutOutlined, HomeOutlined, TrophyOutlined, BookOutlined, TeamOutlined, CalendarOutlined } from "@ant-design/icons";
 import { useAuth } from "../contexts/AuthContext";
 import "./Navbar.css";
 
+const { Header } = Layout;
+const { Text } = Typography;
+
 const Navbar = () => {
   const navigate = useNavigate();
-  const { user, logout, isCoach, isUser, isAdmin } = useAuth();
+  const location = useLocation();
+  const { user, logout, isCoach, isAdmin } = useAuth();
 
   // Handle logout - Xử lý đăng xuất
   const handleLogout = () => {
@@ -15,74 +20,126 @@ const Navbar = () => {
     navigate("/login");
   };
 
+  // Menu items based on user role
+  const getMenuItems = () => {
+    const items = [
+      {
+        key: '/',
+        icon: <HomeOutlined />,
+        label: <Link to="/">Home</Link>,
+      },
+      {
+        key: '/ranking',
+        icon: <TrophyOutlined />,
+        label: <Link to="/ranking">Ranking</Link>,
+      },
+      {
+        key: '/blog',
+        icon: <BookOutlined />,
+        label: <Link to="/blog">Blog</Link>,
+      },
+      {
+        key: '/membership',
+        icon: <TeamOutlined />,
+        label: <Link to="/membership">Membership</Link>,
+      },
+      {
+        key: '/book-coach',
+        icon: <CalendarOutlined />,
+        label: <Link to="/book-coach">Book Coach</Link>,
+      },
+    ];
+
+    // Add role-specific items
+    if (isAdmin()) {
+      items.push({
+        key: '/admin-dashboard',
+        icon: <UserOutlined />,
+        label: <Link to="/admin-dashboard">Admin Dashboard</Link>,
+      });
+    }
+
+    if (isCoach()) {
+      items.push({
+        key: '/coach-dashboard',
+        icon: <UserOutlined />,
+        label: <Link to="/coach-dashboard">Coach Dashboard</Link>,
+      });
+    }
+
+    items.push({
+      key: '/coaches',
+      icon: <TeamOutlined />,
+      label: <Link to="/coaches">Coaches</Link>,
+    });
+
+    return items;
+  };
+
   return (
-    <header className="navbar">
-      <div className="navbar-logo">
-        <Link to="/" className="logo-text">
-          QuitSmoking
-        </Link>
+    <Header className="navbar">
+      <div className="navbar-content">
+        <div className="navbar-logo">
+          <div className="logo-text">
+            <span>
+              QuitSmoking
+            </span>
+          </div>
+        </div>
+
+        <Menu
+          mode="horizontal"
+          selectedKeys={[location.pathname]}
+          items={getMenuItems()}
+          className="navbar-menu"
+        />
+
+        <div className="navbar-actions">
+          {!user ? (
+            <Space>
+              <Button type="link">
+                <Link to="/login">Sign in</Link>
+              </Button>
+              <Button type="primary">
+                <Link to="/register" style={{ color: 'white' }}>Sign up</Link>
+              </Button>
+            </Space>
+          ) : (
+            <Space wrap={false}>
+              {/* Show role badge */}
+              <Badge
+                count={user.role === 'admin' ? 'Admin' : user.role === 'coach' ? 'Coach' : 'User'}
+                style={{
+                  backgroundColor: user.role === 'admin' ? '#ff4d4f' :
+                    user.role === 'coach' ? '#52c41a' : '#52c41a',
+                }}
+              />
+
+              {/* Avatar */}
+              <Avatar
+                icon={<UserOutlined />}
+                style={{
+                  backgroundColor: user.role === 'admin' ? '#ff4d4f' :
+                    user.role === 'coach' ? '#52c41a' : '#52c41a',
+                }}
+              />
+
+              <span className="username-text">{user.name || user.email}</span>
+
+              {/* Logout button */}
+              <Button
+                type="text"
+                icon={<LogoutOutlined />}
+                onClick={handleLogout}
+                danger
+              >
+                Logout
+              </Button>
+            </Space>
+          )}
+        </div>
       </div>
-
-      <nav className="navbar-links">
-        <Link to="/">Home</Link>
-        <Link to="/ranking">Ranking</Link>
-        <Link to="/blog">Blog</Link>
-        <Link to="/membership">Membership</Link>
-
-        {/* Show menu based on role - Hiển thị menu theo vai trò */}
-        {isAdmin() && (
-          <Link to="/admin-dashboard">Admin Dashboard</Link>
-        )}
-
-        {isCoach() && (
-          <Link to="/coach-dashboard">Coach Dashboard</Link>
-        )}
-
-        {isUser() && (
-          <Link to="/user-dashboard">User Dashboard</Link>
-        )}
-
-        <Link to="/coaches">Coaches</Link>
-      </nav>
-
-      <div className="navbar-actions">
-        {!user ? (
-          <>
-            <Link to="/login" className="btn-outline">
-              Sign in
-            </Link>
-            <Link to="/register" className="btn-solid">
-              Sign up
-            </Link>
-          </>
-        ) : (
-          <>
-            {/* Show role badge - Hiển thị badge vai trò */}
-            <div className="role-badge" style={{
-              background: user.role === 'admin' ? '#dc2626' :
-                user.role === 'coach' ? '#10b981' : '#3b82f6',
-              color: 'white',
-              padding: '4px 8px',
-              borderRadius: '4px',
-              fontSize: '12px',
-              fontWeight: '500',
-              marginRight: '12px'
-            }}>
-              {user.role === 'admin' ? 'Admin' :
-                user.role === 'coach' ? 'Coach' : 'User'}
-            </div>
-
-            {/* Avatar */}
-            <Avatar name={user.name || user.email} avatarUrl={user.avatar} />
-
-            {/* Logout button */}
-            <button onClick={handleLogout} className="btn-logout">
-              Logout
-            </button>
-          </>
-        )}
-      </div>
-    </header>
+    </Header>
   );
 };
 
