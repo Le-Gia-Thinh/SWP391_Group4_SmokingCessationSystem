@@ -15,14 +15,9 @@ const Navbar = () => {
   const { user, logout, isCoach, isAdmin } = useAuth();
 
   // Handle logout - Xử lý đăng xuất
-  const handleLogout = async () => {
-    try {
-      await logout();
-      navigate("/login");
-    } catch (error) {
-      console.error('Logout error:', error);
-      navigate("/login");
-    }
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
   };
 
   // Menu items based on user role

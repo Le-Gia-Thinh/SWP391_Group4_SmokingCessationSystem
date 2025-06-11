@@ -109,25 +109,10 @@ export const AuthProvider = ({ children }) => {
     };
 
     // Logout - Đăng xuất
-    const logout = async () => {
-        try {
-            const token = localStorage.getItem('token');
-            if (token) {
-                await fetch('http://localhost:5000/api/auth/logout', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                });
-            }
-        } catch (error) {
-            console.error('Logout error:', error);
-        } finally {
-            localStorage.removeItem('user');
-            localStorage.removeItem('token');
-            setUser(null);
-        }
+    const logout = () => {
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+        setUser(null);
     };
 
     // Check permissions - Kiểm tra quyền

@@ -19,11 +19,12 @@ const generateToken = (userData) => {
 };
 // Gửi response kèm token và thông tin user
 const sendTokenWithUser = (res, user) => {
-  // user trả về từ DB có { user_id, email, full_name }
+  // user trả về từ DB có { user_id, email, full_name, user_role }
   const token = generateToken({
     id: user.user_id || user.id,
     email: user.email,
     name: user.full_name || user.name,
+    role: user.user_role || user.role
     //avatar: user.avatar_url || null 
   });
   res.json({
@@ -33,6 +34,7 @@ const sendTokenWithUser = (res, user) => {
       id: user.user_id || user.id,
       email: user.email,
       name: user.full_name || user.name,
+      role: user.user_role || user.role
       //avatar: user.avatar_url || null
     }
   });
@@ -44,8 +46,8 @@ const register = async (req, res) => {
     const { email, password, name, phone_number } = req.body;
 
     // Kiểm tra rỗng
-    if(!email?.trim()     || !password?.trim() || !name?.trim() || !phone_number?.trim()) {
-      return res.status(400).json({ message:  'Vui lòng điền đầy đủ thông tin' });
+    if (!email?.trim() || !password?.trim() || !name?.trim() || !phone_number?.trim()) {
+      return res.status(400).json({ message: 'Vui lòng điền đầy đủ thông tin' });
     }
 
     // Kiểm tra dữ liệu đầu vào
@@ -98,7 +100,12 @@ const register = async (req, res) => {
         `);
 
     const userId = insertResult.recordset[0].user_id;
-    const token = generateToken(userId);
+    const token = generateToken({
+      id: userId,
+      email,
+      name,
+      role: 'member'
+    });
 
     res.status(201).json({
       success: true,
@@ -106,7 +113,8 @@ const register = async (req, res) => {
       user: {
         id: userId,
         email,
-        name
+        name,
+        role: 'member'
       }
     });
   } catch (error) {
