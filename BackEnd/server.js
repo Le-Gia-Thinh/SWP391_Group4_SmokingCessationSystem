@@ -27,9 +27,8 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-
-  // checkFTND
-const ftndRoutes = require('./routes/checkFTND');
+//Check FTND
+const ftndRoutes = require('./routes/ftnd');
 app.use('/api/ftnd', ftndRoutes);
 
 // quitPlan
@@ -52,7 +51,7 @@ app.use(
 
 // 4) Khởi tạo Passport và session support
 app.use(passport.initialize());
-app.use(passport.session());app.use('/api/auth', authRoutes);
+app.use(passport.session());
 // 5) Đăng ký route auth
 app.use('/api/auth', authRoutes);
 
