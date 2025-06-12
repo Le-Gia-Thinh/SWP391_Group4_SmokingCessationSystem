@@ -4,7 +4,7 @@ import { Modal, DatePicker, InputNumber, Button, message } from "antd";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-const PlanSetupModal = ({ userId, onPlanReady, onCancel }) => {
+const PlanSetupModal = ({ userId, onPlanReady }) => {
   const [startDate, setStartDate] = useState(null);
   const [months, setMonths] = useState(1);
   const navigate = useNavigate();
