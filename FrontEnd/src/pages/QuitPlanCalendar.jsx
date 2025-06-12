@@ -50,20 +50,243 @@ const PHASES = [
   },
 ];
 
-const BEHAVIOR_PLAN = [
-  {
-    time: "7h",
-    behavior: "Cơn thèm do phản xạ",
-    replacement: "Uống nước + đi bộ",
-  },
-  { time: "8h", behavior: "Sau ăn sáng", replacement: "Thiền hoặc kẹo bạc hà" },
-  { time: "10h", behavior: "Căng thẳng nhẹ", replacement: "Kẹo không đường" },
-  { time: "12h", behavior: "Sau ăn trưa", replacement: "Trái cây/di chuyển" },
-  { time: "14h", behavior: "Buồn ngủ", replacement: "Nghe nhạc, giãn cơ" },
-  { time: "16h", behavior: "Stress", replacement: "Thở 4-7-8, vươn vai" },
-  { time: "18h", behavior: "Trước ăn tối", replacement: "Đi dạo nhanh" },
-  { time: "20h", behavior: "Sau ăn tối", replacement: "Trà, đọc sách" },
-  { time: "22h", behavior: "Trống trải", replacement: "Ghi nhật ký" },
+const BEHAVIOR_PLAN_PHASES = [
+  // Phase 1: Nhận diện – Giảm nhẹ liều
+  [
+    {
+      time: "7h",
+      behavior: "Thèm do phản xạ",
+      replacement: "Kẹo nicotine 2mg (NRT) + đi bộ 5 phút",
+    },
+    {
+      time: "8h",
+      behavior: "Sau ăn sáng",
+      replacement: "Miếng dán nicotine (16–24h)",
+    },
+    {
+      time: "10h",
+      behavior: "Căng nhẹ",
+      replacement: "Trà thảo mộc + hít sâu 3 lần",
+    },
+    {
+      time: "12h",
+      behavior: "Sau ăn trưa",
+      replacement: "Đi cầu thang thay vì hút thuốc",
+    },
+    { time: "14h", behavior: "Buồn ngủ", replacement: "Rửa mặt, đi bộ 3 phút" },
+    {
+      time: "16h",
+      behavior: "Stress",
+      replacement: "Gửi tin nhắn cho Coach để xin hướng dẫn",
+    },
+    {
+      time: "18h",
+      behavior: "Chờ ăn",
+      replacement: "Kẹo ngậm không đường + 1 ly nước lạnh",
+    },
+    {
+      time: "20h",
+      behavior: "Sau ăn tối",
+      replacement: "Đọc tài liệu bỏ thuốc trong hệ thống",
+    },
+    {
+      time: "22h",
+      behavior: "Trống trải",
+      replacement: "Ghi nhật ký cảm xúc trong web",
+    },
+  ],
+  // Phase 2: Cắt giảm quyết liệt
+  [
+    {
+      time: "7h",
+      behavior: "Thèm sáng",
+      replacement: "Kẹo nicotine + thiền 3 phút",
+    },
+    {
+      time: "8h",
+      behavior: "Sau ăn sáng",
+      replacement: "Miếng dán + viết nhật ký trên hệ thống",
+    },
+    {
+      time: "10h",
+      behavior: "Stress nhẹ",
+      replacement: "Gửi Coach để hỏi cách kiểm soát cảm xúc",
+    },
+    {
+      time: "12h",
+      behavior: "Thèm sau ăn",
+      replacement: "Mở khung chat hỏi nhanh Coach",
+    },
+    {
+      time: "14h",
+      behavior: "Buồn ngủ",
+      replacement: "Tập thể dục nhẹ tại chỗ",
+    },
+    {
+      time: "16h",
+      behavior: "Cáu gắt",
+      replacement: "Xem bài thở/vươn vai trong hệ thống",
+    },
+    {
+      time: "18h",
+      behavior: "Rảnh",
+      replacement: "Làm nhiệm vụ trong kế hoạch hệ thống",
+    },
+    {
+      time: "20h",
+      behavior: "Sau ăn tối",
+      replacement: "Nhắn tin cho Coach chia sẻ cảm giác",
+    },
+    {
+      time: "22h",
+      behavior: "Tự trách",
+      replacement: "Đọc phản hồi động viên từ Coach",
+    },
+  ],
+  // Phase 3: Chuẩn bị cai hoàn toàn
+  [
+    {
+      time: "7h",
+      behavior: "Còn thèm nhẹ",
+      replacement: "Xịt nicotine hoặc bài tập thở trong hệ thống",
+    },
+    {
+      time: "8h",
+      behavior: "Sau ăn",
+      replacement: "Viết lại tiến trình trong nhật ký hệ thống",
+    },
+    {
+      time: "10h",
+      behavior: "Stress nhẹ",
+      replacement: "Gửi Coach nhờ hướng dẫn ứng phó",
+    },
+    {
+      time: "12h",
+      behavior: "Ăn no",
+      replacement: "Tìm video hỗ trợ trong thư viện",
+    },
+    {
+      time: "14h",
+      behavior: "Mỏi đầu",
+      replacement: "Chợp mắt ngắn + nhắn Coach báo tình trạng",
+    },
+    {
+      time: "16h",
+      behavior: "Thèm mạnh",
+      replacement: "Bấm SOS Coach khẩn cấp nếu hệ thống có",
+    },
+    {
+      time: "18h",
+      behavior: "Chán",
+      replacement: "Xem lại lý do bỏ thuốc đã ghi",
+    },
+    {
+      time: "20h",
+      behavior: "Sau ăn",
+      replacement: "Nghe bài âm thanh thư giãn hệ thống cung cấp",
+    },
+    {
+      time: "22h",
+      behavior: "Cảm giác thiếu",
+      replacement: "Xem lại phản hồi khích lệ từ Coach",
+    },
+  ],
+  // Phase 4: Cai hoàn toàn – vẫn khó chịu
+  [
+    {
+      time: "7h",
+      behavior: "Thèm nhẹ",
+      replacement: "Miếng dán duy trì hoặc bài thở ứng phó",
+    },
+    {
+      time: "8h",
+      behavior: "Sau ăn sáng",
+      replacement: "Đánh răng + nhắn tin cảm ơn Coach hỗ trợ",
+    },
+    {
+      time: "10h",
+      behavior: "Lo lắng",
+      replacement: "Gọi Coach video (nếu có) hoặc chat trực tiếp",
+    },
+    {
+      time: "12h",
+      behavior: "Ăn xong",
+      replacement: "Gửi báo cáo cảm xúc cho Coach",
+    },
+    {
+      time: "14h",
+      behavior: "Mỏi",
+      replacement: "Ra ngoài 5 phút hoặc mở app thư giãn",
+    },
+    {
+      time: "16h",
+      behavior: "Căng thẳng",
+      replacement: "Coach hướng dẫn bài tập 3 bước chống tái nghiện",
+    },
+    {
+      time: "18h",
+      behavior: "Muốn thư giãn",
+      replacement: "Xem video hướng dẫn thư giãn do Coach gửi",
+    },
+    {
+      time: "20h",
+      behavior: "Trống trải",
+      replacement: "Trò chuyện lại nhật ký & Coach đọc phản hồi",
+    },
+    {
+      time: "22h",
+      behavior: "Mất ngủ",
+      replacement: "Nghe podcast Coach gợi ý trước khi ngủ",
+    },
+  ],
+  // Phase 5: Củng cố không tái nghiện
+  [
+    {
+      time: "7h",
+      behavior: "Thói quen cũ",
+      replacement: "Mở app Coach & đọc lại mục tiêu đặt ra",
+    },
+    {
+      time: "8h",
+      behavior: "Gặp người hút",
+      replacement: "Gửi Coach chia sẻ tình huống khó",
+    },
+    {
+      time: "10h",
+      behavior: "Căng đầu",
+      replacement: "Xem lời động viên cá nhân Coach đã ghi",
+    },
+    {
+      time: "12h",
+      behavior: "Sau ăn",
+      replacement: "Hoạt động thay thế: báo lại hệ thống",
+    },
+    {
+      time: "14h",
+      behavior: "Thèm nhẹ",
+      replacement: "Chơi game kiểm soát cơn thèm (nếu có trong hệ thống)",
+    },
+    {
+      time: "16h",
+      behavior: "Bất chợt nhớ",
+      replacement: "Mở lại nhật ký Coach từng đọc và phản hồi",
+    },
+    {
+      time: "18h",
+      behavior: "Tự thưởng",
+      replacement: "Chia sẻ với Coach về việc bạn chọn phần thưởng mới",
+    },
+    {
+      time: "20h",
+      behavior: "Cô đơn",
+      replacement: "Mở chat Coach và chia sẻ tâm sự",
+    },
+    {
+      time: "22h",
+      behavior: "Thèm nhẹ",
+      replacement: "Xem báo cáo không hút liên tục của mình",
+    },
+  ],
 ];
 
 const generateWeeklyQuota = (months, level) => {
@@ -91,7 +314,10 @@ const QuitPlan = () => {
   const [viewMode, setViewMode] = useState("week");
   const [smokingLog, setSmokingLog] = useState({});
   const [weeklyUsage, setWeeklyUsage] = useState({});
-  const [currentWeekPage, setCurrentWeekPage] = useState(1);
+  const [currentWeekPage, setCurrentWeekPage] = useState(() => {
+    const savedPage = sessionStorage.getItem("quitPlanPage");
+    return savedPage ? parseInt(savedPage, 10) : 1;
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -125,6 +351,7 @@ const QuitPlan = () => {
       await axios.post("http://localhost:5000/api/quitplan/reset", {
         user_id: user.id,
       });
+      sessionStorage.removeItem("quitPlanPage");
       message.success("Đã đặt lại kế hoạch");
       setShowModal(true);
     } catch (err) {
@@ -187,7 +414,7 @@ const QuitPlan = () => {
         remainingCigs: getRemainingCigs(formattedDate, weeklyQuota, smokingLog),
         weekIndex,
         weekDayLabel: label,
-        detailPlan: BEHAVIOR_PLAN,
+        detailPlan: BEHAVIOR_PLAN_PHASES[PHASES.indexOf(phase)],
       });
     }
     return data;
@@ -492,7 +719,10 @@ const QuitPlan = () => {
                       pageSize: weekPageSize,
                       total: planData.length,
                       showSizeChanger: false,
-                      onChange: (page) => setCurrentWeekPage(page),
+                      onChange: (page) => {
+                        setCurrentWeekPage(page);
+                        sessionStorage.setItem("quitPlanPage", page); // Lưu vào session
+                      },
                       showTotal: () => `Tuần ${currentWeekPage} / ${weekTotal}`,
                     }
                   : { pageSize: 30 }

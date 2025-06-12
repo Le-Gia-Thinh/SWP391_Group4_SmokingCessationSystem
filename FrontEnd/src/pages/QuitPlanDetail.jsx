@@ -1,7 +1,22 @@
 // pages/QuitPlanDetail.jsx
 import React, { useState, useEffect } from "react";
 import { useParams, useLocation } from "react-router-dom";
-import { Typography, Table, Checkbox, message } from "antd";
+import {
+  Typography,
+  Table,
+  Checkbox,
+  message,
+  Card,
+  Tag,
+  Progress,
+  Divider,
+  Badge,
+} from "antd";
+import {
+  SmileTwoTone,
+  FireTwoTone,
+  CheckCircleTwoTone,
+} from "@ant-design/icons";
 import dayjs from "dayjs";
 
 const { Title, Paragraph } = Typography;
@@ -99,43 +114,100 @@ const QuitPlanDetail = () => {
   ];
 
   return (
-    <div style={{ padding: 24 }}>
-      <Title level={3}>Chi tiết kế hoạch cho ngày: {info.date}</Title>
-      <Paragraph>
-        <strong>Tuần hiện tại:</strong> Tuần {weekNumber}
-      </Paragraph>
-      <Paragraph>
-        <strong>Tiến trình:</strong> {info.progress}
-      </Paragraph>
-      <Paragraph>
-        <strong>Giai đoạn:</strong> {info.phase}
-      </Paragraph>
+    <div style={{ padding: 24, background: "#f6faff", minHeight: "100vh" }}>
+      <Card
+        style={{
+          maxWidth: 700,
+          margin: "0 auto",
+          borderRadius: 16,
+          boxShadow: "0 4px 24px #0001",
+          background: "#fff",
+        }}
+        bodyStyle={{ padding: 32 }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <FireTwoTone twoToneColor="#ff7875" style={{ fontSize: 36 }} />
+          <Title level={3} style={{ margin: 0 }}>
+            Chi tiết kế hoạch cho ngày:{" "}
+            <Tag color="geekblue" style={{ fontSize: 18, padding: "2px 12px" }}>
+              {info.date}
+            </Tag>
+          </Title>
+        </div>
+        <Divider />
+        <div style={{ display: "flex", gap: 32, marginBottom: 16 }}>
+          <Badge.Ribbon text={`Tuần ${weekNumber}`} color="cyan">
+            <Card size="small" bordered={false} style={{ minWidth: 160 }}>
+              <Paragraph>
+                <strong>Tiến trình:</strong>{" "}
+                <Tag color="success" style={{ fontWeight: 600 }}>
+                  {info.progress}
+                </Tag>
+              </Paragraph>
+              <Paragraph>
+                <strong>Giai đoạn:</strong>{" "}
+                <Tag color="purple" style={{ fontWeight: 600 }}>
+                  {info.phase}
+                </Tag>
+              </Paragraph>
+            </Card>
+          </Badge.Ribbon>
+          <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
+            <Progress
+              percent={Math.min(
+                Math.round(
+                  (completed.filter(Boolean).length /
+                    (info.detailPlan?.length || 1)) *
+                    100
+                ),
+                100
+              )}
+              status="active"
+              strokeColor={{
+                "0%": "#108ee9",
+                "100%": "#87d068",
+              }}
+              showInfo
+              style={{ width: "100%" }}
+            />
+          </div>
+        </div>
+        <Divider orientation="left" plain>
+          <SmileTwoTone twoToneColor="#52c41a" /> Thời điểm dễ gây ham muốn &
+          hành vi thay thế
+        </Divider>
+        {Array.isArray(info.detailPlan) && info.detailPlan.length > 0 ? (
+          <Table
+            columns={columns}
+            dataSource={info.detailPlan.map((item, idx) => ({
+              ...item,
+              key: idx,
+            }))}
+            pagination={false}
+            bordered
+            rowClassName={(_, idx) =>
+              completed[idx] ? "ant-table-row-success" : ""
+            }
+          />
+        ) : (
+          <Paragraph type="secondary" italic>
+            Không có dữ liệu chi tiết cho ngày này.
+          </Paragraph>
+        )}
 
-      <Title level={4}>Thời điểm dễ gây ham muốn & hành vi thay thế:</Title>
-      {Array.isArray(info.detailPlan) && info.detailPlan.length > 0 ? (
-        <Table
-          columns={columns}
-          dataSource={info.detailPlan.map((item, idx) => ({
-            ...item,
-            key: idx,
-          }))}
-          pagination={false}
-          bordered
-        />
-      ) : (
-        <Paragraph type="secondary" italic>
-          Không có dữ liệu chi tiết cho ngày này.
-        </Paragraph>
-      )}
-
-      <Title level={4} style={{ marginTop: 24 }}>
-        Chi tiết nhiệm vụ:
-      </Title>
-      <ul>
-        {(info.tasks || []).map((task, i) => (
-          <li key={i}>{task}</li>
-        ))}
-      </ul>
+        <Divider orientation="left" plain>
+          <CheckCircleTwoTone twoToneColor="#13c2c2" /> Chi tiết nhiệm vụ
+        </Divider>
+        <ul style={{ paddingLeft: 24 }}>
+          {(info.tasks || []).map((task, i) => (
+            <li key={i} style={{ marginBottom: 8, fontSize: 16 }}>
+              <Tag color="magenta" style={{ fontSize: 15 }}>
+                {task}
+              </Tag>
+            </li>
+          ))}
+        </ul>
+      </Card>
     </div>
   );
 };
