@@ -1,3 +1,4 @@
+
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const JwtStrategy = require('passport-jwt').Strategy;
@@ -49,8 +50,8 @@ passport.use(new GoogleStrategy({
     console.log('Profile Email:', profile.emails[0].value);
     console.log('Profile Name:', profile.displayName);
     //const googleAvatar = profile.photos && profile.photos.length > 0
-     // ? profile.photos[0].value
-     // : null;
+    // ? profile.photos[0].value
+    // : null;
     const pool = await sql.connect(dbConfig);
 
     // Tìm user theo google_id hoặc email đã có trong database

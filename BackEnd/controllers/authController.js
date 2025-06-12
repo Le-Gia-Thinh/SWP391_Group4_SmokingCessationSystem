@@ -10,6 +10,7 @@ const generateToken = (userData) => {
       id: userData.id,
       email: userData.email,
       name: userData.name,
+      role: userData.role || userData.user_role
       //avatar: userData.avatar || null // nếu bạn muốn kèm avatar
     },
     process.env.JWT_SECRET,
@@ -18,11 +19,12 @@ const generateToken = (userData) => {
 };
 // Gửi response kèm token và thông tin user
 const sendTokenWithUser = (res, user) => {
-  // user trả về từ DB có { user_id, email, full_name }
+  // user trả về từ DB có { user_id, email, full_name, user_role }
   const token = generateToken({
     id: user.user_id || user.id,
     email: user.email,
     name: user.full_name || user.name,
+    role: user.user_role || user.role
     //avatar: user.avatar_url || null 
   });
   res.json({
@@ -32,6 +34,7 @@ const sendTokenWithUser = (res, user) => {
       id: user.user_id || user.id,
       email: user.email,
       name: user.full_name || user.name,
+      role: user.user_role || user.role
       //avatar: user.avatar_url || null
     }
   });
@@ -40,9 +43,10 @@ const sendTokenWithUser = (res, user) => {
 // Đăng ký người dùng mới
 const register = async (req, res) => {
   try {
-    const { email, password, name, mobile} = req.body;
+    const { email, password, name, phone_number } = req.body;
 
-    if (!email || !password || !name || mobile) {
+    // Kiểm tra rỗng
+    if (!email?.trim() || !password?.trim() || !name?.trim() || !phone_number?.trim()) {
       return res.status(400).json({ message: 'Vui lòng điền đầy đủ thông tin' });
     }
 
@@ -51,9 +55,9 @@ const register = async (req, res) => {
     if (!emailRegex.test(email)) {
       return res.status(400).json({ message: 'Email không hợp lệ' });
     }
-    // Kiểm tra định dạng số điện thoạithoại
+    // Kiểm tra định dạng số điện thoại
     const phoneRegex = /^\d{10}$/;
-    if (!phoneRegex.test(sdt)) {
+    if (!phoneRegex.test(phone_number)) {
       return res.status(400).json({ message: 'Số điện thoại không hợp lệ' });
     }
 
@@ -77,23 +81,31 @@ const register = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    const username = email.split('@')[0]; // tạo username từ email
+
     // Thêm user mới vào DB
     const insertResult = await pool.request()
       .input('email', sql.VarChar, email)
       .input('username', sql.VarChar, username)
       .input('password', sql.VarChar, hashedPassword)
       .input('name', sql.VarChar, name)
-      .input('role', sql.VarChar, 'local')
+      .input('phone_number', sql.VarChar, phone_number)
+      .input('role', sql.VarChar, 'member')
       .input('status', sql.VarChar, 'active')
       .input('created', sql.Date, new Date())
       .query(`
-          INSERT INTO CUSTOMER (email, password_hash, full_name, username, user_role, account_status, registration_date)
+          INSERT INTO CUSTOMER (email, password_hash, full_name, username, phone_number, user_role, account_status, registration_date)
           OUTPUT INSERTED.user_id
-          VALUES (@email, @password, @name, @role, @status, @created)
+          VALUES (@email, @password, @name, @username, @phone_number,@role, @status, @created)
         `);
 
     const userId = insertResult.recordset[0].user_id;
-    const token = generateToken(userId);
+    const token = generateToken({
+      id: userId,
+      email,
+      name,
+      role: 'member'
+    });
 
     res.status(201).json({
       success: true,
@@ -101,7 +113,8 @@ const register = async (req, res) => {
       user: {
         id: userId,
         email,
-        name
+        name,
+        role: 'member'
       }
     });
   } catch (error) {

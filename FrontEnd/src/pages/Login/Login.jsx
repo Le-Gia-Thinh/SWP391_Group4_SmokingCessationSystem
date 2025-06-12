@@ -1,9 +1,9 @@
 // FrontEnd/src/pages/Login.jsx
-import React from "react";
-import { Form, Input, Button, Typography, Divider } from "antd";
+import React, { useState } from "react";
+import { Form, Input, Button, Typography, Divider, message } from "antd";
 import { MailOutlined } from "@ant-design/icons";
-import axios from "axios";
 import { useNavigate, Link as RouterLink } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
 
 import "./Login.css";
 
@@ -11,26 +11,31 @@ const { Title, Text } = Typography;
 
 const Login = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
+  const [loading, setLoading] = useState(false);
 
   const onFinish = async (values) => {
+    setLoading(true);
     try {
-      // Gửi POST lên server
-      const res = await axios.post("http://localhost:5000/api/auth/login", {
-        email: values.email,
-        password: values.password
-      });
+      // Use AuthContext to login with MockData - Sử dụng AuthContext để đăng nhập với MockData
+      const user = await login(values.email, values.password);
 
-      // Nếu login thành công
-      if (res.data.success) {
-        const { token, user } = res.data;
-        // Lưu user + token vào localStorage
-        localStorage.setItem("user", JSON.stringify({ ...user, token }));
-        navigate("/home");
+      // Redirect based on role - Chuyển hướng dựa trên vai trò
+      if (user.role === 'admin') {
+        navigate("/admin-dashboard");
+      } else if (user.role === 'coach') {
+        navigate("/coach-dashboard");
+      } else if (user.role === 'member') {
+        navigate("/"); // Redirect to home page for regular members
       } else {
-        alert("Email hoặc mật khẩu không đúng");
+        navigate("/"); // Fallback for any other roles
       }
-    } catch (err) {
-      alert(err.response?.data?.message || "Đăng nhập thất bại");
+
+      message.success("Login successful!");
+    } catch (error) {
+      message.error(error.message || "Login failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -45,7 +50,7 @@ const Login = () => {
           <Form.Item
             name="email"
             label="Email"
-            rules={[{ required: true, message: "Please input your email!" }]}
+            rules={[{ required: true, message: "Please enter your email!" }]}
           >
             <Input
               placeholder="abc@gmail.com"
@@ -57,13 +62,13 @@ const Login = () => {
           <Form.Item
             name="password"
             label="Password"
-            rules={[{ required: true, message: "Please input your password!" }]}
+            rules={[{ required: true, message: "Please enter your password!" }]}
           >
             <Input.Password placeholder="•••••••" />
           </Form.Item>
 
           <div className="forgot-password">
-            <RouterLink to="/ForgetPassword">Forget password?</RouterLink>
+            <RouterLink to="/ForgetPassword">Forgot password?</RouterLink>
           </div>
 
           <Form.Item>
@@ -72,6 +77,7 @@ const Login = () => {
               htmlType="submit"
               block
               className="login-button"
+              loading={loading}
             >
               Login
             </Button>
@@ -99,7 +105,7 @@ const Login = () => {
 
           <div className="signup-text">
             <Text>
-              Don’t have an account? <RouterLink to="/register">Sign up</RouterLink>
+              Don't have an account? <RouterLink to="/register">Sign up</RouterLink>
             </Text>
           </div>
         </Form>
@@ -109,4 +115,3 @@ const Login = () => {
 };
 
 export default Login;
-  

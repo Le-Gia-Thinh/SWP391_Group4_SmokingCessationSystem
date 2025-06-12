@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Link as RouterLink } from "react-router-dom";
 import { Form, Input, Button, Typography } from "antd";
 import {
@@ -21,9 +22,11 @@ const Register = () => {
             document.body.style.overflow = "auto";
         };
     }, []);
+    const navigate = useNavigate();
 
     const onFinish = async (values) => {
         try {
+            /*
             const checkEmail = await axios.get("https://682d41af4fae188947555b7a.mockapi.io/register", {
                 params: { email: values.email }
             });
@@ -32,11 +35,12 @@ const Register = () => {
                 alert("Email đã được đăng ký.");
                 return;
             }
+            */
+            const res = await axios.post("http://localhost:5000/api/auth/register", values);
 
-            const res = await axios.post("https://682d41af4fae188947555b7a.mockapi.io/register", values);
-            
             console.log("Đăng ký thành công:", res.data);
             alert("Đăng ký thành công!");
+            navigate("/login");
         } catch (err) {
             console.error("Đăng ký thất bại:", err.response?.data || err.message);
             alert("Đăng ký thất bại!");
@@ -60,7 +64,7 @@ const Register = () => {
 
                     <Form.Item
                         label="Mobile no."
-                        name="mobile"
+                        name="phone_number"
                         rules={[{ required: true, message: "Please enter your phone number!" }]}
                     >
                         <Input placeholder="0123456789" suffix={<PhoneOutlined />} />
