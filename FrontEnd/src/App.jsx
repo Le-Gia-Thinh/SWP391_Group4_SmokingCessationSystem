@@ -9,10 +9,9 @@ import HomePage from "./pages/HomePage/HomePage";
 import ForgetPassword from "./pages/ResetPassword/ForgetPassword";
 import ResetPassword from "./pages/ResetPassword/ResetPassword";
 import GoogleRedirectHandler from "./components/GoogleRedirectHandler";
-import BookingPage from "./pages/BookingPage/BookingPage";
-import CoachDashboard from "./pages/CoachDashboard/CoachDashboard";
-import AdminDashboard from "./pages/AdminDashboard/AdminDashboard";
-import Navbar from "./layouts/Navbar";
+import FtndTest from "./pages/FtndTest";
+import QuitPlanCalendar from "./pages/QuitPlanCalendar";
+import QuitPlanDetail from "./pages/QuitPlanDetail";
 import "./App.css";
 
 const { Title, Paragraph } = Typography;
@@ -84,50 +83,26 @@ const CoachesPage = () => (
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <Routes>
-          {/* Public routes */}
-          <Route path="/" element={<HomePage />} />
-          <Route path="/home" element={<HomePage />} />
-          <Route path="/login" element={
-            <ProtectedRoute requireAuth={false}>
-              <Login />
-            </ProtectedRoute>
-          } />
-          <Route path="/register" element={
-            <ProtectedRoute requireAuth={false}>
-              <Register />
-            </ProtectedRoute>
-          } />
-          <Route path="/ForgetPassword" element={<ForgetPassword />} />
-          <Route path="/reset-password/:token" element={<ResetPassword />} />
-          <Route path="/auth/google/redirect" element={<GoogleRedirectHandler />} />
-          <Route path="/book-coach" element={<BookingPage />} />
-          <Route path="/ranking" element={<RankingPage />} />
-          <Route path="/blog" element={<BlogPage />} />
-          <Route path="/membership" element={<MembershipPage />} />
-          <Route path="/coaches" element={<CoachesPage />} />
-
-          {/* Protected routes - Coach Dashboard */}
-          <Route path="/coach-dashboard" element={
-            <ProtectedRoute allowedRoles={['coach']}>
-              <CoachDashboard />
-            </ProtectedRoute>
-          } />
-
-          {/* Protected routes - Admin Dashboard */}
-          <Route path="/admin-dashboard" element={
-            <ProtectedRoute allowedRoles={['admin']}>
-              <AdminDashboard />
-            </ProtectedRoute>
-          } />
-
-          {/* Fallback route */}
-          <Route path="*" element={<HomePage />} />
-        </Routes>
-      </Router>
-    </AuthProvider>
+    <Router>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/home" element={<HomePage />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/ForgetPassword" element={<ForgetPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
+        <Route path="/FtndTest" element={<FtndTest />} />
+        <Route path="/QuitPlanCalendar" element={<QuitPlanCalendar />} />
+        <Route path="/quit-plan-detail/:date" element={<QuitPlanDetail />} />
+        {/* Route này phải được đặt TRƯỚC route wildcard (*) */}
+        <Route
+          path="/auth/google/redirect"
+          element={<GoogleRedirectHandler />}
+        />
+        {/* Route wildcard phải được đặt cuối cùng */}
+        <Route path="*" element={<Login />} />
+      </Routes>
+    </Router>
   );
 }
 

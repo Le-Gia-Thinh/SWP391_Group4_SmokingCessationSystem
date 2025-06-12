@@ -8,6 +8,9 @@ const passport = require('./config/passport');
 const authRoutes = require('./routes/auth');
 const roleRoutes = require('./routes/roleTestRoutes');
 
+
+
+
 const app = express();
 
 // 1) CORS: bắt buộc phải cho phép credentials (cookie) và origin chạy React (5173 / 3000)
@@ -19,9 +22,20 @@ app.use(
   })
 );
 
+
+
 // 2) Middleware parse body JSON / URL-encoded
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+//Check FTND
+const ftndRoutes = require('./routes/ftnd');
+app.use('/api/ftnd', ftndRoutes);
+
+// quitPlan
+const quitPlanRoutes = require("./routes/quitPlan");
+app.use("/api/quitplan", quitPlanRoutes);
+
 
 // 3) Session middleware (phải nằm trước passport.session())
 app.use(
@@ -39,7 +53,6 @@ app.use(
 // 4) Khởi tạo Passport và session support
 app.use(passport.initialize());
 app.use(passport.session());
-
 // 5) Đăng ký route auth
 app.use('/api/auth', authRoutes);
 // 5.1) Route phân quyền
@@ -73,5 +86,6 @@ app.listen(PORT, () => {
   console.log(`✅ Server đang chạy trên port ${PORT}`);
   console.log(`🔗 Google URL: http://localhost:${PORT}/api/auth/google`);
 });
+
 
 
