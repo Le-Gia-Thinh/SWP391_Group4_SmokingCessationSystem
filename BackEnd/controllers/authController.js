@@ -76,9 +76,8 @@ const register = async (req, res) => {
     }
 
     // Mã hóa mật khẩu
-    //const salt = await bcrypt.genSalt(10);
+    const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-
     const username = email.split('@')[0]; // tạo username từ email
 
     // Thêm user mới vào DB

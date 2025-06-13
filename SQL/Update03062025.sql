@@ -24,3 +24,52 @@ CREATE TABLE WEEKLY_QUOTA (
   created_at DATETIME DEFAULT GETDATE(),
   CONSTRAINT fk_weeklyquota_plan FOREIGN KEY (plan_id) REFERENCES CESSATION_PLAN(plan_id) ON DELETE CASCADE
 );
+
+-- Update ngày 6/6/2025Add commentMore actions
+-- Nội dung: Tách login google khỏi bảng Customer
+-- Tạo bảng USER_LOGIN để lưu thông tin đăng nhập
+CREATE TABLE USER_LOGIN (
+  login_id INT IDENTITY(1,1) PRIMARY KEY,
+  user_id INT NOT NULL,
+  login_provider VARCHAR(20) NOT NULL,  -- 'local' hoặc 'google'
+  username VARCHAR(100) NULL,           -- Cho login_provider = 'local'
+  password_hash VARCHAR(255) NULL,      -- Cho login_provider = 'local'
+  google_id VARCHAR(255) NULL,          -- Cho login_provider = 'google'
+  created_at DATETIME DEFAULT GETDATE(),
+  CONSTRAINT fk_login_user FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id) ON DELETE CASCADE
+);
+
+-- Chèn dữ liệu local login từ CUSTOMER vào USER_LOGIN
+INSERT INTO USER_LOGIN (user_id, login_provider, username, password_hash, created_at)
+SELECT user_id, 'local', username, password_hash, GETDATE()
+FROM CUSTOMER
+WHERE login_provider = 'local';
+
+-- Chèn dữ liệu google login từ CUSTOMER vào USER_LOGIN
+INSERT INTO USER_LOGIN (user_id, login_provider, google_id, created_at)
+SELECT user_id, 'google', google_id, GETDATE()
+FROM CUSTOMER
+WHERE login_provider = 'google';
+
+-- Xoá các cột không còn cần thiết trong CUSTOMER
+-- ALTER TABLE CUSTOMER
+-- DROP COLUMN password_hash;
+
+ALTER TABLE CUSTOMER
+DROP COLUMN google_id;
+
+ALTER TABLE CUSTOMER
+DROP COLUMN login_provider;
+
+ALTER TABLE CUSTOMER
+ADD CONSTRAINT chk_account_status
+CHECK (account_status IN ('active', 'inactive', 'banned'));
+
+-- CHECK constraint
+ALTER TABLE USER_LOGIN
+ADD CONSTRAINT chk_login_data
+CHECK (
+  (login_provider = 'local' AND username IS NOT NULL AND password_hash IS NOT NULL)
+  OR
+  (login_provider = 'google' AND google_id IS NOT NULL)
+)
