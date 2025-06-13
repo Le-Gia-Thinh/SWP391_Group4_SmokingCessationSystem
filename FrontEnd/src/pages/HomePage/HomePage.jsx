@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import Navbar from "../components/Navbar";
+import Navbar from "../../layouts/Navbar";
 import "./HomePage.css";
 import { Button } from "antd";
 import { Link } from "react-router-dom";

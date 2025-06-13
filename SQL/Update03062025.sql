@@ -1,3 +1,4 @@
+
 --UpdateGoogleAndPassword
 ALTER TABLE CUSTOMER ADD google_id VARCHAR(255);
 ALTER TABLE CUSTOMER
@@ -24,7 +25,7 @@ CREATE TABLE WEEKLY_QUOTA (
   CONSTRAINT fk_weeklyquota_plan FOREIGN KEY (plan_id) REFERENCES CESSATION_PLAN(plan_id) ON DELETE CASCADE
 );
 
--- Update ngày 6/6/2025
+-- Update ngày 6/6/2025Add commentMore actions
 -- Nội dung: Tách login google khỏi bảng Customer
 -- Tạo bảng USER_LOGIN để lưu thông tin đăng nhập
 CREATE TABLE USER_LOGIN (
@@ -51,8 +52,8 @@ FROM CUSTOMER
 WHERE login_provider = 'google';
 
 -- Xoá các cột không còn cần thiết trong CUSTOMER
-ALTER TABLE CUSTOMER
-DROP COLUMN password_hash;
+-- ALTER TABLE CUSTOMER
+-- DROP COLUMN password_hash;
 
 ALTER TABLE CUSTOMER
 DROP COLUMN google_id;
@@ -72,11 +73,3 @@ CHECK (
   OR
   (login_provider = 'google' AND google_id IS NOT NULL)
 )
-
---Check xem có password_hash chưa Customer
-SELECT * FROM INFORMATION_SCHEMA.COLUMNS
-WHERE TABLE_NAME = 'CUSTOMER'
-
---Thêm vào
-ALTER TABLE CUSTOMER ADD password_hash VARCHAR(255);
-ALTER TABLE CUSTOMER ADD phone_number VARCHAR(20);
