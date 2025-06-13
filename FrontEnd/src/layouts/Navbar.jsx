@@ -43,12 +43,16 @@ const Navbar = () => {
         icon: <TeamOutlined />,
         label: <Link to="/membership">Membership</Link>,
       },
-      {
+    ];
+
+    // Only show "Book Coach" if user is not a coach
+    if (!isCoach()) {
+      items.push({
         key: '/book-coach',
         icon: <CalendarOutlined />,
         label: <Link to="/book-coach">Book Coach</Link>,
-      },
-    ];
+      });
+    }
 
     // Add role-specific items
     if (isAdmin()) {
