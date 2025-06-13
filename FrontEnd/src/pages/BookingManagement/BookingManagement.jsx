@@ -37,6 +37,12 @@ const BookingManagement = () => {
             // Simulate API call
             await new Promise(resolve => setTimeout(resolve, 1000));
 
+            // Generate fixed Google Meet link for coach
+            const generateMeetLink = (coachId) => {
+                return `https://meet.google.com/quit-smoking-coach-${coachId}`;
+            };
+            const coachMeetLink = generateMeetLink(user.id);
+
             const updatedBookings = bookings.map(booking => {
                 if (booking.id === selectedBooking.id) {
                     return {
@@ -45,7 +51,8 @@ const BookingManagement = () => {
                         coachResponse: values.response,
                         respondedAt: new Date().toISOString(),
                         confirmedDate: values.status === 'confirmed' ? values.confirmedDate : null,
-                        confirmedTime: values.status === 'confirmed' ? values.confirmedTime : null
+                        confirmedTime: values.status === 'confirmed' ? values.confirmedTime : null,
+                        meetLink: values.status === 'confirmed' ? coachMeetLink : null
                     };
                 }
                 return booking;
@@ -61,7 +68,8 @@ const BookingManagement = () => {
                         coachResponse: values.response,
                         respondedAt: new Date().toISOString(),
                         confirmedDate: values.status === 'confirmed' ? values.confirmedDate : null,
-                        confirmedTime: values.status === 'confirmed' ? values.confirmedTime : null
+                        confirmedTime: values.status === 'confirmed' ? values.confirmedTime : null,
+                        meetLink: values.status === 'confirmed' ? coachMeetLink : null
                     };
                 }
                 return booking;
@@ -70,7 +78,12 @@ const BookingManagement = () => {
             localStorage.setItem('bookings', JSON.stringify(updatedAllBookings));
             setBookings(updatedBookings);
 
-            message.success(`Booking ${values.status} successfully!`);
+            if (values.status === 'confirmed') {
+                message.success('Booking confirmed! Meet link has been automatically sent to the user.');
+            } else {
+                message.success(`Booking ${values.status} successfully!`);
+            }
+
             setIsModalVisible(false);
             responseForm.resetFields();
         } catch (error) {
@@ -282,6 +295,31 @@ const BookingManagement = () => {
                                 <>
                                     <h3>Your Response</h3>
                                     <p>{selectedBooking.coachResponse}</p>
+                                </>
+                            )}
+
+                            {selectedBooking.meetLink && (
+                                <>
+                                    <h3>Google Meet Link</h3>
+                                    <div style={{
+                                        background: '#f6ffed',
+                                        border: '1px solid #b7eb8f',
+                                        borderRadius: '6px',
+                                        padding: '12px',
+                                        marginBottom: '16px'
+                                    }}>
+                                        <p style={{ margin: '0 0 8px 0', fontWeight: 'bold' }}>
+                                            Meet Link Sent to User:
+                                        </p>
+                                        <a
+                                            href={selectedBooking.meetLink}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            style={{ color: '#52c41a', wordBreak: 'break-all' }}
+                                        >
+                                            {selectedBooking.meetLink}
+                                        </a>
+                                    </div>
                                 </>
                             )}
                         </div>
