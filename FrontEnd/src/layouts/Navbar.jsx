@@ -1,82 +1,183 @@
 // FrontEnd/src/components/Navbar.jsx
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
-import Avatar from "../components/Avatar";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Layout, Menu, Button, Avatar, Space, Badge } from "antd";
+import {
+  UserOutlined,
+  LogoutOutlined,
+  HomeOutlined,
+  TrophyOutlined,
+  BookOutlined,
+  TeamOutlined,
+  ContactsOutlined,
+  CalendarOutlined,
+} from "@ant-design/icons";
+import { useAuth } from "../contexts/AuthContext";
 import axios from "axios";
 import "./Navbar.css";
 
-const Navbar = () => {
+const { Header } = Layout;
+
+export default function Navbar() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user, logout, isCoach, isAdmin } = useAuth();
 
-  // Lấy user từ localStorage
-  const storedUser = localStorage.getItem("user");
-  const user = storedUser ? JSON.parse(storedUser) : null;
-
-  // ====== BẮT ĐẦU PHẦN THÊM ======
-  // Hàm xử lý logout
-  const handleLogout = async () => {
-    try {
-      // Gửi request POST /logout để server destroy session (nếu có)
-      await axios.post(
-        "http://localhost:5000/api/auth/logout",
-        {},
-        {
-          withCredentials: true, // bắt buộc nếu server cần cookie để hủy session
-        }
-      );
-    } catch (err) {
-      console.error("Error when calling /api/auth/logout:", err);
-      // dù có lỗi vẫn tiếp tục xóa localStorage bên client
-    }
-
-    // Xóa user khỏi localStorage
-    localStorage.removeItem("user");
-
-    // Chuyển về trang login
+  // Logout
+  const handleLogout = () => {
+    logout();
     navigate("/login");
   };
-  // ====== KẾT THÚC PHẦN THÊM ======
+
+  // Khi click Plan: nếu chưa login → /login, nếu đã login check FTND → điều hướng
+  const handlePlanClick = async () => {
+    if (!user) {
+      return navigate("/login");
+    }
+    try {
+      const res = await axios.get(
+        `http://localhost:5000/api/ftnd/exists/${user.id}`,
+        { withCredentials: true }
+      );
+      if (res.data.exists) {
+        navigate("/QuitPlanCalendar");
+      } else {
+        navigate("/FtndTest");
+      }
+    } catch (err) {
+      console.error(err);
+      navigate("/FtndTest");
+    }
+  };
+
+  // Các mục menu
+  const getMenuItems = () => {
+    const items = [
+      {
+        key: "/",
+        icon: <HomeOutlined />,
+        label: "Home",
+        onClick: () => navigate("/"),
+      },
+      {
+        key: "/plan",
+        icon: <CalendarOutlined />,
+        label: "Planing",
+        onClick: handlePlanClick,
+      },
+      {
+        key: "/ranking",
+        icon: <TrophyOutlined />,
+        label: "Ranking",
+        onClick: () => navigate("/ranking"),
+      },
+      {
+        key: "/blog",
+        icon: <BookOutlined />,
+        label: "Blog",
+        onClick: () => navigate("/blog"),
+      },
+      {
+        key: "/membership",
+        icon: <TeamOutlined />,
+        label: "Membership",
+        onClick: () => navigate("/membership"),
+      },
+      {
+        key: "/book-coach",
+        icon: <ContactsOutlined />,
+        label: "Book Coach",
+        onClick: () => navigate("/book-coach"),
+      },
+    ];
+
+    if (isAdmin()) {
+      items.push({
+        key: "/admin-dashboard",
+        icon: <UserOutlined />,
+        label: "Admin Dashboard",
+        onClick: () => navigate("/admin-dashboard"),
+      });
+    }
+    if (isCoach()) {
+      items.push({
+        key: "/coach-dashboard",
+        icon: <UserOutlined />,
+        label: "Coach Dashboard",
+        onClick: () => navigate("/coach-dashboard"),
+      });
+    }
+    items.push({
+      key: "/coaches",
+      icon: <TeamOutlined />,
+      label: "Coaches",
+      onClick: () => navigate("/coaches"),
+    });
+
+    return items;
+  };
 
   return (
-    <header className="navbar">
-      <div className="navbar-logo">
-        <Link to="/" className="logo-text">
-          QuitSmoking
-        </Link>
+    <Header className="navbar">
+      <div className="navbar-content">
+        <div className="navbar-logo">
+          <div className="logo-text">
+            <span>QuitSmoking</span>
+          </div>
+        </div>
+
+        <Menu
+          mode="horizontal"
+          selectedKeys={[location.pathname.startsWith("/plan") ? "/plan" : location.pathname]}
+          items={getMenuItems()}
+          className="navbar-menu"
+        />
+
+        <div className="navbar-actions">
+          {!user ? (
+            <Space>
+              <Button type="link" onClick={() => navigate("/login")}>
+                Sign in
+              </Button>
+              <Button type="primary" onClick={() => navigate("/register")}>
+                Sign up
+              </Button>
+            </Space>
+          ) : (
+            <Space wrap={false}>
+              <Badge
+                count={
+                  user.role === "admin"
+                    ? "Admin"
+                    : user.role === "coach"
+                      ? "Coach"
+                      : "Member"
+                }
+                style={{
+                  backgroundColor:
+                    user.role === "admin" ? "#ff4d4f" : "#52c41a",
+                }}
+              />
+              <Avatar
+                icon={<UserOutlined />}
+                style={{
+                  backgroundColor:
+                    user.role === "admin" ? "#ff4d4f" : "#52c41a",
+                }}
+              />
+              <span className="username-text">{user.name || user.email}</span>
+              <Button
+                type="text"
+                icon={<LogoutOutlined />}
+                onClick={handleLogout}
+                danger
+              >
+                Logout
+              </Button>
+            </Space>
+          )}
+        </div>
       </div>
-
-      <nav className="navbar-links">
-        <Link to="/">Home</Link>
-        <Link to="/ranking">Ranking</Link>
-        <Link to="/blog">Blog</Link>
-        <Link to="/membership">Membership</Link>
-        <Link to="/coaches">Coaches</Link>
-      </nav>
-
-      <div className="navbar-actions">
-        {!user ? (
-          <>
-            <Link to="/login" className="btn-outline">
-              Sign in
-            </Link>
-            <Link to="/register" className="btn-solid">
-              Sign up
-            </Link>
-          </>
-        ) : (
-          <>
-            {/* Giữ nguyên code Avatar cũ */}
-            <Avatar name={user.name || user.email} avatarUrl={user.avatar} />
-
-            {/* ====== THÊM NÚT Logout ====== */}
-            <button onClick={handleLogout} className="btn-logout">
-              Logout
-            </button>
-          </>
-        )}
-      </div>
-    </header>
+    </Header>
   );
-};
-
-export default Navbar;
+}
