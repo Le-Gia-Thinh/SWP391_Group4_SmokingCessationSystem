@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Link as RouterLink } from "react-router-dom";
 import { Form, Input, Button, Typography } from "antd";
 import {
@@ -21,6 +22,7 @@ const Register = () => {
             document.body.style.overflow = "auto";
         };
     }, []);
+    const navigate = useNavigate();
 
     const onFinish = async (values) => {
         try {
@@ -35,9 +37,10 @@ const Register = () => {
             }
             */
             const res = await axios.post("http://localhost:5000/api/auth/register", values);
-            
+
             console.log("Đăng ký thành công:", res.data);
             alert("Đăng ký thành công!");
+            navigate("/login");
         } catch (err) {
             console.error("Đăng ký thất bại:", err.response?.data || err.message);
             alert("Đăng ký thất bại!");
