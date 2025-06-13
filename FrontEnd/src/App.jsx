@@ -13,9 +13,9 @@ import BookingPage from "./pages/BookingPage/BookingPage";
 import CoachDashboard from "./pages/CoachDashboard/CoachDashboard";
 import AdminDashboard from "./pages/AdminDashboard/AdminDashboard";
 import Navbar from "./layouts/Navbar";
-import FtndTest from "./pages/FtndTest";
-import QuitPlanCalendar from "./pages/QuitPlanCalendar";
-import QuitPlanDetail from "./pages/QuitPlanDetail";
+import FtndTest from "./pages/FtndTest/FtndTest";
+import QuitPlanCalendar from "./pages/QuitPlanning/QuitPlanCalendar";
+import QuitPlanDetail from "./pages/QuitPlanning/QuitPlanDetail";
 import "./App.css";
 
 const { Title, Paragraph } = Typography;

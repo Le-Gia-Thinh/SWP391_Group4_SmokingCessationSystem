@@ -29,7 +29,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import "./QuitPlanCalendar.css";
-import PlanSetupModal from "../pages/PlanSetupModal";
+import PlanSetupModal from "./PlanSetupModal";
 import axios from "axios";
 
 const { Title } = Typography;
@@ -715,16 +715,16 @@ const QuitPlan = () => {
               pagination={
                 viewMode === "week"
                   ? {
-                      current: currentWeekPage,
-                      pageSize: weekPageSize,
-                      total: planData.length,
-                      showSizeChanger: false,
-                      onChange: (page) => {
-                        setCurrentWeekPage(page);
-                        sessionStorage.setItem("quitPlanPage", page); // Lưu vào session
-                      },
-                      showTotal: () => `Tuần ${currentWeekPage} / ${weekTotal}`,
-                    }
+                    current: currentWeekPage,
+                    pageSize: weekPageSize,
+                    total: planData.length,
+                    showSizeChanger: false,
+                    onChange: (page) => {
+                      setCurrentWeekPage(page);
+                      sessionStorage.setItem("quitPlanPage", page); // Lưu vào session
+                    },
+                    showTotal: () => `Tuần ${currentWeekPage} / ${weekTotal}`,
+                  }
                   : { pageSize: 30 }
               }
               rowClassName={(record) => `week-row-${record.weekIndex % 5}`}
