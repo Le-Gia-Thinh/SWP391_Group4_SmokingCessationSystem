@@ -13,6 +13,9 @@ import BookingPage from "./pages/BookingPage/BookingPage";
 import CoachDashboard from "./pages/CoachDashboard/CoachDashboard";
 import AdminDashboard from "./pages/AdminDashboard/AdminDashboard";
 import Navbar from "./layouts/Navbar";
+import FtndTest from "./pages/FtndTest/FtndTest";
+import QuitPlanCalendar from "./pages/QuitPlanning/QuitPlanCalendar";
+import QuitPlanDetail from "./pages/QuitPlanning/QuitPlanDetail";
 import "./App.css";
 
 const { Title, Paragraph } = Typography;
@@ -108,7 +111,9 @@ function App() {
           <Route path="/blog" element={<BlogPage />} />
           <Route path="/membership" element={<MembershipPage />} />
           <Route path="/coaches" element={<CoachesPage />} />
-
+          <Route path="/FtndTest" element={<FtndTest />} />
+          <Route path="/QuitPlanCalendar" element={<QuitPlanCalendar />} />
+          <Route path="/quit-plan-detail/:date" element={<QuitPlanDetail />} />
           {/* Protected routes - Coach Dashboard */}
           <Route path="/coach-dashboard" element={
             <ProtectedRoute allowedRoles={['coach']}>

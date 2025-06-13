@@ -1,80 +1,117 @@
 // FrontEnd/src/components/Navbar.jsx
 import React from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Layout, Menu, Button, Avatar, Space, Typography, Badge } from "antd";
-import { UserOutlined, LogoutOutlined, HomeOutlined, TrophyOutlined, BookOutlined, TeamOutlined, CalendarOutlined } from "@ant-design/icons";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Layout, Menu, Button, Avatar, Space, Badge } from "antd";
+import {
+  UserOutlined,
+  LogoutOutlined,
+  HomeOutlined,
+  TrophyOutlined,
+  BookOutlined,
+  TeamOutlined,
+  ContactsOutlined,
+  CalendarOutlined,
+} from "@ant-design/icons";
 import { useAuth } from "../contexts/AuthContext";
+import axios from "axios";
 import "./Navbar.css";
 
 const { Header } = Layout;
-const { Text } = Typography;
 
-const Navbar = () => {
+export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout, isCoach, isAdmin } = useAuth();
 
-  // Handle logout - Xử lý đăng xuất
+  // Logout
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
 
-  // Menu items based on user role
+  // Khi click Plan: nếu chưa login → /login, nếu đã login check FTND → điều hướng
+  const handlePlanClick = async () => {
+    if (!user) {
+      return navigate("/login");
+    }
+    try {
+      const res = await axios.get(
+        `http://localhost:5000/api/ftnd/exists/${user.id}`,
+        { withCredentials: true }
+      );
+      if (res.data.exists) {
+        navigate("/QuitPlanCalendar");
+      } else {
+        navigate("/FtndTest");
+      }
+    } catch (err) {
+      console.error(err);
+      navigate("/FtndTest");
+    }
+  };
+
+  // Các mục menu
   const getMenuItems = () => {
     const items = [
       {
-        key: '/',
+        key: "/",
         icon: <HomeOutlined />,
-        label: <Link to="/">Home</Link>,
+        label: "Home",
+        onClick: () => navigate("/"),
       },
       {
-        key: '/ranking',
+        key: "/plan",
+        icon: <CalendarOutlined />,
+        label: "Planing",
+        onClick: handlePlanClick,
+      },
+      {
+        key: "/ranking",
         icon: <TrophyOutlined />,
-        label: <Link to="/ranking">Ranking</Link>,
+        label: "Ranking",
+        onClick: () => navigate("/ranking"),
       },
       {
-        key: '/blog',
+        key: "/blog",
         icon: <BookOutlined />,
-        label: <Link to="/blog">Blog</Link>,
+        label: "Blog",
+        onClick: () => navigate("/blog"),
       },
       {
-        key: '/membership',
+        key: "/membership",
         icon: <TeamOutlined />,
-        label: <Link to="/membership">Membership</Link>,
+        label: "Membership",
+        onClick: () => navigate("/membership"),
+      },
+      {
+        key: "/book-coach",
+        icon: <ContactsOutlined />,
+        label: "Book Coach",
+        onClick: () => navigate("/book-coach"),
       },
     ];
 
-    // Only show "Book Coach" if user is not a coach
-    if (!isCoach()) {
-      items.push({
-        key: '/book-coach',
-        icon: <CalendarOutlined />,
-        label: <Link to="/book-coach">Book Coach</Link>,
-      });
-    }
-
-    // Add role-specific items
     if (isAdmin()) {
       items.push({
-        key: '/admin-dashboard',
+        key: "/admin-dashboard",
         icon: <UserOutlined />,
-        label: <Link to="/admin-dashboard">Admin Dashboard</Link>,
+        label: "Admin Dashboard",
+        onClick: () => navigate("/admin-dashboard"),
       });
     }
-
     if (isCoach()) {
       items.push({
-        key: '/coach-dashboard',
+        key: "/coach-dashboard",
         icon: <UserOutlined />,
-        label: <Link to="/coach-dashboard">Coach Dashboard</Link>,
+        label: "Coach Dashboard",
+        onClick: () => navigate("/coach-dashboard"),
       });
     }
-
     items.push({
-      key: '/coaches',
+      key: "/coaches",
       icon: <TeamOutlined />,
-      label: <Link to="/coaches">Coaches</Link>,
+      label: "Coaches",
+      onClick: () => navigate("/coaches"),
     });
 
     return items;
@@ -85,15 +122,13 @@ const Navbar = () => {
       <div className="navbar-content">
         <div className="navbar-logo">
           <div className="logo-text">
-            <span>
-              QuitSmoking
-            </span>
+            <span>QuitSmoking</span>
           </div>
         </div>
 
         <Menu
           mode="horizontal"
-          selectedKeys={[location.pathname]}
+          selectedKeys={[location.pathname.startsWith("/plan") ? "/plan" : location.pathname]}
           items={getMenuItems()}
           className="navbar-menu"
         />
@@ -101,36 +136,36 @@ const Navbar = () => {
         <div className="navbar-actions">
           {!user ? (
             <Space>
-              <Button type="link">
-                <Link to="/login">Sign in</Link>
+              <Button type="link" onClick={() => navigate("/login")}>
+                Sign in
               </Button>
-              <Button type="primary">
-                <Link to="/register" style={{ color: 'white' }}>Sign up</Link>
+              <Button type="primary" onClick={() => navigate("/register")}>
+                Sign up
               </Button>
             </Space>
           ) : (
             <Space wrap={false}>
-              {/* Show role badge */}
               <Badge
-                count={user.role === 'admin' ? 'Admin' : user.role === 'coach' ? 'Coach' : 'Member'}
+                count={
+                  user.role === "admin"
+                    ? "Admin"
+                    : user.role === "coach"
+                      ? "Coach"
+                      : "Member"
+                }
                 style={{
-                  backgroundColor: user.role === 'admin' ? '#ff4d4f' :
-                    user.role === 'coach' ? '#52c41a' : '#52c41a',
+                  backgroundColor:
+                    user.role === "admin" ? "#ff4d4f" : "#52c41a",
                 }}
               />
-
-              {/* Avatar */}
               <Avatar
                 icon={<UserOutlined />}
                 style={{
-                  backgroundColor: user.role === 'admin' ? '#ff4d4f' :
-                    user.role === 'coach' ? '#52c41a' : '#52c41a',
+                  backgroundColor:
+                    user.role === "admin" ? "#ff4d4f" : "#52c41a",
                 }}
               />
-
               <span className="username-text">{user.name || user.email}</span>
-
-              {/* Logout button */}
               <Button
                 type="text"
                 icon={<LogoutOutlined />}
@@ -145,6 +180,4 @@ const Navbar = () => {
       </div>
     </Header>
   );
-};
-
-export default Navbar;
+}
