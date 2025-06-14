@@ -29,7 +29,9 @@ import {
     DeleteOutlined,
     PlusOutlined,
     ReloadOutlined,
-    EyeOutlined
+    EyeOutlined,
+    CopyOutlined,
+    CheckOutlined
 } from '@ant-design/icons';
 import Navbar from '../../layouts/Navbar';
 import './AdminDashboard.css';
@@ -46,6 +48,9 @@ const AdminDashboard = () => {
     const [editUserModal, setEditUserModal] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
     const [viewUserModal, setViewUserModal] = useState(false);
+    const [credentialsModal, setCredentialsModal] = useState(false);
+    const [newCoachCredentials, setNewCoachCredentials] = useState(null);
+    const [copiedField, setCopiedField] = useState('');
 
     // Form instances
     const [coachForm] = Form.useForm();
@@ -121,13 +126,21 @@ const AdminDashboard = () => {
                 role: 'coach',
                 status: 'active',
                 registrationDate: new Date().toISOString().split('T')[0],
-                specialization: values.specialization,
-                experienceYears: values.experienceYears
+                specialization: null,
+                experienceYears: null
             };
 
             setUsers(prev => [...prev, newCoach]);
-            message.success('Coach account created successfully!');
+
+            // Set credentials for modal
+            setNewCoachCredentials({
+                name: values.name,
+                email: values.email,
+                password: '123456'
+            });
+
             setCreateCoachModal(false);
+            setCredentialsModal(true);
             coachForm.resetFields();
         } catch (error) {
             message.error('Failed to create coach account');
@@ -195,6 +208,32 @@ const AdminDashboard = () => {
     const handleViewUser = (user) => {
         setSelectedUser(user);
         setViewUserModal(true);
+    };
+
+    // Copy to clipboard
+    const handleCopy = async (text, field) => {
+        try {
+            await navigator.clipboard.writeText(text);
+            setCopiedField(field);
+            message.success(`${field} copied to clipboard!`);
+            setTimeout(() => setCopiedField(''), 2000);
+        } catch (error) {
+            message.error('Failed to copy to clipboard');
+        }
+    };
+
+    // Copy all credentials
+    const handleCopyAll = async () => {
+        if (!newCoachCredentials) return;
+
+        const credentialsText = `Name: ${newCoachCredentials.name}\nEmail: ${newCoachCredentials.email}\nPassword: ${newCoachCredentials.password}`;
+
+        try {
+            await navigator.clipboard.writeText(credentialsText);
+            message.success('All credentials copied to clipboard!');
+        } catch (error) {
+            message.error('Failed to copy credentials');
+        }
     };
 
     // Calculate statistics
@@ -439,33 +478,24 @@ const AdminDashboard = () => {
                         </Col>
                     </Row>
 
-                    <Row gutter={16}>
-                        <Col span={12}>
-                            <Form.Item
-                                name="phone"
-                                label="Phone Number"
-                            >
-                                <Input placeholder="Enter phone number" />
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item
-                                name="experienceYears"
-                                label="Experience (Years)"
-                                rules={[{ required: true, message: 'Please enter experience years!' }]}
-                            >
-                                <Input type="number" placeholder="Enter years of experience" />
-                            </Form.Item>
-                        </Col>
-                    </Row>
-
                     <Form.Item
-                        name="specialization"
-                        label="Specialization"
-                        rules={[{ required: true, message: 'Please enter specialization!' }]}
+                        name="phone"
+                        label="Phone Number"
                     >
-                        <Input placeholder="Enter specialization area" />
+                        <Input placeholder="Enter phone number" />
                     </Form.Item>
+
+                    <div style={{
+                        background: '#f6ffed',
+                        border: '1px solid #b7eb8f',
+                        borderRadius: '6px',
+                        padding: '12px',
+                        marginBottom: '16px'
+                    }}>
+                        <Text style={{ color: '#52c41a', fontWeight: '500' }}>
+                            📝 Note: The coach will receive a default password of <strong>123456</strong>
+                        </Text>
+                    </div>
 
                     <Form.Item>
                         <Space>
@@ -550,35 +580,16 @@ const AdminDashboard = () => {
                         </Col>
                     </Row>
 
-                    <Row gutter={16}>
-                        <Col span={12}>
-                            <Form.Item
-                                name="status"
-                                label="Status"
-                                rules={[{ required: true, message: 'Please select a status!' }]}
-                            >
-                                <Select placeholder="Select status">
-                                    <Option value="active">Active</Option>
-                                    <Option value="inactive">Inactive</Option>
-                                    <Option value="suspended">Suspended</Option>
-                                </Select>
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item
-                                name="experienceYears"
-                                label="Experience (Years)"
-                            >
-                                <Input type="number" placeholder="Enter years of experience" />
-                            </Form.Item>
-                        </Col>
-                    </Row>
-
                     <Form.Item
-                        name="specialization"
-                        label="Specialization"
+                        name="status"
+                        label="Status"
+                        rules={[{ required: true, message: 'Please select a status!' }]}
                     >
-                        <Input placeholder="Enter specialization area" />
+                        <Select placeholder="Select status">
+                            <Option value="active">Active</Option>
+                            <Option value="inactive">Inactive</Option>
+                            <Option value="suspended">Suspended</Option>
+                        </Select>
                     </Form.Item>
 
                     <Form.Item>
@@ -690,24 +701,144 @@ const AdminDashboard = () => {
                                 <br />
                                 <Text>{new Date(selectedUser.registrationDate).toLocaleDateString()}</Text>
                             </Col>
-                            {selectedUser.role === 'coach' && (
-                                <Col span={12}>
-                                    <Text strong>Experience:</Text>
-                                    <br />
-                                    <Text>{selectedUser.experienceYears} years</Text>
-                                </Col>
-                            )}
                         </Row>
+                    </div>
+                )}
+            </Modal>
 
-                        {selectedUser.role === 'coach' && selectedUser.specialization && (
-                            <Row style={{ marginTop: '16px' }}>
-                                <Col span={24}>
-                                    <Text strong>Specialization:</Text>
-                                    <br />
-                                    <Text>{selectedUser.specialization}</Text>
-                                </Col>
-                            </Row>
-                        )}
+            {/* Credentials Modal */}
+            <Modal
+                title={
+                    <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '24px', marginBottom: '8px' }}>🎉</div>
+                        <div>Coach Account Created Successfully!</div>
+                    </div>
+                }
+                open={credentialsModal}
+                onCancel={() => {
+                    setCredentialsModal(false);
+                    setNewCoachCredentials(null);
+                    setCopiedField('');
+                }}
+                footer={[
+                    <Button
+                        key="copyAll"
+                        type="primary"
+                        icon={<CopyOutlined />}
+                        onClick={handleCopyAll}
+                        style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}
+                    >
+                        Copy All Credentials
+                    </Button>,
+                    <Button
+                        key="close"
+                        onClick={() => {
+                            setCredentialsModal(false);
+                            setNewCoachCredentials(null);
+                            setCopiedField('');
+                        }}
+                    >
+                        Close
+                    </Button>
+                ]}
+                width={500}
+                centered
+            >
+                {newCoachCredentials && (
+                    <div style={{ textAlign: 'center' }}>
+                        <div style={{
+                            background: '#f6ffed',
+                            border: '1px solid #b7eb8f',
+                            borderRadius: '8px',
+                            padding: '20px',
+                            marginBottom: '20px'
+                        }}>
+                            <Title level={4} style={{ color: '#52c41a', marginBottom: '16px' }}>
+                                📋 Account Credentials
+                            </Title>
+
+                            <Space direction="vertical" size="large" style={{ width: '100%' }}>
+                                {/* Name */}
+                                <div style={{
+                                    background: 'white',
+                                    padding: '12px',
+                                    borderRadius: '6px',
+                                    border: '1px solid #d9d9d9',
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center'
+                                }}>
+                                    <div style={{ textAlign: 'left' }}>
+                                        <Text strong>Name:</Text>
+                                        <br />
+                                        <Text>{newCoachCredentials.name}</Text>
+                                    </div>
+                                    <Button
+                                        type="text"
+                                        icon={copiedField === 'name' ? <CheckOutlined /> : <CopyOutlined />}
+                                        onClick={() => handleCopy(newCoachCredentials.name, 'name')}
+                                        style={{ color: copiedField === 'name' ? '#52c41a' : '#666' }}
+                                    />
+                                </div>
+
+                                {/* Email */}
+                                <div style={{
+                                    background: 'white',
+                                    padding: '12px',
+                                    borderRadius: '6px',
+                                    border: '1px solid #d9d9d9',
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center'
+                                }}>
+                                    <div style={{ textAlign: 'left' }}>
+                                        <Text strong>Email:</Text>
+                                        <br />
+                                        <Text>{newCoachCredentials.email}</Text>
+                                    </div>
+                                    <Button
+                                        type="text"
+                                        icon={copiedField === 'email' ? <CheckOutlined /> : <CopyOutlined />}
+                                        onClick={() => handleCopy(newCoachCredentials.email, 'email')}
+                                        style={{ color: copiedField === 'email' ? '#52c41a' : '#666' }}
+                                    />
+                                </div>
+
+                                {/* Password */}
+                                <div style={{
+                                    background: 'white',
+                                    padding: '12px',
+                                    borderRadius: '6px',
+                                    border: '1px solid #d9d9d9',
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center'
+                                }}>
+                                    <div style={{ textAlign: 'left' }}>
+                                        <Text strong>Password:</Text>
+                                        <br />
+                                        <Text code style={{ fontSize: '16px' }}>{newCoachCredentials.password}</Text>
+                                    </div>
+                                    <Button
+                                        type="text"
+                                        icon={copiedField === 'password' ? <CheckOutlined /> : <CopyOutlined />}
+                                        onClick={() => handleCopy(newCoachCredentials.password, 'password')}
+                                        style={{ color: copiedField === 'password' ? '#52c41a' : '#666' }}
+                                    />
+                                </div>
+                            </Space>
+                        </div>
+
+                        <div style={{
+                            background: '#fff7e6',
+                            border: '1px solid #ffd591',
+                            borderRadius: '6px',
+                            padding: '12px'
+                        }}>
+                            <Text style={{ color: '#d48806' }}>
+                                ⚠️ Please save these credentials securely. The coach will need them to log in.
+                            </Text>
+                        </div>
                     </div>
                 )}
             </Modal>
