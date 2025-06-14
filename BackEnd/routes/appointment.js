@@ -1,13 +1,21 @@
 const express = require('express');
 const router = express.Router();
 const appointmentController = require('../controllers/appointmentController');
-const auth = require('../middleware/auth');
+const { auth, authorize } = require('../middleware/auth');
 
 
-router.post('/', auth('member'), appointmentController.bookAppointment);
-router.put('/:id/accept', auth('coach'), appointmentController.acceptAppointment);
-router.put('/:id/reject', auth('coach'), appointmentController.rejectAppointment);
-router.get('/pending', auth('coach'), appointmentController.getPendingAppointments);
-router.delete('/:id', auth('member'), appointmentController.cancelAppointment);
+// Member đặt lịch hẹn
+router.post('/', auth, authorize('member'), appointmentController.bookAppointment);
+
+// Coach duyệt cuộc hẹn
+router.put('/:id/accept', auth, authorize('coach'), appointmentController.acceptAppointment);
+router.put('/:id/reject', auth, authorize('coach'), appointmentController.rejectAppointment);
+
+// Coach xem các cuộc hẹn đang chờ xử lý
+router.get('/pending', auth, authorize('coach'), appointmentController.getPendingAppointments);
+
+
+// Member hủy cuộc hẹn
+router.delete('/:id', auth, authorize('member'), appointmentController.cancelAppointment);
 
 module.exports = router;
