@@ -83,13 +83,17 @@ export default function Navbar() {
         label: "Membership",
         onClick: () => navigate("/membership"),
       },
-      {
+    ];
+
+    // Chỉ hiển thị "Book Coach" nếu không phải là Coach
+    if (!isCoach()) {
+      items.push({
         key: "/book-coach",
         icon: <ContactsOutlined />,
         label: "Book Coach",
         onClick: () => navigate("/book-coach"),
-      },
-    ];
+      });
+    }
 
     if (isAdmin()) {
       items.push({
