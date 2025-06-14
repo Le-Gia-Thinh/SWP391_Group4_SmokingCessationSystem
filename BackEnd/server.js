@@ -7,9 +7,8 @@ const cors = require('cors');
 const passport = require('./config/passport');
 const authRoutes = require('./routes/auth');
 const roleRoutes = require('./routes/roleTestRoutes');
-
-
-
+const scheduleRoutes = require('./routes/schedule');
+const appointmentRoutes = require('./routes/appointment');
 
 const app = express();
 
@@ -21,8 +20,6 @@ app.use(
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
   })
 );
-
-
 
 // 2) Middleware parse body JSON / URL-encoded
 app.use(express.json());
@@ -53,10 +50,15 @@ app.use(
 // 4) Khởi tạo Passport và session support
 app.use(passport.initialize());
 app.use(passport.session());
+
 // 5) Đăng ký route auth
 app.use('/api/auth', authRoutes);
 // 5.1) Route phân quyền
 app.use('/api/role', roleRoutes);
+// 5.2) Route tạo và xem lịch trống của Coach
+app.use('/api/schedule', scheduleRoutes);   
+// 5.3) Route đặt lịch và quản lý lịch tư vấn
+app.use('/api/appointment', appointmentRoutes);
 
 // 6) Middleware log request
 app.use((req, res, next) => {
