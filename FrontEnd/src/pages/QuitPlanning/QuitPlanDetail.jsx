@@ -47,7 +47,6 @@ const QuitPlanDetail = () => {
     weekNumber = Math.floor(diffDays / 7) + 1;
   }
 
-  // Giả lập fetch lại khi quay lại trang
   useEffect(() => {
     fetch(`/api/habit-log?date=${date}`)
       .then((res) => res.json())
@@ -76,6 +75,32 @@ const QuitPlanDetail = () => {
     });
 
     message.success("Đã ghi nhận hành vi không hút thuốc!");
+  };
+
+  const handleSubmitLog = async () => {
+    try {
+      const response = await fetch("/api/habit-log/bulk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          date,
+          entries: completed.map((status, idx) => ({
+            timeSlot: idx,
+            completed: status,
+            points: status ? 1 : 0,
+          })),
+        }),
+      });
+
+      if (response.ok) {
+        message.success("Đã gửi toàn bộ kết quả cho ngày " + date);
+      } else {
+        message.error("Không thể gửi kết quả. Vui lòng thử lại.");
+      }
+    } catch (err) {
+      console.error(err);
+      message.error("Lỗi gửi dữ liệu.");
+    }
   };
 
   const columns = [
@@ -177,24 +202,41 @@ const QuitPlanDetail = () => {
           hành vi thay thế
         </Divider>
         {Array.isArray(info.detailPlan) && info.detailPlan.length > 0 ? (
-          <Table
-            columns={columns}
-            dataSource={info.detailPlan.map((item, idx) => ({
-              ...item,
-              key: idx,
-            }))}
-            pagination={false}
-            bordered
-            rowClassName={(_, idx) =>
-              completed[idx] ? "ant-table-row-success" : ""
-            }
-          />
+          <>
+            <Table
+              columns={columns}
+              dataSource={info.detailPlan.map((item, idx) => ({
+                ...item,
+                key: idx,
+              }))}
+              pagination={false}
+              bordered
+              rowClassName={(_, idx) =>
+                completed[idx] ? "ant-table-row-success" : ""
+              }
+            />
+            <div style={{ textAlign: "center", marginTop: 24 }}>
+              <button
+                onClick={handleSubmitLog}
+                style={{
+                  background: "#52c41a",
+                  color: "#fff",
+                  padding: "10px 24px",
+                  border: "none",
+                  borderRadius: 6,
+                  fontSize: 16,
+                  cursor: "pointer",
+                }}
+              >
+                Gửi kết quả ngày này
+              </button>
+            </div>
+          </>
         ) : (
           <Paragraph type="secondary" italic>
             Không có dữ liệu chi tiết cho ngày này.
           </Paragraph>
         )}
-
         <Divider orientation="left" plain>
           <CheckCircleTwoTone twoToneColor="#13c2c2" /> Chi tiết nhiệm vụ
         </Divider>

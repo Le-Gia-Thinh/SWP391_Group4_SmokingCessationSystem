@@ -1,0 +1,4 @@
+-- Bỏ ràng buộc và cột plan_id
+ALTER TABLE DAILY_SMOKING_SUMMARY DROP CONSTRAINT fk_dsm_summary_plan;
+ALTER TABLE DAILY_SMOKING_SUMMARY DROP COLUMN plan_id;
+

@@ -345,6 +345,29 @@ const QuitPlan = () => {
     setMonths(months);
     setShowModal(false);
   };
+  const handleSubmitDailyCigs = async () => {
+    try {
+      const today = dayjs().format("DD/MM/YYYY");
+      const user_id = user?.id;
+      const total_cigarettes = smokingLog[today] ?? 0;
+
+      if (!user_id || total_cigarettes === undefined) {
+        message.warning("Chưa có thông tin người dùng hoặc chưa nhập số điếu.");
+        return;
+      }
+
+      await axios.post("http://localhost:5000/api/smoking-summary", {
+        user_id,
+        date: today,
+        total_cigarettes,
+      });
+
+      message.success("✅ Đã gửi số điếu hút hôm nay!");
+    } catch (err) {
+      console.error(err);
+      message.error("❌ Gửi dữ liệu thất bại.");
+    }
+  };
 
   const handleResetPlan = async () => {
     try {
@@ -715,16 +738,16 @@ const QuitPlan = () => {
               pagination={
                 viewMode === "week"
                   ? {
-                    current: currentWeekPage,
-                    pageSize: weekPageSize,
-                    total: planData.length,
-                    showSizeChanger: false,
-                    onChange: (page) => {
-                      setCurrentWeekPage(page);
-                      sessionStorage.setItem("quitPlanPage", page); // Lưu vào session
-                    },
-                    showTotal: () => `Tuần ${currentWeekPage} / ${weekTotal}`,
-                  }
+                      current: currentWeekPage,
+                      pageSize: weekPageSize,
+                      total: planData.length,
+                      showSizeChanger: false,
+                      onChange: (page) => {
+                        setCurrentWeekPage(page);
+                        sessionStorage.setItem("quitPlanPage", page); // Lưu vào session
+                      },
+                      showTotal: () => `Tuần ${currentWeekPage} / ${weekTotal}`,
+                    }
                   : { pageSize: 30 }
               }
               rowClassName={(record) => `week-row-${record.weekIndex % 5}`}
@@ -750,6 +773,21 @@ const QuitPlan = () => {
               })}
               style={{ background: "#fff" }}
             />
+
+            <div style={{ textAlign: "center", marginTop: 24 }}>
+              <Button
+                type="primary"
+                style={{
+                  backgroundColor: "#fa541c",
+                  borderColor: "#fa541c",
+                  fontWeight: 600,
+                  padding: "8px 20px",
+                }}
+                onClick={handleSubmitDailyCigs}
+              >
+                Gửi số điếu hút hôm nay
+              </Button>
+            </div>
           </Card>
         </Col>
       </Row>
