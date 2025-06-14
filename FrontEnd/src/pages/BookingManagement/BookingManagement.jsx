@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Card, Button, Table, Tag, Modal, Form, Input, Select, message, Avatar, Space, Tooltip, Spin } from 'antd';
 import { CheckOutlined, CloseOutlined, EyeOutlined, ClockCircleOutlined, UserOutlined, ReloadOutlined } from '@ant-design/icons';
 import { useAuth } from '../../contexts/AuthContext';
+import ActionButtonGroup from '../../components/ui/ActionButtonGroup';
+import DataTable from '../../components/ui/DataTable';
+import Navbar from '../../layouts/Navbar';
 import './BookingManagement.css';
 
 const { TextArea } = Input;
@@ -207,41 +210,40 @@ const BookingManagement = () => {
         {
             title: 'Actions',
             key: 'actions',
-            render: (_, record) => (
-                <Space>
-                    <Tooltip title="View Details">
-                        <Button
-                            type="primary"
-                            icon={<EyeOutlined />}
-                            size="small"
-                            onClick={() => handleViewBooking(record)}
-                        />
-                    </Tooltip>
-                    {record.session_status === 'pending' && (
-                        <>
-                            <Tooltip title="Accept">
-                                <Button
-                                    type="primary"
-                                    icon={<CheckOutlined />}
-                                    size="small"
-                                    style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}
-                                    onClick={() => handleAcceptAppointment(record.session_id)}
-                                    loading={loading}
-                                />
-                            </Tooltip>
-                            <Tooltip title="Reject">
-                                <Button
-                                    danger
-                                    icon={<CloseOutlined />}
-                                    size="small"
-                                    onClick={() => handleRejectAppointment(record.session_id)}
-                                    loading={loading}
-                                />
-                            </Tooltip>
-                        </>
-                    )}
-                </Space>
-            ),
+            render: (_, record) => {
+                const actions = [
+                    {
+                        type: 'view',
+                        tooltip: 'View Details',
+                        onClick: handleViewBooking
+                    }
+                ];
+
+                // Add accept/reject buttons for pending bookings
+                if (record.session_status === 'pending') {
+                    actions.push(
+                        {
+                            type: 'accept',
+                            tooltip: 'Accept',
+                            onClick: handleAcceptAppointment,
+                            loading: loading
+                        },
+                        {
+                            type: 'reject',
+                            tooltip: 'Reject',
+                            onClick: handleRejectAppointment,
+                            loading: loading
+                        }
+                    );
+                }
+
+                return (
+                    <ActionButtonGroup
+                        actions={actions}
+                        record={record}
+                    />
+                );
+            },
         },
     ];
 
@@ -281,9 +283,12 @@ const BookingManagement = () => {
                 </Card>
             </div>
 
-            <Card
+            <DataTable
                 title="Booking Requests"
-                className="bookings-table-card"
+                columns={columns}
+                dataSource={bookings}
+                loading={loading}
+                rowKey="session_id"
                 extra={
                     <Button
                         icon={<ReloadOutlined />}
@@ -293,19 +298,7 @@ const BookingManagement = () => {
                         Refresh
                     </Button>
                 }
-            >
-                <Table
-                    columns={columns}
-                    dataSource={bookings}
-                    rowKey="session_id"
-                    pagination={{
-                        pageSize: 10,
-                        showSizeChanger: true,
-                        showQuickJumper: true,
-                        showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} bookings`,
-                    }}
-                />
-            </Card>
+            />
 
             {/* Booking Details Modal */}
             <Modal

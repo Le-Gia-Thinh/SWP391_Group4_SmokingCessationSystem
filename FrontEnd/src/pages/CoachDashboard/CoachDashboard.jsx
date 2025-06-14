@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Tabs, Card, Row, Col, Statistic, Button, Space, Typography, Alert, Divider, message, Modal, Form, Input } from 'antd';
 import { UserOutlined, CheckCircleOutlined, TrophyOutlined, RiseOutlined, LinkOutlined, CopyOutlined, CheckOutlined, EditOutlined, CalendarOutlined } from '@ant-design/icons';
 import { useAuth } from '../../contexts/AuthContext';
+import StatisticCard from '../../components/ui/StatisticCard';
 import BookingManagement from '../BookingManagement/BookingManagement';
 import ScheduleManagement from './ScheduleManagement';
 import Navbar from '../../layouts/Navbar';
@@ -165,45 +166,38 @@ const CoachDashboard = () => {
             {/* Stats Cards */}
             <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
                 <Col xs={24} sm={12} lg={6}>
-                    <Card>
-                        <Statistic
-                            title="Total Bookings"
-                            value={stats.totalBookings}
-                            prefix={<UserOutlined />}
-                            valueStyle={{ color: '#1890ff' }}
-                        />
-                    </Card>
+                    <StatisticCard
+                        title="Total Bookings"
+                        value={stats.totalBookings}
+                        prefix={<UserOutlined style={{ color: '#1890ff' }} />}
+                        valueStyle={{ color: '#1890ff' }}
+                    />
                 </Col>
                 <Col xs={24} sm={12} lg={6}>
-                    <Card>
-                        <Statistic
-                            title="Confirmed Sessions"
-                            value={stats.confirmedBookings}
-                            prefix={<CheckCircleOutlined />}
-                            valueStyle={{ color: '#52c41a' }}
-                        />
-                    </Card>
+                    <StatisticCard
+                        title="Confirmed Sessions"
+                        value={stats.confirmedBookings}
+                        prefix={<CheckCircleOutlined style={{ color: '#52c41a' }} />}
+                        valueStyle={{ color: '#52c41a' }}
+                    />
                 </Col>
                 <Col xs={24} sm={12} lg={6}>
-                    <Card>
-                        <Statistic
-                            title="Completed Sessions"
-                            value={stats.completedSessions}
-                            prefix={<TrophyOutlined />}
-                            valueStyle={{ color: '#722ed1' }}
-                        />
-                    </Card>
+                    <StatisticCard
+                        title="Completed Sessions"
+                        value={stats.completedSessions}
+                        prefix={<TrophyOutlined style={{ color: '#722ed1' }} />}
+                        valueStyle={{ color: '#722ed1' }}
+                    />
                 </Col>
                 <Col xs={24} sm={12} lg={6}>
-                    <Card>
-                        <Statistic
-                            title="Average Rating"
-                            value={stats.averageRating}
-                            suffix="/5"
-                            prefix={<RiseOutlined />}
-                            valueStyle={{ color: '#fa8c16' }}
-                        />
-                    </Card>
+                    <StatisticCard
+                        title="Average Rating"
+                        value={stats.averageRating}
+                        prefix={<RiseOutlined style={{ color: '#faad14' }} />}
+                        valueStyle={{ color: '#faad14' }}
+                        precision={1}
+                        suffix="/ 5"
+                    />
                 </Col>
             </Row>
 

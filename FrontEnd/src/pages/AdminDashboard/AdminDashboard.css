@@ -186,3 +186,68 @@
         transform: translateY(0);
     }
 }
+
+/* Search and Filter Controls */
+.admin-dashboard .ant-input-search {
+    border-radius: 6px;
+}
+
+.admin-dashboard .ant-input-search .ant-input {
+    border-radius: 6px 0 0 6px;
+}
+
+.admin-dashboard .ant-input-search .ant-input-search-button {
+    border-radius: 0 6px 6px 0;
+    background-color: #52c41a;
+    border-color: #52c41a;
+}
+
+.admin-dashboard .ant-input-search .ant-input-search-button:hover {
+    background-color: #389e0d;
+    border-color: #389e0d;
+}
+
+.admin-dashboard .ant-select {
+    border-radius: 6px;
+}
+
+.admin-dashboard .ant-select-selector {
+    border-radius: 6px !important;
+}
+
+/* Filter controls spacing */
+.admin-dashboard .filter-controls {
+    margin-bottom: 16px;
+    padding: 16px;
+    background-color: #fafafa;
+    border-radius: 8px;
+    border: 1px solid #f0f0f0;
+}
+
+.admin-dashboard .filter-controls .ant-col {
+    margin-bottom: 8px;
+}
+
+/* Clear filters button */
+.admin-dashboard .clear-filters-btn {
+    background-color: #f5f5f5;
+    border-color: #d9d9d9;
+    color: #666;
+}
+
+.admin-dashboard .clear-filters-btn:hover {
+    background-color: #e6f7ff;
+    border-color: #52c41a;
+    color: #52c41a;
+}
+
+/* Results counter */
+.admin-dashboard .results-counter {
+    text-align: center;
+    padding: 8px;
+    background-color: #f6ffed;
+    border: 1px solid #b7eb8f;
+    border-radius: 6px;
+    color: #52c41a;
+    font-weight: 500;
+}

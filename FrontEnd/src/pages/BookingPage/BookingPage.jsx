@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Modal, Form, Input, Select, DatePicker, TimePicker, message, Avatar, Rate, Tag, Row, Col, Typography, Spin } from 'antd';
 import { CalendarOutlined, ClockCircleOutlined, UserOutlined, StarFilled } from '@ant-design/icons';
+import FormModal from '../../components/ui/FormModal';
 import Navbar from '../../layouts/Navbar';
 import { useAuth } from '../../contexts/AuthContext';
 import './BookingPage.css';
@@ -311,78 +312,50 @@ const BookingPage = () => {
                 </div>
 
                 {/* Booking Modal */}
-                <Modal
-                    title="Book Coaching Session"
-                    open={isModalVisible}
+                <FormModal
+                    title="Book Appointment"
+                    visible={isModalVisible}
                     onCancel={handleCancel}
-                    footer={null}
+                    onSubmit={handleBookingSubmit}
+                    form={bookingForm}
+                    loading={loading}
                     width={600}
                 >
                     {selectedCoach && selectedSlot && (
-                        <div className="booking-details">
-                            <div className="coach-summary">
-                                <Avatar size={48} icon={<UserOutlined />} />
-                                <div>
-                                    <Title level={4}>{selectedCoach.name}</Title>
-                                    <Text type="secondary">{selectedCoach.specialization}</Text>
+                        <>
+                            <div style={{ marginBottom: 16 }}>
+                                <h4>Coach Information</h4>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                    <Avatar size={48} icon={<UserOutlined />} />
+                                    <div>
+                                        <div style={{ fontWeight: 'bold' }}>{selectedCoach.name}</div>
+                                        <div style={{ color: '#666' }}>{selectedCoach.specialization}</div>
+                                        <Rate disabled defaultValue={selectedCoach.rating} style={{ fontSize: 14 }} />
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="session-details">
-                                <Title level={5}>Session Details</Title>
-                                <Row gutter={[16, 8]}>
-                                    <Col span={12}>
-                                        <Text strong>Date:</Text>
-                                        <br />
-                                        <Text>{selectedDate.format('MMMM DD, YYYY')}</Text>
-                                    </Col>
-                                    <Col span={12}>
-                                        <Text strong>Time:</Text>
-                                        <br />
-                                        <Text>{selectedSlot.time} - {selectedSlot.endTime}</Text>
-                                    </Col>
-                                    <Col span={12}>
-                                        <Text strong>Duration:</Text>
-                                        <br />
-                                        <Text>{selectedSlot.duration} minutes</Text>
-                                    </Col>
-                                    <Col span={12}>
-                                        <Text strong>Coach:</Text>
-                                        <br />
-                                        <Text>{selectedCoach.name}</Text>
-                                    </Col>
-                                </Row>
+                            <div style={{ marginBottom: 16 }}>
+                                <h4>Session Details</h4>
+                                <div style={{ background: '#f6ffed', padding: 12, borderRadius: 6 }}>
+                                    <div><strong>Date:</strong> {selectedDate?.format('MMMM DD, YYYY')}</div>
+                                    <div><strong>Time:</strong> {selectedSlot.time} - {selectedSlot.endTime}</div>
+                                    <div><strong>Duration:</strong> {selectedSlot.duration} minutes</div>
+                                </div>
                             </div>
 
-                            <Form
-                                form={bookingForm}
-                                layout="vertical"
-                                onFinish={handleBookingSubmit}
+                            <Form.Item
+                                name="notes"
+                                label="Additional Notes (Optional)"
                             >
-                                <Form.Item
-                                    name="notes"
-                                    label="Additional Notes (Optional)"
-                                >
-                                    <TextArea
-                                        rows={4}
-                                        placeholder="Any specific concerns or topics you'd like to discuss..."
-                                    />
-                                </Form.Item>
-
-                                <Form.Item>
-                                    <div className="modal-actions">
-                                        <Button onClick={handleCancel}>
-                                            Cancel
-                                        </Button>
-                                        <Button type="primary" htmlType="submit" loading={loading}>
-                                            Book Session
-                                        </Button>
-                                    </div>
-                                </Form.Item>
-                            </Form>
-                        </div>
+                                <Input.TextArea
+                                    rows={4}
+                                    placeholder="Any specific concerns or topics you'd like to discuss..."
+                                />
+                            </Form.Item>
+                        </>
                     )}
-                </Modal>
+                </FormModal>
             </div>
         </div>
     );

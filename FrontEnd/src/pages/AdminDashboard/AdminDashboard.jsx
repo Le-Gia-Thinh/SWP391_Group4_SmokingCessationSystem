@@ -31,18 +31,26 @@ import {
     ReloadOutlined,
     EyeOutlined,
     CopyOutlined,
-    CheckOutlined
+    CheckOutlined,
+    SearchOutlined,
+    FilterOutlined
 } from '@ant-design/icons';
 import Navbar from '../../layouts/Navbar';
+import StatisticCard from '../../components/ui/StatisticCard';
+import DataTable from '../../components/ui/DataTable';
+import FormModal from '../../components/ui/FormModal';
+import ActionButtonGroup from '../../components/ui/ActionButtonGroup';
 import './AdminDashboard.css';
 
 const { Header, Content } = Layout;
 const { Title, Text } = Typography;
 const { Option } = Select;
+const { Search } = Input;
 
 const AdminDashboard = () => {
     // State management
     const [users, setUsers] = useState([]);
+    const [filteredUsers, setFilteredUsers] = useState([]);
     const [loading, setLoading] = useState(false);
     const [createCoachModal, setCreateCoachModal] = useState(false);
     const [editUserModal, setEditUserModal] = useState(false);
@@ -51,6 +59,11 @@ const AdminDashboard = () => {
     const [credentialsModal, setCredentialsModal] = useState(false);
     const [newCoachCredentials, setNewCoachCredentials] = useState(null);
     const [copiedField, setCopiedField] = useState('');
+
+    // Search and filter states
+    const [searchText, setSearchText] = useState('');
+    const [roleFilter, setRoleFilter] = useState('all');
+    const [statusFilter, setStatusFilter] = useState('all');
 
     // Form instances
     const [coachForm] = Form.useForm();
@@ -98,6 +111,42 @@ const AdminDashboard = () => {
         loadUsers();
     }, []);
 
+    // Filter users based on search and filters
+    useEffect(() => {
+        filterUsers();
+    }, [users, searchText, roleFilter, statusFilter]);
+
+    const filterUsers = () => {
+        let filtered = [...users];
+
+        // Search filter
+        if (searchText) {
+            filtered = filtered.filter(user =>
+                user.name.toLowerCase().includes(searchText.toLowerCase()) ||
+                user.email.toLowerCase().includes(searchText.toLowerCase()) ||
+                user.phone?.toLowerCase().includes(searchText.toLowerCase())
+            );
+        }
+
+        // Role filter
+        if (roleFilter !== 'all') {
+            filtered = filtered.filter(user => user.role === roleFilter);
+        }
+
+        // Status filter
+        if (statusFilter !== 'all') {
+            filtered = filtered.filter(user => user.status === statusFilter);
+        }
+
+        setFilteredUsers(filtered);
+    };
+
+    const clearFilters = () => {
+        setSearchText('');
+        setRoleFilter('all');
+        setStatusFilter('all');
+    };
+
     const loadUsers = async () => {
         setLoading(true);
         try {
@@ -119,7 +168,7 @@ const AdminDashboard = () => {
             await new Promise(resolve => setTimeout(resolve, 1500));
 
             const newCoach = {
-                id: users.length + 1,
+                id: Math.max(...users.map(u => u.id), 0) + 1,
                 name: values.name,
                 email: values.email,
                 phone: values.phone || '',
@@ -236,12 +285,12 @@ const AdminDashboard = () => {
         }
     };
 
-    // Calculate statistics
+    // Calculate statistics based on filtered users
     const stats = {
-        totalUsers: users.length,
-        activeCoaches: users.filter(u => u.role === 'coach' && u.status === 'active').length,
-        totalCoaches: users.filter(u => u.role === 'coach').length,
-        activeUsers: users.filter(u => u.status === 'active').length
+        totalUsers: filteredUsers.length,
+        activeCoaches: filteredUsers.filter(user => user.role === 'coach' && user.status === 'active').length,
+        totalCoaches: filteredUsers.filter(user => user.role === 'coach').length,
+        activeUsers: filteredUsers.filter(user => user.status === 'active').length,
     };
 
     // Table columns
@@ -304,41 +353,30 @@ const AdminDashboard = () => {
             title: 'Actions',
             key: 'actions',
             render: (_, record) => (
-                <Space>
-                    <Tooltip title="View Details">
-                        <Button
-                            type="primary"
-                            icon={<EyeOutlined />}
-                            size="small"
-                            onClick={() => handleViewUser(record)}
-                        />
-                    </Tooltip>
-                    <Tooltip title="Edit User">
-                        <Button
-                            type="default"
-                            icon={<EditOutlined />}
-                            size="small"
-                            onClick={() => handleEditUser(record)}
-                        />
-                    </Tooltip>
-                    <Popconfirm
-                        title="Are you sure you want to delete this user?"
-                        description="This action cannot be undone."
-                        onConfirm={() => handleDeleteUser(record.id)}
-                        okText="Yes"
-                        cancelText="No"
-                        okType="danger"
-                    >
-                        <Tooltip title="Delete User">
-                            <Button
-                                type="primary"
-                                danger
-                                icon={<DeleteOutlined />}
-                                size="small"
-                            />
-                        </Tooltip>
-                    </Popconfirm>
-                </Space>
+                <ActionButtonGroup
+                    actions={[
+                        {
+                            type: 'view',
+                            tooltip: 'View Details',
+                            onClick: handleViewUser
+                        },
+                        {
+                            type: 'edit',
+                            tooltip: 'Edit User',
+                            onClick: handleEditUser
+                        },
+                        {
+                            type: 'delete',
+                            tooltip: 'Delete User',
+                            onClick: handleDeleteUser,
+                            confirm: {
+                                title: 'Are you sure you want to delete this user?',
+                                description: 'This action cannot be undone.'
+                            }
+                        }
+                    ]}
+                    record={record}
+                />
             ),
         },
     ];
@@ -362,50 +400,104 @@ const AdminDashboard = () => {
                 {/* Statistics */}
                 <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
                     <Col xs={24} sm={12} lg={6}>
-                        <Card>
-                            <Statistic
-                                title="Total Users"
-                                value={stats.totalUsers}
-                                prefix={<TeamOutlined style={{ color: '#1890ff' }} />}
-                                valueStyle={{ color: '#1890ff' }}
-                            />
-                        </Card>
+                        <StatisticCard
+                            title="Total Users"
+                            value={stats.totalUsers}
+                            prefix={<TeamOutlined style={{ color: '#1890ff' }} />}
+                            valueStyle={{ color: '#1890ff' }}
+                        />
                     </Col>
                     <Col xs={24} sm={12} lg={6}>
-                        <Card>
-                            <Statistic
-                                title="Active Coaches"
-                                value={stats.activeCoaches}
-                                prefix={<UserOutlined style={{ color: '#52c41a' }} />}
-                                valueStyle={{ color: '#52c41a' }}
-                            />
-                        </Card>
+                        <StatisticCard
+                            title="Active Coaches"
+                            value={stats.activeCoaches}
+                            prefix={<UserOutlined style={{ color: '#52c41a' }} />}
+                            valueStyle={{ color: '#52c41a' }}
+                        />
                     </Col>
                     <Col xs={24} sm={12} lg={6}>
-                        <Card>
-                            <Statistic
-                                title="Total Coaches"
-                                value={stats.totalCoaches}
-                                prefix={<UserAddOutlined style={{ color: '#faad14' }} />}
-                                valueStyle={{ color: '#faad14' }}
-                            />
-                        </Card>
+                        <StatisticCard
+                            title="Total Coaches"
+                            value={stats.totalCoaches}
+                            prefix={<UserAddOutlined style={{ color: '#faad14' }} />}
+                            valueStyle={{ color: '#faad14' }}
+                        />
                     </Col>
                     <Col xs={24} sm={12} lg={6}>
-                        <Card>
-                            <Statistic
-                                title="Active Users"
-                                value={stats.activeUsers}
-                                prefix={<SafetyCertificateOutlined style={{ color: '#ff4d4f' }} />}
-                                valueStyle={{ color: '#ff4d4f' }}
-                            />
-                        </Card>
+                        <StatisticCard
+                            title="Active Users"
+                            value={stats.activeUsers}
+                            prefix={<SafetyCertificateOutlined style={{ color: '#ff4d4f' }} />}
+                            valueStyle={{ color: '#ff4d4f' }}
+                        />
                     </Col>
                 </Row>
 
                 {/* Actions */}
-                <Card
+                {/* Search and Filter Controls */}
+                <div className="filter-controls" style={{ marginBottom: '16px' }}>
+                    <Row gutter={[16, 16]} align="middle">
+                        <Col xs={24} sm={12} md={8}>
+                            <Search
+                                placeholder="Search by name, email, or phone"
+                                value={searchText}
+                                onChange={(e) => setSearchText(e.target.value)}
+                                allowClear
+                                style={{ width: '100%' }}
+                            />
+                        </Col>
+                        <Col xs={24} sm={12} md={4}>
+                            <Select
+                                placeholder="Filter by role"
+                                value={roleFilter}
+                                onChange={setRoleFilter}
+                                style={{ width: '100%' }}
+                                allowClear
+                            >
+                                <Option value="all">All Roles</Option>
+                                <Option value="admin">Admin</Option>
+                                <Option value="coach">Coach</Option>
+                                <Option value="member">Member</Option>
+                            </Select>
+                        </Col>
+                        <Col xs={24} sm={12} md={4}>
+                            <Select
+                                placeholder="Filter by status"
+                                value={statusFilter}
+                                onChange={setStatusFilter}
+                                style={{ width: '100%' }}
+                                allowClear
+                            >
+                                <Option value="all">All Status</Option>
+                                <Option value="active">Active</Option>
+                                <Option value="inactive">Inactive</Option>
+                                <Option value="suspended">Suspended</Option>
+                            </Select>
+                        </Col>
+                        <Col xs={24} sm={12} md={4}>
+                            <Button
+                                icon={<FilterOutlined />}
+                                onClick={clearFilters}
+                                className="clear-filters-btn"
+                                style={{ width: '100%' }}
+                            >
+                                Clear Filters
+                            </Button>
+                        </Col>
+                        <Col xs={24} sm={12} md={4}>
+                            <div className="results-counter">
+                                Showing {filteredUsers.length} of {users.length} users
+                            </div>
+                        </Col>
+                    </Row>
+                </div>
+
+                <DataTable
                     title="User Management"
+                    columns={columns}
+                    dataSource={filteredUsers}
+                    loading={loading}
+                    rowKey="id"
                     extra={
                         <Space>
                             <Button
@@ -425,193 +517,150 @@ const AdminDashboard = () => {
                             </Button>
                         </Space>
                     }
-                >
-                    <Table
-                        columns={columns}
-                        dataSource={users}
-                        loading={loading}
-                        rowKey="id"
-                        pagination={{
-                            pageSize: 10,
-                            showSizeChanger: true,
-                            showQuickJumper: true,
-                            showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} users`,
-                        }}
-                    />
-                </Card>
+                />
             </Content>
 
             {/* Create Coach Modal */}
-            <Modal
+            <FormModal
                 title="Create Coach Account"
-                open={createCoachModal}
+                visible={createCoachModal}
                 onCancel={() => setCreateCoachModal(false)}
-                footer={null}
+                onSubmit={handleCreateCoach}
+                form={coachForm}
+                loading={loading}
                 width={600}
             >
-                <Form
-                    form={coachForm}
-                    layout="vertical"
-                    onFinish={handleCreateCoach}
+                <Row gutter={16}>
+                    <Col span={12}>
+                        <Form.Item
+                            name="name"
+                            label="Full Name"
+                            rules={[{ required: true, message: 'Please enter the name!' }]}
+                        >
+                            <Input prefix={<UserOutlined />} placeholder="Enter full name" />
+                        </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                        <Form.Item
+                            name="email"
+                            label="Email"
+                            rules={[
+                                { required: true, message: 'Please enter the email!' },
+                                { type: 'email', message: 'Please enter a valid email!' }
+                            ]}
+                        >
+                            <Input prefix={<UserOutlined />} placeholder="Enter email address" />
+                        </Form.Item>
+                    </Col>
+                </Row>
+
+                <Form.Item
+                    name="phone"
+                    label="Phone Number"
                 >
-                    <Row gutter={16}>
-                        <Col span={12}>
-                            <Form.Item
-                                name="name"
-                                label="Full Name"
-                                rules={[{ required: true, message: 'Please enter the name!' }]}
-                            >
-                                <Input prefix={<UserOutlined />} placeholder="Enter full name" />
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item
-                                name="email"
-                                label="Email"
-                                rules={[
-                                    { required: true, message: 'Please enter the email!' },
-                                    { type: 'email', message: 'Please enter a valid email!' }
-                                ]}
-                            >
-                                <Input prefix={<UserOutlined />} placeholder="Enter email address" />
-                            </Form.Item>
-                        </Col>
-                    </Row>
+                    <Input placeholder="Enter phone number" />
+                </Form.Item>
 
-                    <Form.Item
-                        name="phone"
-                        label="Phone Number"
-                    >
-                        <Input placeholder="Enter phone number" />
-                    </Form.Item>
-
-                    <div style={{
-                        background: '#f6ffed',
-                        border: '1px solid #b7eb8f',
-                        borderRadius: '6px',
-                        padding: '12px',
-                        marginBottom: '16px'
-                    }}>
-                        <Text style={{ color: '#52c41a', fontWeight: '500' }}>
-                            📝 Note: The coach will receive a default password of <strong>123456</strong>
-                        </Text>
-                    </div>
-
-                    <Form.Item>
-                        <Space>
-                            <Button onClick={() => setCreateCoachModal(false)}>
-                                Cancel
-                            </Button>
-                            <Button
-                                type="primary"
-                                htmlType="submit"
-                                loading={loading}
-                                style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}
-                            >
-                                Create Coach
-                            </Button>
-                        </Space>
-                    </Form.Item>
-                </Form>
-            </Modal>
+                <div style={{
+                    background: '#f6ffed',
+                    border: '1px solid #b7eb8f',
+                    borderRadius: '6px',
+                    padding: '12px',
+                    marginBottom: '16px'
+                }}>
+                    <Text style={{ color: '#52c41a', fontWeight: '500' }}>
+                        📝 Note: The coach will receive a default password of <strong>123456</strong>
+                    </Text>
+                </div>
+            </FormModal>
 
             {/* Edit User Modal */}
-            <Modal
+            <FormModal
                 title="Edit User"
-                open={editUserModal}
-                onCancel={() => {
-                    setEditUserModal(false);
-                    setSelectedUser(null);
-                    editForm.resetFields();
-                }}
-                footer={null}
+                visible={editUserModal}
+                onCancel={() => setEditUserModal(false)}
+                onSubmit={handleUpdateUser}
+                form={editForm}
+                loading={loading}
                 width={600}
             >
-                <Form
-                    form={editForm}
-                    layout="vertical"
-                    onFinish={handleUpdateUser}
+                <Row gutter={16}>
+                    <Col span={12}>
+                        <Form.Item
+                            name="name"
+                            label="Full Name"
+                            rules={[{ required: true, message: 'Please enter the name!' }]}
+                        >
+                            <Input prefix={<UserOutlined />} placeholder="Enter full name" />
+                        </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                        <Form.Item
+                            name="email"
+                            label="Email"
+                            rules={[
+                                { required: true, message: 'Please enter the email!' },
+                                { type: 'email', message: 'Please enter a valid email!' }
+                            ]}
+                        >
+                            <Input prefix={<UserOutlined />} placeholder="Enter email address" />
+                        </Form.Item>
+                    </Col>
+                </Row>
+
+                <Row gutter={16}>
+                    <Col span={12}>
+                        <Form.Item
+                            name="phone"
+                            label="Phone Number"
+                        >
+                            <Input placeholder="Enter phone number" />
+                        </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                        <Form.Item
+                            name="role"
+                            label="Role"
+                            rules={[{ required: true, message: 'Please select a role!' }]}
+                        >
+                            <Select placeholder="Select role">
+                                <Option value="member">Member</Option>
+                                <Option value="coach">Coach</Option>
+                                <Option value="admin">Admin</Option>
+                            </Select>
+                        </Form.Item>
+                    </Col>
+                </Row>
+
+                <Form.Item
+                    name="status"
+                    label="Status"
+                    rules={[{ required: true, message: 'Please select a status!' }]}
                 >
-                    <Row gutter={16}>
-                        <Col span={12}>
-                            <Form.Item
-                                name="name"
-                                label="Full Name"
-                                rules={[{ required: true, message: 'Please enter the name!' }]}
-                            >
-                                <Input prefix={<UserOutlined />} placeholder="Enter full name" />
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item
-                                name="email"
-                                label="Email"
-                                rules={[
-                                    { required: true, message: 'Please enter the email!' },
-                                    { type: 'email', message: 'Please enter a valid email!' }
-                                ]}
-                            >
-                                <Input prefix={<UserOutlined />} placeholder="Enter email address" />
-                            </Form.Item>
-                        </Col>
-                    </Row>
+                    <Select placeholder="Select status">
+                        <Option value="active">Active</Option>
+                        <Option value="inactive">Inactive</Option>
+                        <Option value="suspended">Suspended</Option>
+                    </Select>
+                </Form.Item>
 
-                    <Row gutter={16}>
-                        <Col span={12}>
-                            <Form.Item
-                                name="phone"
-                                label="Phone Number"
-                            >
-                                <Input placeholder="Enter phone number" />
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item
-                                name="role"
-                                label="Role"
-                                rules={[{ required: true, message: 'Please select a role!' }]}
-                            >
-                                <Select placeholder="Select role">
-                                    <Option value="member">Member</Option>
-                                    <Option value="coach">Coach</Option>
-                                    <Option value="admin">Admin</Option>
-                                </Select>
-                            </Form.Item>
-                        </Col>
-                    </Row>
-
-                    <Form.Item
-                        name="status"
-                        label="Status"
-                        rules={[{ required: true, message: 'Please select a status!' }]}
-                    >
-                        <Select placeholder="Select status">
-                            <Option value="active">Active</Option>
-                            <Option value="inactive">Inactive</Option>
-                            <Option value="suspended">Suspended</Option>
-                        </Select>
-                    </Form.Item>
-
-                    <Form.Item>
-                        <Space>
-                            <Button onClick={() => {
-                                setEditUserModal(false);
-                                setSelectedUser(null);
-                                editForm.resetFields();
-                            }}>
-                                Cancel
-                            </Button>
-                            <Button
-                                type="primary"
-                                htmlType="submit"
-                                loading={loading}
-                            >
-                                Update User
-                            </Button>
-                        </Space>
-                    </Form.Item>
-                </Form>
-            </Modal>
+                {selectedUser?.role === 'coach' && (
+                    <>
+                        <Form.Item
+                            name="specialization"
+                            label="Specialization"
+                        >
+                            <Input placeholder="Enter specialization" />
+                        </Form.Item>
+                        <Form.Item
+                            name="experienceYears"
+                            label="Experience (Years)"
+                        >
+                            <Input type="number" placeholder="Enter years of experience" />
+                        </Form.Item>
+                    </>
+                )}
+            </FormModal>
 
             {/* View User Modal */}
             <Modal
