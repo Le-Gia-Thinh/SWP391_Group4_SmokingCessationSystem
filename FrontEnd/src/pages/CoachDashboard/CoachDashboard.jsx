@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Tabs, Card, Row, Col, Statistic, Table, Button, Tag, Avatar, Progress, Space, Typography } from 'antd';
-import { UserOutlined, CheckCircleOutlined, TrophyOutlined, RiseOutlined, MessageOutlined, PlusOutlined, EyeOutlined } from '@ant-design/icons';
+import React, { useState, useEffect } from 'react';
+import { Tabs, Card, Row, Col, Statistic, Button, Space, Typography, Alert, Divider } from 'antd';
+import { UserOutlined, CheckCircleOutlined, TrophyOutlined, RiseOutlined, LinkOutlined, CopyOutlined, CheckOutlined } from '@ant-design/icons';
 import { useAuth } from '../../contexts/AuthContext';
 import BookingManagement from '../BookingManagement/BookingManagement';
 import Navbar from '../../layouts/Navbar';
@@ -11,94 +11,28 @@ const { TabPane } = Tabs;
 const CoachDashboard = () => {
     const { user } = useAuth();
     const [activeTab, setActiveTab] = useState('overview');
+    const [copied, setCopied] = useState(false);
 
     // Mock data for Coach - Dữ liệu mẫu cho Coach
-    const mockStudents = [
-        { id: 1, name: 'John Smith', progress: 75, lastContact: '2 days ago', status: 'active' },
-        { id: 2, name: 'Emma Johnson', progress: 45, lastContact: '1 week ago', status: 'active' },
-        { id: 3, name: 'Michael Brown', progress: 90, lastContact: '3 days ago', status: 'completed' },
-        { id: 4, name: 'Sarah Davis', progress: 30, lastContact: '5 days ago', status: 'inactive' }
-    ];
-
     const mockStats = {
-        totalStudents: 12,
-        activeStudents: 8,
-        completedPlans: 3,
-        averageProgress: 68
+        totalBookings: 15,
+        confirmedBookings: 8,
+        completedSessions: 12,
+        averageRating: 4.8
     };
 
-    const getStatusColor = (status) => {
-        switch (status) {
-            case 'active': return 'green';
-            case 'completed': return 'blue';
-            case 'inactive': return 'default';
-            default: return 'default';
-        }
+    // Generate fixed Google Meet link for coach
+    const generateMeetLink = (coachId) => {
+        return `https://meet.google.com/quit-smoking-coach-${coachId}`;
     };
 
-    const getStatusText = (status) => {
-        switch (status) {
-            case 'active': return 'Active';
-            case 'completed': return 'Completed';
-            case 'inactive': return 'Inactive';
-            default: return status;
-        }
-    };
+    const coachMeetLink = generateMeetLink(user?.id || '001');
 
-    const studentColumns = [
-        {
-            title: 'Student',
-            dataIndex: 'name',
-            key: 'name',
-            render: (name) => (
-                <Space>
-                    <Avatar icon={<UserOutlined />} />
-                    <Text strong>{name}</Text>
-                </Space>
-            ),
-        },
-        {
-            title: 'Progress',
-            dataIndex: 'progress',
-            key: 'progress',
-            render: (progress) => (
-                <Space direction="vertical" size="small" style={{ width: '100%' }}>
-                    <Progress percent={progress} size="small" />
-                    <Text type="secondary">{progress}%</Text>
-                </Space>
-            ),
-        },
-        {
-            title: 'Last Contact',
-            dataIndex: 'lastContact',
-            key: 'lastContact',
-            render: (contact) => <Text type="secondary">{contact}</Text>,
-        },
-        {
-            title: 'Status',
-            dataIndex: 'status',
-            key: 'status',
-            render: (status) => (
-                <Tag color={getStatusColor(status)}>
-                    {getStatusText(status)}
-                </Tag>
-            ),
-        },
-        {
-            title: 'Actions',
-            key: 'actions',
-            render: () => (
-                <Space>
-                    <Button type="link" icon={<EyeOutlined />} size="small">
-                        View Details
-                    </Button>
-                    <Button type="link" icon={<MessageOutlined />} size="small">
-                        Message
-                    </Button>
-                </Space>
-            ),
-        },
-    ];
+    const handleCopyMeetLink = () => {
+        navigator.clipboard.writeText(coachMeetLink);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
 
     const OverviewTab = () => (
         <div style={{ padding: '24px 0' }}>
@@ -106,8 +40,56 @@ const CoachDashboard = () => {
             <Card style={{ marginBottom: 24 }}>
                 <Title level={2}>Welcome, {user?.name}!</Title>
                 <Text type="secondary">
-                    This is the Coach Dashboard. You can manage students and track their smoking cessation progress.
+                    This is your Coach Dashboard. Manage your bookings and help users quit smoking.
                 </Text>
+            </Card>
+
+            {/* Google Meet Link Section */}
+            <Card title="Your Google Meet Link" style={{ marginBottom: 24 }}>
+                <Alert
+                    message="Fixed Meet Link"
+                    description="This is your permanent Google Meet link that will be automatically shared with users when they book sessions with you."
+                    type="info"
+                    showIcon
+                    style={{ marginBottom: 16 }}
+                />
+
+                <div style={{
+                    background: '#f6ffed',
+                    border: '1px solid #b7eb8f',
+                    borderRadius: '8px',
+                    padding: '16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
+                }}>
+                    <div style={{ flex: 1 }}>
+                        <LinkOutlined style={{ color: '#52c41a', marginRight: 8 }} />
+                        <Text code style={{ fontSize: '16px' }}>
+                            {coachMeetLink}
+                        </Text>
+                    </div>
+                    <Button
+                        type="primary"
+                        icon={copied ? <CheckOutlined /> : <CopyOutlined />}
+                        onClick={handleCopyMeetLink}
+                        style={{ marginLeft: 16 }}
+                    >
+                        {copied ? 'Copied!' : 'Copy Link'}
+                    </Button>
+                </div>
+
+                <Divider />
+
+                <div style={{ color: '#666', fontSize: '14px' }}>
+                    <Text strong>How it works:</Text>
+                    <ul style={{ marginTop: 8, paddingLeft: 20 }}>
+                        <li>Users book sessions with you through the booking system</li>
+                        <li>When you confirm a booking, this Meet link is automatically sent to the user</li>
+                        <li>Users can join the meeting using this link at the scheduled time</li>
+                        <li>This link remains the same for all your sessions</li>
+                    </ul>
+                </div>
             </Card>
 
             {/* Stats Cards */}
@@ -115,8 +97,8 @@ const CoachDashboard = () => {
                 <Col xs={24} sm={12} lg={6}>
                     <Card>
                         <Statistic
-                            title="Total Students"
-                            value={mockStats.totalStudents}
+                            title="Total Bookings"
+                            value={mockStats.totalBookings}
                             prefix={<UserOutlined />}
                             valueStyle={{ color: '#1890ff' }}
                         />
@@ -125,8 +107,8 @@ const CoachDashboard = () => {
                 <Col xs={24} sm={12} lg={6}>
                     <Card>
                         <Statistic
-                            title="Active Students"
-                            value={mockStats.activeStudents}
+                            title="Confirmed Sessions"
+                            value={mockStats.confirmedBookings}
                             prefix={<CheckCircleOutlined />}
                             valueStyle={{ color: '#52c41a' }}
                         />
@@ -135,8 +117,8 @@ const CoachDashboard = () => {
                 <Col xs={24} sm={12} lg={6}>
                     <Card>
                         <Statistic
-                            title="Completed Plans"
-                            value={mockStats.completedPlans}
+                            title="Completed Sessions"
+                            value={mockStats.completedSessions}
                             prefix={<TrophyOutlined />}
                             valueStyle={{ color: '#722ed1' }}
                         />
@@ -145,9 +127,9 @@ const CoachDashboard = () => {
                 <Col xs={24} sm={12} lg={6}>
                     <Card>
                         <Statistic
-                            title="Average Progress"
-                            value={mockStats.averageProgress}
-                            suffix="%"
+                            title="Average Rating"
+                            value={mockStats.averageRating}
+                            suffix="/5"
                             prefix={<RiseOutlined />}
                             valueStyle={{ color: '#fa8c16' }}
                         />
@@ -155,45 +137,17 @@ const CoachDashboard = () => {
                 </Col>
             </Row>
 
-            {/* Students List */}
-            <Card
-                title="Students List"
-                extra={
-                    <Button type="primary" icon={<PlusOutlined />}>
-                        Add New Student
-                    </Button>
-                }
-                style={{ marginBottom: 24 }}
-            >
-                <Table
-                    columns={studentColumns}
-                    dataSource={mockStudents}
-                    rowKey="id"
-                    pagination={{
-                        pageSize: 10,
-                        showSizeChanger: true,
-                        showQuickJumper: true,
-                        showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} students`,
-                    }}
-                />
-            </Card>
-
             {/* Quick Actions */}
             <Card title="Quick Actions">
                 <Row gutter={[16, 16]}>
                     <Col xs={24} md={8}>
                         <Card hoverable>
                             <Space direction="vertical" align="center" style={{ width: '100%' }}>
-                                <PlusOutlined style={{ fontSize: 24, color: '#1890ff' }} />
-                                <Text strong>Create New Plan</Text>
-                            </Space>
-                        </Card>
-                    </Col>
-                    <Col xs={24} md={8}>
-                        <Card hoverable>
-                            <Space direction="vertical" align="center" style={{ width: '100%' }}>
-                                <MessageOutlined style={{ fontSize: 24, color: '#52c41a' }} />
-                                <Text strong>Send Bulk Message</Text>
+                                <CheckCircleOutlined style={{ fontSize: 24, color: '#52c41a' }} />
+                                <Text strong>Review Bookings</Text>
+                                <Text type="secondary" style={{ fontSize: '12px' }}>
+                                    Check and respond to new booking requests
+                                </Text>
                             </Space>
                         </Card>
                     </Col>
@@ -201,7 +155,21 @@ const CoachDashboard = () => {
                         <Card hoverable>
                             <Space direction="vertical" align="center" style={{ width: '100%' }}>
                                 <TrophyOutlined style={{ fontSize: 24, color: '#722ed1' }} />
-                                <Text strong>View Reports</Text>
+                                <Text strong>Session History</Text>
+                                <Text type="secondary" style={{ fontSize: '12px' }}>
+                                    View completed sessions and feedback
+                                </Text>
+                            </Space>
+                        </Card>
+                    </Col>
+                    <Col xs={24} md={8}>
+                        <Card hoverable>
+                            <Space direction="vertical" align="center" style={{ width: '100%' }}>
+                                <RiseOutlined style={{ fontSize: 24, color: '#fa8c16' }} />
+                                <Text strong>Performance Stats</Text>
+                                <Text type="secondary" style={{ fontSize: '12px' }}>
+                                    Track your coaching performance
+                                </Text>
                             </Space>
                         </Card>
                     </Col>

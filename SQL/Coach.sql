@@ -1,3 +1,5 @@
+-- CHUA CHINH THUC
+
 -- Table: Lịch trống của Coach (Coach tạo trước)
 CREATE TABLE COACH_SCHEDULE (
   schedule_id INT IDENTITY(1,1) PRIMARY KEY,
