@@ -36,6 +36,7 @@ const QuitPlanDetail = () => {
       "Không có dữ liệu cụ thể. Hãy vào từ trang kế hoạch để xem chi tiết.",
     ],
   };
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const info = data && data.detailPlan ? data : fallback;
 
@@ -48,7 +49,12 @@ const QuitPlanDetail = () => {
   }
 
   useEffect(() => {
-    fetch(`/api/habit-log?date=${date}`)
+    const token = localStorage.getItem("token");
+      fetch(`http://localhost:5000/api/habit-log?date=${date}`, {
+        headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
       .then((res) => res.json())
       .then((result) => {
         if (Array.isArray(result)) {
@@ -58,50 +64,57 @@ const QuitPlanDetail = () => {
       .catch(() => {});
   }, [date]);
 
+  useEffect(() => {
+  const flag = localStorage.getItem(`submitted_${date}`);
+  if (flag === "true") {
+    setIsSubmitted(true);
+    }
+  }, [date]);
+
   const handleCheckbox = (idx) => {
     const updated = [...completed];
     updated[idx] = !updated[idx];
     setCompleted(updated);
-
-    fetch("/api/habit-log", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        date,
-        timeSlot: idx,
-        completed: updated[idx],
-        points: 1,
-      }),
-    });
-
     message.success("Đã ghi nhận hành vi không hút thuốc!");
   };
 
   const handleSubmitLog = async () => {
-    try {
-      const response = await fetch("/api/habit-log/bulk", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          date,
-          entries: completed.map((status, idx) => ({
-            timeSlot: idx,
-            completed: status,
-            points: status ? 1 : 0,
-          })),
-        }),
-      });
+  const isConfirmed = window.confirm(`Bạn có chắc chắn muốn gửi kết quả cho ngày ${date}?`);
 
-      if (response.ok) {
-        message.success("Đã gửi toàn bộ kết quả cho ngày " + date);
-      } else {
-        message.error("Không thể gửi kết quả. Vui lòng thử lại.");
-      }
-    } catch (err) {
-      console.error(err);
-      message.error("Lỗi gửi dữ liệu.");
+  if (!isConfirmed) {
+    return; // Hủy gửi
+  }
+
+  try {
+    const token = localStorage.getItem("token");
+    const response = await fetch("http://localhost:5000/api/habit-log/bulk", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        date,
+        entries: completed.map((status, idx) => ({
+          timeSlot: idx,
+          completed: status,
+          points: status ? 1 : 0,
+        })),
+      }),
+    });
+
+    if (response.ok) {
+      message.success("Đã gửi toàn bộ kết quả cho ngày " + date);
+      setIsSubmitted(true); // Ẩn nút sau khi gửi
+      localStorage.setItem(`submitted_${date}`, "true");
+    } else {
+      message.error("Không thể gửi kết quả. Vui lòng thử lại.");
     }
-  };
+  } catch (err) {
+    console.error(err);
+    message.error("Lỗi gửi dữ liệu.");
+  }
+};
 
   const columns = [
     {
@@ -148,7 +161,11 @@ const QuitPlanDetail = () => {
           boxShadow: "0 4px 24px #0001",
           background: "#fff",
         }}
-        bodyStyle={{ padding: 32 }}
+        styles={{
+          body: {
+            padding: 32,
+          },
+        }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <FireTwoTone twoToneColor="#ff7875" style={{ fontSize: 36 }} />
@@ -162,7 +179,7 @@ const QuitPlanDetail = () => {
         <Divider />
         <div style={{ display: "flex", gap: 32, marginBottom: 16 }}>
           <Badge.Ribbon text={`Tuần ${weekNumber}`} color="cyan">
-            <Card size="small" bordered={false} style={{ minWidth: 160 }}>
+            <Card size="small" variant="borderless" style={{ minWidth: 160 }}>
               <Paragraph>
                 <strong>Tiến trình:</strong>{" "}
                 <Tag color="success" style={{ fontWeight: 600 }}>
@@ -217,20 +234,27 @@ const QuitPlanDetail = () => {
             />
             <div style={{ textAlign: "center", marginTop: 24 }}>
               <button
-                onClick={handleSubmitLog}
+                onClick={() => {
+                  if (isSubmitted) {
+                    message.info("Bạn đã nộp kết quả cho hôm nay rồi.");
+                    return;
+                  }
+                  handleSubmitLog(); // chỉ gọi nếu chưa gửi
+                }}
+                disabled={isSubmitted}
                 style={{
-                  background: "#52c41a",
+                  background: isSubmitted ? "#ccc" : "#52c41a",
                   color: "#fff",
                   padding: "10px 24px",
                   border: "none",
                   borderRadius: 6,
                   fontSize: 16,
-                  cursor: "pointer",
+                  cursor: isSubmitted ? "not-allowed" : "pointer",
                 }}
               >
-                Gửi kết quả ngày này
+                {isSubmitted ? "Đã gửi kết quả hôm nay" : "Gửi kết quả ngày này"}
               </button>
-            </div>
+          </div>
           </>
         ) : (
           <Paragraph type="secondary" italic>

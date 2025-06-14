@@ -7,7 +7,7 @@ const cors = require('cors');
 const passport = require('./config/passport');
 const authRoutes = require('./routes/auth');
 const roleRoutes = require('./routes/roleTestRoutes');
-
+const habitLogRoutes = require('./routes/habitLogRoutes');
 
 
 
@@ -50,6 +50,7 @@ app.use(
   })
 );
 
+
 // 4) Khởi tạo Passport và session support
 app.use(passport.initialize());
 app.use(passport.session());
@@ -57,6 +58,9 @@ app.use(passport.session());
 app.use('/api/auth', authRoutes);
 // 5.1) Route phân quyền
 app.use('/api/role', roleRoutes);
+
+//xử lý phần submit từ plan
+app.use('/api/habit-log', habitLogRoutes);
 
 // 6) Middleware log request
 app.use((req, res, next) => {
@@ -73,12 +77,13 @@ app.get('/', (req, res) => {
 app.use((err, req, res, next) => {
   console.error('Unhandled error:', err);
   res.status(500).json({ success: false, message: 'Lỗi server không xác định' });
-});
+})
 
 // 9) 404 handler
 app.use('*', (req, res) => {
   res.status(404).json({ success: false, message: 'Endpoint không tồn tại' });
 });
+
 
 
 const PORT = process.env.PORT || 5000;
