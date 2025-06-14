@@ -1,0 +1,188 @@
+/* Admin Dashboard with Ant Design */
+.admin-dashboard {
+    min-height: 100vh;
+    background-color: #f5f5f5;
+}
+
+.admin-dashboard .ant-layout-header {
+    background: transparent;
+    padding: 0;
+    height: auto;
+    line-height: normal;
+}
+
+.admin-dashboard .ant-layout-content {
+    background-color: #f5f5f5;
+    padding: 24px;
+    min-height: calc(100vh - 64px);
+}
+
+/* Custom theme colors */
+.admin-dashboard .ant-btn-primary {
+    background-color: #52c41a;
+    border-color: #52c41a;
+}
+
+.admin-dashboard .ant-btn-primary:hover {
+    background-color: #389e0d;
+    border-color: #389e0d;
+}
+
+.admin-dashboard .ant-btn-primary:focus {
+    background-color: #52c41a;
+    border-color: #52c41a;
+}
+
+/* Card styling */
+.admin-dashboard .ant-card {
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.admin-dashboard .ant-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.admin-dashboard .ant-card-head {
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.admin-dashboard .ant-card-head-title {
+    font-weight: 600;
+    color: #2d3748;
+}
+
+/* Table styling */
+.admin-dashboard .ant-table {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.admin-dashboard .ant-table-thead>tr>th {
+    background-color: #fafafa;
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.admin-dashboard .ant-table-tbody>tr:hover>td {
+    background-color: #f6ffed;
+}
+
+/* Form styling */
+.admin-dashboard .ant-form-item-label>label {
+    font-weight: 500;
+    color: #2d3748;
+}
+
+.admin-dashboard .ant-input,
+.admin-dashboard .ant-select-selector {
+    border-radius: 6px;
+}
+
+.admin-dashboard .ant-input:focus,
+.admin-dashboard .ant-select-focused .ant-select-selector {
+    border-color: #52c41a;
+    box-shadow: 0 0 0 2px rgba(82, 196, 26, 0.2);
+}
+
+/* Tag styling */
+.admin-dashboard .ant-tag {
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+/* Avatar styling */
+.admin-dashboard .ant-avatar {
+    border: 2px solid #f0f0f0;
+}
+
+/* Modal styling */
+.admin-dashboard .ant-modal-content {
+    border-radius: 8px;
+}
+
+.admin-dashboard .ant-modal-header {
+    border-bottom: 1px solid #f0f0f0;
+    border-radius: 8px 8px 0 0;
+}
+
+.admin-dashboard .ant-modal-title {
+    font-weight: 600;
+    color: #2d3748;
+}
+
+/* Statistics styling */
+.admin-dashboard .ant-statistic-title {
+    color: #666;
+    font-weight: 500;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .admin-dashboard .ant-layout-content {
+        padding: 16px;
+    }
+
+    .admin-dashboard .ant-card {
+        margin-bottom: 16px;
+    }
+
+    .admin-dashboard .ant-table {
+        font-size: 12px;
+    }
+}
+
+/* Loading states */
+.admin-dashboard .ant-spin-dot {
+    color: #52c41a;
+}
+
+/* Message styling */
+.admin-dashboard .ant-message-notice-content {
+    border-radius: 6px;
+}
+
+/* Tooltip styling */
+.admin-dashboard .ant-tooltip-inner {
+    border-radius: 4px;
+}
+
+/* Popconfirm styling */
+.admin-dashboard .ant-popover-inner {
+    border-radius: 6px;
+}
+
+/* Pagination styling */
+.admin-dashboard .ant-pagination-item-active {
+    border-color: #52c41a;
+}
+
+.admin-dashboard .ant-pagination-item-active a {
+    color: #52c41a;
+}
+
+.admin-dashboard .ant-pagination-item:hover {
+    border-color: #52c41a;
+}
+
+.admin-dashboard .ant-pagination-item:hover a {
+    color: #52c41a;
+}
+
+/* Animation */
+.admin-dashboard .ant-card {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
