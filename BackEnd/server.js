@@ -9,6 +9,7 @@ const authRoutes = require('./routes/auth');
 const roleRoutes = require('./routes/roleTestRoutes');
 const scheduleRoutes = require('./routes/schedule');
 const appointmentRoutes = require('./routes/appointment');
+const coachRoutes = require('./routes/coach');  
 
 const app = express();
 
@@ -59,6 +60,8 @@ app.use('/api/role', roleRoutes);
 app.use('/api/schedule', scheduleRoutes);   
 // 5.3) Route đặt lịch và quản lý lịch tư vấn
 app.use('/api/appointment', appointmentRoutes);
+
+app.use('/api/coach', coachRoutes);   
 
 // 6) Middleware log request
 app.use((req, res, next) => {
