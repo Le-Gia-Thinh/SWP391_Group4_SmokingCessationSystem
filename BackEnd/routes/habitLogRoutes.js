@@ -1,14 +1,16 @@
 // routes/habitLogRoutes.js
 const express = require("express");
 const router = express.Router();
-
-const { auth } = require("../middleware/auth");
 const {
   getHabitLogByDate,
-  submitHabitLogBulk, // <== Sửa lại đúng tên
+  submitSingleLog,
+  deleteHabitLogEntry,
 } = require("../controllers/habitLogController");
 
-router.get("/", auth, getHabitLogByDate);
-router.post("/bulk", auth, submitHabitLogBulk); // <== Đúng tên hàm export
+const { auth } = require("../middleware/auth");
+
+router.get("/", auth, getHabitLogByDate);              // Lấy dữ liệu theo ngày
+router.post("/", auth, submitSingleLog);               // Gửi 1 log (tick hoặc bỏ tick)
+router.delete("/", auth, deleteHabitLogEntry);         // Xóa log nếu cần
 
 module.exports = router;

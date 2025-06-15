@@ -36,6 +36,9 @@ app.use('/api/ftnd', ftndRoutes);
 const quitPlanRoutes = require("./routes/quitPlan");
 app.use("/api/quitplan", quitPlanRoutes);
 
+// hien muc do nghien
+const customerRoutes = require("./routes/customer");
+app.use("/api/customer", customerRoutes); 
 
 // 3) Session middleware (phải nằm trước passport.session())
 app.use(

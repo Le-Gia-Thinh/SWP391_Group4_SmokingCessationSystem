@@ -23,7 +23,7 @@ const { Title, Paragraph } = Typography;
 
 const QuitPlanDetail = () => {
   const location = useLocation();
-  const { date } = useParams();
+  const { date } = useParams(); // dạng DD-MM-YYYY
   const data = location.state;
   const [completed, setCompleted] = useState(Array(9).fill(false));
 
@@ -36,7 +36,6 @@ const QuitPlanDetail = () => {
       "Không có dữ liệu cụ thể. Hãy vào từ trang kế hoạch để xem chi tiết.",
     ],
   };
-  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const info = data && data.detailPlan ? data : fallback;
 
@@ -48,73 +47,64 @@ const QuitPlanDetail = () => {
     weekNumber = Math.floor(diffDays / 7) + 1;
   }
 
+  // 🔄 Load dữ liệu từ DB khi mở trang
   useEffect(() => {
     const token = localStorage.getItem("token");
-      fetch(`http://localhost:5000/api/habit-log?date=${date}`, {
-        headers: {
+    const formattedDate = dayjs(date, ["DD/MM/YYYY", "YYYY-MM-DD"]).format(
+      "YYYY-MM-DD"
+    );
+
+    fetch(`http://localhost:5000/api/habit-log?date=${formattedDate}`, {
+      headers: {
         Authorization: `Bearer ${token}`,
       },
     })
       .then((res) => res.json())
       .then((result) => {
-        if (Array.isArray(result)) {
-          setCompleted(result);
+        if (Array.isArray(result.data)) {
+          setCompleted(result.data.map((x) => !!x));
         }
       })
-      .catch(() => {});
+      .catch((err) => {
+        console.error("Lỗi lấy habit log:", err);
+      });
   }, [date]);
 
-  useEffect(() => {
-  const flag = localStorage.getItem(`submitted_${date}`);
-  if (flag === "true") {
-    setIsSubmitted(true);
-    }
-  }, [date]);
-
-  const handleCheckbox = (idx) => {
+  // ✅ Tick / Bỏ tick checkbox
+  const handleCheckbox = async (idx) => {
     const updated = [...completed];
-    updated[idx] = !updated[idx];
+    const newState = !updated[idx];
+    updated[idx] = newState;
     setCompleted(updated);
-    message.success("Đã ghi nhận hành vi không hút thuốc!");
-  };
 
-  const handleSubmitLog = async () => {
-  const isConfirmed = window.confirm(`Bạn có chắc chắn muốn gửi kết quả cho ngày ${date}?`);
-
-  if (!isConfirmed) {
-    return; // Hủy gửi
-  }
-
-  try {
     const token = localStorage.getItem("token");
-    const response = await fetch("http://localhost:5000/api/habit-log/bulk", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        date,
-        entries: completed.map((status, idx) => ({
-          timeSlot: idx,
-          completed: status,
-          points: status ? 1 : 0,
-        })),
-      }),
-    });
+    const formattedDate = dayjs(date, [
+      "DD-MM-YYYY",
+      "DD/MM/YYYY",
+      "YYYY-MM-DD",
+    ]).format("YYYY-MM-DD");
 
-    if (response.ok) {
-      message.success("Đã gửi toàn bộ kết quả cho ngày " + date);
-      setIsSubmitted(true); // Ẩn nút sau khi gửi
-      localStorage.setItem(`submitted_${date}`, "true");
-    } else {
-      message.error("Không thể gửi kết quả. Vui lòng thử lại.");
+    try {
+      await fetch("http://localhost:5000/api/habit-log", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          date: formattedDate,
+          timeSlot: idx,
+          completed: newState,
+          points: newState ? 1 : 0,
+        }),
+      });
+
+      message.success(newState ? "✅ Đã ghi nhận!" : "🗑️ Đã bỏ tích!");
+    } catch (err) {
+      console.error("Lỗi khi ghi log:", err);
+      message.error("Lỗi cập nhật hành vi.");
     }
-  } catch (err) {
-    console.error(err);
-    message.error("Lỗi gửi dữ liệu.");
-  }
-};
+  };
 
   const columns = [
     {
@@ -161,11 +151,7 @@ const QuitPlanDetail = () => {
           boxShadow: "0 4px 24px #0001",
           background: "#fff",
         }}
-        styles={{
-          body: {
-            padding: 32,
-          },
-        }}
+        bodyStyle={{ padding: 32 }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <FireTwoTone twoToneColor="#ff7875" style={{ fontSize: 36 }} />
@@ -179,7 +165,7 @@ const QuitPlanDetail = () => {
         <Divider />
         <div style={{ display: "flex", gap: 32, marginBottom: 16 }}>
           <Badge.Ribbon text={`Tuần ${weekNumber}`} color="cyan">
-            <Card size="small" variant="borderless" style={{ minWidth: 160 }}>
+            <Card size="small" bordered={false} style={{ minWidth: 160 }}>
               <Paragraph>
                 <strong>Tiến trình:</strong>{" "}
                 <Tag color="success" style={{ fontWeight: 600 }}>
@@ -219,43 +205,18 @@ const QuitPlanDetail = () => {
           hành vi thay thế
         </Divider>
         {Array.isArray(info.detailPlan) && info.detailPlan.length > 0 ? (
-          <>
-            <Table
-              columns={columns}
-              dataSource={info.detailPlan.map((item, idx) => ({
-                ...item,
-                key: idx,
-              }))}
-              pagination={false}
-              bordered
-              rowClassName={(_, idx) =>
-                completed[idx] ? "ant-table-row-success" : ""
-              }
-            />
-            <div style={{ textAlign: "center", marginTop: 24 }}>
-              <button
-                onClick={() => {
-                  if (isSubmitted) {
-                    message.info("Bạn đã nộp kết quả cho hôm nay rồi.");
-                    return;
-                  }
-                  handleSubmitLog(); // chỉ gọi nếu chưa gửi
-                }}
-                disabled={isSubmitted}
-                style={{
-                  background: isSubmitted ? "#ccc" : "#52c41a",
-                  color: "#fff",
-                  padding: "10px 24px",
-                  border: "none",
-                  borderRadius: 6,
-                  fontSize: 16,
-                  cursor: isSubmitted ? "not-allowed" : "pointer",
-                }}
-              >
-                {isSubmitted ? "Đã gửi kết quả hôm nay" : "Gửi kết quả ngày này"}
-              </button>
-          </div>
-          </>
+          <Table
+            columns={columns}
+            dataSource={info.detailPlan.map((item, idx) => ({
+              ...item,
+              key: idx,
+            }))}
+            pagination={false}
+            bordered
+            rowClassName={(_, idx) =>
+              completed[idx] ? "ant-table-row-success" : ""
+            }
+          />
         ) : (
           <Paragraph type="secondary" italic>
             Không có dữ liệu chi tiết cho ngày này.

@@ -45,3 +45,21 @@ exports.submitFTNDResult = async (req, res) => {
     res.status(500).json({ message: "Lỗi server" });
   }
 };
+
+exports.getFtndLevel = async (req, res) => {
+  try {
+    await poolConnect;
+    const result = await pool
+      .request()
+      .input("user_id", sql.Int, req.params.userId)
+      .query("SELECT ftnd_level FROM CUSTOMER WHERE user_id = @user_id");
+
+    const level = result.recordset[0]?.ftnd_level;
+    res.json({ ftnd_level: level || null });
+  } catch (err) {
+    console.error("Lỗi getFtndLevel:", err);
+    res.status(500).json({ msg: "Lỗi server" });
+  }
+};
+
+

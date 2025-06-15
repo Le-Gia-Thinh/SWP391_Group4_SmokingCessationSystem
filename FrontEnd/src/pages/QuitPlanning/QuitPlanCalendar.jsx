@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   DatePicker,
   InputNumber,
@@ -318,7 +318,24 @@ const QuitPlan = () => {
     const savedPage = sessionStorage.getItem("quitPlanPage");
     return savedPage ? parseInt(savedPage, 10) : 1;
   });
+  const [ftndLevel, setFtndLevel] = useState("");
   const navigate = useNavigate();
+
+  // Lấy mức độ nghiện từ API
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user?.id) {
+      setFtndLevel("Không xác định");
+      return;
+    }
+
+    fetch(`http://localhost:5000/api/customer/ftnd-level/${user.id}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setFtndLevel(data.ftnd_level || "Không xác định");
+      })
+      .catch(() => setFtndLevel("Không xác định"));
+  }, []);
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
@@ -539,11 +556,16 @@ const QuitPlan = () => {
         const value = smokingLog[date] || 0;
         const suggested = record.suggestedCigs;
         const isOverLimit = value > suggested;
+
+        const isPast = dayjs(date, "DD/MM/YYYY").isBefore(dayjs(), "day");
+
         return (
           <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
             <Tooltip
               title={
-                isOverLimit
+                isPast
+                  ? "Không thể sửa dữ liệu ngày trong quá khứ"
+                  : isOverLimit
                   ? `Vượt quá gợi ý (${suggested} điếu)`
                   : "Nhập số điếu bạn đã hút"
               }
@@ -556,18 +578,79 @@ const QuitPlan = () => {
                   borderColor: isOverLimit ? "red" : undefined,
                   background: isOverLimit ? "#fff1f0" : undefined,
                 }}
+                disabled={isPast}
                 onChange={(val) => {
                   setSmokingLog((prev) => ({ ...prev, [date]: val }));
                   updateWeeklyCigUsage(date, val);
+
+                  const formatted = dayjs(date, "DD/MM/YYYY").format(
+                    "YYYY-MM-DD"
+                  );
+                  const token = localStorage.getItem("token");
+
+                  fetch("http://localhost:5000/api/smoking-summary/single", {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                      Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                      date: formatted,
+                      total_cigarettes: val,
+                    }),
+                  })
+                    .then((res) => res.json())
+                    .then((res) => {
+                      if (res.success) {
+                        message.success("✅ Đã lưu!");
+                      } else {
+                        message.error("❌ Không thể lưu.");
+                      }
+                    })
+                    .catch((err) => {
+                      console.error("Lỗi khi lưu:", err);
+                      message.error("❌ Lỗi khi kết nối server.");
+                    });
                 }}
               />
             </Tooltip>
+
             <Button
               size="small"
               type="link"
+              disabled={isPast}
               onClick={() => {
                 setSmokingLog((prev) => ({ ...prev, [date]: suggested }));
                 updateWeeklyCigUsage(date, suggested);
+
+                const formatted = dayjs(date, "DD/MM/YYYY").format(
+                  "YYYY-MM-DD"
+                );
+                const token = localStorage.getItem("token");
+
+                fetch("http://localhost:5000/api/smoking-summary/single", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                  },
+                  body: JSON.stringify({
+                    date: formatted,
+                    total_cigarettes: suggested,
+                  }),
+                })
+                  .then((res) => res.json())
+                  .then((res) => {
+                    if (res.success) {
+                      message.success("✅ Đã lưu theo gợi ý!");
+                    } else {
+                      message.error("❌ Không thể lưu.");
+                    }
+                  })
+                  .catch((err) => {
+                    console.error("Lỗi khi lưu:", err);
+                    message.error("❌ Lỗi khi kết nối server.");
+                  });
               }}
               style={{ padding: 0 }}
             >
@@ -577,6 +660,7 @@ const QuitPlan = () => {
         );
       },
     },
+
     {
       title: "Còn lại",
       dataIndex: "remainingCigs",
@@ -640,7 +724,7 @@ const QuitPlan = () => {
             <Alert
               message={
                 <span style={{ fontWeight: 500 }}>
-                  Mức độ nghiện hiện tại: Trung bình
+                  Mức độ nghiện hiện tại: <b>{ftndLevel}</b>
                 </span>
               }
               description={
