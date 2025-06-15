@@ -108,14 +108,24 @@ passport.use(new GoogleStrategy({
 
     // Nếu chưa có user, tạo mới trong database
     console.log('🆕 Creating new user...');
-    const username = profile.emails[0].value.split('@')[0];
+    
+    let username = profile.emails[0].value.split('@')[0];
+
+    // Kiểm tra username đã tồn tại chưa
+    const checkUsername = await pool.request()
+      .input('username', sql.VarChar, username)
+      .query('SELECT 1 FROM CUSTOMER WHERE username = @username');
+
+    if (checkUsername.recordset.length > 0) {
+      username = `${username}_${Date.now()}`; // thêm thời gian để tránh trùng
+    } 
 
     const insertResult = await pool.request()
       .input('email', sql.VarChar, profile.emails[0].value)
       .input('name', sql.VarChar, profile.displayName)
       .input('username', sql.VarChar, username)
       .input('status', sql.VarChar, 'active')
-      .input('role', sql.VarChar, 'google')
+      .input('role', sql.VarChar, 'member')
       .input('created', sql.DateTime, new Date())
       .query(`
         INSERT INTO CUSTOMER (email, full_name, username, account_status, user_role, registration_date)
