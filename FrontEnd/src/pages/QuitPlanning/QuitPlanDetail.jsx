@@ -18,6 +18,7 @@ import {
   CheckCircleTwoTone,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
+import Navbar from "../../layouts/Navbar"; // Đường dẫn tùy theo cấu trúc dự án
 
 const { Title, Paragraph } = Typography;
 
@@ -143,6 +144,7 @@ const QuitPlanDetail = () => {
 
   return (
     <div style={{ padding: 24, background: "#f6faff", minHeight: "100vh" }}>
+      <Navbar />
       <Card
         style={{
           maxWidth: 700,

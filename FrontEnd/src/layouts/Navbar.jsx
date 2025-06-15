@@ -128,7 +128,13 @@ export default function Navbar() {
 
         <Menu
           mode="horizontal"
-          selectedKeys={[location.pathname.startsWith("/plan") ? "/plan" : location.pathname]}
+          selectedKeys={[
+            /^\/(QuitPlanCalendar|FtndTest|quit-plan-detail)/.test(
+              location.pathname
+            )
+              ? "/plan"
+              : location.pathname
+          ]}
           items={getMenuItems()}
           className="navbar-menu"
         />
@@ -150,8 +156,8 @@ export default function Navbar() {
                   user.role === "admin"
                     ? "Admin"
                     : user.role === "coach"
-                      ? "Coach"
-                      : "Member"
+                    ? "Coach"
+                    : "Member"
                 }
                 style={{
                   backgroundColor:

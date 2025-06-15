@@ -31,6 +31,7 @@ import dayjs from "dayjs";
 import "./QuitPlanCalendar.css";
 import PlanSetupModal from "./PlanSetupModal";
 import axios from "axios";
+import Navbar from "../../layouts/Navbar";
 
 const { Title } = Typography;
 
@@ -713,6 +714,7 @@ const QuitPlan = () => {
       className="quit-plan-wrapper"
       style={{ maxWidth: 1200, margin: "0 auto", padding: 24 }}
     >
+      <Navbar />
       <Row justify="center">
         <Col xs={24} md={22} lg={20}>
           <Card variant="outlined" hoverable style={{ marginBottom: 24 }}>
