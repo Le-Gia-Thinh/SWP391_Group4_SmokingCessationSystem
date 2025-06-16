@@ -2,17 +2,6 @@
 const bcrypt = require('bcryptjs');
 const { sql, dbConfig } = require('../config/database');
 
-// 1. Admin tạo account Coach mới
-exports.createCoachAccount = async (req, res) => {
-  res.status(501).json({ message: 'Chức năng đang phát triển' });
-};
-
-
-
-
-
-
-
 
 // Cập nhật Google Meet link của coach
 exports.updateMeetLink = async (req, res) => {
