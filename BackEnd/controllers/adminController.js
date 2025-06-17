@@ -1,6 +1,7 @@
 // controllers/adminController.js
 const { sql, dbConfig } = require('../config/database');
 const bcrypt = require('bcrypt');
+const { sendCoachCredentials } = require('../utils/mailer');
 
 // 1. Tạo Coach mới
 exports.createCoachAccount = async (req, res) => {
@@ -41,6 +42,14 @@ exports.createCoachAccount = async (req, res) => {
         INSERT INTO COACH (user_id, google_meet_link)
         VALUES (@user_id, @google_meet_link)
       `);
+      
+      // Gửi mail thông tin tài khoản cho Coach
+    await sendCoachCredentials({
+      to: email,
+      name: full_name,
+      email,
+      password // gửi mật khẩu gốc chưa mã hóa
+    });
 
     return res.status(201).json({
       success: true,
