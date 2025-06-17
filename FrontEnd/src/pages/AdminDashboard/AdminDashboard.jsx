@@ -663,10 +663,6 @@ const AdminDashboard = () => {
                         <Form.Item
                             name="email"
                             label="Email"
-                            rules={[
-                                { required: true, message: 'Please enter the email!' },
-                                { type: 'email', message: 'Please enter a valid email!' }
-                            ]}
                         >
                             <Input prefix={<UserOutlined />} placeholder="Enter email address" disabled />
                         </Form.Item>

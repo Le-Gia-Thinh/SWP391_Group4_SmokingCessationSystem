@@ -51,6 +51,18 @@ const CoachDashboard = () => {
         upcomingSessions: 0
     });
 
+    // API Base URL
+    const API_BASE_URL = 'http://localhost:5000/api';
+
+    // Helper function to get auth headers
+    const getAuthHeaders = () => {
+        const token = localStorage.getItem('token');
+        return {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        };
+    };
+
     useEffect(() => {
         // Initialize meet link if not set
         if (!meetLink) {
@@ -63,31 +75,82 @@ const CoachDashboard = () => {
 
     const loadStats = async () => {
         try {
-            // In a real app, you would fetch stats from API
-            // For now, using mock data
-            setStats({
-                totalBookings: 25,
-                pendingBookings: 3,
-                confirmedBookings: 12,
-                completedSessions: 18,
-                averageRating: 4.8,
-                totalEarnings: 1250
+            // Load pending appointments count
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${API_BASE_URL}/appointment/pending`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
             });
+
+            if (response.ok) {
+                const pendingData = await response.json();
+                const pendingCount = pendingData.length || 0;
+
+                setStats({
+                    totalBookings: 0,
+                    pendingBookings: pendingCount,
+                    confirmedBookings: 0,
+                    completedSessions: 0,
+                    averageRating: 0,
+                    totalEarnings: 0
+                });
+            } else {
+                setStats({
+                    totalBookings: 0,
+                    pendingBookings: 0,
+                    confirmedBookings: 0,
+                    completedSessions: 0,
+                    averageRating: 0,
+                    totalEarnings: 0
+                });
+            }
         } catch (error) {
             console.error('Error loading stats:', error);
+            setStats({
+                totalBookings: 0,
+                pendingBookings: 0,
+                confirmedBookings: 0,
+                completedSessions: 0,
+                averageRating: 0,
+                totalEarnings: 0
+            });
         }
     };
 
     const loadTodayStats = async () => {
         try {
-            // Mock data for today's stats
-            setTodayStats({
-                todaySessions: 2,
-                pendingRequests: 3,
-                upcomingSessions: 4
+            // Load pending appointments for today's stats
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${API_BASE_URL}/appointment/pending`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
             });
+
+            if (response.ok) {
+                const pendingData = await response.json();
+                const pendingCount = pendingData.length || 0;
+
+                setTodayStats({
+                    todaySessions: 0,
+                    pendingRequests: pendingCount,
+                    upcomingSessions: 0
+                });
+            } else {
+                setTodayStats({
+                    todaySessions: 0,
+                    pendingRequests: 0,
+                    upcomingSessions: 0
+                });
+            }
         } catch (error) {
             console.error('Error loading today stats:', error);
+            setTodayStats({
+                todaySessions: 0,
+                pendingRequests: 0,
+                upcomingSessions: 0
+            });
         }
     };
 
@@ -103,16 +166,13 @@ const CoachDashboard = () => {
         setIsEditModalVisible(true);
     };
 
+    // Updated to use correct API endpoint
     const handleUpdateMeetLink = async (values) => {
         setLoading(true);
         try {
-            const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:5000/api/coach/update-meet-link', {
+            const response = await fetch(`${API_BASE_URL}/coach/meet-link`, {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
+                headers: getAuthHeaders(),
                 body: JSON.stringify({ meet_link: values.meetLink })
             });
 

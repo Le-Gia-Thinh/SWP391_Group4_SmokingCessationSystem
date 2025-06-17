@@ -19,6 +19,18 @@ const BookingManagement = () => {
     const [selectedBooking, setSelectedBooking] = useState(null);
     const [activeTab, setActiveTab] = useState('all');
 
+    // API Base URL
+    const API_BASE_URL = 'http://localhost:5000/api';
+
+    // Helper function to get auth headers
+    const getAuthHeaders = () => {
+        const token = localStorage.getItem('token');
+        return {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        };
+    };
+
     useEffect(() => {
         loadBookings();
     }, []);
@@ -26,10 +38,9 @@ const BookingManagement = () => {
     const loadBookings = async () => {
         try {
             setLoading(true);
-            const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:5000/api/appointment/coach', {
+            const response = await fetch(`${API_BASE_URL}/appointment/pending`, {
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
             });
 
@@ -42,39 +53,7 @@ const BookingManagement = () => {
         } catch (error) {
             console.error('Error loading bookings:', error);
             message.error('Failed to load bookings');
-
-            // Mock data for demonstration
-            setBookings([
-                {
-                    session_id: 1,
-                    user_id: 101,
-                    user_name: 'John Doe',
-                    scheduled_time: '2024-01-15T10:00:00Z',
-                    session_status: 'pending',
-                    created_at: '2024-01-14T15:30:00Z',
-                    notes: 'First session, need help with smoking cessation plan'
-                },
-                {
-                    session_id: 2,
-                    user_id: 102,
-                    user_name: 'Jane Smith',
-                    scheduled_time: '2024-01-15T14:00:00Z',
-                    session_status: 'confirmed',
-                    created_at: '2024-01-14T10:15:00Z',
-                    google_meet_link: 'https://meet.google.com/abc-defg-hij',
-                    notes: 'Follow-up session'
-                },
-                {
-                    session_id: 3,
-                    user_id: 103,
-                    user_name: 'Mike Johnson',
-                    scheduled_time: '2024-01-14T16:00:00Z',
-                    session_status: 'completed',
-                    created_at: '2024-01-13T09:45:00Z',
-                    google_meet_link: 'https://meet.google.com/xyz-uvw-rst',
-                    notes: 'Completed session, good progress'
-                }
-            ]);
+            setBookings([]);
         } finally {
             setLoading(false);
             setInitialLoading(false);
@@ -89,12 +68,9 @@ const BookingManagement = () => {
     const handleAcceptAppointment = async (sessionId) => {
         try {
             setLoading(true);
-            const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:5000/api/appointment/${sessionId}/accept`, {
+            const response = await fetch(`${API_BASE_URL}/appointment/accept/${sessionId}`, {
                 method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
+                headers: getAuthHeaders()
             });
 
             if (!response.ok) {
@@ -114,12 +90,9 @@ const BookingManagement = () => {
     const handleRejectAppointment = async (sessionId) => {
         try {
             setLoading(true);
-            const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:5000/api/appointment/${sessionId}/reject`, {
+            const response = await fetch(`${API_BASE_URL}/appointment/reject/${sessionId}`, {
                 method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
+                headers: getAuthHeaders()
             });
 
             if (!response.ok) {

@@ -20,4 +20,7 @@ router.delete('/:id', auth, authorize('member'), appointmentController.cancelApp
 // Member xem tất cả lịch đã đặt
 router.get('/my-bookings', auth, authorize('member'), appointmentController.getMyAppointments);
 
+// Coach xem tất cả lịch của mình (đã đặt và còn trống)
+router.get('/coach-schedules', auth, authorize('coach'), appointmentController.getCoachAllSchedules);
+
 module.exports = router;

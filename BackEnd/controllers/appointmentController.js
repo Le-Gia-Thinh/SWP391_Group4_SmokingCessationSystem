@@ -191,3 +191,19 @@ exports.getMyAppointments = async (req, res) => {
     res.status(500).json({ success: false, message: 'Lỗi server khi lấy lịch đã đặt' });
   }
 };
+
+// Coach xem tất cả lịch của mình (đã đặt và còn trống)
+exports.getCoachAllSchedules = async (req, res) => {
+  try {
+    const coachId = req.user.coach_id; // Lấy coach_id từ thông tin người dùng đã xác thực
+    const pool = await sql.connect(dbConfig);
+    const result = await pool.request()
+      .input('coach_id', sql.Int, coachId)
+      .query(`SELECT * FROM COACH_SCHEDULE WHERE coach_id = @coach_id ORDER BY start_time DESC`);
+
+    res.json(result.recordset);
+  } catch (err) {
+    console.error('❌ Lỗi khi lấy lịch của coach:', err);
+    res.status(500).json({ success: false, message: 'Lỗi server khi lấy lịch của coach' });
+  }
+};
