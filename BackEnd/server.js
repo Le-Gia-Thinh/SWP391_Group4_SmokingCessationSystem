@@ -40,6 +40,11 @@ app.use("/api/quitplan", quitPlanRoutes);
 const customerRoutes = require("./routes/customer");
 app.use("/api/customer", customerRoutes); 
 
+// tich diem trong daily
+app.use("/api/user-score", require("./routes/userScore"));
+// ranking
+app.use("/api/user-score", require("./routes/userScore"));
+
 // 3) Session middleware (phải nằm trước passport.session())
 app.use(
   session({
