@@ -1,16 +1,14 @@
 // controllers/coachController
-const bcrypt = require('bcryptjs');
 const { sql, dbConfig } = require('../config/database');
-
 
 // Cập nhật Google Meet link của coach
 exports.updateMeetLink = async (req, res) => {
   try {
-    const coachId = req.user.id; // req.user.id là user_id
     const { meet_link } = req.body;
+    const coachId = req.user.id; // req.user.id là user_id
 
-    if (!meet_link || !meet_link.startsWith('http')) {
-      return res.status(400).json({ success: false, message: 'Link Meet không hợp lệ' });
+    if (!meet_link) {
+      return res.status(400).json({ success: false, message: 'Meet link is required' });
     }
 
     const pool = await sql.connect(dbConfig);
@@ -26,14 +24,41 @@ exports.updateMeetLink = async (req, res) => {
 
     const coach_id = coachResult.recordset[0].coach_id;
 
+    // Cập nhật Google Meet link
     await pool.request()
-      .input('link', sql.VarChar(255), meet_link)
+      .input('link', sql.VarChar, meet_link)
       .input('coach_id', sql.Int, coach_id)
       .query('UPDATE COACH SET google_meet_link = @link WHERE coach_id = @coach_id');
 
-    res.json({ success: true, message: 'Cập nhật Google Meet link thành công' });
-  } catch (err) {
-    console.error(err);
+    res.json({ success: true, message: 'Cập nhật Meet link thành công' });
+  } catch (error) {
+    console.error('❌ Lỗi khi cập nhật Meet link:', error);
     res.status(500).json({ success: false, message: 'Lỗi server khi cập nhật Meet link' });
+  }
+};
+
+// Lấy danh sách coaches cho member
+exports.getAllCoaches = async (req, res) => {
+  try {
+    const pool = await sql.connect(dbConfig);
+    const result = await pool.request()
+      .query(`
+        SELECT 
+          c.user_id, c.full_name, c.email,
+          coach.coach_id, coach.specialization, coach.bio, coach.experience_years,
+          coach.status AS coach_status, coach.google_meet_link
+        FROM CUSTOMER c
+        JOIN COACH coach ON c.user_id = coach.user_id
+        WHERE coach.status = 'active'
+        ORDER BY c.full_name ASC
+      `);
+
+    res.json({
+      success: true,
+      data: result.recordset
+    });
+  } catch (error) {
+    console.error('❌ Lỗi khi lấy danh sách coach:', error);
+    res.status(500).json({ success: false, message: 'Lỗi khi lấy danh sách coach' });
   }
 };

@@ -23,46 +23,6 @@ const BookingPage = () => {
     const [selectedSlot, setSelectedSlot] = useState(null);
     const [initialLoading, setInitialLoading] = useState(true);
 
-    // Mock coaches data (in real app, this would come from API)
-    const mockCoaches = [
-        {
-            coach_id: 1,
-            name: 'Dr. Sarah Wilson',
-            email: 'coach@example.com',
-            specialization: 'Smoking Cessation',
-            experience: 5,
-            rating: 4.8,
-            totalSessions: 150,
-            successRate: 85,
-            avatar: null,
-            bio: 'Certified smoking cessation specialist with 5 years of experience helping people quit smoking.',
-        },
-        {
-            coach_id: 2,
-            name: 'Dr. Michael Chen',
-            email: 'michael.chen@example.com',
-            specialization: 'Behavioral Therapy',
-            experience: 8,
-            rating: 4.9,
-            totalSessions: 200,
-            successRate: 90,
-            avatar: null,
-            bio: 'Expert in behavioral therapy and addiction counseling with 8 years of experience.',
-        },
-        {
-            coach_id: 3,
-            name: 'Dr. Emily Johnson',
-            email: 'emily.johnson@example.com',
-            specialization: 'Cognitive Behavioral Therapy',
-            experience: 6,
-            rating: 4.7,
-            totalSessions: 180,
-            successRate: 88,
-            avatar: null,
-            bio: 'Specialist in cognitive behavioral therapy for smoking cessation and addiction recovery.',
-        }
-    ];
-
     useEffect(() => {
         loadCoaches();
     }, []);
@@ -70,11 +30,32 @@ const BookingPage = () => {
     const loadCoaches = async () => {
         try {
             setInitialLoading(true);
-            // In a real app, you would fetch coaches from API
-            setCoaches(mockCoaches);
+            const response = await fetch('http://localhost:5000/api/coach/list');
+
+            if (!response.ok) {
+                throw new Error('Failed to load coaches');
+            }
+
+            const data = await response.json();
+            if (data.success) {
+                // Transform the data to match the expected format
+                const transformedCoaches = data.data.map(coach => ({
+                    coach_id: coach.coach_id,
+                    name: coach.full_name,
+                    specialization: coach.specialization || 'Smoking Cessation Coach',
+                    bio: coach.bio || 'Experienced coach helping people quit smoking',
+                    rating: 4.5,
+                    totalSessions: 50,
+                    email: coach.email
+                }));
+                setCoaches(transformedCoaches);
+            } else {
+                setCoaches([]);
+            }
         } catch (error) {
             console.error('Error loading coaches:', error);
             message.error('Failed to load coaches');
+            setCoaches([]);
         } finally {
             setInitialLoading(false);
         }

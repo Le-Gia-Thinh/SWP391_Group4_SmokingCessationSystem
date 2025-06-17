@@ -1,0 +1,66 @@
+.booking-details {
+    padding: 16px 0;
+}
+
+.booking-info h3 {
+    margin-bottom: 16px;
+    color: #1890ff;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 8px;
+}
+
+.booking-info p {
+    margin-bottom: 8px;
+    line-height: 1.6;
+}
+
+.booking-info strong {
+    color: #333;
+    font-weight: 600;
+}
+
+.ant-table-tbody>tr:hover>td {
+    background-color: #f6ffed !important;
+}
+
+.ant-card {
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.ant-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: box-shadow 0.3s ease;
+}
+
+.ant-tag {
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.ant-btn {
+    border-radius: 6px;
+}
+
+.ant-modal-content {
+    border-radius: 8px;
+}
+
+.ant-alert {
+    border-radius: 6px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .ant-table {
+        font-size: 12px;
+    }
+
+    .ant-card {
+        margin-bottom: 16px;
+    }
+
+    .booking-details {
+        padding: 8px 0;
+    }
+}
