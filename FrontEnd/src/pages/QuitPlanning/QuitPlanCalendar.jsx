@@ -358,6 +358,25 @@ const QuitPlan = () => {
         message.error("Không thể kiểm tra kế hoạch");
       });
   }, []);
+
+  useEffect(() => {
+  if (!user?.id || !startDate) return;
+
+  fetch(`http://localhost:5000/api/smoking-summary/all/${user.id}`)
+    .then((res) => res.json())
+    .then((data) => {
+      const log = {};
+      data.forEach((entry) => {
+        const formattedDate = dayjs(entry.date).format("DD/MM/YYYY");
+        log[formattedDate] = entry.total_cigarettes;
+      });
+      setSmokingLog(log); // Gán lại vào state
+    })
+    .catch((err) => {
+      console.error("Lỗi khi tải dữ liệu số điếu:", err);
+    });
+}, [user?.id, startDate]);
+
   const handlePlanReady = ({ startDate, months }) => {
     setStartDate(dayjs(startDate));
     setMonths(months);
@@ -374,7 +393,7 @@ const QuitPlan = () => {
         return;
       }
 
-      await axios.post("http://localhost:5000/api/smoking-summary", {
+      await axios.post("http://localhost:5000/api/smoking-summary/single", {
         user_id,
         date: today,
         total_cigarettes,

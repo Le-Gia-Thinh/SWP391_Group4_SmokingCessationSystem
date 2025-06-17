@@ -8,6 +8,7 @@ const passport = require('./config/passport');
 const authRoutes = require('./routes/auth');
 const roleRoutes = require('./routes/roleTestRoutes');
 const habitLogRoutes = require('./routes/habitLogRoutes');
+const smokingSummaryRoutes = require('./routes/smokingSummaryRoutes');
 
 
 
@@ -69,6 +70,9 @@ app.use('/api/role', roleRoutes);
 
 //xử lý phần submit từ plan
 app.use('/api/habit-log', habitLogRoutes);
+
+//xử lí lưu số điếu hằng ngày của users
+app.use('/api/smoking-summary', smokingSummaryRoutes);
 
 // 6) Middleware log request
 app.use((req, res, next) => {
