@@ -159,7 +159,7 @@ exports.getPendingAppointments = async (req, res) => {
 // Member hủy lịch
 exports.cancelAppointment = async (req, res) => {
   try {
-    const userId = req.user.user_id;
+    const userId = req.user.id;
     const sessionId = req.params.id;
     const pool = await sql.connect(dbConfig);
 

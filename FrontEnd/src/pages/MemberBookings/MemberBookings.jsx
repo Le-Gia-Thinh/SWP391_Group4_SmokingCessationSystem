@@ -1,13 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Table, Tag, Modal, message, Avatar, Space, Typography, Spin, Row, Col, Alert } from 'antd';
 import {
-    EyeOutlined,
     CloseOutlined,
     ReloadOutlined,
     UserOutlined,
-    ClockCircleOutlined,
-    CheckCircleOutlined,
-    VideoCameraOutlined,
     CalendarOutlined
 } from '@ant-design/icons';
 import { useAuth } from '../../contexts/AuthContext';
@@ -21,8 +17,6 @@ const MemberBookings = () => {
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(false);
     const [initialLoading, setInitialLoading] = useState(true);
-    const [isModalVisible, setIsModalVisible] = useState(false);
-    const [selectedBooking, setSelectedBooking] = useState(null);
 
     console.log("Current logged-in user:", user);
 
@@ -69,9 +63,20 @@ const MemberBookings = () => {
         }
     };
 
-    const handleViewBooking = (booking) => {
-        setSelectedBooking(booking);
-        setIsModalVisible(true);
+    const confirmCancelAppointment = (sessionId) => {
+        Modal.confirm({
+            title: 'Confirm Cancellation',
+            content: 'Are you sure you want to cancel this appointment? This action cannot be undone.',
+            okText: 'Yes, Cancel',
+            okType: 'danger',
+            cancelText: 'No',
+            onOk() {
+                handleCancelAppointment(sessionId);
+            },
+            onCancel() {
+                message.info('Cancellation cancelled.');
+            },
+        });
     };
 
     const handleCancelAppointment = async (sessionId) => {
@@ -83,22 +88,19 @@ const MemberBookings = () => {
             });
 
             if (!response.ok) {
-                throw new Error('Failed to cancel appointment');
+                // Read error message from backend
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to cancel appointment');
             }
 
             message.success('Appointment cancelled successfully!');
             loadMyBookings(); // Reload to get updated data
         } catch (error) {
             console.error('Error cancelling appointment:', error);
-            message.error('Failed to cancel appointment');
+            message.error(error.message || 'Failed to cancel appointment');
         } finally {
             setLoading(false);
         }
-    };
-
-    const handleCancel = () => {
-        setIsModalVisible(false);
-        setSelectedBooking(null);
     };
 
     const getStatusColor = (status) => {
@@ -111,6 +113,8 @@ const MemberBookings = () => {
                 return 'red';
             case 'canceled_by_member':
                 return 'gray';
+            case 'completed': // Added completed status color
+                return 'blue';
             default:
                 return 'default';
         }
@@ -119,13 +123,15 @@ const MemberBookings = () => {
     const getStatusText = (status) => {
         switch (status) {
             case 'pending':
-                return 'Chờ duyệt';
+                return 'Pending';
             case 'accepted':
-                return 'Đã duyệt';
+                return 'Accepted';
             case 'rejected':
-                return 'Đã từ chối';
+                return 'Rejected';
             case 'canceled_by_member':
-                return 'Đã hủy';
+                return 'Canceled';
+            case 'completed': // Added completed status text
+                return 'Completed';
             default:
                 return status;
         }
@@ -134,8 +140,8 @@ const MemberBookings = () => {
     const formatDateTime = (dateTimeString) => {
         const date = new Date(dateTimeString);
         return {
-            date: date.toLocaleDateString('vi-VN'),
-            time: date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+            date: date.toLocaleDateString('en-US'),
+            time: date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
         };
     };
 
@@ -154,7 +160,7 @@ const MemberBookings = () => {
             ),
         },
         {
-            title: 'Thời gian',
+            title: 'Scheduled Time',
             key: 'scheduled_time',
             render: (_, record) => {
                 const { date, time } = formatDateTime(record.scheduled_time);
@@ -167,7 +173,7 @@ const MemberBookings = () => {
             },
         },
         {
-            title: 'Trạng thái',
+            title: 'Status',
             key: 'session_status',
             render: (_, record) => (
                 <Tag color={getStatusColor(record.session_status)}>
@@ -176,24 +182,17 @@ const MemberBookings = () => {
             ),
         },
         {
-            title: 'Thao tác',
+            title: 'Actions',
             key: 'actions',
             render: (_, record) => {
-                const actions = [
-                    {
-                        type: 'view',
-                        tooltip: 'Xem chi tiết',
-                        onClick: handleViewBooking,
-                        icon: <EyeOutlined />
-                    }
-                ];
+                const actions = [];
 
                 // Only allow cancellation for pending appointments
                 if (record.session_status === 'pending') {
                     actions.push({
                         type: 'cancel',
-                        tooltip: 'Hủy lịch hẹn',
-                        onClick: handleCancelAppointment,
+                        tooltip: 'Cancel Appointment',
+                        onClick: confirmCancelAppointment, // Call confirmation modal first
                         icon: <CloseOutlined />,
                         danger: true
                     });
@@ -224,7 +223,7 @@ const MemberBookings = () => {
                 <Navbar />
                 <div style={{ textAlign: 'center', padding: '50px' }}>
                     <Spin size="large" />
-                    <div style={{ marginTop: '16px' }}>Đang tải lịch hẹn...</div>
+                    <div style={{ marginTop: '16px' }}>Loading appointments...</div>
                 </div>
             </div>
         );
@@ -240,10 +239,10 @@ const MemberBookings = () => {
                             <Row justify="space-between" align="middle">
                                 <Col>
                                     <Title level={2}>
-                                        <CalendarOutlined /> Lịch hẹn của tôi
+                                        <CalendarOutlined /> My Appointments
                                     </Title>
                                     <Text type="secondary">
-                                        Xem và quản lý các lịch hẹn coaching của bạn
+                                        View and manage your coaching appointments.
                                     </Text>
                                 </Col>
                                 <Col>
@@ -253,7 +252,7 @@ const MemberBookings = () => {
                                         onClick={loadMyBookings}
                                         loading={loading}
                                     >
-                                        Làm mới
+                                        Refresh
                                     </Button>
                                 </Col>
                             </Row>
@@ -261,13 +260,13 @@ const MemberBookings = () => {
 
                         {bookings.length === 0 ? (
                             <Alert
-                                message="Chưa có lịch hẹn nào"
-                                description="Bạn chưa có lịch hẹn coaching nào. Hãy đặt lịch với coach để bắt đầu hành trình cai thuốc lá!"
+                                message="No appointments found"
+                                description="You don't have any coaching appointments yet. Book a session with a coach to start your quitting journey!"
                                 type="info"
                                 showIcon
                                 action={
                                     <Button size="small" type="primary" href="/book-coach">
-                                        Đặt lịch ngay
+                                        Book Now
                                     </Button>
                                 }
                             />
@@ -281,111 +280,13 @@ const MemberBookings = () => {
                                     pageSize: 10,
                                     showSizeChanger: true,
                                     showQuickJumper: true,
-                                    showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} lịch hẹn`,
+                                    showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} appointments`,
                                 }}
                             />
                         )}
                     </Card>
                 </div>
             </div>
-
-            {/* Booking Details Modal */}
-            <Modal
-                title="Chi tiết lịch hẹn"
-                open={isModalVisible}
-                onCancel={handleCancel}
-                footer={null}
-                width={700}
-            >
-                {selectedBooking && (
-                    <div className="booking-details">
-                        <div className="booking-info">
-                            <h3>Thông tin Coach</h3>
-                            <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-                                <Col span={24}>
-                                    <Card>
-                                        <Space>
-                                            <Avatar size={64} icon={<UserOutlined />} />
-                                            <div>
-                                                <Title level={4} style={{ margin: 0 }}>{selectedBooking.coach_name}</Title>
-                                                <Text type="secondary">{selectedBooking.coach_email}</Text>
-                                            </div>
-                                        </Space>
-                                    </Card>
-                                </Col>
-                            </Row>
-
-                            <h3>Thông tin lịch hẹn</h3>
-                            <Row gutter={[16, 16]}>
-                                <Col span={12}>
-                                    <Card>
-                                        <Space direction="vertical">
-                                            <div>
-                                                <Text strong>Ngày:</Text>
-                                                <br />
-                                                <Text>{formatDateTime(selectedBooking.scheduled_time).date}</Text>
-                                            </div>
-                                            <div>
-                                                <Text strong>Giờ:</Text>
-                                                <br />
-                                                <Text>{formatDateTime(selectedBooking.scheduled_time).time}</Text>
-                                            </div>
-                                        </Space>
-                                    </Card>
-                                </Col>
-                                <Col span={12}>
-                                    <Card>
-                                        <Space direction="vertical">
-                                            <div>
-                                                <Text strong>Trạng thái:</Text>
-                                                <br />
-                                                <Tag color={getStatusColor(selectedBooking.session_status)}>
-                                                    {getStatusText(selectedBooking.session_status)}
-                                                </Tag>
-                                            </div>
-                                            {selectedBooking.google_meet_link && (
-                                                <div>
-                                                    <Text strong>Link Meet:</Text>
-                                                    <br />
-                                                    <Button
-                                                        type="link"
-                                                        icon={<VideoCameraOutlined />}
-                                                        href={selectedBooking.google_meet_link}
-                                                        target="_blank"
-                                                    >
-                                                        Tham gia cuộc họp
-                                                    </Button>
-                                                </div>
-                                            )}
-                                        </Space>
-                                    </Card>
-                                </Col>
-                            </Row>
-
-                            {selectedBooking.session_status === 'pending' && (
-                                <div style={{ marginTop: 24, paddingTop: 16, borderTop: '1px solid #f0f0f0' }}>
-                                    <Alert
-                                        message="Lịch hẹn đang chờ duyệt"
-                                        description="Coach sẽ xem xét và phản hồi yêu cầu của bạn trong thời gian sớm nhất."
-                                        type="info"
-                                        showIcon
-                                        action={
-                                            <Button
-                                                danger
-                                                size="small"
-                                                onClick={() => handleCancelAppointment(selectedBooking.session_id)}
-                                                loading={loading}
-                                            >
-                                                Hủy lịch hẹn
-                                            </Button>
-                                        }
-                                    />
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                )}
-            </Modal>
         </div>
     );
 };
