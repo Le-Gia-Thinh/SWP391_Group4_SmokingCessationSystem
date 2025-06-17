@@ -124,7 +124,11 @@ export default function Navbar() {
   return (
     <Header className="navbar">
       <div className="navbar-content">
-        <div className="navbar-logo">
+        <div
+          className="navbar-logo"
+          style={{ cursor: "pointer" }}
+          onClick={() => navigate("/")}
+        >
           <div className="logo-text">
             <span>QuitSmoking</span>
           </div>
