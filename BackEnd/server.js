@@ -7,11 +7,12 @@ const cors = require('cors');
 const passport = require('./config/passport');
 const authRoutes = require('./routes/auth');
 const roleRoutes = require('./routes/roleTestRoutes');
-const scheduleRoutes = require('./routes/schedule');
-const appointmentRoutes = require('./routes/appointment');
+const habitLogRoutes = require('./routes/habitLogRoutes');
 const adminRoutes = require('./routes/admin');
+const appointmentRoutes = require('./routes/appointment');
+const scheduleRoutes = require('./routes/schedule');
 const coachRoutes = require('./routes/coach');
-const memberRoutes = require('./routes/member');  
+const memberRoutes = require('./routes/member');
 
 const app = express();
 
@@ -36,6 +37,14 @@ app.use('/api/ftnd', ftndRoutes);
 const quitPlanRoutes = require("./routes/quitPlan");
 app.use("/api/quitplan", quitPlanRoutes);
 
+// hien muc do nghien
+const customerRoutes = require("./routes/customer");
+app.use("/api/customer", customerRoutes);
+
+// tich diem trong daily
+app.use("/api/user-score", require("./routes/userScore"));
+// ranking
+app.use("/api/user-score", require("./routes/userScore"));
 
 // 3) Session middleware (phải nằm trước passport.session())
 app.use(
@@ -53,21 +62,23 @@ app.use(
 // 4) Khởi tạo Passport và session support
 app.use(passport.initialize());
 app.use(passport.session());
-
 // 5) Đăng ký route auth
 app.use('/api/auth', authRoutes);
 // 5.1) Route phân quyền
 app.use('/api/role', roleRoutes);
-// 5.2) Route tạo và xem lịch trống của Coach
-app.use('/api/schedule', scheduleRoutes);   
-// 5.3) Route đặt lịch và quản lý lịch tư vấn
-app.use('/api/appointment', appointmentRoutes);
-// 5.4) Route Coach
-app.use('/api/coach', coachRoutes);
-// 5.5) Route Admin
+// 5.2) Route admin
 app.use('/api/admin', adminRoutes);
-// 5.6) Route Member
-app.use('/api/member', memberRoutes);  
+// 5.3) Route appointment
+app.use('/api/appointment', appointmentRoutes);
+// 5.4) Route schedule
+app.use('/api/schedule', scheduleRoutes);
+// 5.5) Route coach
+app.use('/api/coach', coachRoutes);
+// 5.6) Route member
+app.use('/api/member', memberRoutes);
+
+//xử lý phần submit từ plan
+app.use('/api/habit-log', habitLogRoutes);
 
 // 6) Middleware log request
 app.use((req, res, next) => {
@@ -84,13 +95,12 @@ app.get('/', (req, res) => {
 app.use((err, req, res, next) => {
   console.error('Unhandled error:', err);
   res.status(500).json({ success: false, message: 'Lỗi server không xác định' });
-});
+})
 
 // 9) 404 handler
 app.use('*', (req, res) => {
   res.status(404).json({ success: false, message: 'Endpoint không tồn tại' });
 });
-
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

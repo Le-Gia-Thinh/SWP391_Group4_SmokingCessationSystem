@@ -18,12 +18,13 @@ import {
   CheckCircleTwoTone,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
+import Navbar from "../../layouts/Navbar"; // Đường dẫn tùy theo cấu trúc dự án
 
 const { Title, Paragraph } = Typography;
 
 const QuitPlanDetail = () => {
   const location = useLocation();
-  const { date } = useParams();
+  const { date } = useParams(); // dạng DD-MM-YYYY
   const data = location.state;
   const [completed, setCompleted] = useState(Array(9).fill(false));
 
@@ -47,35 +48,81 @@ const QuitPlanDetail = () => {
     weekNumber = Math.floor(diffDays / 7) + 1;
   }
 
-  // Giả lập fetch lại khi quay lại trang
+  // 🔄 Load dữ liệu từ DB khi mở trang
   useEffect(() => {
-    fetch(`/api/habit-log?date=${date}`)
+    const token = localStorage.getItem("token");
+    const formattedDate = dayjs(date, ["DD/MM/YYYY", "YYYY-MM-DD"]).format(
+      "YYYY-MM-DD"
+    );
+
+    fetch(`http://localhost:5000/api/habit-log?date=${formattedDate}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
       .then((res) => res.json())
-      .then((result) => {
-        if (Array.isArray(result)) {
-          setCompleted(result);
+      .then(async (result) => {
+        if (Array.isArray(result.data)) {
+          setCompleted(result.data.map((x) => !!x));
+
+          // ✅ Cộng điểm cho từng slot đã tick
+          for (let i = 0; i < result.data.length; i++) {
+            if (result.data[i] === true) {
+              await fetch("http://localhost:5000/api/user-score/update", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                  date: formattedDate,
+                  timeSlot: i,
+                  point: 1,
+                }),
+              });
+            }
+          }
         }
       })
-      .catch(() => {});
+      .catch((err) => {
+        console.error("Lỗi lấy habit log:", err);
+      });
   }, [date]);
 
-  const handleCheckbox = (idx) => {
+  // ✅ Tick / Bỏ tick checkbox
+  const handleCheckbox = async (idx) => {
     const updated = [...completed];
-    updated[idx] = !updated[idx];
+    const newState = !updated[idx];
+    updated[idx] = newState;
     setCompleted(updated);
 
-    fetch("/api/habit-log", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        date,
-        timeSlot: idx,
-        completed: updated[idx],
-        points: 1,
-      }),
-    });
+    const token = localStorage.getItem("token");
+    const formattedDate = dayjs(date, [
+      "DD-MM-YYYY",
+      "DD/MM/YYYY",
+      "YYYY-MM-DD",
+    ]).format("YYYY-MM-DD");
 
-    message.success("Đã ghi nhận hành vi không hút thuốc!");
+    try {
+      await fetch("http://localhost:5000/api/habit-log", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          date: formattedDate,
+          timeSlot: idx,
+          completed: newState,
+          points: newState ? 1 : 0,
+        }),
+      });
+
+      message.success(newState ? "✅ Đã ghi nhận!" : "🗑️ Đã bỏ tích!");
+    } catch (err) {
+      console.error("Lỗi khi ghi log:", err);
+      message.error("Lỗi cập nhật hành vi.");
+    }
   };
 
   const columns = [
@@ -115,6 +162,7 @@ const QuitPlanDetail = () => {
 
   return (
     <div style={{ padding: 24, background: "#f6faff", minHeight: "100vh" }}>
+      <Navbar />
       <Card
         style={{
           maxWidth: 700,
@@ -194,7 +242,6 @@ const QuitPlanDetail = () => {
             Không có dữ liệu chi tiết cho ngày này.
           </Paragraph>
         )}
-
         <Divider orientation="left" plain>
           <CheckCircleTwoTone twoToneColor="#13c2c2" /> Chi tiết nhiệm vụ
         </Divider>
