@@ -18,7 +18,8 @@ import {
     message,
     Popconfirm,
     Tooltip,
-    Divider
+    Divider,
+    DatePicker
 } from 'antd';
 import {
     UserOutlined,
@@ -33,7 +34,8 @@ import {
     CopyOutlined,
     CheckOutlined,
     SearchOutlined,
-    FilterOutlined
+    FilterOutlined,
+    UndoOutlined
 } from '@ant-design/icons';
 import Navbar from '../../layouts/Navbar';
 import StatisticCard from '../../components/ui/StatisticCard';
@@ -46,115 +48,99 @@ const { Header, Content } = Layout;
 const { Title, Text } = Typography;
 const { Option } = Select;
 const { Search } = Input;
+const { TextArea } = Input;
 
 const AdminDashboard = () => {
     // State management
-    const [users, setUsers] = useState([]);
-    const [filteredUsers, setFilteredUsers] = useState([]);
+    const [coaches, setCoaches] = useState([]);
+    const [filteredCoaches, setFilteredCoaches] = useState([]);
     const [loading, setLoading] = useState(false);
     const [createCoachModal, setCreateCoachModal] = useState(false);
-    const [editUserModal, setEditUserModal] = useState(false);
-    const [selectedUser, setSelectedUser] = useState(null);
-    const [viewUserModal, setViewUserModal] = useState(false);
+    const [editCoachModal, setEditCoachModal] = useState(false);
+    const [selectedCoach, setSelectedCoach] = useState(null);
+    const [viewCoachModal, setViewCoachModal] = useState(false);
     const [credentialsModal, setCredentialsModal] = useState(false);
     const [newCoachCredentials, setNewCoachCredentials] = useState(null);
     const [copiedField, setCopiedField] = useState('');
 
     // Search and filter states
     const [searchText, setSearchText] = useState('');
-    const [roleFilter, setRoleFilter] = useState('all');
     const [statusFilter, setStatusFilter] = useState('all');
 
     // Form instances
     const [coachForm] = Form.useForm();
     const [editForm] = Form.useForm();
 
-    // Mock data for demonstration
-    const mockUsers = [
-        {
-            id: 1,
-            name: 'John Doe',
-            email: 'john@example.com',
-            phone: '+1234567890',
-            role: 'member',
-            status: 'active',
-            registrationDate: '2024-01-15',
-            specialization: null,
-            experienceYears: null
-        },
-        {
-            id: 2,
-            name: 'Jane Smith',
-            email: 'jane@example.com',
-            phone: '+1234567891',
-            role: 'coach',
-            status: 'active',
-            registrationDate: '2024-01-20',
-            specialization: 'Smoking Cessation',
-            experienceYears: 5
-        },
-        {
-            id: 3,
-            name: 'Admin User',
-            email: 'admin@example.com',
-            phone: '+1234567892',
-            role: 'admin',
-            status: 'active',
-            registrationDate: '2024-01-10',
-            specialization: null,
-            experienceYears: null
-        }
-    ];
+    // API Base URL
+    const API_BASE_URL = 'http://localhost:5000/api';
 
-    // Load users on component mount
+    // Helper function to get auth headers
+    const getAuthHeaders = () => {
+        const token = localStorage.getItem('token');
+        return {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        };
+    };
+
+    // Helper function to handle API responses
+    const handleResponse = async (response) => {
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.message || 'API request failed');
+        }
+        return data;
+    };
+
+    // Load coaches on component mount
     useEffect(() => {
-        loadUsers();
+        loadCoaches();
     }, []);
 
-    // Filter users based on search and filters
+    // Filter coaches based on search and filters
     useEffect(() => {
-        filterUsers();
-    }, [users, searchText, roleFilter, statusFilter]);
+        filterCoaches();
+    }, [coaches, searchText, statusFilter]);
 
-    const filterUsers = () => {
-        let filtered = [...users];
+    const filterCoaches = () => {
+        let filtered = [...coaches];
 
         // Search filter
         if (searchText) {
-            filtered = filtered.filter(user =>
-                user.name.toLowerCase().includes(searchText.toLowerCase()) ||
-                user.email.toLowerCase().includes(searchText.toLowerCase()) ||
-                user.phone?.toLowerCase().includes(searchText.toLowerCase())
+            filtered = filtered.filter(coach =>
+                coach.full_name?.toLowerCase().includes(searchText.toLowerCase()) ||
+                coach.email?.toLowerCase().includes(searchText.toLowerCase()) ||
+                coach.phone_number?.toLowerCase().includes(searchText.toLowerCase()) ||
+                coach.specialization?.toLowerCase().includes(searchText.toLowerCase())
             );
-        }
-
-        // Role filter
-        if (roleFilter !== 'all') {
-            filtered = filtered.filter(user => user.role === roleFilter);
         }
 
         // Status filter
         if (statusFilter !== 'all') {
-            filtered = filtered.filter(user => user.status === statusFilter);
+            filtered = filtered.filter(coach => coach.account_status === statusFilter);
         }
 
-        setFilteredUsers(filtered);
+        setFilteredCoaches(filtered);
     };
 
     const clearFilters = () => {
         setSearchText('');
-        setRoleFilter('all');
         setStatusFilter('all');
     };
 
-    const loadUsers = async () => {
+    const loadCoaches = async () => {
         setLoading(true);
         try {
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            setUsers(mockUsers);
+            const response = await fetch(`${API_BASE_URL}/admin/get-coaches`, {
+                method: 'GET',
+                headers: getAuthHeaders()
+            });
+            const data = await handleResponse(response);
+            setCoaches(data.data || []);
+            message.success('Coaches list loaded successfully!');
         } catch (error) {
-            message.error('Failed to load users');
+            console.error('Error loading coaches:', error);
+            message.error('Failed to load coaches list');
         } finally {
             setLoading(false);
         }
@@ -164,119 +150,160 @@ const AdminDashboard = () => {
     const handleCreateCoach = async (values) => {
         try {
             setLoading(true);
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1500));
 
-            const newCoach = {
-                id: Math.max(...users.map(u => u.id), 0) + 1,
-                name: values.name,
+            // Format date for backend
+            const coachData = {
+                username: values.email.split('@')[0], // Generate username from email
+                full_name: values.full_name,
                 email: values.email,
-                phone: values.phone || '',
-                role: 'coach',
-                status: 'active',
-                registrationDate: new Date().toISOString().split('T')[0],
-                specialization: null,
-                experienceYears: null
+                phone_number: values.phone_number || '',
+                date_of_birth: values.date_of_birth?.format('YYYY-MM-DD') || '1990-01-01',
+                password: values.password || '123456',
+                google_meet_link: values.google_meet_link || ''
             };
 
-            setUsers(prev => [...prev, newCoach]);
+            const response = await fetch(`${API_BASE_URL}/admin/create-coach`, {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify(coachData)
+            });
+            await handleResponse(response);
 
             // Set credentials for modal
             setNewCoachCredentials({
-                name: values.name,
+                name: values.full_name,
                 email: values.email,
-                password: '123456'
+                password: coachData.password
             });
 
             setCreateCoachModal(false);
             setCredentialsModal(true);
             coachForm.resetFields();
+
+            // Reload coaches list
+            await loadCoaches();
+
+            message.success('Coach account created successfully!');
         } catch (error) {
-            message.error('Failed to create coach account');
+            console.error('Error creating coach:', error);
+            message.error(error.message || 'Failed to create coach account');
         } finally {
             setLoading(false);
         }
     };
 
-    // Edit user
-    const handleEditUser = (user) => {
-        setSelectedUser(user);
+    // Edit coach
+    const handleEditCoach = (coach) => {
+        setSelectedCoach(coach);
         editForm.setFieldsValue({
-            name: user.name,
-            email: user.email,
-            phone: user.phone,
-            role: user.role,
-            status: user.status,
-            specialization: user.specialization,
-            experienceYears: user.experienceYears
+            full_name: coach.full_name,
+            email: coach.email,
+            phone_number: coach.phone_number,
+            account_status: coach.account_status,
+            specialization: coach.specialization,
+            bio: coach.bio,
+            experience_years: coach.experience_years,
+            google_meet_link: coach.google_meet_link,
+            coach_status: coach.coach_status
         });
-        setEditUserModal(true);
+        setEditCoachModal(true);
     };
 
-    // Update user
-    const handleUpdateUser = async (values) => {
+    // Update coach
+    const handleUpdateCoach = async (values) => {
         try {
             setLoading(true);
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
 
-            setUsers(prev => prev.map(user =>
-                user.id === selectedUser.id
-                    ? { ...user, ...values }
-                    : user
-            ));
+            const updateData = {
+                full_name: values.full_name,
+                phone_number: values.phone_number,
+                account_status: values.account_status,
+                specialization: values.specialization,
+                bio: values.bio,
+                experience_years: values.experience_years,
+                google_meet_link: values.google_meet_link,
+                coach_status: values.coach_status
+            };
 
-            message.success('User updated successfully!');
-            setEditUserModal(false);
-            setSelectedUser(null);
+            const response = await fetch(`${API_BASE_URL}/admin/update-coach/${selectedCoach.coach_id}`, {
+                method: 'PUT',
+                headers: getAuthHeaders(),
+                body: JSON.stringify(updateData)
+            });
+            await handleResponse(response);
+
+            message.success('Coach updated successfully!');
+            setEditCoachModal(false);
+            setSelectedCoach(null);
             editForm.resetFields();
+
+            // Reload coaches list
+            await loadCoaches();
         } catch (error) {
-            message.error('Failed to update user');
+            console.error('Error updating coach:', error);
+            message.error(error.message || 'Failed to update coach');
         } finally {
             setLoading(false);
         }
     };
 
-    // Delete user
-    const handleDeleteUser = async (userId) => {
+    // Delete coach (deactivate)
+    const handleDeleteCoach = async (coachId) => {
         try {
             setLoading(true);
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
-
-            setUsers(prev => prev.filter(user => user.id !== userId));
-            message.success('User deleted successfully!');
+            const response = await fetch(`${API_BASE_URL}/admin/delete-coach/${coachId}`, {
+                method: 'DELETE',
+                headers: getAuthHeaders()
+            });
+            await handleResponse(response);
+            message.success('Coach deactivated successfully!');
+            await loadCoaches();
         } catch (error) {
-            message.error('Failed to delete user');
+            console.error('Error deleting coach:', error);
+            message.error(error.message || 'Failed to deactivate coach');
         } finally {
             setLoading(false);
         }
     };
 
-    // View user details
-    const handleViewUser = (user) => {
-        setSelectedUser(user);
-        setViewUserModal(true);
+    // Restore coach
+    const handleRestoreCoach = async (coachId) => {
+        try {
+            setLoading(true);
+            const response = await fetch(`${API_BASE_URL}/admin/restore-coach/${coachId}`, {
+                method: 'PUT',
+                headers: getAuthHeaders()
+            });
+            await handleResponse(response);
+            message.success('Coach restored successfully!');
+            await loadCoaches();
+        } catch (error) {
+            console.error('Error restoring coach:', error);
+            message.error(error.message || 'Failed to restore coach');
+        } finally {
+            setLoading(false);
+        }
     };
 
-    // Copy to clipboard
+    // View coach details
+    const handleViewCoach = (coach) => {
+        setSelectedCoach(coach);
+        setViewCoachModal(true);
+    };
+
     const handleCopy = async (text, field) => {
         try {
             await navigator.clipboard.writeText(text);
             setCopiedField(field);
-            message.success(`${field} copied to clipboard!`);
+            message.success('Copied to clipboard!');
             setTimeout(() => setCopiedField(''), 2000);
         } catch (error) {
-            message.error('Failed to copy to clipboard');
+            message.error('Failed to copy');
         }
     };
 
-    // Copy all credentials
     const handleCopyAll = async () => {
-        if (!newCoachCredentials) return;
-
         const credentialsText = `Name: ${newCoachCredentials.name}\nEmail: ${newCoachCredentials.email}\nPassword: ${newCoachCredentials.password}`;
-
         try {
             await navigator.clipboard.writeText(credentialsText);
             message.success('All credentials copied to clipboard!');
@@ -285,98 +312,120 @@ const AdminDashboard = () => {
         }
     };
 
-    // Calculate statistics based on filtered users
+    // Calculate statistics based on filtered coaches
     const stats = {
-        totalUsers: filteredUsers.length,
-        activeCoaches: filteredUsers.filter(user => user.role === 'coach' && user.status === 'active').length,
-        totalCoaches: filteredUsers.filter(user => user.role === 'coach').length,
-        activeUsers: filteredUsers.filter(user => user.status === 'active').length,
+        totalCoaches: filteredCoaches.length,
+        activeCoaches: filteredCoaches.filter(coach => coach.account_status === 'active').length,
+        inactiveCoaches: filteredCoaches.filter(coach => coach.account_status === 'inactive').length,
+        totalUsers: filteredCoaches.length, // For compatibility with existing UI
     };
 
     // Table columns
     const columns = [
         {
-            title: 'User',
-            key: 'user',
+            title: 'Coach',
+            key: 'coach',
             render: (_, record) => (
                 <Space>
                     <Avatar
                         size="large"
-                        style={{
-                            backgroundColor: record.role === 'admin' ? '#ff4d4f' :
-                                record.role === 'coach' ? '#52c41a' : '#1890ff'
-                        }}
+                        style={{ backgroundColor: '#52c41a' }}
                     >
-                        {record.name.charAt(0).toUpperCase()}
+                        {record.full_name?.charAt(0).toUpperCase()}
                     </Avatar>
                     <div>
-                        <div style={{ fontWeight: 'bold' }}>{record.name}</div>
+                        <div style={{ fontWeight: 'bold' }}>{record.full_name}</div>
                         <Text type="secondary">{record.email}</Text>
                     </div>
                 </Space>
             ),
         },
         {
-            title: 'Role',
-            key: 'role',
-            render: (_, record) => {
-                const color = record.role === 'admin' ? 'red' :
-                    record.role === 'coach' ? 'green' : 'blue';
-                return (
-                    <Tag color={color} style={{ textTransform: 'capitalize' }}>
-                        {record.role}
-                    </Tag>
-                );
-            },
+            title: 'Specialization',
+            key: 'specialization',
+            render: (_, record) => (
+                <Text>{record.specialization || 'Not updated'}</Text>
+            ),
+        },
+        {
+            title: 'Experience',
+            key: 'experience',
+            render: (_, record) => (
+                <Text>{record.experience_years ? `${record.experience_years} years` : 'Not updated'}</Text>
+            ),
         },
         {
             title: 'Status',
             key: 'status',
             render: (_, record) => {
-                const color = record.status === 'active' ? 'green' :
-                    record.status === 'inactive' ? 'orange' : 'red';
+                const color = record.account_status === 'active' ? 'green' : 'orange';
                 return (
                     <Tag color={color} style={{ textTransform: 'capitalize' }}>
-                        {record.status}
+                        {record.account_status === 'active' ? 'Active' : 'Inactive'}
                     </Tag>
                 );
             },
         },
         {
-            title: 'Registration',
+            title: 'Registration Date',
             key: 'registration',
             render: (_, record) => (
-                <Text>{new Date(record.registrationDate).toLocaleDateString()}</Text>
+                <Text>{record.registration_date ? new Date(record.registration_date).toLocaleDateString() : 'N/A'}</Text>
             ),
         },
         {
             title: 'Actions',
             key: 'actions',
             render: (_, record) => (
-                <ActionButtonGroup
-                    actions={[
-                        {
-                            type: 'view',
-                            tooltip: 'View Details',
-                            onClick: handleViewUser
-                        },
-                        {
-                            type: 'edit',
-                            tooltip: 'Edit User',
-                            onClick: handleEditUser
-                        },
-                        {
-                            type: 'delete',
-                            tooltip: 'Delete User',
-                            onClick: handleDeleteUser,
-                            confirm: {
-                                title: 'Are you sure you want to delete this user?',
-                                description: 'This action cannot be undone.'
-                            }
-                        }
-                    ]}
-                    record={record}
-                />
+                <Space>
+                    <Tooltip title="View Details">
+                        <Button
+                            type="text"
+                            icon={<EyeOutlined />}
+                            onClick={() => handleViewCoach(record)}
+                        />
+                    </Tooltip>
+                    <Tooltip title="Edit">
+                        <Button
+                            type="text"
+                            icon={<EditOutlined />}
+                            onClick={() => handleEditCoach(record)}
+                        />
+                    </Tooltip>
+                    {record.account_status === 'active' ? (
+                        <Popconfirm
+                            title="Deactivate Coach"
+                            description="Are you sure you want to deactivate this coach?"
+                            onConfirm={() => handleDeleteCoach(record.coach_id)}
+                            okText="Yes"
+                            cancelText="No"
+                        >
+                            <Tooltip title="Deactivate">
+                                <Button
+                                    type="text"
+                                    icon={<DeleteOutlined />}
+                                    danger
+                                />
+                            </Tooltip>
+                        </Popconfirm>
+                    ) : (
+                        <Popconfirm
+                            title="Restore Coach"
+                            description="Are you sure you want to restore this coach?"
+                            onConfirm={() => handleRestoreCoach(record.coach_id)}
+                            okText="Yes"
+                            cancelText="No"
+                        >
+                            <Tooltip title="Restore">
+                                <Button
+                                    type="text"
+                                    icon={<UndoOutlined />}
+                                    style={{ color: '#52c41a' }}
+                                />
+                            </Tooltip>
+                        </Popconfirm>
+                    )}
+                </Space>
             ),
         },
     ];
@@ -390,10 +439,10 @@ const AdminDashboard = () => {
                 {/* Header */}
                 <div style={{ marginBottom: '24px' }}>
                     <Title level={2} style={{ margin: 0, color: '#52c41a' }}>
-                        Admin Dashboard
+                        Coach Management
                     </Title>
                     <Text type="secondary">
-                        Manage users and create coach accounts
+                        Create and manage coach accounts
                     </Text>
                 </div>
 
@@ -401,8 +450,8 @@ const AdminDashboard = () => {
                 <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
                     <Col xs={24} sm={12} lg={6}>
                         <StatisticCard
-                            title="Total Users"
-                            value={stats.totalUsers}
+                            title="Total Coaches"
+                            value={stats.totalCoaches}
                             prefix={<TeamOutlined style={{ color: '#1890ff' }} />}
                             valueStyle={{ color: '#1890ff' }}
                         />
@@ -417,48 +466,33 @@ const AdminDashboard = () => {
                     </Col>
                     <Col xs={24} sm={12} lg={6}>
                         <StatisticCard
-                            title="Total Coaches"
-                            value={stats.totalCoaches}
+                            title="Inactive Coaches"
+                            value={stats.inactiveCoaches}
                             prefix={<UserAddOutlined style={{ color: '#faad14' }} />}
                             valueStyle={{ color: '#faad14' }}
                         />
                     </Col>
                     <Col xs={24} sm={12} lg={6}>
                         <StatisticCard
-                            title="Active Users"
-                            value={stats.activeUsers}
+                            title="Total Users"
+                            value={stats.totalUsers}
                             prefix={<SafetyCertificateOutlined style={{ color: '#ff4d4f' }} />}
                             valueStyle={{ color: '#ff4d4f' }}
                         />
                     </Col>
                 </Row>
 
-                {/* Actions */}
                 {/* Search and Filter Controls */}
                 <div className="filter-controls" style={{ marginBottom: '16px' }}>
                     <Row gutter={[16, 16]} align="middle">
                         <Col xs={24} sm={12} md={8}>
                             <Search
-                                placeholder="Search by name, email, or phone"
+                                placeholder="Search by name, email, phone or specialization"
                                 value={searchText}
                                 onChange={(e) => setSearchText(e.target.value)}
                                 allowClear
                                 style={{ width: '100%' }}
                             />
-                        </Col>
-                        <Col xs={24} sm={12} md={4}>
-                            <Select
-                                placeholder="Filter by role"
-                                value={roleFilter}
-                                onChange={setRoleFilter}
-                                style={{ width: '100%' }}
-                                allowClear
-                            >
-                                <Option value="all">All Roles</Option>
-                                <Option value="admin">Admin</Option>
-                                <Option value="coach">Coach</Option>
-                                <Option value="member">Member</Option>
-                            </Select>
                         </Col>
                         <Col xs={24} sm={12} md={4}>
                             <Select
@@ -471,7 +505,6 @@ const AdminDashboard = () => {
                                 <Option value="all">All Status</Option>
                                 <Option value="active">Active</Option>
                                 <Option value="inactive">Inactive</Option>
-                                <Option value="suspended">Suspended</Option>
                             </Select>
                         </Col>
                         <Col xs={24} sm={12} md={4}>
@@ -486,23 +519,23 @@ const AdminDashboard = () => {
                         </Col>
                         <Col xs={24} sm={12} md={4}>
                             <div className="results-counter">
-                                Showing {filteredUsers.length} of {users.length} users
+                                Showing {filteredCoaches.length} of {coaches.length} coaches
                             </div>
                         </Col>
                     </Row>
                 </div>
 
                 <DataTable
-                    title="User Management"
+                    title="Coaches List"
                     columns={columns}
-                    dataSource={filteredUsers}
+                    dataSource={filteredCoaches}
                     loading={loading}
-                    rowKey="id"
+                    rowKey="coach_id"
                     extra={
                         <Space>
                             <Button
                                 icon={<ReloadOutlined />}
-                                onClick={loadUsers}
+                                onClick={loadCoaches}
                                 loading={loading}
                             >
                                 Refresh
@@ -528,14 +561,14 @@ const AdminDashboard = () => {
                 onSubmit={handleCreateCoach}
                 form={coachForm}
                 loading={loading}
-                width={600}
+                width={700}
             >
                 <Row gutter={16}>
                     <Col span={12}>
                         <Form.Item
-                            name="name"
+                            name="full_name"
                             label="Full Name"
-                            rules={[{ required: true, message: 'Please enter the name!' }]}
+                            rules={[{ required: true, message: 'Please enter the full name!' }]}
                         >
                             <Input prefix={<UserOutlined />} placeholder="Enter full name" />
                         </Form.Item>
@@ -554,12 +587,44 @@ const AdminDashboard = () => {
                     </Col>
                 </Row>
 
-                <Form.Item
-                    name="phone"
-                    label="Phone Number"
-                >
-                    <Input placeholder="Enter phone number" />
-                </Form.Item>
+                <Row gutter={16}>
+                    <Col span={12}>
+                        <Form.Item
+                            name="phone_number"
+                            label="Phone Number"
+                        >
+                            <Input placeholder="Enter phone number" />
+                        </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                        <Form.Item
+                            name="date_of_birth"
+                            label="Date of Birth"
+                        >
+                            <DatePicker style={{ width: '100%' }} placeholder="Select date of birth" />
+                        </Form.Item>
+                    </Col>
+                </Row>
+
+                <Row gutter={16}>
+                    <Col span={12}>
+                        <Form.Item
+                            name="password"
+                            label="Password"
+                            rules={[{ required: true, message: 'Please enter the password!' }]}
+                        >
+                            <Input.Password placeholder="Enter password" />
+                        </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                        <Form.Item
+                            name="google_meet_link"
+                            label="Google Meet Link"
+                        >
+                            <Input placeholder="Enter Google Meet link" />
+                        </Form.Item>
+                    </Col>
+                </Row>
 
                 <div style={{
                     background: '#f6ffed',
@@ -569,27 +634,27 @@ const AdminDashboard = () => {
                     marginBottom: '16px'
                 }}>
                     <Text style={{ color: '#52c41a', fontWeight: '500' }}>
-                        📝 Note: The coach will receive a default password of <strong>123456</strong>
+                        📝 Note: Coach will receive login credentials after successful account creation
                     </Text>
                 </div>
             </FormModal>
 
-            {/* Edit User Modal */}
+            {/* Edit Coach Modal */}
             <FormModal
-                title="Edit User"
-                visible={editUserModal}
-                onCancel={() => setEditUserModal(false)}
-                onSubmit={handleUpdateUser}
+                title="Edit Coach Information"
+                visible={editCoachModal}
+                onCancel={() => setEditCoachModal(false)}
+                onSubmit={handleUpdateCoach}
                 form={editForm}
                 loading={loading}
-                width={600}
+                width={700}
             >
                 <Row gutter={16}>
                     <Col span={12}>
                         <Form.Item
-                            name="name"
+                            name="full_name"
                             label="Full Name"
-                            rules={[{ required: true, message: 'Please enter the name!' }]}
+                            rules={[{ required: true, message: 'Please enter the full name!' }]}
                         >
                             <Input prefix={<UserOutlined />} placeholder="Enter full name" />
                         </Form.Item>
@@ -603,7 +668,7 @@ const AdminDashboard = () => {
                                 { type: 'email', message: 'Please enter a valid email!' }
                             ]}
                         >
-                            <Input prefix={<UserOutlined />} placeholder="Enter email address" />
+                            <Input prefix={<UserOutlined />} placeholder="Enter email address" disabled />
                         </Form.Item>
                     </Col>
                 </Row>
@@ -611,7 +676,7 @@ const AdminDashboard = () => {
                 <Row gutter={16}>
                     <Col span={12}>
                         <Form.Item
-                            name="phone"
+                            name="phone_number"
                             label="Phone Number"
                         >
                             <Input placeholder="Enter phone number" />
@@ -619,86 +684,101 @@ const AdminDashboard = () => {
                     </Col>
                     <Col span={12}>
                         <Form.Item
-                            name="role"
-                            label="Role"
-                            rules={[{ required: true, message: 'Please select a role!' }]}
+                            name="account_status"
+                            label="Account Status"
+                            rules={[{ required: true, message: 'Please select a status!' }]}
                         >
-                            <Select placeholder="Select role">
-                                <Option value="member">Member</Option>
-                                <Option value="coach">Coach</Option>
-                                <Option value="admin">Admin</Option>
+                            <Select placeholder="Select status">
+                                <Option value="active">Active</Option>
+                                <Option value="inactive">Inactive</Option>
                             </Select>
                         </Form.Item>
                     </Col>
                 </Row>
 
-                <Form.Item
-                    name="status"
-                    label="Status"
-                    rules={[{ required: true, message: 'Please select a status!' }]}
-                >
-                    <Select placeholder="Select status">
-                        <Option value="active">Active</Option>
-                        <Option value="inactive">Inactive</Option>
-                        <Option value="suspended">Suspended</Option>
-                    </Select>
-                </Form.Item>
-
-                {selectedUser?.role === 'coach' && (
-                    <>
+                <Row gutter={16}>
+                    <Col span={12}>
                         <Form.Item
                             name="specialization"
                             label="Specialization"
                         >
                             <Input placeholder="Enter specialization" />
                         </Form.Item>
+                    </Col>
+                    <Col span={12}>
                         <Form.Item
-                            name="experienceYears"
-                            label="Experience (Years)"
+                            name="experience_years"
+                            label="Years of Experience"
                         >
                             <Input type="number" placeholder="Enter years of experience" />
                         </Form.Item>
-                    </>
-                )}
+                    </Col>
+                </Row>
+
+                <Form.Item
+                    name="bio"
+                    label="Bio"
+                >
+                    <TextArea rows={3} placeholder="Enter bio" />
+                </Form.Item>
+
+                <Row gutter={16}>
+                    <Col span={12}>
+                        <Form.Item
+                            name="google_meet_link"
+                            label="Google Meet Link"
+                        >
+                            <Input placeholder="Enter Google Meet link" />
+                        </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                        <Form.Item
+                            name="coach_status"
+                            label="Coach Status"
+                        >
+                            <Select placeholder="Select status">
+                                <Option value="active">Active</Option>
+                                <Option value="inactive">Inactive</Option>
+                            </Select>
+                        </Form.Item>
+                    </Col>
+                </Row>
             </FormModal>
 
-            {/* View User Modal */}
+            {/* View Coach Modal */}
             <Modal
-                title="User Details"
-                open={viewUserModal}
+                title="Coach Details"
+                open={viewCoachModal}
                 onCancel={() => {
-                    setViewUserModal(false);
-                    setSelectedUser(null);
+                    setViewCoachModal(false);
+                    setSelectedCoach(null);
                 }}
                 footer={[
                     <Button
                         key="close"
                         onClick={() => {
-                            setViewUserModal(false);
-                            setSelectedUser(null);
+                            setViewCoachModal(false);
+                            setSelectedCoach(null);
                         }}
                     >
                         Close
                     </Button>
                 ]}
-                width={500}
+                width={600}
             >
-                {selectedUser && (
+                {selectedCoach && (
                     <div>
                         <Row gutter={[16, 16]}>
                             <Col span={24}>
                                 <div style={{ textAlign: 'center', marginBottom: '20px' }}>
                                     <Avatar
                                         size={80}
-                                        style={{
-                                            backgroundColor: selectedUser.role === 'admin' ? '#ff4d4f' :
-                                                selectedUser.role === 'coach' ? '#52c41a' : '#1890ff'
-                                        }}
+                                        style={{ backgroundColor: '#52c41a' }}
                                     >
-                                        {selectedUser.name.charAt(0).toUpperCase()}
+                                        {selectedCoach.full_name?.charAt(0).toUpperCase()}
                                     </Avatar>
                                     <Title level={3} style={{ marginTop: '10px' }}>
-                                        {selectedUser.name}
+                                        {selectedCoach.full_name}
                                     </Title>
                                 </div>
                             </Col>
@@ -710,36 +790,47 @@ const AdminDashboard = () => {
                             <Col span={12}>
                                 <Text strong>Email:</Text>
                                 <br />
-                                <Text>{selectedUser.email}</Text>
+                                <Text>{selectedCoach.email}</Text>
                             </Col>
                             <Col span={12}>
-                                <Text strong>Phone:</Text>
+                                <Text strong>Phone Number:</Text>
                                 <br />
-                                <Text>{selectedUser.phone || 'N/A'}</Text>
+                                <Text>{selectedCoach.phone_number || 'N/A'}</Text>
                             </Col>
                         </Row>
 
                         <Row gutter={[16, 16]} style={{ marginTop: '16px' }}>
                             <Col span={12}>
-                                <Text strong>Role:</Text>
+                                <Text strong>Specialization:</Text>
+                                <br />
+                                <Text>{selectedCoach.specialization || 'Not updated'}</Text>
+                            </Col>
+                            <Col span={12}>
+                                <Text strong>Experience:</Text>
+                                <br />
+                                <Text>{selectedCoach.experience_years ? `${selectedCoach.experience_years} years` : 'Not updated'}</Text>
+                            </Col>
+                        </Row>
+
+                        <Row gutter={[16, 16]} style={{ marginTop: '16px' }}>
+                            <Col span={12}>
+                                <Text strong>Account Status:</Text>
                                 <br />
                                 <Tag
-                                    color={selectedUser.role === 'admin' ? 'red' :
-                                        selectedUser.role === 'coach' ? 'green' : 'blue'}
+                                    color={selectedCoach.account_status === 'active' ? 'green' : 'orange'}
                                     style={{ textTransform: 'capitalize' }}
                                 >
-                                    {selectedUser.role}
+                                    {selectedCoach.account_status === 'active' ? 'Active' : 'Inactive'}
                                 </Tag>
                             </Col>
                             <Col span={12}>
-                                <Text strong>Status:</Text>
+                                <Text strong>Coach Status:</Text>
                                 <br />
                                 <Tag
-                                    color={selectedUser.status === 'active' ? 'green' :
-                                        selectedUser.status === 'inactive' ? 'orange' : 'red'}
+                                    color={selectedCoach.coach_status === 'active' ? 'green' : 'orange'}
                                     style={{ textTransform: 'capitalize' }}
                                 >
-                                    {selectedUser.status}
+                                    {selectedCoach.coach_status === 'active' ? 'Active' : 'Inactive'}
                                 </Tag>
                             </Col>
                         </Row>
@@ -748,9 +839,24 @@ const AdminDashboard = () => {
                             <Col span={12}>
                                 <Text strong>Registration Date:</Text>
                                 <br />
-                                <Text>{new Date(selectedUser.registrationDate).toLocaleDateString()}</Text>
+                                <Text>{selectedCoach.registration_date ? new Date(selectedCoach.registration_date).toLocaleDateString() : 'N/A'}</Text>
+                            </Col>
+                            <Col span={12}>
+                                <Text strong>Google Meet Link:</Text>
+                                <br />
+                                <Text>{selectedCoach.google_meet_link || 'Not updated'}</Text>
                             </Col>
                         </Row>
+
+                        {selectedCoach.bio && (
+                            <Row gutter={[16, 16]} style={{ marginTop: '16px' }}>
+                                <Col span={24}>
+                                    <Text strong>Bio:</Text>
+                                    <br />
+                                    <Text>{selectedCoach.bio}</Text>
+                                </Col>
+                            </Row>
+                        )}
                     </div>
                 )}
             </Modal>
