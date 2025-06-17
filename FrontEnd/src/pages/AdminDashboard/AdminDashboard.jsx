@@ -1,254 +1,897 @@
-import React, { useState } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import React, { useState, useEffect } from 'react';
+import {
+    Layout,
+    Card,
+    Button,
+    Table,
+    Modal,
+    Form,
+    Input,
+    Select,
+    Statistic,
+    Row,
+    Col,
+    Space,
+    Tag,
+    Avatar,
+    Typography,
+    message,
+    Popconfirm,
+    Tooltip,
+    Divider
+} from 'antd';
+import {
+    UserOutlined,
+    TeamOutlined,
+    UserAddOutlined,
+    SafetyCertificateOutlined,
+    EditOutlined,
+    DeleteOutlined,
+    PlusOutlined,
+    ReloadOutlined,
+    EyeOutlined,
+    CopyOutlined,
+    CheckOutlined,
+    SearchOutlined,
+    FilterOutlined
+} from '@ant-design/icons';
+import Navbar from '../../layouts/Navbar';
+import StatisticCard from '../../components/ui/StatisticCard';
+import DataTable from '../../components/ui/DataTable';
+import FormModal from '../../components/ui/FormModal';
+import ActionButtonGroup from '../../components/ui/ActionButtonGroup';
+import './AdminDashboard.css';
+
+const { Header, Content } = Layout;
+const { Title, Text } = Typography;
+const { Option } = Select;
+const { Search } = Input;
 
 const AdminDashboard = () => {
-    const { user, createCoachAccount } = useAuth();
-    const [showCreateCoach, setShowCreateCoach] = useState(false);
-    const [coachFormData, setCoachFormData] = useState({
-        name: '',
-        email: '',
-        specialization: '',
-        experience_years: '',
-        phone: ''
-    });
+    // State management
+    const [users, setUsers] = useState([]);
+    const [filteredUsers, setFilteredUsers] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [createCoachModal, setCreateCoachModal] = useState(false);
+    const [editUserModal, setEditUserModal] = useState(false);
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [viewUserModal, setViewUserModal] = useState(false);
+    const [credentialsModal, setCredentialsModal] = useState(false);
+    const [newCoachCredentials, setNewCoachCredentials] = useState(null);
+    const [copiedField, setCopiedField] = useState('');
 
-    // Handle coach creation - Xử lý tạo coach
-    const handleCreateCoach = async (e) => {
-        e.preventDefault();
+    // Search and filter states
+    const [searchText, setSearchText] = useState('');
+    const [roleFilter, setRoleFilter] = useState('all');
+    const [statusFilter, setStatusFilter] = useState('all');
+
+    // Form instances
+    const [coachForm] = Form.useForm();
+    const [editForm] = Form.useForm();
+
+    // Mock data for demonstration
+    const mockUsers = [
+        {
+            id: 1,
+            name: 'John Doe',
+            email: 'john@example.com',
+            phone: '+1234567890',
+            role: 'member',
+            status: 'active',
+            registrationDate: '2024-01-15',
+            specialization: null,
+            experienceYears: null
+        },
+        {
+            id: 2,
+            name: 'Jane Smith',
+            email: 'jane@example.com',
+            phone: '+1234567891',
+            role: 'coach',
+            status: 'active',
+            registrationDate: '2024-01-20',
+            specialization: 'Smoking Cessation',
+            experienceYears: 5
+        },
+        {
+            id: 3,
+            name: 'Admin User',
+            email: 'admin@example.com',
+            phone: '+1234567892',
+            role: 'admin',
+            status: 'active',
+            registrationDate: '2024-01-10',
+            specialization: null,
+            experienceYears: null
+        }
+    ];
+
+    // Load users on component mount
+    useEffect(() => {
+        loadUsers();
+    }, []);
+
+    // Filter users based on search and filters
+    useEffect(() => {
+        filterUsers();
+    }, [users, searchText, roleFilter, statusFilter]);
+
+    const filterUsers = () => {
+        let filtered = [...users];
+
+        // Search filter
+        if (searchText) {
+            filtered = filtered.filter(user =>
+                user.name.toLowerCase().includes(searchText.toLowerCase()) ||
+                user.email.toLowerCase().includes(searchText.toLowerCase()) ||
+                user.phone?.toLowerCase().includes(searchText.toLowerCase())
+            );
+        }
+
+        // Role filter
+        if (roleFilter !== 'all') {
+            filtered = filtered.filter(user => user.role === roleFilter);
+        }
+
+        // Status filter
+        if (statusFilter !== 'all') {
+            filtered = filtered.filter(user => user.status === statusFilter);
+        }
+
+        setFilteredUsers(filtered);
+    };
+
+    const clearFilters = () => {
+        setSearchText('');
+        setRoleFilter('all');
+        setStatusFilter('all');
+    };
+
+    const loadUsers = async () => {
+        setLoading(true);
         try {
-            const result = await createCoachAccount(coachFormData);
-            alert(result.message);
-            setShowCreateCoach(false);
-            setCoachFormData({
-                name: '',
-                email: '',
-                specialization: '',
-                experience_years: '',
-                phone: ''
-            });
+            // Simulate API call
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            setUsers(mockUsers);
         } catch (error) {
-            alert('Error creating coach account: ' + error.message);
+            message.error('Failed to load users');
+        } finally {
+            setLoading(false);
         }
     };
 
+    // Create coach account
+    const handleCreateCoach = async (values) => {
+        try {
+            setLoading(true);
+            // Simulate API call
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            const newCoach = {
+                id: Math.max(...users.map(u => u.id), 0) + 1,
+                name: values.name,
+                email: values.email,
+                phone: values.phone || '',
+                role: 'coach',
+                status: 'active',
+                registrationDate: new Date().toISOString().split('T')[0],
+                specialization: null,
+                experienceYears: null
+            };
+
+            setUsers(prev => [...prev, newCoach]);
+
+            // Set credentials for modal
+            setNewCoachCredentials({
+                name: values.name,
+                email: values.email,
+                password: '123456'
+            });
+
+            setCreateCoachModal(false);
+            setCredentialsModal(true);
+            coachForm.resetFields();
+        } catch (error) {
+            message.error('Failed to create coach account');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Edit user
+    const handleEditUser = (user) => {
+        setSelectedUser(user);
+        editForm.setFieldsValue({
+            name: user.name,
+            email: user.email,
+            phone: user.phone,
+            role: user.role,
+            status: user.status,
+            specialization: user.specialization,
+            experienceYears: user.experienceYears
+        });
+        setEditUserModal(true);
+    };
+
+    // Update user
+    const handleUpdateUser = async (values) => {
+        try {
+            setLoading(true);
+            // Simulate API call
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            setUsers(prev => prev.map(user =>
+                user.id === selectedUser.id
+                    ? { ...user, ...values }
+                    : user
+            ));
+
+            message.success('User updated successfully!');
+            setEditUserModal(false);
+            setSelectedUser(null);
+            editForm.resetFields();
+        } catch (error) {
+            message.error('Failed to update user');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Delete user
+    const handleDeleteUser = async (userId) => {
+        try {
+            setLoading(true);
+            // Simulate API call
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            setUsers(prev => prev.filter(user => user.id !== userId));
+            message.success('User deleted successfully!');
+        } catch (error) {
+            message.error('Failed to delete user');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // View user details
+    const handleViewUser = (user) => {
+        setSelectedUser(user);
+        setViewUserModal(true);
+    };
+
+    // Copy to clipboard
+    const handleCopy = async (text, field) => {
+        try {
+            await navigator.clipboard.writeText(text);
+            setCopiedField(field);
+            message.success(`${field} copied to clipboard!`);
+            setTimeout(() => setCopiedField(''), 2000);
+        } catch (error) {
+            message.error('Failed to copy to clipboard');
+        }
+    };
+
+    // Copy all credentials
+    const handleCopyAll = async () => {
+        if (!newCoachCredentials) return;
+
+        const credentialsText = `Name: ${newCoachCredentials.name}\nEmail: ${newCoachCredentials.email}\nPassword: ${newCoachCredentials.password}`;
+
+        try {
+            await navigator.clipboard.writeText(credentialsText);
+            message.success('All credentials copied to clipboard!');
+        } catch (error) {
+            message.error('Failed to copy credentials');
+        }
+    };
+
+    // Calculate statistics based on filtered users
+    const stats = {
+        totalUsers: filteredUsers.length,
+        activeCoaches: filteredUsers.filter(user => user.role === 'coach' && user.status === 'active').length,
+        totalCoaches: filteredUsers.filter(user => user.role === 'coach').length,
+        activeUsers: filteredUsers.filter(user => user.status === 'active').length,
+    };
+
+    // Table columns
+    const columns = [
+        {
+            title: 'User',
+            key: 'user',
+            render: (_, record) => (
+                <Space>
+                    <Avatar
+                        size="large"
+                        style={{
+                            backgroundColor: record.role === 'admin' ? '#ff4d4f' :
+                                record.role === 'coach' ? '#52c41a' : '#1890ff'
+                        }}
+                    >
+                        {record.name.charAt(0).toUpperCase()}
+                    </Avatar>
+                    <div>
+                        <div style={{ fontWeight: 'bold' }}>{record.name}</div>
+                        <Text type="secondary">{record.email}</Text>
+                    </div>
+                </Space>
+            ),
+        },
+        {
+            title: 'Role',
+            key: 'role',
+            render: (_, record) => {
+                const color = record.role === 'admin' ? 'red' :
+                    record.role === 'coach' ? 'green' : 'blue';
+                return (
+                    <Tag color={color} style={{ textTransform: 'capitalize' }}>
+                        {record.role}
+                    </Tag>
+                );
+            },
+        },
+        {
+            title: 'Status',
+            key: 'status',
+            render: (_, record) => {
+                const color = record.status === 'active' ? 'green' :
+                    record.status === 'inactive' ? 'orange' : 'red';
+                return (
+                    <Tag color={color} style={{ textTransform: 'capitalize' }}>
+                        {record.status}
+                    </Tag>
+                );
+            },
+        },
+        {
+            title: 'Registration',
+            key: 'registration',
+            render: (_, record) => (
+                <Text>{new Date(record.registrationDate).toLocaleDateString()}</Text>
+            ),
+        },
+        {
+            title: 'Actions',
+            key: 'actions',
+            render: (_, record) => (
+                <ActionButtonGroup
+                    actions={[
+                        {
+                            type: 'view',
+                            tooltip: 'View Details',
+                            onClick: handleViewUser
+                        },
+                        {
+                            type: 'edit',
+                            tooltip: 'Edit User',
+                            onClick: handleEditUser
+                        },
+                        {
+                            type: 'delete',
+                            tooltip: 'Delete User',
+                            onClick: handleDeleteUser,
+                            confirm: {
+                                title: 'Are you sure you want to delete this user?',
+                                description: 'This action cannot be undone.'
+                            }
+                        }
+                    ]}
+                    record={record}
+                />
+            ),
+        },
+    ];
+
     return (
-        <div className="min-h-screen bg-gray-50 py-8">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                {/* Header - Tiêu đề */}
-                <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <Layout className="admin-dashboard">
+            <Header style={{ padding: 0, height: 'auto' }}>
+                <Navbar />
+            </Header>
+            <Content style={{ padding: '24px', minHeight: 'calc(100vh - 64px)' }}>
+                {/* Header */}
+                <div style={{ marginBottom: '24px' }}>
+                    <Title level={2} style={{ margin: 0, color: '#52c41a' }}>
                         Admin Dashboard
-                    </h1>
-                    <p className="text-gray-600">
-                        Manage users, coaches, and system settings. Coach accounts are created by Admin and provided to coaches.
-                    </p>
+                    </Title>
+                    <Text type="secondary">
+                        Manage users and create coach accounts
+                    </Text>
                 </div>
 
-                {/* Stats Cards - Thẻ thống kê */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-                    <div className="bg-white rounded-lg shadow-sm p-6">
-                        <div className="flex items-center">
-                            <div className="p-2 bg-blue-100 rounded-lg">
-                                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                                </svg>
-                            </div>
-                            <div className="ml-4">
-                                <p className="text-sm font-medium text-gray-600">Total Users</p>
-                                <p className="text-2xl font-semibold text-gray-900">1,234</p>
-                            </div>
-                        </div>
-                    </div>
+                {/* Statistics */}
+                <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
+                    <Col xs={24} sm={12} lg={6}>
+                        <StatisticCard
+                            title="Total Users"
+                            value={stats.totalUsers}
+                            prefix={<TeamOutlined style={{ color: '#1890ff' }} />}
+                            valueStyle={{ color: '#1890ff' }}
+                        />
+                    </Col>
+                    <Col xs={24} sm={12} lg={6}>
+                        <StatisticCard
+                            title="Active Coaches"
+                            value={stats.activeCoaches}
+                            prefix={<UserOutlined style={{ color: '#52c41a' }} />}
+                            valueStyle={{ color: '#52c41a' }}
+                        />
+                    </Col>
+                    <Col xs={24} sm={12} lg={6}>
+                        <StatisticCard
+                            title="Total Coaches"
+                            value={stats.totalCoaches}
+                            prefix={<UserAddOutlined style={{ color: '#faad14' }} />}
+                            valueStyle={{ color: '#faad14' }}
+                        />
+                    </Col>
+                    <Col xs={24} sm={12} lg={6}>
+                        <StatisticCard
+                            title="Active Users"
+                            value={stats.activeUsers}
+                            prefix={<SafetyCertificateOutlined style={{ color: '#ff4d4f' }} />}
+                            valueStyle={{ color: '#ff4d4f' }}
+                        />
+                    </Col>
+                </Row>
 
-                    <div className="bg-white rounded-lg shadow-sm p-6">
-                        <div className="flex items-center">
-                            <div className="p-2 bg-green-100 rounded-lg">
-                                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                            </div>
-                            <div className="ml-4">
-                                <p className="text-sm font-medium text-gray-600">Active Coaches</p>
-                                <p className="text-2xl font-semibold text-gray-900">45</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-white rounded-lg shadow-sm p-6">
-                        <div className="flex items-center">
-                            <div className="p-2 bg-yellow-100 rounded-lg">
-                                <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                            </div>
-                            <div className="ml-4">
-                                <p className="text-sm font-medium text-gray-600">New Users</p>
-                                <p className="text-2xl font-semibold text-gray-900">23</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-white rounded-lg shadow-sm p-6">
-                        <div className="flex items-center">
-                            <div className="p-2 bg-purple-100 rounded-lg">
-                                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                                </svg>
-                            </div>
-                            <div className="ml-4">
-                                <p className="text-sm font-medium text-gray-600">Success Rate</p>
-                                <p className="text-2xl font-semibold text-gray-900">78%</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Admin Actions - Hành động Admin */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                    {/* Create Coach Account - Tạo tài khoản Coach */}
-                    <div className="bg-white rounded-lg shadow-sm p-6">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-semibold text-gray-900">Create Coach Account</h3>
-                            <button
-                                onClick={() => setShowCreateCoach(true)}
-                                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                {/* Actions */}
+                {/* Search and Filter Controls */}
+                <div className="filter-controls" style={{ marginBottom: '16px' }}>
+                    <Row gutter={[16, 16]} align="middle">
+                        <Col xs={24} sm={12} md={8}>
+                            <Search
+                                placeholder="Search by name, email, or phone"
+                                value={searchText}
+                                onChange={(e) => setSearchText(e.target.value)}
+                                allowClear
+                                style={{ width: '100%' }}
+                            />
+                        </Col>
+                        <Col xs={24} sm={12} md={4}>
+                            <Select
+                                placeholder="Filter by role"
+                                value={roleFilter}
+                                onChange={setRoleFilter}
+                                style={{ width: '100%' }}
+                                allowClear
                             >
-                                Create New Coach
-                            </button>
-                        </div>
-                        <p className="text-gray-600 text-sm">
-                            Create a new coach account and provide credentials to the coach.
-                            Coaches contact Admin via email to request account creation.
-                        </p>
-                    </div>
-
-                    {/* System Settings - Cài đặt hệ thống */}
-                    <div className="bg-white rounded-lg shadow-sm p-6">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">System Settings</h3>
-                        <div className="space-y-3">
-                            <button className="w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
-                                <div className="flex items-center">
-                                    <svg className="w-5 h-5 text-gray-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    </svg>
-                                    <span>System Configuration</span>
-                                </div>
-                            </button>
-                            <button className="w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
-                                <div className="flex items-center">
-                                    <svg className="w-5 h-5 text-gray-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                                    </svg>
-                                    <span>Analytics & Reports</span>
-                                </div>
-                            </button>
-                            <button className="w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
-                                <div className="flex items-center">
-                                    <svg className="w-5 h-5 text-gray-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                    </svg>
-                                    <span>Security Settings</span>
-                                </div>
-                            </button>
-                        </div>
-                    </div>
+                                <Option value="all">All Roles</Option>
+                                <Option value="admin">Admin</Option>
+                                <Option value="coach">Coach</Option>
+                                <Option value="member">Member</Option>
+                            </Select>
+                        </Col>
+                        <Col xs={24} sm={12} md={4}>
+                            <Select
+                                placeholder="Filter by status"
+                                value={statusFilter}
+                                onChange={setStatusFilter}
+                                style={{ width: '100%' }}
+                                allowClear
+                            >
+                                <Option value="all">All Status</Option>
+                                <Option value="active">Active</Option>
+                                <Option value="inactive">Inactive</Option>
+                                <Option value="suspended">Suspended</Option>
+                            </Select>
+                        </Col>
+                        <Col xs={24} sm={12} md={4}>
+                            <Button
+                                icon={<FilterOutlined />}
+                                onClick={clearFilters}
+                                className="clear-filters-btn"
+                                style={{ width: '100%' }}
+                            >
+                                Clear Filters
+                            </Button>
+                        </Col>
+                        <Col xs={24} sm={12} md={4}>
+                            <div className="results-counter">
+                                Showing {filteredUsers.length} of {users.length} users
+                            </div>
+                        </Col>
+                    </Row>
                 </div>
 
-                {/* Coach Management Info - Thông tin quản lý Coach */}
-                <div className="bg-white rounded-lg shadow-sm p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Coach Account Management</h3>
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <h4 className="text-sm font-medium text-blue-900 mb-2">How Coach Accounts Work</h4>
-                        <ul className="text-sm text-blue-700 space-y-1">
-                            <li>• Coaches contact Admin via email to request account creation</li>
-                            <li>• Admin reviews coach qualifications and creates account</li>
-                            <li>• Admin provides login credentials to the coach</li>
-                            <li>• Coach can then access the system with provided credentials</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
+                <DataTable
+                    title="User Management"
+                    columns={columns}
+                    dataSource={filteredUsers}
+                    loading={loading}
+                    rowKey="id"
+                    extra={
+                        <Space>
+                            <Button
+                                icon={<ReloadOutlined />}
+                                onClick={loadUsers}
+                                loading={loading}
+                            >
+                                Refresh
+                            </Button>
+                            <Button
+                                type="primary"
+                                icon={<PlusOutlined />}
+                                onClick={() => setCreateCoachModal(true)}
+                                style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}
+                            >
+                                Create Coach
+                            </Button>
+                        </Space>
+                    }
+                />
+            </Content>
 
             {/* Create Coach Modal */}
-            {showCreateCoach && (
-                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-                    <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-                        <div className="mt-3">
-                            <h3 className="text-lg font-medium text-gray-900 mb-4">Create Coach Account</h3>
-                            <form onSubmit={handleCreateCoach}>
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">Name</label>
-                                        <input
-                                            type="text"
-                                            required
-                                            value={coachFormData.name}
-                                            onChange={(e) => setCoachFormData({ ...coachFormData, name: e.target.value })}
-                                            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">Email</label>
-                                        <input
-                                            type="email"
-                                            required
-                                            value={coachFormData.email}
-                                            onChange={(e) => setCoachFormData({ ...coachFormData, email: e.target.value })}
-                                            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">Specialization</label>
-                                        <input
-                                            type="text"
-                                            required
-                                            value={coachFormData.specialization}
-                                            onChange={(e) => setCoachFormData({ ...coachFormData, specialization: e.target.value })}
-                                            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">Experience (Years)</label>
-                                        <input
-                                            type="number"
-                                            required
-                                            value={coachFormData.experience_years}
-                                            onChange={(e) => setCoachFormData({ ...coachFormData, experience_years: e.target.value })}
-                                            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">Phone</label>
-                                        <input
-                                            type="tel"
-                                            value={coachFormData.phone}
-                                            onChange={(e) => setCoachFormData({ ...coachFormData, phone: e.target.value })}
-                                            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                        />
-                                    </div>
-                                </div>
-                                <div className="flex justify-end space-x-3 mt-6">
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowCreateCoach(false)}
-                                        className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+            <FormModal
+                title="Create Coach Account"
+                visible={createCoachModal}
+                onCancel={() => setCreateCoachModal(false)}
+                onSubmit={handleCreateCoach}
+                form={coachForm}
+                loading={loading}
+                width={600}
+            >
+                <Row gutter={16}>
+                    <Col span={12}>
+                        <Form.Item
+                            name="name"
+                            label="Full Name"
+                            rules={[{ required: true, message: 'Please enter the name!' }]}
+                        >
+                            <Input prefix={<UserOutlined />} placeholder="Enter full name" />
+                        </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                        <Form.Item
+                            name="email"
+                            label="Email"
+                            rules={[
+                                { required: true, message: 'Please enter the email!' },
+                                { type: 'email', message: 'Please enter a valid email!' }
+                            ]}
+                        >
+                            <Input prefix={<UserOutlined />} placeholder="Enter email address" />
+                        </Form.Item>
+                    </Col>
+                </Row>
+
+                <Form.Item
+                    name="phone"
+                    label="Phone Number"
+                >
+                    <Input placeholder="Enter phone number" />
+                </Form.Item>
+
+                <div style={{
+                    background: '#f6ffed',
+                    border: '1px solid #b7eb8f',
+                    borderRadius: '6px',
+                    padding: '12px',
+                    marginBottom: '16px'
+                }}>
+                    <Text style={{ color: '#52c41a', fontWeight: '500' }}>
+                        📝 Note: The coach will receive a default password of <strong>123456</strong>
+                    </Text>
+                </div>
+            </FormModal>
+
+            {/* Edit User Modal */}
+            <FormModal
+                title="Edit User"
+                visible={editUserModal}
+                onCancel={() => setEditUserModal(false)}
+                onSubmit={handleUpdateUser}
+                form={editForm}
+                loading={loading}
+                width={600}
+            >
+                <Row gutter={16}>
+                    <Col span={12}>
+                        <Form.Item
+                            name="name"
+                            label="Full Name"
+                            rules={[{ required: true, message: 'Please enter the name!' }]}
+                        >
+                            <Input prefix={<UserOutlined />} placeholder="Enter full name" />
+                        </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                        <Form.Item
+                            name="email"
+                            label="Email"
+                            rules={[
+                                { required: true, message: 'Please enter the email!' },
+                                { type: 'email', message: 'Please enter a valid email!' }
+                            ]}
+                        >
+                            <Input prefix={<UserOutlined />} placeholder="Enter email address" />
+                        </Form.Item>
+                    </Col>
+                </Row>
+
+                <Row gutter={16}>
+                    <Col span={12}>
+                        <Form.Item
+                            name="phone"
+                            label="Phone Number"
+                        >
+                            <Input placeholder="Enter phone number" />
+                        </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                        <Form.Item
+                            name="role"
+                            label="Role"
+                            rules={[{ required: true, message: 'Please select a role!' }]}
+                        >
+                            <Select placeholder="Select role">
+                                <Option value="member">Member</Option>
+                                <Option value="coach">Coach</Option>
+                                <Option value="admin">Admin</Option>
+                            </Select>
+                        </Form.Item>
+                    </Col>
+                </Row>
+
+                <Form.Item
+                    name="status"
+                    label="Status"
+                    rules={[{ required: true, message: 'Please select a status!' }]}
+                >
+                    <Select placeholder="Select status">
+                        <Option value="active">Active</Option>
+                        <Option value="inactive">Inactive</Option>
+                        <Option value="suspended">Suspended</Option>
+                    </Select>
+                </Form.Item>
+
+                {selectedUser?.role === 'coach' && (
+                    <>
+                        <Form.Item
+                            name="specialization"
+                            label="Specialization"
+                        >
+                            <Input placeholder="Enter specialization" />
+                        </Form.Item>
+                        <Form.Item
+                            name="experienceYears"
+                            label="Experience (Years)"
+                        >
+                            <Input type="number" placeholder="Enter years of experience" />
+                        </Form.Item>
+                    </>
+                )}
+            </FormModal>
+
+            {/* View User Modal */}
+            <Modal
+                title="User Details"
+                open={viewUserModal}
+                onCancel={() => {
+                    setViewUserModal(false);
+                    setSelectedUser(null);
+                }}
+                footer={[
+                    <Button
+                        key="close"
+                        onClick={() => {
+                            setViewUserModal(false);
+                            setSelectedUser(null);
+                        }}
+                    >
+                        Close
+                    </Button>
+                ]}
+                width={500}
+            >
+                {selectedUser && (
+                    <div>
+                        <Row gutter={[16, 16]}>
+                            <Col span={24}>
+                                <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                                    <Avatar
+                                        size={80}
+                                        style={{
+                                            backgroundColor: selectedUser.role === 'admin' ? '#ff4d4f' :
+                                                selectedUser.role === 'coach' ? '#52c41a' : '#1890ff'
+                                        }}
                                     >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        className="px-4 py-2 bg-blue-500 text-white rounded-md text-sm font-medium hover:bg-blue-600"
-                                    >
-                                        Create Coach
-                                    </button>
+                                        {selectedUser.name.charAt(0).toUpperCase()}
+                                    </Avatar>
+                                    <Title level={3} style={{ marginTop: '10px' }}>
+                                        {selectedUser.name}
+                                    </Title>
                                 </div>
-                            </form>
+                            </Col>
+                        </Row>
+
+                        <Divider />
+
+                        <Row gutter={[16, 16]}>
+                            <Col span={12}>
+                                <Text strong>Email:</Text>
+                                <br />
+                                <Text>{selectedUser.email}</Text>
+                            </Col>
+                            <Col span={12}>
+                                <Text strong>Phone:</Text>
+                                <br />
+                                <Text>{selectedUser.phone || 'N/A'}</Text>
+                            </Col>
+                        </Row>
+
+                        <Row gutter={[16, 16]} style={{ marginTop: '16px' }}>
+                            <Col span={12}>
+                                <Text strong>Role:</Text>
+                                <br />
+                                <Tag
+                                    color={selectedUser.role === 'admin' ? 'red' :
+                                        selectedUser.role === 'coach' ? 'green' : 'blue'}
+                                    style={{ textTransform: 'capitalize' }}
+                                >
+                                    {selectedUser.role}
+                                </Tag>
+                            </Col>
+                            <Col span={12}>
+                                <Text strong>Status:</Text>
+                                <br />
+                                <Tag
+                                    color={selectedUser.status === 'active' ? 'green' :
+                                        selectedUser.status === 'inactive' ? 'orange' : 'red'}
+                                    style={{ textTransform: 'capitalize' }}
+                                >
+                                    {selectedUser.status}
+                                </Tag>
+                            </Col>
+                        </Row>
+
+                        <Row gutter={[16, 16]} style={{ marginTop: '16px' }}>
+                            <Col span={12}>
+                                <Text strong>Registration Date:</Text>
+                                <br />
+                                <Text>{new Date(selectedUser.registrationDate).toLocaleDateString()}</Text>
+                            </Col>
+                        </Row>
+                    </div>
+                )}
+            </Modal>
+
+            {/* Credentials Modal */}
+            <Modal
+                title={
+                    <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '24px', marginBottom: '8px' }}>🎉</div>
+                        <div>Coach Account Created Successfully!</div>
+                    </div>
+                }
+                open={credentialsModal}
+                onCancel={() => {
+                    setCredentialsModal(false);
+                    setNewCoachCredentials(null);
+                    setCopiedField('');
+                }}
+                footer={[
+                    <Button
+                        key="copyAll"
+                        type="primary"
+                        icon={<CopyOutlined />}
+                        onClick={handleCopyAll}
+                        style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}
+                    >
+                        Copy All Credentials
+                    </Button>,
+                    <Button
+                        key="close"
+                        onClick={() => {
+                            setCredentialsModal(false);
+                            setNewCoachCredentials(null);
+                            setCopiedField('');
+                        }}
+                    >
+                        Close
+                    </Button>
+                ]}
+                width={500}
+                centered
+            >
+                {newCoachCredentials && (
+                    <div style={{ textAlign: 'center' }}>
+                        <div style={{
+                            background: '#f6ffed',
+                            border: '1px solid #b7eb8f',
+                            borderRadius: '8px',
+                            padding: '20px',
+                            marginBottom: '20px'
+                        }}>
+                            <Title level={4} style={{ color: '#52c41a', marginBottom: '16px' }}>
+                                📋 Account Credentials
+                            </Title>
+
+                            <Space direction="vertical" size="large" style={{ width: '100%' }}>
+                                {/* Name */}
+                                <div style={{
+                                    background: 'white',
+                                    padding: '12px',
+                                    borderRadius: '6px',
+                                    border: '1px solid #d9d9d9',
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center'
+                                }}>
+                                    <div style={{ textAlign: 'left' }}>
+                                        <Text strong>Name:</Text>
+                                        <br />
+                                        <Text>{newCoachCredentials.name}</Text>
+                                    </div>
+                                    <Button
+                                        type="text"
+                                        icon={copiedField === 'name' ? <CheckOutlined /> : <CopyOutlined />}
+                                        onClick={() => handleCopy(newCoachCredentials.name, 'name')}
+                                        style={{ color: copiedField === 'name' ? '#52c41a' : '#666' }}
+                                    />
+                                </div>
+
+                                {/* Email */}
+                                <div style={{
+                                    background: 'white',
+                                    padding: '12px',
+                                    borderRadius: '6px',
+                                    border: '1px solid #d9d9d9',
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center'
+                                }}>
+                                    <div style={{ textAlign: 'left' }}>
+                                        <Text strong>Email:</Text>
+                                        <br />
+                                        <Text>{newCoachCredentials.email}</Text>
+                                    </div>
+                                    <Button
+                                        type="text"
+                                        icon={copiedField === 'email' ? <CheckOutlined /> : <CopyOutlined />}
+                                        onClick={() => handleCopy(newCoachCredentials.email, 'email')}
+                                        style={{ color: copiedField === 'email' ? '#52c41a' : '#666' }}
+                                    />
+                                </div>
+
+                                {/* Password */}
+                                <div style={{
+                                    background: 'white',
+                                    padding: '12px',
+                                    borderRadius: '6px',
+                                    border: '1px solid #d9d9d9',
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center'
+                                }}>
+                                    <div style={{ textAlign: 'left' }}>
+                                        <Text strong>Password:</Text>
+                                        <br />
+                                        <Text code style={{ fontSize: '16px' }}>{newCoachCredentials.password}</Text>
+                                    </div>
+                                    <Button
+                                        type="text"
+                                        icon={copiedField === 'password' ? <CheckOutlined /> : <CopyOutlined />}
+                                        onClick={() => handleCopy(newCoachCredentials.password, 'password')}
+                                        style={{ color: copiedField === 'password' ? '#52c41a' : '#666' }}
+                                    />
+                                </div>
+                            </Space>
+                        </div>
+
+                        <div style={{
+                            background: '#fff7e6',
+                            border: '1px solid #ffd591',
+                            borderRadius: '6px',
+                            padding: '12px'
+                        }}>
+                            <Text style={{ color: '#d48806' }}>
+                                ⚠️ Please save these credentials securely. The coach will need them to log in.
+                            </Text>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )}
+            </Modal>
+        </Layout>
     );
 };
 

@@ -80,7 +80,6 @@ const register = async (req, res) => {
     // Mã hóa mật khẩu
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-
     const username = email.split('@')[0]; // tạo username từ email
 
     // Thêm user mới vào DB
@@ -100,12 +99,23 @@ const register = async (req, res) => {
         `);
 
     const userId = insertResult.recordset[0].user_id;
+
+    await pool.request()
+  .input('user_id', sql.Int, userId)
+  .input('provider', sql.VarChar, 'local')
+  .input('username', sql.VarChar, username)
+  .input('password_hash', sql.VarChar, hashedPassword)
+  .query(`
+    INSERT INTO USER_LOGIN (user_id, login_provider, username, password_hash)
+    VALUES (@user_id, @provider, @username, @password_hash)
+  `);
+
     const token = generateToken({
-      id: userId,
-      email,
-      name,
-      role: 'member'
-    });
+  id: userId,
+  email,
+  name
+});
+    
 
     res.status(201).json({
       success: true,

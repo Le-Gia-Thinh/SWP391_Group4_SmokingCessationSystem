@@ -59,7 +59,10 @@ const resetPassword = async (req, res) => {
 const saveResetToken = async (token, email) => {
   const pool = await sql.connect(dbConfig);
   const user = await checkUserExists(email);
-  if (!user) throw new Error('User not found');
+  if (!user) {
+  console.error(`❌ Email không thuộc tài khoản local: ${email}`);
+  throw new Error('Không hỗ trợ reset password cho tài khoản Google');
+}
 
   const expiresAt = new Date(Date.now() + 3600000); // 1h
   await pool.request()
@@ -90,7 +93,10 @@ const updatePassword = async (email, newPassword) => {
   await pool.request()
     .input('email', sql.VarChar, email)
     .input('hashed', sql.VarChar, hashed)
-    .query(`UPDATE CUSTOMER SET password_hash = @hashed WHERE email = @email`);
+    .query(`UPDATE USER_LOGIN
+      SET password_hash = @hashed
+      WHERE user_id = (SELECT user_id FROM CUSTOMER WHERE email = @email)
+        AND login_provider = 'local'`);
 };
 
 // ✅ Export đúng cách
