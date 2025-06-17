@@ -3,7 +3,7 @@ const { sql, dbConfig } = require('../config/database');
 
 exports.updateProfile = async (req, res) => {
   try {
-    const userId = req.user.user_id;s
+    const userId = req.user.user_id;
     const {
       full_name,
       email,

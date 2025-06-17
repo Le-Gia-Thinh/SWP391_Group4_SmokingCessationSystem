@@ -61,27 +61,9 @@ const QuitPlanDetail = () => {
       },
     })
       .then((res) => res.json())
-      .then(async (result) => {
+      .then((result) => {
         if (Array.isArray(result.data)) {
           setCompleted(result.data.map((x) => !!x));
-
-          // ✅ Cộng điểm cho từng slot đã tick
-          for (let i = 0; i < result.data.length; i++) {
-            if (result.data[i] === true) {
-              await fetch("http://localhost:5000/api/user-score/update", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({
-                  date: formattedDate,
-                  timeSlot: i,
-                  point: 1,
-                }),
-              });
-            }
-          }
         }
       })
       .catch((err) => {

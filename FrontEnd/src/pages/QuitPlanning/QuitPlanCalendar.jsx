@@ -718,7 +718,18 @@ const QuitPlan = () => {
       <Row justify="center">
         <Col xs={24} md={22} lg={20}>
           <Card variant="outlined" hoverable style={{ marginBottom: 24 }}>
-            <Title level={3} style={{ marginBottom: 0, textAlign: "center" }}>
+            <Title
+              level={3}
+              style={{
+                marginBottom: 0,
+                textAlign: "center",
+                background: "linear-gradient(to right, #1890ff, #73d13d)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                fontWeight: 700,
+                fontSize: 28,
+              }}
+            >
               <CalendarOutlined style={{ marginRight: 8 }} /> Kế hoạch cai
               nghiện thuốc lá
             </Title>
