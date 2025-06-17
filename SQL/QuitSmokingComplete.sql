@@ -177,12 +177,11 @@ GO
 IF OBJECT_ID('CESSATION_PLAN', 'U') IS NULL
 BEGIN
     CREATE TABLE CESSATION_PLAN (
-        plan_id INT IDENTITY(1,1) PRIMARY KEY,                    -- Khóa chính
-        user_id INT NULL,                                         -- Cho phép null nếu CUSTOMER bị xóa
+        plan_id INT IDENTITY(1,1) PRIMARY KEY,                     -- Khóa chính
+        user_id INT NULL,                                          -- Cho phép null nếu CUSTOMER bị xóa
         plan_name NVARCHAR(100) NOT NULL,                         -- Tên kế hoạch hỗ trợ tiếng Việt
         start_date DATE NOT NULL,                                 -- Ngày bắt đầu
         end_date DATE NOT NULL,                                   -- Ngày kết thúc
-        month_quit INT NULL,                                      -- Số tháng đã cai thuốc
         target_quit_date DATE,                                    -- Ngày mục tiêu bỏ thuốc
         frequency_per_day INT CHECK (frequency_per_day >= 0),     -- Số lần hút/ngày (>=0)
         plan_type NVARCHAR(20),                                   -- Loại kế hoạch: 'custom', 'template'
@@ -194,7 +193,6 @@ BEGIN
         last_updated DATE,                                        -- Ngày cập nhật
         template_id INT,                                          -- Khóa ngoại đến PLAN_TEMPLATE
         quit_reason_summary NVARCHAR(MAX),                        -- Tóm tắt lý do bỏ thuốc
-
 
         CONSTRAINT fk_plan_customer FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id) ON DELETE SET NULL,
         CONSTRAINT fk_plan_template FOREIGN KEY (template_id) REFERENCES PLAN_TEMPLATE(template_id),

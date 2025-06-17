@@ -17,7 +17,7 @@ const BookingManagement = () => {
     const [initialLoading, setInitialLoading] = useState(true);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [selectedBooking, setSelectedBooking] = useState(null);
-    const [activeTab, setActiveTab] = useState('all');
+    const [activeTab, setActiveTab] = useState('pending');
 
     // API Base URL
     const API_BASE_URL = 'http://localhost:5000/api';
@@ -38,7 +38,7 @@ const BookingManagement = () => {
     const loadBookings = async () => {
         try {
             setLoading(true);
-            const response = await fetch(`${API_BASE_URL}/appointment/pending`, {
+            const response = await fetch(`${API_BASE_URL}/appointment/all-coach-appointments`, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
@@ -49,7 +49,8 @@ const BookingManagement = () => {
             }
 
             const data = await response.json();
-            setBookings(data);
+            console.log('DEBUG: Raw data from API:', data.data);
+            setBookings(data.data); // Assuming the backend now returns { success: true, data: [...] }
         } catch (error) {
             console.error('Error loading bookings:', error);
             message.error('Failed to load bookings');
@@ -68,7 +69,7 @@ const BookingManagement = () => {
     const handleAcceptAppointment = async (sessionId) => {
         try {
             setLoading(true);
-            const response = await fetch(`${API_BASE_URL}/appointment/accept/${sessionId}`, {
+            const response = await fetch(`${API_BASE_URL}/appointment/${sessionId}/accept`, {
                 method: 'PUT',
                 headers: getAuthHeaders()
             });
@@ -90,7 +91,7 @@ const BookingManagement = () => {
     const handleRejectAppointment = async (sessionId) => {
         try {
             setLoading(true);
-            const response = await fetch(`${API_BASE_URL}/appointment/reject/${sessionId}`, {
+            const response = await fetch(`${API_BASE_URL}/appointment/${sessionId}/reject`, {
                 method: 'PUT',
                 headers: getAuthHeaders()
             });
@@ -118,12 +119,12 @@ const BookingManagement = () => {
         switch (status) {
             case 'pending':
                 return 'orange';
-            case 'confirmed':
+            case 'accepted':
                 return 'green';
-            case 'completed':
-                return 'blue';
-            case 'cancelled':
+            case 'rejected':
                 return 'red';
+            case 'canceled_by_member':
+                return 'gray';
             default:
                 return 'default';
         }
@@ -133,12 +134,12 @@ const BookingManagement = () => {
         switch (status) {
             case 'pending':
                 return 'Pending';
-            case 'confirmed':
-                return 'Confirmed';
-            case 'completed':
-                return 'Completed';
-            case 'cancelled':
-                return 'Cancelled';
+            case 'accepted':
+                return 'Accepted';
+            case 'rejected':
+                return 'Rejected';
+            case 'canceled_by_member':
+                return 'Canceled';
             default:
                 return status;
         }
@@ -147,23 +148,9 @@ const BookingManagement = () => {
     const formatDateTime = (dateTimeString) => {
         const date = new Date(dateTimeString);
         return {
-            date: date.toLocaleDateString(),
-            time: date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            date: date.toLocaleDateString('en-US'),
+            time: date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
         };
-    };
-
-    // Filter bookings based on active tab
-    const getFilteredBookings = () => {
-        switch (activeTab) {
-            case 'pending':
-                return bookings.filter(b => b.session_status === 'pending');
-            case 'confirmed':
-                return bookings.filter(b => b.session_status === 'confirmed');
-            case 'completed':
-                return bookings.filter(b => b.session_status === 'completed');
-            default:
-                return bookings;
-        }
     };
 
     const columns = [
@@ -174,39 +161,33 @@ const BookingManagement = () => {
                 <Space>
                     <Avatar icon={<UserOutlined />} />
                     <div>
-                        <div style={{ fontWeight: 'bold' }}>{record.user_name || `User ${record.user_id}`}</div>
-                        <Text type="secondary">ID: {record.user_id}</Text>
+                        <div style={{ fontWeight: 'bold' }}>{record.member_name}</div>
+                        <div style={{ fontSize: '12px', color: '#666' }}>Member ID: {record.member_user_id}</div>
                     </div>
                 </Space>
             ),
         },
         {
-            title: 'Scheduled Time',
+            title: 'Time',
             key: 'scheduled_time',
             render: (_, record) => {
                 const { date, time } = formatDateTime(record.scheduled_time);
                 return (
                     <div>
                         <div style={{ fontWeight: 'bold' }}>{date}</div>
-                        <Text type="secondary">{time}</Text>
+                        <div style={{ color: '#666' }}>{time}</div>
                     </div>
                 );
             },
         },
         {
             title: 'Status',
-            key: 'status',
+            key: 'session_status',
             render: (_, record) => (
-                <Tag color={getStatusColor(record.session_status)} style={{ textTransform: 'capitalize' }}>
+                <Tag color={getStatusColor(record.session_status)}>
                     {getStatusText(record.session_status)}
                 </Tag>
             ),
-        },
-        {
-            title: 'Created',
-            dataIndex: 'created_at',
-            key: 'created_at',
-            render: (date) => date ? new Date(date).toLocaleDateString() : 'N/A',
         },
         {
             title: 'Actions',
@@ -216,27 +197,25 @@ const BookingManagement = () => {
                     {
                         type: 'view',
                         tooltip: 'View Details',
-                        onClick: handleViewBooking
-                    }
+                        onClick: () => handleViewBooking(record),
+                        icon: <EyeOutlined />
+                    },
+                    {
+                        type: 'accept',
+                        tooltip: 'Accept Appointment',
+                        onClick: () => handleAcceptAppointment(record.session_id),
+                        icon: <CheckOutlined />,
+                        hidden: record.session_status !== 'pending'
+                    },
+                    {
+                        type: 'reject',
+                        tooltip: 'Reject Appointment',
+                        onClick: () => handleRejectAppointment(record.session_id),
+                        icon: <CloseOutlined />,
+                        danger: true,
+                        hidden: record.session_status !== 'pending'
+                    },
                 ];
-
-                // Add accept/reject buttons for pending bookings
-                if (record.session_status === 'pending') {
-                    actions.push(
-                        {
-                            type: 'accept',
-                            tooltip: 'Accept Request',
-                            onClick: handleAcceptAppointment,
-                            loading: loading
-                        },
-                        {
-                            type: 'reject',
-                            tooltip: 'Reject Request',
-                            onClick: handleRejectAppointment,
-                            loading: loading
-                        }
-                    );
-                }
 
                 return (
                     <ActionButtonGroup
@@ -248,273 +227,84 @@ const BookingManagement = () => {
         },
     ];
 
-    const pendingBookings = bookings.filter(b => b.session_status === 'pending');
-    const confirmedBookings = bookings.filter(b => b.session_status === 'confirmed');
-    const completedBookings = bookings.filter(b => b.session_status === 'completed');
-
     if (initialLoading) {
         return (
             <div style={{ textAlign: 'center', padding: '50px' }}>
                 <Spin size="large" />
-                <div style={{ marginTop: '16px' }}>Loading bookings...</div>
+                <div style={{ marginTop: '16px' }}>Loading appointments...</div>
             </div>
         );
     }
 
+    const filteredBookings = bookings.filter(booking => {
+        if (activeTab === 'rejected_cancelled') {
+            return booking.session_status === 'rejected' ||
+                booking.session_status === 'canceled_by_member' ||
+                booking.session_status === 'canceled_by_coach';
+        } else {
+            return booking.session_status === activeTab;
+        }
+    });
+    console.log('DEBUG: filteredBookings for active tab (', activeTab, '):', filteredBookings);
+
+    const onTabChange = (key) => {
+        setActiveTab(key);
+        console.log('DEBUG: Tab changed to:', key);
+    };
+
     return (
-        <div className="booking-management">
-            {/* Header */}
-            <Card style={{ marginBottom: 24 }}>
+        <div style={{ padding: '24px 0' }}>
+            <div style={{ marginBottom: 24 }}>
                 <Row justify="space-between" align="middle">
                     <Col>
-                        <Title level={3}>Booking Management</Title>
+                        <Title level={2}>
+                            <CheckCircleOutlined /> Appointment Management
+                        </Title>
                         <Text type="secondary">
-                            Manage your coaching sessions and respond to member requests
+                            View and manage appointment requests from members
                         </Text>
                     </Col>
                     <Col>
-                        <Button
-                            icon={<ReloadOutlined />}
-                            onClick={loadBookings}
-                            loading={loading}
-                        >
+                        <Button type="primary" icon={<ReloadOutlined />} onClick={loadBookings}>
                             Refresh
                         </Button>
                     </Col>
                 </Row>
-            </Card>
+            </div>
 
-            {/* Statistics Cards */}
-            <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-                <Col xs={24} sm={8}>
-                    <Card style={{ textAlign: 'center', background: '#fff7e6' }}>
-                        <ClockCircleOutlined style={{ fontSize: 32, color: '#faad14', marginBottom: 8 }} />
-                        <div style={{ fontSize: 24, fontWeight: 'bold', color: '#faad14' }}>
-                            {pendingBookings.length}
-                        </div>
-                        <Text type="secondary">Pending Requests</Text>
-                    </Card>
-                </Col>
-                <Col xs={24} sm={8}>
-                    <Card style={{ textAlign: 'center', background: '#f6ffed' }}>
-                        <CheckCircleOutlined style={{ fontSize: 32, color: '#52c41a', marginBottom: 8 }} />
-                        <div style={{ fontSize: 24, fontWeight: 'bold', color: '#52c41a' }}>
-                            {confirmedBookings.length}
-                        </div>
-                        <Text type="secondary">Confirmed Sessions</Text>
-                    </Card>
-                </Col>
-                <Col xs={24} sm={8}>
-                    <Card style={{ textAlign: 'center', background: '#e6f7ff' }}>
-                        <TrophyOutlined style={{ fontSize: 32, color: '#1890ff', marginBottom: 8 }} />
-                        <div style={{ fontSize: 24, fontWeight: 'bold', color: '#1890ff' }}>
-                            {completedBookings.length}
-                        </div>
-                        <Text type="secondary">Completed Sessions</Text>
-                    </Card>
-                </Col>
-            </Row>
-
-            {/* Tabs for different booking statuses */}
             <Card>
-                <Tabs activeKey={activeTab} onChange={setActiveTab} size="large">
-                    <TabPane
-                        tab={
-                            <Badge count={pendingBookings.length} size="small">
-                                <span>
-                                    <ClockCircleOutlined />
-                                    Pending
-                                </span>
-                            </Badge>
-                        }
-                        key="pending"
-                    >
-                        <DataTable
-                            title="Pending Requests"
-                            columns={columns}
-                            dataSource={pendingBookings}
-                            loading={loading}
-                            rowKey="session_id"
-                            pagination={{
-                                pageSize: 10,
-                                showSizeChanger: true,
-                                showQuickJumper: true,
-                                showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} pending requests`,
-                            }}
-                        />
-                    </TabPane>
-                    <TabPane
-                        tab={
-                            <span>
-                                <CheckCircleOutlined />
-                                Confirmed
-                            </span>
-                        }
-                        key="confirmed"
-                    >
-                        <DataTable
-                            title="Confirmed Sessions"
-                            columns={columns}
-                            dataSource={confirmedBookings}
-                            loading={loading}
-                            rowKey="session_id"
-                            pagination={{
-                                pageSize: 10,
-                                showSizeChanger: true,
-                                showQuickJumper: true,
-                                showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} confirmed sessions`,
-                            }}
-                        />
-                    </TabPane>
-                    <TabPane
-                        tab={
-                            <span>
-                                <TrophyOutlined />
-                                Completed
-                            </span>
-                        }
-                        key="completed"
-                    >
-                        <DataTable
-                            title="Completed Sessions"
-                            columns={columns}
-                            dataSource={completedBookings}
-                            loading={loading}
-                            rowKey="session_id"
-                            pagination={{
-                                pageSize: 10,
-                                showSizeChanger: true,
-                                showQuickJumper: true,
-                                showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} completed sessions`,
-                            }}
-                        />
-                    </TabPane>
-                    <TabPane
-                        tab={
-                            <span>
-                                <UserOutlined />
-                                All Bookings
-                            </span>
-                        }
-                        key="all"
-                    >
-                        <DataTable
-                            title="All Bookings"
-                            columns={columns}
-                            dataSource={bookings}
-                            loading={loading}
-                            rowKey="session_id"
-                            pagination={{
-                                pageSize: 10,
-                                showSizeChanger: true,
-                                showQuickJumper: true,
-                                showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} bookings`,
-                            }}
-                        />
-                    </TabPane>
+                <Tabs defaultActiveKey="pending" activeKey={activeTab} onChange={onTabChange}>
+                    <TabPane tab={<span>Pending Appointments <Badge count={bookings.filter(b => b.session_status === 'pending').length} /></span>} key="pending" />
+                    <TabPane tab={<span>Accepted Appointments <Badge count={bookings.filter(b => b.session_status === 'accepted').length} /></span>} key="accepted" />
+                    <TabPane tab={<span>Completed Appointments <Badge count={bookings.filter(b => b.session_status === 'completed').length} /></span>} key="completed" />
+                    <TabPane tab={<span>Rejected/Cancelled Appointments <Badge count={bookings.filter(b => b.session_status === 'rejected' || b.session_status === 'canceled_by_member' || b.session_status === 'canceled_by_coach').length} /></span>} key="rejected_cancelled" />
                 </Tabs>
-            </Card>
 
-            {/* Booking Details Modal */}
-            <Modal
-                title="Booking Details"
-                open={isModalVisible}
-                onCancel={handleCancel}
-                footer={null}
-                width={700}
-            >
+                <DataTable
+                    columns={columns}
+                    dataSource={filteredBookings}
+                    loading={loading}
+                    rowKey="session_id"
+                    noDataContent={activeTab === 'pending' ? 'No pending appointments. All requests have been processed!' : `No ${activeTab} appointments.`}
+                />
+
                 {selectedBooking && (
-                    <div className="booking-details">
-                        <div className="booking-info">
-                            <h3>Member Information</h3>
-                            <p><strong>Member ID:</strong> {selectedBooking.user_id}</p>
-                            <p><strong>Member Name:</strong> {selectedBooking.user_name || 'Unknown'}</p>
-
-                            <h3>Session Details</h3>
-                            <p><strong>Session ID:</strong> {selectedBooking.session_id}</p>
-                            <p><strong>Scheduled Time:</strong> {formatDateTime(selectedBooking.scheduled_time).date} at {formatDateTime(selectedBooking.scheduled_time).time}</p>
-                            <p><strong>Status:</strong>
-                                <Tag color={getStatusColor(selectedBooking.session_status)} style={{ marginLeft: 8 }}>
-                                    {getStatusText(selectedBooking.session_status)}
-                                </Tag>
-                            </p>
-
-                            {selectedBooking.google_meet_link && (
-                                <>
-                                    <h3>Google Meet Link</h3>
-                                    <div style={{
-                                        background: '#f6ffed',
-                                        border: '1px solid #b7eb8f',
-                                        borderRadius: '6px',
-                                        padding: '12px',
-                                        marginBottom: '16px'
-                                    }}>
-                                        <p style={{ margin: '0 0 8px 0', fontWeight: 'bold' }}>
-                                            Meet Link:
-                                        </p>
-                                        <a
-                                            href={selectedBooking.google_meet_link}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            style={{ color: '#52c41a', wordBreak: 'break-all' }}
-                                        >
-                                            {selectedBooking.google_meet_link}
-                                        </a>
-                                    </div>
-                                </>
-                            )}
-
-                            {selectedBooking.notes && (
-                                <>
-                                    <h3>Notes</h3>
-                                    <div style={{
-                                        background: '#f0f0f0',
-                                        border: '1px solid #d9d9d9',
-                                        borderRadius: '6px',
-                                        padding: '12px',
-                                        marginBottom: '16px'
-                                    }}>
-                                        <p style={{ margin: 0 }}>{selectedBooking.notes}</p>
-                                    </div>
-                                </>
-                            )}
-
-                            {selectedBooking.created_at && (
-                                <p><strong>Created:</strong> {new Date(selectedBooking.created_at).toLocaleString()}</p>
-                            )}
-
-                            {selectedBooking.updated_at && (
-                                <p><strong>Last Updated:</strong> {new Date(selectedBooking.updated_at).toLocaleString()}</p>
-                            )}
-                        </div>
-
-                        {selectedBooking.session_status === 'pending' && (
-                            <div style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid #f0f0f0' }}>
-                                <h3>Quick Actions</h3>
-                                <Space>
-                                    <Button
-                                        type="primary"
-                                        icon={<CheckOutlined />}
-                                        style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}
-                                        onClick={() => handleAcceptAppointment(selectedBooking.session_id)}
-                                        loading={loading}
-                                    >
-                                        Accept Request
-                                    </Button>
-                                    <Button
-                                        danger
-                                        icon={<CloseOutlined />}
-                                        onClick={() => handleRejectAppointment(selectedBooking.session_id)}
-                                        loading={loading}
-                                    >
-                                        Reject Request
-                                    </Button>
-                                </Space>
-                            </div>
+                    <Modal
+                        title="Booking Details"
+                        visible={isModalVisible}
+                        onCancel={handleCancel}
+                        footer={null}
+                    >
+                        <p><strong>Member Name:</strong> {selectedBooking.member_name}</p>
+                        <p><strong>Member ID:</strong> {selectedBooking.member_user_id}</p>
+                        <p><strong>Scheduled Time:</strong> {formatDateTime(selectedBooking.scheduled_time).date} {formatDateTime(selectedBooking.scheduled_time).time}</p>
+                        <p><strong>Status:</strong> {getStatusText(selectedBooking.session_status)}</p>
+                        {selectedBooking.google_meet_link && (
+                            <p><strong>Google Meet Link:</strong> <a href={selectedBooking.google_meet_link} target="_blank" rel="noopener noreferrer">{selectedBooking.google_meet_link}</a></p>
                         )}
-                    </div>
+                    </Modal>
                 )}
-            </Modal>
+            </Card>
         </div>
     );
 };

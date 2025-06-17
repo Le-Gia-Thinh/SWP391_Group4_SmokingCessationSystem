@@ -93,6 +93,16 @@ export default function Navbar() {
         label: "Book Coach",
         onClick: () => navigate("/book-coach"),
       });
+
+      // Add "My Bookings" for members
+      if (user && user.role === "member") {
+        items.push({
+          key: "/my-bookings",
+          icon: <CalendarOutlined />,
+          label: "My Bookings",
+          onClick: () => navigate("/my-bookings"),
+        });
+      }
     }
 
     if (isAdmin()) {
@@ -160,8 +170,8 @@ export default function Navbar() {
                   user.role === "admin"
                     ? "Admin"
                     : user.role === "coach"
-                    ? "Coach"
-                    : "Member"
+                      ? "Coach"
+                      : "Member"
                 }
                 style={{
                   backgroundColor:
