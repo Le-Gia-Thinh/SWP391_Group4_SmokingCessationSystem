@@ -66,10 +66,10 @@ export default function Navbar() {
         onClick: handlePlanClick,
       },
       {
-        key: "/ranking",
+        key: "/RankingBoard",
         icon: <TrophyOutlined />,
         label: "Ranking",
-        onClick: () => navigate("/ranking"),
+        onClick: () => navigate("/RankingBoard"),
       },
       {
         key: "/blog",
@@ -137,7 +137,7 @@ export default function Navbar() {
               location.pathname
             )
               ? "/plan"
-              : location.pathname
+              : location.pathname,
           ]}
           items={getMenuItems()}
           className="navbar-menu"
