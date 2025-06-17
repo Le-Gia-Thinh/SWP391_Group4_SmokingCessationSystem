@@ -1,4 +1,7 @@
+// controllers/coachController
+const bcrypt = require('bcryptjs');
 const { sql, dbConfig } = require('../config/database');
+
 
 // Cập nhật Google Meet link của coach
 exports.updateMeetLink = async (req, res) => {

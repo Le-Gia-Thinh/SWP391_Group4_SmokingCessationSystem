@@ -1,3 +1,4 @@
+// controllers/appointmentController.js
 const { sql, dbConfig } = require('../config/database');
 
 // Member đặt lịch
@@ -163,5 +164,30 @@ exports.cancelAppointment = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Lỗi server' });
+  }
+};
+
+// Member xem các lịch đã đặt
+exports.getMyAppointments = async (req, res) => {
+  try {
+    const userId = req.user.user_id;
+    const pool = await sql.connect(dbConfig);
+
+    const result = await pool.request()
+      .input('user_id', sql.Int, userId)
+      .query(`
+        SELECT 
+          cs.session_id, cs.scheduled_time, cs.session_status, cs.google_meet_link,
+          c.full_name AS coach_name, c.email AS coach_email
+        FROM COACHING_SESSION cs
+        JOIN CUSTOMER c ON cs.coach_id = c.user_id
+        WHERE cs.user_id = @user_id
+        ORDER BY cs.scheduled_time DESC
+      `);
+
+    res.status(200).json({ success: true, data: result.recordset });
+  } catch (error) {
+    console.error('❌ Lỗi khi lấy lịch của member:', error);
+    res.status(500).json({ success: false, message: 'Lỗi server khi lấy lịch đã đặt' });
   }
 };

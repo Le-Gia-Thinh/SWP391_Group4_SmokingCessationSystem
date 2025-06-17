@@ -1,8 +1,8 @@
+// routes/appointment.js
 const express = require('express');
 const router = express.Router();
 const appointmentController = require('../controllers/appointmentController');
 const { auth, authorize } = require('../middleware/auth');
-
 
 // Member đặt lịch hẹn
 router.post('/', auth, authorize('member'), appointmentController.bookAppointment);
@@ -14,8 +14,10 @@ router.put('/:id/reject', auth, authorize('coach'), appointmentController.reject
 // Coach xem các cuộc hẹn đang chờ xử lý
 router.get('/pending', auth, authorize('coach'), appointmentController.getPendingAppointments);
 
-
 // Member hủy cuộc hẹn
 router.delete('/:id', auth, authorize('member'), appointmentController.cancelAppointment);
+
+// Member xem tất cả lịch đã đặt
+router.get('/my-bookings', auth, authorize('member'), appointmentController.getMyAppointments);
 
 module.exports = router;

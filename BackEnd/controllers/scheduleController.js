@@ -1,3 +1,4 @@
+// controllers/scheduleController.js
 const { sql, dbConfig } = require('../config/database');
 
 // 1. Coach tạo lịch rảnh
