@@ -16,6 +16,8 @@ import {
 import { useAuth } from "../contexts/AuthContext";
 import axios from "axios";
 import "./Navbar.css";
+import { Dropdown } from "antd";
+import UserDropdownMenu from "../components/UserDropdownMenu";
 
 const { Header } = Layout;
 
@@ -181,7 +183,7 @@ export default function Navbar() {
                     user.role === "admin" ? "#ff4d4f" : "#52c41a",
                 }}
               />
-              <Avatar
+              {/* <Avatar
                 icon={<UserOutlined />}
                 style={{
                   backgroundColor:
@@ -189,7 +191,20 @@ export default function Navbar() {
                   cursor: "pointer",
                 }}
                 onClick={() => navigate("/profile")}
+              /> */}
+              <Dropdown
+              popupRender={() => <UserDropdownMenu />}
+              placement="bottomRight"
+              trigger={["click"]}
+            >
+              <Avatar
+                icon={<UserOutlined />}
+                style={{
+                  backgroundColor: user.role === "admin" ? "#ff4d4f" : "#52c41a",
+                  cursor: "pointer",
+                }}
               />
+            </Dropdown>
               <span className="username-text">{user.name || user.email}</span>
               <Button
                 type="text"
