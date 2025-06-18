@@ -64,14 +64,27 @@ const CoachDashboard = () => {
     };
 
     useEffect(() => {
-        // Initialize meet link if not set
-        if (!meetLink) {
-            const defaultLink = `https://meet.google.com/quit-smoking-coach-${user?.id || '001'}`;
-            setMeetLink(defaultLink);
+        if (user && user.role === 'coach') {
+            fetchCoachInfo();
         }
         loadStats();
         loadTodayStats();
     }, [user]);
+
+    const fetchCoachInfo = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${API_BASE_URL}/coach/me`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setMeetLink(data.data.google_meet_link || '');
+            }
+        } catch (error) {
+            // fallback: không set meetLink
+        }
+    };
 
     const loadStats = async () => {
         try {
@@ -182,9 +195,10 @@ const CoachDashboard = () => {
                 throw new Error(data.message || 'Failed to update meet link');
             }
 
-            setMeetLink(values.meetLink);
             setIsEditModalVisible(false);
             message.success('Meet link updated successfully!');
+            // Fetch lại link mới nhất từ backend
+            fetchCoachInfo();
         } catch (error) {
             console.error('Error updating meet link:', error);
             message.error(error.message || 'Failed to update meet link');
