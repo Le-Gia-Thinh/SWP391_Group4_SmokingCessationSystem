@@ -162,6 +162,7 @@ body {
   pointer-events: none;
   transform: scale(0.95) translateY(20px);
   transition: all 0.5s ease;
+  padding: 15px;
 }
 
 .outer-box:hover .form-content,
@@ -184,6 +185,7 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
+  padding-top: 15px;
 }
 
 .outer-box:hover .login-title,

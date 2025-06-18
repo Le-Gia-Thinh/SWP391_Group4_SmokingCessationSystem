@@ -173,6 +173,7 @@ body {
   transform: scale(0.95) translateY(20px);
   transition: all 0.5s ease;
   width: 100%;
+  padding: 15px;
 }
 
 .register-outer-box:hover .register-form-content,
@@ -196,6 +197,7 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
+  padding-top: 15px;
 }
 
 .register-outer-box:hover .register-title,
