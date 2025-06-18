@@ -18,6 +18,8 @@ import FtndTest from "./pages/FtndTest/FtndTest";
 import QuitPlanCalendar from "./pages/QuitPlanning/QuitPlanCalendar";
 import QuitPlanDetail from "./pages/QuitPlanning/QuitPlanDetail";
 import RankingBoard from "./pages/Ranking/RankingBoard";
+import Profile from './pages/Profile/Profile.jsx';
+import Notifications from './pages/Notifications/Notifications.jsx';
 import "./App.css";
 
 const { Title, Paragraph } = Typography;
@@ -57,6 +59,8 @@ function App() {
           <Route path="/QuitPlanCalendar" element={<QuitPlanCalendar />} />
           <Route path="/quit-plan-detail/:date" element={<QuitPlanDetail />} />
           <Route path="/RankingBoard" element={<RankingBoard />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/notifications" element={<Notifications />} />
 
           {/* Protected routes - Member Bookings */}
           <Route
