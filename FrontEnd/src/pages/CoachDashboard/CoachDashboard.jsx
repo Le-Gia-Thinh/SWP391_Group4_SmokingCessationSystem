@@ -379,65 +379,6 @@ const CoachDashboard = () => {
                     />
                 </Col>
             </Row>
-
-            {/* Quick Actions */}
-            <Card
-                title={
-                    <Space>
-                        <SettingOutlined />
-                        <span>Quick Actions</span>
-                    </Space>
-                }
-            >
-                <Row gutter={[16, 16]}>
-                    <Col xs={24} md={8}>
-                        <Card
-                            hoverable
-                            onClick={() => setActiveTab('bookings')}
-                            style={{ cursor: 'pointer' }}
-                        >
-                            <Space direction="vertical" align="center" style={{ width: '100%' }}>
-                                <Badge count={todayStats.pendingRequests} size="small">
-                                    <CheckCircleOutlined style={{ fontSize: 32, color: '#52c41a' }} />
-                                </Badge>
-                                <Text strong>Review Bookings</Text>
-                                <Text type="secondary" style={{ fontSize: '12px', textAlign: 'center' }}>
-                                    Check and respond to new booking requests from members
-                                </Text>
-                                <Tag color="orange">{todayStats.pendingRequests} pending</Tag>
-                            </Space>
-                        </Card>
-                    </Col>
-                    <Col xs={24} md={8}>
-                        <Card
-                            hoverable
-                            onClick={() => setActiveTab('schedule')}
-                            style={{ cursor: 'pointer' }}
-                        >
-                            <Space direction="vertical" align="center" style={{ width: '100%' }}>
-                                <CalendarOutlined style={{ fontSize: 32, color: '#1890ff' }} />
-                                <Text strong>Manage Schedule</Text>
-                                <Text type="secondary" style={{ fontSize: '12px', textAlign: 'center' }}>
-                                    Create and manage your available time slots for sessions
-                                </Text>
-                                <Tag color="blue">Set availability</Tag>
-                            </Space>
-                        </Card>
-                    </Col>
-                    <Col xs={24} md={8}>
-                        <Card hoverable>
-                            <Space direction="vertical" align="center" style={{ width: '100%' }}>
-                                <TrophyOutlined style={{ fontSize: 32, color: '#722ed1' }} />
-                                <Text strong>Session History</Text>
-                                <Text type="secondary" style={{ fontSize: '12px', textAlign: 'center' }}>
-                                    View completed sessions and member feedback
-                                </Text>
-                                <Tag color="purple">{stats.completedSessions} completed</Tag>
-                            </Space>
-                        </Card>
-                    </Col>
-                </Row>
-            </Card>
         </div>
     );
 
