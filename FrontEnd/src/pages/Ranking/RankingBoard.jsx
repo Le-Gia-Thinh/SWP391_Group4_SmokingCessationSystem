@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Table, Tag, Typography, Card, Progress, Avatar, Tooltip } from "antd";
 import { CrownTwoTone, StarTwoTone, UserOutlined } from "@ant-design/icons";
+import Navbar from "../../layouts/Navbar";
 
 const { Title } = Typography;
 
@@ -80,35 +81,38 @@ const RankingBoard = () => {
   ];
 
   return (
-    <Card
-      style={{
-        maxWidth: 900,
-        margin: "40px auto",
-        border: "2px solid #bae7ff",
-        borderRadius: 16,
-        boxShadow: "0 4px 12px rgba(24, 144, 255, 0.1)",
-      }}
-    >
-      <Title
-        level={3}
+    <div style={{ padding: 24, background: "#f6faff", minHeight: "100vh" }}>
+      <Navbar />
+      <Card
         style={{
-          textAlign: "center",
-          background: "linear-gradient(to right, #1890ff, #73d13d)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-          fontWeight: 700,
+          maxWidth: 900,
+          margin: "40px auto",
+          border: "2px solid #bae7ff",
+          borderRadius: 16,
+          boxShadow: "0 4px 12px rgba(24, 144, 255, 0.1)",
         }}
       >
-        🏆 Bảng Xếp Hạng Người Dùng
-      </Title>
-      <Table
-        columns={columns}
-        dataSource={data}
-        pagination={false}
-        rowKey="user_id"
-        style={{ marginTop: 24 }}
-      />
-    </Card>
+        <Title
+          level={3}
+          style={{
+            textAlign: "center",
+            background: "linear-gradient(to right, #1890ff, #73d13d)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            fontWeight: 700,
+          }}
+        >
+          🏆 Bảng Xếp Hạng Người Dùng
+        </Title>
+        <Table
+          columns={columns}
+          dataSource={data}
+          pagination={false}
+          rowKey="user_id"
+          style={{ marginTop: 24 }}
+        />
+      </Card>
+    </div>
   );
 };
 

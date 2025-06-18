@@ -10,6 +10,7 @@ import ForgetPassword from "./pages/ResetPassword/ForgetPassword";
 import ResetPassword from "./pages/ResetPassword/ResetPassword";
 import GoogleRedirectHandler from "./components/GoogleRedirectHandler";
 import BookingPage from "./pages/BookingPage/BookingPage";
+import MemberBookings from "./pages/MemberBookings/MemberBookings";
 import CoachDashboard from "./pages/CoachDashboard/CoachDashboard";
 import AdminDashboard from "./pages/AdminDashboard/AdminDashboard";
 import Navbar from "./layouts/Navbar";
@@ -17,6 +18,8 @@ import FtndTest from "./pages/FtndTest/FtndTest";
 import QuitPlanCalendar from "./pages/QuitPlanning/QuitPlanCalendar";
 import QuitPlanDetail from "./pages/QuitPlanning/QuitPlanDetail";
 import RankingBoard from "./pages/Ranking/RankingBoard";
+import Profile from './pages/Profile/Profile.jsx';
+import Notifications from './pages/Notifications/Notifications.jsx';
 import "./App.css";
 
 const { Title, Paragraph } = Typography;
@@ -56,6 +59,19 @@ function App() {
           <Route path="/QuitPlanCalendar" element={<QuitPlanCalendar />} />
           <Route path="/quit-plan-detail/:date" element={<QuitPlanDetail />} />
           <Route path="/RankingBoard" element={<RankingBoard />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/notifications" element={<Notifications />} />
+
+          {/* Protected routes - Member Bookings */}
+          <Route
+            path="/my-bookings"
+            element={
+              <ProtectedRoute allowedRoles={["member"]}>
+                <MemberBookings />
+              </ProtectedRoute>
+            }
+          />
+
           {/* Protected routes - Coach Dashboard */}
           <Route
             path="/coach-dashboard"

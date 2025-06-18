@@ -51,43 +51,119 @@ const CoachDashboard = () => {
         upcomingSessions: 0
     });
 
+    // API Base URL
+    const API_BASE_URL = 'http://localhost:5000/api';
+
+    // Helper function to get auth headers
+    const getAuthHeaders = () => {
+        const token = localStorage.getItem('token');
+        return {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        };
+    };
+
     useEffect(() => {
-        // Initialize meet link if not set
-        if (!meetLink) {
-            const defaultLink = `https://meet.google.com/quit-smoking-coach-${user?.id || '001'}`;
-            setMeetLink(defaultLink);
+        if (user && user.role === 'coach') {
+            fetchCoachInfo();
         }
         loadStats();
         loadTodayStats();
     }, [user]);
 
+    const fetchCoachInfo = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${API_BASE_URL}/coach/me`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setMeetLink(data.data.google_meet_link || '');
+            }
+        } catch (error) {
+            // fallback: không set meetLink
+        }
+    };
+
     const loadStats = async () => {
         try {
-            // In a real app, you would fetch stats from API
-            // For now, using mock data
-            setStats({
-                totalBookings: 25,
-                pendingBookings: 3,
-                confirmedBookings: 12,
-                completedSessions: 18,
-                averageRating: 4.8,
-                totalEarnings: 1250
+            // Load pending appointments count
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${API_BASE_URL}/appointment/pending`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
             });
+
+            if (response.ok) {
+                const pendingData = await response.json();
+                const pendingCount = pendingData.length || 0;
+
+                setStats({
+                    totalBookings: 0,
+                    pendingBookings: pendingCount,
+                    confirmedBookings: 0,
+                    completedSessions: 0,
+                    averageRating: 0,
+                    totalEarnings: 0
+                });
+            } else {
+                setStats({
+                    totalBookings: 0,
+                    pendingBookings: 0,
+                    confirmedBookings: 0,
+                    completedSessions: 0,
+                    averageRating: 0,
+                    totalEarnings: 0
+                });
+            }
         } catch (error) {
             console.error('Error loading stats:', error);
+            setStats({
+                totalBookings: 0,
+                pendingBookings: 0,
+                confirmedBookings: 0,
+                completedSessions: 0,
+                averageRating: 0,
+                totalEarnings: 0
+            });
         }
     };
 
     const loadTodayStats = async () => {
         try {
-            // Mock data for today's stats
-            setTodayStats({
-                todaySessions: 2,
-                pendingRequests: 3,
-                upcomingSessions: 4
+            // Load pending appointments for today's stats
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${API_BASE_URL}/appointment/pending`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
             });
+
+            if (response.ok) {
+                const pendingData = await response.json();
+                const pendingCount = pendingData.length || 0;
+
+                setTodayStats({
+                    todaySessions: 0,
+                    pendingRequests: pendingCount,
+                    upcomingSessions: 0
+                });
+            } else {
+                setTodayStats({
+                    todaySessions: 0,
+                    pendingRequests: 0,
+                    upcomingSessions: 0
+                });
+            }
         } catch (error) {
             console.error('Error loading today stats:', error);
+            setTodayStats({
+                todaySessions: 0,
+                pendingRequests: 0,
+                upcomingSessions: 0
+            });
         }
     };
 
@@ -103,16 +179,13 @@ const CoachDashboard = () => {
         setIsEditModalVisible(true);
     };
 
+    // Updated to use correct API endpoint
     const handleUpdateMeetLink = async (values) => {
         setLoading(true);
         try {
-            const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:5000/api/coach/update-meet-link', {
+            const response = await fetch(`${API_BASE_URL}/coach/update-meet-link`, {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
+                headers: getAuthHeaders(),
                 body: JSON.stringify({ meet_link: values.meetLink })
             });
 
@@ -122,9 +195,10 @@ const CoachDashboard = () => {
                 throw new Error(data.message || 'Failed to update meet link');
             }
 
-            setMeetLink(values.meetLink);
             setIsEditModalVisible(false);
             message.success('Meet link updated successfully!');
+            // Fetch lại link mới nhất từ backend
+            fetchCoachInfo();
         } catch (error) {
             console.error('Error updating meet link:', error);
             message.error(error.message || 'Failed to update meet link');
@@ -319,65 +393,6 @@ const CoachDashboard = () => {
                     />
                 </Col>
             </Row>
-
-            {/* Quick Actions */}
-            <Card
-                title={
-                    <Space>
-                        <SettingOutlined />
-                        <span>Quick Actions</span>
-                    </Space>
-                }
-            >
-                <Row gutter={[16, 16]}>
-                    <Col xs={24} md={8}>
-                        <Card
-                            hoverable
-                            onClick={() => setActiveTab('bookings')}
-                            style={{ cursor: 'pointer' }}
-                        >
-                            <Space direction="vertical" align="center" style={{ width: '100%' }}>
-                                <Badge count={todayStats.pendingRequests} size="small">
-                                    <CheckCircleOutlined style={{ fontSize: 32, color: '#52c41a' }} />
-                                </Badge>
-                                <Text strong>Review Bookings</Text>
-                                <Text type="secondary" style={{ fontSize: '12px', textAlign: 'center' }}>
-                                    Check and respond to new booking requests from members
-                                </Text>
-                                <Tag color="orange">{todayStats.pendingRequests} pending</Tag>
-                            </Space>
-                        </Card>
-                    </Col>
-                    <Col xs={24} md={8}>
-                        <Card
-                            hoverable
-                            onClick={() => setActiveTab('schedule')}
-                            style={{ cursor: 'pointer' }}
-                        >
-                            <Space direction="vertical" align="center" style={{ width: '100%' }}>
-                                <CalendarOutlined style={{ fontSize: 32, color: '#1890ff' }} />
-                                <Text strong>Manage Schedule</Text>
-                                <Text type="secondary" style={{ fontSize: '12px', textAlign: 'center' }}>
-                                    Create and manage your available time slots for sessions
-                                </Text>
-                                <Tag color="blue">Set availability</Tag>
-                            </Space>
-                        </Card>
-                    </Col>
-                    <Col xs={24} md={8}>
-                        <Card hoverable>
-                            <Space direction="vertical" align="center" style={{ width: '100%' }}>
-                                <TrophyOutlined style={{ fontSize: 32, color: '#722ed1' }} />
-                                <Text strong>Session History</Text>
-                                <Text type="secondary" style={{ fontSize: '12px', textAlign: 'center' }}>
-                                    View completed sessions and member feedback
-                                </Text>
-                                <Tag color="purple">{stats.completedSessions} completed</Tag>
-                            </Space>
-                        </Card>
-                    </Col>
-                </Row>
-            </Card>
         </div>
     );
 
