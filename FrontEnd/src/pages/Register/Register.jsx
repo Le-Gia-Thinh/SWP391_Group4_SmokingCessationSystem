@@ -1,7 +1,6 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
-import { Link as RouterLink } from "react-router-dom";
-import { Form, Input, Button, Typography } from "antd";
+import React, { useEffect, useState } from "react";
+import { useNavigate, Link as RouterLink } from "react-router-dom";
+import { Form, Input, Button, Typography, message } from "antd";
 import {
     UserOutlined,
     PhoneOutlined,
@@ -10,109 +9,118 @@ import {
 } from "@ant-design/icons";
 import axios from "axios";
 import "./Register.css";
-import { useEffect } from "react";
 
-const { Title, Text, Link } = Typography;
+const { Text } = Typography;
 
 const Register = () => {
-
+    // khóa scroll khi modal hiển thị
     useEffect(() => {
         document.body.style.overflow = "hidden";
         return () => {
             document.body.style.overflow = "auto";
         };
     }, []);
+
     const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
 
     const onFinish = async (values) => {
+        setLoading(true);
         try {
-            /*
-            const checkEmail = await axios.get("https://682d41af4fae188947555b7a.mockapi.io/register", {
-                params: { email: values.email }
-            });
-
-            if (checkEmail.data.length > 0) {
-                alert("Email đã được đăng ký.");
-                return;
-            }
-            */
-            const res = await axios.post("http://localhost:5000/api/auth/register", values);
-
-            console.log("Đăng ký thành công:", res.data);
-            alert("Đăng ký thành công!");
+            await axios.post("http://localhost:5000/api/auth/register", values);
+            message.success("Đăng ký thành công!");
             navigate("/login");
         } catch (err) {
-            console.error("Đăng ký thất bại:", err.response?.data || err.message);
-            alert("Đăng ký thất bại!");
+            console.error(err);
+            message.error("Đăng ký thất bại!");
+        } finally {
+            setLoading(false);
         }
     };
 
-
     return (
         <div className="register-wrapper">
-            <div className="register-container">
-                <Title level={2} style={{ textAlign: "center" }}>Sign up</Title>
+            <div className="outer-box">
+                {/* 4 line animation */}
+                <span className="line top" />
+                <span className="line right" />
+                <span className="line bottom" />
+                <span className="line left" />
 
-                <Form layout="vertical" onFinish={onFinish}>
-                    <Form.Item
-                        label="Name"
-                        name="name"
-                        rules={[{ required: true, message: "Please enter your name!" }]}
-                    >
-                        <Input placeholder="Your full name" suffix={<UserOutlined />} />
-                    </Form.Item>
+                <div className="register-container">
+                    <div className="login-title">🚭 Sign up</div>
+                    <div className="form-content">
+                        <Form layout="vertical" onFinish={onFinish}>
+                            <Form.Item
+                                label="Name"
+                                name="name"
+                                rules={[{ required: true, message: "Please enter your name!" }]}
+                            >
+                                <Input suffix={<UserOutlined />} placeholder="Your full name" />
+                            </Form.Item>
 
-                    <Form.Item
-                        label="Mobile no."
-                        name="phone_number"
-                        rules={[{ required: true, message: "Please enter your phone number!" }]}
-                    >
-                        <Input placeholder="0123456789" suffix={<PhoneOutlined />} />
-                    </Form.Item>
+                            <Form.Item
+                                label="Mobile no."
+                                name="phone_number"
+                                rules={[
+                                    { required: true, message: "Please enter your phone number!" },
+                                ]}
+                            >
+                                <Input
+                                    suffix={<PhoneOutlined />}
+                                    placeholder="0123456789"
+                                />
+                            </Form.Item>
 
-                    <Form.Item
-                        label="Email"
-                        name="email"
-                        rules={[
-                            { required: true, message: "Please enter your email!" },
-                            { type: "email", message: "Invalid email address" },
-                        ]}
-                    >
-                        <Input placeholder="abc@gmail.com" type="email" suffix={<MailOutlined />} />
-                    </Form.Item>
+                            <Form.Item
+                                label="Email"
+                                name="email"
+                                rules={[
+                                    { required: true, message: "Please enter your email!" },
+                                    { type: "email", message: "Invalid email address" },
+                                ]}
+                            >
+                                <Input
+                                    suffix={<MailOutlined />}
+                                    placeholder="abc@gmail.com"
+                                    type="email"
+                                />
+                            </Form.Item>
 
-                    <Form.Item
-                        label="Password"
-                        name="password"
-                        rules={[{ required: true, message: "Please enter your password!" }]}
-                    >
-                        <Input.Password placeholder="********" />
-                    </Form.Item>
+                            <Form.Item
+                                label="Password"
+                                name="password"
+                                rules={[
+                                    { required: true, message: "Please enter your password!" },
+                                ]}
+                            >
+                                <Input.Password
+                                    suffix={<LockOutlined />}
+                                    placeholder="********"
+                                />
+                            </Form.Item>
 
-                    <Form.Item>
-                        <Button
-                            type="primary"
-                            htmlType="submit"
-                            block
-                            style={{
-                                backgroundColor: "#4BAC4F",
-                                borderColor: "#4BAC4F",
-                                color: "#fff",
-                                fontWeight: "500",
-                                height: 40,
-                                borderRadius: 8,
-                            }}
-                        >
-                            Get started
-                        </Button>
-                    </Form.Item>
+                            <Form.Item>
+                                <Button
+                                    type="primary"
+                                    htmlType="submit"
+                                    block
+                                    className="login-button"
+                                    loading={loading}
+                                >
+                                    Get started
+                                </Button>
+                            </Form.Item>
 
-                    <div style={{ marginTop: 24, textAlign: "center" }}>
-                        <Text>
-                            Already have an account? <RouterLink to="/login">Sign in</RouterLink>
-                        </Text>
+                            <div className="signup-text">
+                                <Text>
+                                    Already have an account?{" "}
+                                    <RouterLink to="/login">Sign in</RouterLink>
+                                </Text>
+                            </div>
+                        </Form>
                     </div>
-                </Form>
+                </div>
             </div>
         </div>
     );

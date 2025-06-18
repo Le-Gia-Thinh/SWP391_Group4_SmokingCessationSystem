@@ -1,33 +1,290 @@
-* {
-  box-sizing: border-box;
+/* ==== Global Setup ==== */
+body {
+  background: radial-gradient(rgba(250, 247, 247, 0.936), rgba(178, 220, 160, 0.799));
+  backdrop-filter: blur(5px);
   margin: 0;
-  padding: 0;
+  font-family: 'Segoe UI', sans-serif;
 }
 
-
-
-
-
-
-:root {
-  color-scheme: only light;
-}
-
-
+/* ==== Centering ==== */
 .register-wrapper {
   height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #ffffff;
-  padding: 0;
+  background: transparent;
 }
 
+/* ==== Outer Box for Register ==== */
+.register-outer-box {
+  position: relative;
+  width: 450px;
+  height: 100px;
+  padding: 15px;
+  box-sizing: border-box;
+  border-radius: 20px;
+  background: #c9e9ad;
+  overflow: hidden;
+  transition: all 0.5s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
 
-.register-container {
+.register-outer-box:hover {
+  width: 500px;
+  padding: 30px;
+  justify-content: flex-start;
+}
+
+/* Neon rotating border */
+.register-outer-box::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border-radius: 20px;
+  background: conic-gradient(#daead1f0 0deg 120deg,
+      hsl(106, 83%, 91%) 120deg 240deg,
+      #94f097 240deg 360deg);
+  animation: rotateBorder 6s linear infinite;
+  z-index: -1;
+}
+
+.register-outer-box::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  right: 3px;
+  bottom: 3px;
+  background: #cef8a9;
+  border-radius: 16px;
+  z-index: -1;
+}
+
+/* 4 Line Animation */
+.register-outer-box .line {
+  position: absolute;
+  opacity: 1;
+  filter: blur(0.5px);
+  animation-timing-function: linear;
+}
+
+.register-outer-box .line.top,
+.register-outer-box .line.bottom {
   width: 100%;
-  max-width: 400px;
-  padding: 32px;
-  background-color: #fff;
-  border-radius: 8px;
+  height: 4px;
+  background: linear-gradient(to right,
+      transparent, #c3f1a3, #c5f7d1, #dffee0, transparent);
+}
+
+.register-outer-box .line.top {
+  top: 0;
+  left: -100%;
+  animation: moveTop 2s linear infinite;
+}
+
+.register-outer-box .line.bottom {
+  bottom: 0;
+  left: 100%;
+  animation: moveBottom 2s linear infinite 0.6s;
+}
+
+.register-outer-box .line.right {
+  top: -100%;
+  right: 0;
+  animation: moveRight 2s linear infinite 0.3s;
+}
+
+.register-outer-box .line.left {
+  left: 0;
+  bottom: -100%;
+  animation: moveLeft 2s linear infinite 0.9s;
+}
+
+/* ==== Inner Register Container ==== */
+.register-container {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 0.5s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ==== Form Reveal ==== */
+.register-form-content {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.95) translateY(20px);
+  transition: all 0.5s ease;
+}
+
+.register-outer-box:hover .register-form-content {
+  opacity: 1;
+  pointer-events: all;
+  transform: scale(1) translateY(0);
+  transition-delay: 0.2s;
+}
+
+/* ==== Title ==== */
+.register-title {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #2e7d32;
+  font-size: 20px;
+  font-weight: bold;
+  text-shadow: 0 0 4px #a5d6a7;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  /* ← giữ nguyên trên 1 dòng */
+}
+
+.register-outer-box:hover .register-title {
+  position: static;
+  transform: none;
+  margin-bottom: 20px;
+}
+
+/* ==== Ant Design Overrides ==== */
+.ant-form-item-label>label {
+  color: #2e7d32 !important;
+  font-weight: 600;
+}
+
+.register-container .ant-input,
+.register-container .ant-input-password,
+.register-container .ant-input-affix-wrapper {
+  width: 100%;
+  padding: 10px 15px;
+  border-radius: 20px !important;
+  transition: 0.3s;
+}
+
+.ant-input:focus,
+.ant-input-password:focus,
+.ant-input-affix-wrapper-focused {
+  border-color: #4caf50 !important;
+  box-shadow: 0 0 6px #81c784;
+}
+
+/* ==== Button ==== */
+.register-button {
+  width: 100%;
+  background: #4caf50;
+  border: none;
+  color: #fff;
+  border-radius: 25px;
+  height: 45px;
+  transition: 0.3s;
+}
+
+.register-button:hover {
+  background: #43a047;
+  box-shadow: 0 0 8px #4caf50;
+}
+
+/* ==== Links ==== */
+.signup-text {
+  margin-top: 24px;
+  text-align: center;
+}
+
+.signup-text a {
+  color: #2e7d32;
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+.signup-text a:hover {
+  color: #43a047;
+}
+
+/* ==== Keyframes ==== */
+@keyframes rotateBorder {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes moveTop {
+  0% {
+    left: -100%;
+    opacity: 0;
+  }
+
+  50% {
+    left: 0;
+    opacity: 1;
+  }
+
+  100% {
+    left: 100%;
+    opacity: 0;
+  }
+}
+
+@keyframes moveRight {
+  0% {
+    top: -100%;
+    opacity: 0;
+  }
+
+  50% {
+    top: 0;
+    opacity: 1;
+  }
+
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+@keyframes moveBottom {
+  0% {
+    left: 100%;
+    opacity: 0;
+  }
+
+  50% {
+    left: 0;
+    opacity: 1;
+  }
+
+  100% {
+    left: -100%;
+    opacity: 0;
+  }
+}
+
+@keyframes moveLeft {
+  0% {
+    bottom: -100%;
+    opacity: 0;
+  }
+
+  50% {
+    bottom: 0;
+    opacity: 1;
+  }
+
+  100% {
+    bottom: 100%;
+    opacity: 0;
+  }
 }
