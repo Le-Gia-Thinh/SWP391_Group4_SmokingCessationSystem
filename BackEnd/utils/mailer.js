@@ -4,8 +4,8 @@ const nodemailer = require('nodemailer');
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: process.env.EMAIL_USER,     // VD: your_email@gmail.com
-    pass: process.env.EMAIL_PASS      // VD: mật khẩu ứng dụng (app password)
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
   }
 });
 
@@ -18,4 +18,4 @@ const sendResetEmail = async (to, resetLink) => {
   });
 };
 
-module.exports = { sendResetEmail };
+module.exports = sendResetEmail;
