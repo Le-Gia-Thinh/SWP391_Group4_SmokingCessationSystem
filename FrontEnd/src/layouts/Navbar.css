@@ -12,7 +12,7 @@
 .navbar-content {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 24px;
@@ -22,6 +22,8 @@
 .navbar-logo {
   display: flex;
   align-items: center;
+  height: 100%;
+  margin-right: 32px;
 }
 
 .logo-text {
@@ -43,8 +45,8 @@
 
 .navbar-menu {
   flex: 1;
+  display: flex;
   justify-content: center;
-  border-bottom: none !important;
   background: transparent !important;
 }
 
@@ -80,6 +82,8 @@
   align-items: center;
   gap: 16px;
   flex-wrap: nowrap;
+  height: 100%;
+  margin-left: 32px;
 }
 
 .navbar-actions .ant-btn {
@@ -161,5 +165,5 @@
     font-size: 11px;
   }
 
-  
+
 }
