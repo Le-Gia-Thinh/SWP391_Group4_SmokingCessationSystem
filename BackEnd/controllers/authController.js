@@ -19,14 +19,22 @@ const generateToken = (userData) => {
 };
 // Gửi response kèm token và thông tin user
 const sendTokenWithUser = (res, user) => {
-  // user trả về từ DB có { user_id, email, full_name, user_role }
   const token = generateToken({
     id: user.user_id || user.id,
     email: user.email,
     name: user.full_name || user.name,
     role: user.user_role || user.role
-    //avatar: user.avatar_url || null 
   });
+
+  // ✅ THÊM cookie chứa token vào response
+  res.cookie('token', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'Lax',
+    maxAge: 30 * 24 * 60 * 60 * 1000 // 30 ngày
+  });
+
+  // ✅ Gửi JSON response chứa user
   res.json({
     success: true,
     token,
@@ -35,7 +43,6 @@ const sendTokenWithUser = (res, user) => {
       email: user.email,
       name: user.full_name || user.name,
       role: user.user_role || user.role
-      //avatar: user.avatar_url || null
     }
   });
 };

@@ -9,7 +9,6 @@ const authRoutes = require('./routes/auth');
 const roleRoutes = require('./routes/roleTestRoutes');
 const habitLogRoutes = require('./routes/habitLogRoutes');
 const smokingSummaryRoutes = require('./routes/smokingSummaryRoutes');
-const userRoutes = require('./routes/user');
 
 const adminRoutes = require('./routes/admin');
 const appointmentRoutes = require('./routes/appointment');
@@ -81,8 +80,6 @@ app.use('/api/member', memberRoutes);
 
 //xử lý phần submit từ plan
 app.use('/api/habit-log', habitLogRoutes);
-
-app.use("/api/user", userRoutes);
 
 //xử lí lưu số điếu hằng ngày của users
 app.use('/api/smoking-summary', smokingSummaryRoutes);

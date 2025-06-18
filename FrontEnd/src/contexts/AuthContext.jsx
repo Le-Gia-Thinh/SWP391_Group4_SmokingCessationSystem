@@ -17,40 +17,37 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     // Check if user is logged in when app loads - Kiểm tra user đã đăng nhập chưa khi load app
-   useEffect(() => {
-  const storedUser = localStorage.getItem('user');
-  const token = localStorage.getItem('token');
+    useEffect(() => {
+  const token = localStorage.getItem("token");
 
-  if (storedUser && token) {
-    setUser(JSON.parse(storedUser));
+  if (!token) {
     setLoading(false);
-  } else {
-    // Gọi backend để lấy user nếu chưa có local
-    const fetchUser = async () => {
-      try {
-        const res = await fetch('http://localhost:5000/api/user/me', {
-          headers: {
-            Authorization: `Bearer ${token}`, // ✅ QUAN TRỌNG
-          },
-        });
+    return;
+  }
 
-        if (!res.ok) throw new Error("Không lấy được user");
+  const fetchUser = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/api/user/me", {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
 
-        const data = await res.json();
-        setUser(data.user);
-        localStorage.setItem('user', JSON.stringify(data.user)); // ✅ phải là data.user
-      } catch (err) {
-        console.error("❌ Lỗi khi gọi /api/user/me:", err);
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    };
+      if (!res.ok) throw new Error("Không lấy được user");
 
-    fetchUser();
+      const data = await res.json();
+      setUser(data);
+      localStorage.setItem("user", JSON.stringify(data));
+    } catch (err) {
+      console.error("Lỗi khi xác thực:", err);
+      setUser(null);
+    } finally {
+      setLoading(false);
     }
-    }, []); 
+  };
 
+  fetchUser();
+}, []);
 
     // Login with real API - Đăng nhập với API thực tế
     const login = async (email, password) => {
@@ -81,15 +78,13 @@ export const AuthProvider = ({ children }) => {
 
         const userData = await userRes.json();
 
-        if (!userRes.ok || !userData.user) {
+        if (!userRes.ok || !userData) {
             throw new Error('Không lấy được thông tin chi tiết người dùng');
         }
+        localStorage.setItem('user', JSON.stringify(userData));
+        setUser(userData);
 
-        // Lưu đầy đủ user vào localStorage
-        localStorage.setItem('user', JSON.stringify(userData.user));
-        setUser(userData.user);
-
-        return userData.user;
+        return userData;
     } catch (error) {
         console.error('Login error:', error);
         throw error;
