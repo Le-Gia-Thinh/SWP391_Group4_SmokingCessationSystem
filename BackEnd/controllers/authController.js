@@ -138,47 +138,52 @@ const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Kiểm tra dữ liệu đầu vào
     if (!email || !password) {
       return res.status(400).json({ success: false, message: 'Vui lòng điền email và mật khẩu' });
     }
 
-    // Tìm user theo email
     const pool = await sql.connect(dbConfig);
+
+    // 1️⃣ Lấy thông tin đăng nhập từ USER_LOGIN (local)
     const result = await pool.request()
       .input('email', sql.VarChar, email)
-      .query('SELECT * FROM CUSTOMER WHERE email = @email');
+      .query(`
+        SELECT c.user_id, c.full_name, c.email, c.user_role, l.password_hash
+        FROM CUSTOMER c
+        JOIN USER_LOGIN l ON c.user_id = l.user_id
+        WHERE c.email = @email AND l.login_provider = 'local'
+      `);
 
     if (result.recordset.length === 0) {
       return res.status(400).json({ success: false, message: 'Email hoặc mật khẩu không đúng' });
     }
 
     const user = result.recordset[0];
-    const stored = user.password_hash; // có thể là hash của bcrypt hoặc plain‐text (khi bạn test)
+    const stored = user.password_hash;
 
     let isMatch = false;
 
-    // Nếu stored bắt đầu bằng "$2a$" / "$2b$" / "$2y$" → dùng bcrypt.compare
-    if (typeof stored === 'string' && (stored.startsWith('$2a$') || stored.startsWith('$2b$') || stored.startsWith('$2y$'))) {
+    // 2️⃣ So sánh mật khẩu
+    if (typeof stored === 'string' && stored.startsWith('$2')) {
       isMatch = await bcrypt.compare(password, stored);
     } else {
-      // Ngược lại, giả sử đây là plain‐text password, so sánh thẳng
-      isMatch = (password === stored);
+      isMatch = (password === stored); // fallback nếu đang dùng plain text (dev mode)
     }
 
     if (!isMatch) {
       return res.status(400).json({ success: false, message: 'Email hoặc mật khẩu không đúng' });
     }
 
-    // Nếu match thì gửi token
+    // 3️⃣ Gửi token nếu đúng
     sendTokenWithUser(res, user);
 
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: 'Lỗi server' });
+    console.error('❌ Lỗi đăng nhập:', error);
+    res.status(500).json({ success: false, message: 'Lỗi server khi đăng nhập' });
   }
 };
-// Lấy thông tin user hiện tại (dựa trên session hoặc token đã xác thực)
+
+//Lấy dữ liệu người dùng khi đăng nhập
 const getMe = async (req, res) => {
   res.json({
     success: true,
