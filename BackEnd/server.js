@@ -16,6 +16,7 @@ const appointmentRoutes = require('./routes/appointment');
 const scheduleRoutes = require('./routes/schedule');
 const coachRoutes = require('./routes/coach');
 const memberRoutes = require('./routes/member');
+const userRoutes = require("./routes/user"); 
 
 const app = express();
 
@@ -44,8 +45,6 @@ app.use("/api/quitplan", quitPlanRoutes);
 const customerRoutes = require("./routes/customer");
 app.use("/api/customer", customerRoutes);
 
-// tich diem trong daily
-app.use("/api/user-score", require("./routes/userScore"));
 // ranking
 app.use("/api/user-score", require("./routes/userScore"));
 
@@ -82,6 +81,8 @@ app.use('/api/member', memberRoutes);
 
 //xử lý phần submit từ plan
 app.use('/api/habit-log', habitLogRoutes);
+
+app.use("/api/user", userRoutes);
 
 //xử lí lưu số điếu hằng ngày của users
 app.use('/api/smoking-summary', smokingSummaryRoutes);
