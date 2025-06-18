@@ -170,7 +170,7 @@ const CoachDashboard = () => {
     const handleUpdateMeetLink = async (values) => {
         setLoading(true);
         try {
-            const response = await fetch(`${API_BASE_URL}/coach/meet-link`, {
+            const response = await fetch(`${API_BASE_URL}/coach/update-meet-link`, {
                 method: 'PUT',
                 headers: getAuthHeaders(),
                 body: JSON.stringify({ meet_link: values.meetLink })
