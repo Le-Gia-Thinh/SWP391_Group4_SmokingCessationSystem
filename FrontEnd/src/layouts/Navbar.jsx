@@ -66,10 +66,10 @@ export default function Navbar() {
         onClick: handlePlanClick,
       },
       {
-        key: "/ranking",
+        key: "/RankingBoard",
         icon: <TrophyOutlined />,
         label: "Ranking",
-        onClick: () => navigate("/ranking"),
+        onClick: () => navigate("/RankingBoard"),
       },
       {
         key: "/blog",
@@ -83,13 +83,27 @@ export default function Navbar() {
         label: "Membership",
         onClick: () => navigate("/membership"),
       },
-      {
+    ];
+
+    // Chỉ hiển thị "Book Coach" nếu không phải là Coach
+    if (!isCoach()) {
+      items.push({
         key: "/book-coach",
         icon: <ContactsOutlined />,
         label: "Book Coach",
         onClick: () => navigate("/book-coach"),
-      },
-    ];
+      });
+
+      // Add "My Bookings" for members
+      if (user && user.role === "member") {
+        items.push({
+          key: "/my-bookings",
+          icon: <CalendarOutlined />,
+          label: "My Bookings",
+          onClick: () => navigate("/my-bookings"),
+        });
+      }
+    }
 
     if (isAdmin()) {
       items.push({
@@ -128,7 +142,13 @@ export default function Navbar() {
 
         <Menu
           mode="horizontal"
-          selectedKeys={[location.pathname.startsWith("/plan") ? "/plan" : location.pathname]}
+          selectedKeys={[
+            /^\/(QuitPlanCalendar|FtndTest|quit-plan-detail)/.test(
+              location.pathname
+            )
+              ? "/plan"
+              : location.pathname,
+          ]}
           items={getMenuItems()}
           className="navbar-menu"
         />

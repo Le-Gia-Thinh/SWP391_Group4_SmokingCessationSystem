@@ -12,33 +12,29 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: transparent;
 }
 
-/* ==== Outer Box for Register ==== */
+/* ==== Outer Box ==== */
 .register-outer-box {
   position: relative;
-  width: 450px;
+  display: flex;
+  width: 375px;
   height: 100px;
   padding: 15px;
   box-sizing: border-box;
   border-radius: 20px;
-  background: #c9e9ad;
+  background: #c5e7a8;
   overflow: hidden;
   transition: all 0.5s ease-in-out;
-  display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow:
+    0 0 25px rgba(178, 236, 180, 0.2),
+    inset 0 0 12px rgba(123, 165, 80, 0.136);
   cursor: pointer;
 }
 
-.register-outer-box:hover {
-  width: 500px;
-  padding: 30px;
-  justify-content: flex-start;
-}
-
-/* Neon rotating border */
+/* ==== Neon rotating border ==== */
 .register-outer-box::before {
   content: "";
   position: absolute;
@@ -47,9 +43,9 @@ body {
   right: -2px;
   bottom: -2px;
   border-radius: 20px;
-  background: conic-gradient(#daead1f0 0deg 120deg,
-      hsl(106, 83%, 91%) 120deg 240deg,
-      #94f097 240deg 360deg);
+  background: conic-gradient(#a5d6a7 0deg 120deg,
+      #81c784 120deg 240deg,
+      #4caf50 240deg 360deg);
   animation: rotateBorder 6s linear infinite;
   z-index: -1;
 }
@@ -61,12 +57,12 @@ body {
   left: 3px;
   right: 3px;
   bottom: 3px;
-  background: #cef8a9;
+  background: #c9e9ad;
   border-radius: 16px;
   z-index: -1;
 }
 
-/* 4 Line Animation */
+/* ==== 4 Animated Lines ==== */
 .register-outer-box .line {
   position: absolute;
   opacity: 1;
@@ -79,7 +75,7 @@ body {
   width: 100%;
   height: 4px;
   background: linear-gradient(to right,
-      transparent, #c3f1a3, #c5f7d1, #dffee0, transparent);
+      transparent, #c4f2c6, #afefb2, #94ed96, transparent);
 }
 
 .register-outer-box .line.top {
@@ -94,6 +90,14 @@ body {
   animation: moveBottom 2s linear infinite 0.6s;
 }
 
+.register-outer-box .line.left,
+.register-outer-box .line.right {
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(to bottom,
+      transparent, #9cf89f, #b9f3bd, #9feda0, transparent);
+}
+
 .register-outer-box .line.right {
   top: -100%;
   right: 0;
@@ -106,20 +110,60 @@ body {
   animation: moveLeft 2s linear infinite 0.9s;
 }
 
+/* ==== Pin Icon ==== */
+.pin-icon-register {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-size: 18px;
+  cursor: pointer;
+  color: #2e7d32;
+  opacity: 0;
+  transition: opacity 0.3s;
+  z-index: 2;
+}
+
+.register-outer-box:hover .pin-icon-register,
+.register-outer-box.open .pin-icon-register {
+  opacity: 1;
+}
+
+/* ==== Hover / Open ==== */
+.register-outer-box:hover,
+.register-outer-box.open {
+  width: 450px;
+  height: auto;
+  padding: 30px;
+  justify-content: flex-start;
+  align-items: flex-start;
+  cursor: default;
+}
+
+/* ==== Inner Container Reveal ==== */
+.register-outer-box:hover .register-container,
+.register-outer-box.open .register-container {
+  width: 100%;
+  height: auto;
+  padding: 0;
+  border-radius: 16px;
+}
+
 /* ==== Inner Register Container ==== */
 .register-container {
   position: relative;
   z-index: 1;
   width: 100%;
   height: 100%;
-  background: #fff;
+  background: #ffffff;
   border-radius: 16px;
+  box-sizing: border-box;
   overflow: hidden;
-  transition: all 0.5s ease-in-out;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  padding: 0;
+  transition: all 0.5s ease-in-out;
 }
 
 /* ==== Form Reveal ==== */
@@ -128,9 +172,11 @@ body {
   pointer-events: none;
   transform: scale(0.95) translateY(20px);
   transition: all 0.5s ease;
+  width: 100%;
 }
 
-.register-outer-box:hover .register-form-content {
+.register-outer-box:hover .register-form-content,
+.register-outer-box.open .register-form-content {
   opacity: 1;
   pointer-events: all;
   transform: scale(1) translateY(0);
@@ -144,20 +190,20 @@ body {
   left: 50%;
   transform: translate(-50%, -50%);
   color: #2e7d32;
-  font-size: 20px;
+  font-size: 24px;
   font-weight: bold;
   text-shadow: 0 0 4px #a5d6a7;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 8px;
-  white-space: nowrap;
-  /* ← giữ nguyên trên 1 dòng */
 }
 
-.register-outer-box:hover .register-title {
+.register-outer-box:hover .register-title,
+.register-outer-box.open .register-title {
   position: static;
   transform: none;
-  margin-bottom: 20px;
+  margin: 0 auto 20px;
+  justify-content: center;
 }
 
 /* ==== Ant Design Overrides ==== */
@@ -169,9 +215,11 @@ body {
 .register-container .ant-input,
 .register-container .ant-input-password,
 .register-container .ant-input-affix-wrapper {
-  width: 100%;
-  padding: 10px 15px;
+  background-color: #ffffff !important;
+  color: #333 !important;
+  border: 1px solid #ccc;
   border-radius: 20px !important;
+  padding: 10px 15px;
   transition: 0.3s;
 }
 
@@ -184,21 +232,22 @@ body {
 
 /* ==== Button ==== */
 .register-button {
-  width: 100%;
-  background: #4caf50;
-  border: none;
-  color: #fff;
-  border-radius: 25px;
+  background: #4caf50 !important;
+  border: none !important;
+  color: #fff !important;
+  font-weight: bold;
+  border-radius: 25px !important;
   height: 45px;
-  transition: 0.3s;
+  width: 100%;
+  transition: all 0.3s ease-in-out;
 }
 
 .register-button:hover {
-  background: #43a047;
+  background: #43a047 !important;
   box-shadow: 0 0 8px #4caf50;
 }
 
-/* ==== Links ==== */
+/* ==== Signup Text ==== */
 .signup-text {
   margin-top: 24px;
   text-align: center;

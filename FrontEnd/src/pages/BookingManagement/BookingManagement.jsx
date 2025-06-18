@@ -1,29 +1,64 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Button, Table, Tag, Modal, Form, Input, Select, message, Avatar, Space, Tooltip } from 'antd';
-import { CheckOutlined, CloseOutlined, EyeOutlined, ClockCircleOutlined, UserOutlined } from '@ant-design/icons';
+import { Card, Button, Table, Tag, Modal, Form, Input, Select, message, Avatar, Space, Tooltip, Spin, Tabs, Row, Col, Typography, Badge } from 'antd';
+import { EyeOutlined, CheckOutlined, CloseOutlined, ReloadOutlined, UserOutlined, ClockCircleOutlined, CheckCircleOutlined, TrophyOutlined } from '@ant-design/icons';
 import { useAuth } from '../../contexts/AuthContext';
+import ActionButtonGroup from '../../components/ui/ActionButtonGroup';
+import DataTable from '../../components/ui/DataTable';
+import Navbar from '../../layouts/Navbar';
 import './BookingManagement.css';
 
-const { TextArea } = Input;
-const { Option } = Select;
+const { Text, Title } = Typography;
+const { TabPane } = Tabs;
 
 const BookingManagement = () => {
     const { user } = useAuth();
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [selectedBooking, setSelectedBooking] = useState(null);
+    const [initialLoading, setInitialLoading] = useState(true);
     const [isModalVisible, setIsModalVisible] = useState(false);
-    const [responseForm] = Form.useForm();
+    const [selectedBooking, setSelectedBooking] = useState(null);
+    const [activeTab, setActiveTab] = useState('pending');
+
+    // API Base URL
+    const API_BASE_URL = 'http://localhost:5000/api';
+
+    // Helper function to get auth headers
+    const getAuthHeaders = () => {
+        const token = localStorage.getItem('token');
+        return {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        };
+    };
 
     useEffect(() => {
         loadBookings();
     }, []);
 
-    const loadBookings = () => {
-        // Load bookings from localStorage (in real app, this would be API call)
-        const allBookings = JSON.parse(localStorage.getItem('bookings') || '[]');
-        const coachBookings = allBookings.filter(booking => booking.coachId === user.id);
-        setBookings(coachBookings);
+    const loadBookings = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch(`${API_BASE_URL}/appointment/all-coach-appointments`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to load bookings');
+            }
+
+            const data = await response.json();
+            console.log('DEBUG: Raw data from API:', data.data);
+            setBookings(data.data); // Assuming the backend now returns { success: true, data: [...] }
+        } catch (error) {
+            console.error('Error loading bookings:', error);
+            message.error('Failed to load bookings');
+            setBookings([]);
+        } finally {
+            setLoading(false);
+            setInitialLoading(false);
+        }
     };
 
     const handleViewBooking = (booking) => {
@@ -31,63 +66,45 @@ const BookingManagement = () => {
         setIsModalVisible(true);
     };
 
-    const handleRespondToBooking = async (values) => {
-        setLoading(true);
+    const handleAcceptAppointment = async (sessionId) => {
         try {
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
-
-            // Generate fixed Google Meet link for coach
-            const generateMeetLink = (coachId) => {
-                return `https://meet.google.com/quit-smoking-coach-${coachId}`;
-            };
-            const coachMeetLink = generateMeetLink(user.id);
-
-            const updatedBookings = bookings.map(booking => {
-                if (booking.id === selectedBooking.id) {
-                    return {
-                        ...booking,
-                        status: values.status,
-                        coachResponse: values.response,
-                        respondedAt: new Date().toISOString(),
-                        confirmedDate: values.status === 'confirmed' ? values.confirmedDate : null,
-                        confirmedTime: values.status === 'confirmed' ? values.confirmedTime : null,
-                        meetLink: values.status === 'confirmed' ? coachMeetLink : null
-                    };
-                }
-                return booking;
+            setLoading(true);
+            const response = await fetch(`${API_BASE_URL}/appointment/${sessionId}/accept`, {
+                method: 'PUT',
+                headers: getAuthHeaders()
             });
 
-            // Update localStorage
-            const allBookings = JSON.parse(localStorage.getItem('bookings') || '[]');
-            const updatedAllBookings = allBookings.map(booking => {
-                if (booking.id === selectedBooking.id) {
-                    return {
-                        ...booking,
-                        status: values.status,
-                        coachResponse: values.response,
-                        respondedAt: new Date().toISOString(),
-                        confirmedDate: values.status === 'confirmed' ? values.confirmedDate : null,
-                        confirmedTime: values.status === 'confirmed' ? values.confirmedTime : null,
-                        meetLink: values.status === 'confirmed' ? coachMeetLink : null
-                    };
-                }
-                return booking;
-            });
-
-            localStorage.setItem('bookings', JSON.stringify(updatedAllBookings));
-            setBookings(updatedBookings);
-
-            if (values.status === 'confirmed') {
-                message.success('Booking confirmed! Meet link has been automatically sent to the user.');
-            } else {
-                message.success(`Booking ${values.status} successfully!`);
+            if (!response.ok) {
+                throw new Error('Failed to accept appointment');
             }
 
-            setIsModalVisible(false);
-            responseForm.resetFields();
+            message.success('Appointment accepted successfully!');
+            loadBookings(); // Reload to get updated data
         } catch (error) {
-            message.error('Failed to respond to booking');
+            console.error('Error accepting appointment:', error);
+            message.error('Failed to accept appointment');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleRejectAppointment = async (sessionId) => {
+        try {
+            setLoading(true);
+            const response = await fetch(`${API_BASE_URL}/appointment/${sessionId}/reject`, {
+                method: 'PUT',
+                headers: getAuthHeaders()
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to reject appointment');
+            }
+
+            message.success('Appointment rejected successfully!');
+            loadBookings(); // Reload to get updated data
+        } catch (error) {
+            console.error('Error rejecting appointment:', error);
+            message.error('Failed to reject appointment');
         } finally {
             setLoading(false);
         }
@@ -95,306 +112,199 @@ const BookingManagement = () => {
 
     const handleCancel = () => {
         setIsModalVisible(false);
-        responseForm.resetFields();
+        setSelectedBooking(null);
     };
 
     const getStatusColor = (status) => {
         switch (status) {
-            case 'pending': return 'orange';
-            case 'confirmed': return 'green';
-            case 'rejected': return 'red';
-            case 'completed': return 'blue';
-            default: return 'default';
+            case 'pending':
+                return 'orange';
+            case 'accepted':
+                return 'green';
+            case 'rejected':
+                return 'red';
+            case 'canceled_by_member':
+                return 'gray';
+            default:
+                return 'default';
         }
     };
 
     const getStatusText = (status) => {
         switch (status) {
-            case 'pending': return 'Pending';
-            case 'confirmed': return 'Confirmed';
-            case 'rejected': return 'Rejected';
-            case 'completed': return 'Completed';
-            default: return status;
+            case 'pending':
+                return 'Pending';
+            case 'accepted':
+                return 'Accepted';
+            case 'rejected':
+                return 'Rejected';
+            case 'canceled_by_member':
+                return 'Canceled';
+            default:
+                return status;
         }
+    };
+
+    const formatDateTime = (dateTimeString) => {
+        const date = new Date(dateTimeString);
+        return {
+            date: date.toLocaleDateString('en-US'),
+            time: date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+        };
     };
 
     const columns = [
         {
-            title: 'User',
-            dataIndex: 'userName',
-            key: 'userName',
-            render: (name, record) => (
+            title: 'Member',
+            key: 'member',
+            render: (_, record) => (
                 <Space>
                     <Avatar icon={<UserOutlined />} />
                     <div>
-                        <div style={{ fontWeight: 600 }}>{name}</div>
-                        <div style={{ fontSize: '12px', color: '#666' }}>{record.userEmail}</div>
+                        <div style={{ fontWeight: 'bold' }}>{record.member_name}</div>
+                        <div style={{ fontSize: '12px', color: '#666' }}>Member ID: {record.member_user_id}</div>
                     </div>
                 </Space>
             ),
         },
         {
-            title: 'Session Type',
-            dataIndex: 'sessionType',
-            key: 'sessionType',
-            render: (type) => {
-                const typeLabels = {
-                    'initial': 'Initial Consultation',
-                    'followup': 'Follow-up Session',
-                    'emergency': 'Emergency Support',
-                    'group': 'Group Session'
-                };
-                return typeLabels[type] || type;
-            }
-        },
-        {
-            title: 'Date & Time',
-            key: 'datetime',
-            render: (_, record) => (
-                <div>
-                    <div style={{ fontWeight: 600 }}>{record.date}</div>
-                    <div style={{ fontSize: '12px', color: '#666' }}>
-                        <ClockCircleOutlined /> {record.time} ({record.duration} min)
+            title: 'Time',
+            key: 'scheduled_time',
+            render: (_, record) => {
+                const { date, time } = formatDateTime(record.scheduled_time);
+                return (
+                    <div>
+                        <div style={{ fontWeight: 'bold' }}>{date}</div>
+                        <div style={{ color: '#666' }}>{time}</div>
                     </div>
-                </div>
-            ),
+                );
+            },
         },
         {
             title: 'Status',
-            dataIndex: 'status',
-            key: 'status',
-            render: (status) => (
-                <Tag color={getStatusColor(status)}>
-                    {getStatusText(status)}
+            key: 'session_status',
+            render: (_, record) => (
+                <Tag color={getStatusColor(record.session_status)}>
+                    {getStatusText(record.session_status)}
                 </Tag>
             ),
         },
         {
-            title: 'Created',
-            dataIndex: 'createdAt',
-            key: 'createdAt',
-            render: (date) => new Date(date).toLocaleDateString(),
-        },
-        {
             title: 'Actions',
             key: 'actions',
-            render: (_, record) => (
-                <Space>
-                    <Tooltip title="View Details">
-                        <Button
-                            type="primary"
-                            icon={<EyeOutlined />}
-                            size="small"
-                            onClick={() => handleViewBooking(record)}
-                        />
-                    </Tooltip>
-                    {record.status === 'pending' && (
-                        <>
-                            <Tooltip title="Confirm">
-                                <Button
-                                    type="primary"
-                                    icon={<CheckOutlined />}
-                                    size="small"
-                                    style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}
-                                    onClick={() => {
-                                        setSelectedBooking(record);
-                                        responseForm.setFieldsValue({ status: 'confirmed' });
-                                        setIsModalVisible(true);
-                                    }}
-                                />
-                            </Tooltip>
-                            <Tooltip title="Reject">
-                                <Button
-                                    danger
-                                    icon={<CloseOutlined />}
-                                    size="small"
-                                    onClick={() => {
-                                        setSelectedBooking(record);
-                                        responseForm.setFieldsValue({ status: 'rejected' });
-                                        setIsModalVisible(true);
-                                    }}
-                                />
-                            </Tooltip>
-                        </>
-                    )}
-                </Space>
-            ),
+            render: (_, record) => {
+                const actions = [
+                    {
+                        type: 'view',
+                        tooltip: 'View Details',
+                        onClick: () => handleViewBooking(record),
+                        icon: <EyeOutlined />
+                    },
+                    {
+                        type: 'accept',
+                        tooltip: 'Accept Appointment',
+                        onClick: () => handleAcceptAppointment(record.session_id),
+                        icon: <CheckOutlined />,
+                        hidden: record.session_status !== 'pending'
+                    },
+                    {
+                        type: 'reject',
+                        tooltip: 'Reject Appointment',
+                        onClick: () => handleRejectAppointment(record.session_id),
+                        icon: <CloseOutlined />,
+                        danger: true,
+                        hidden: record.session_status !== 'pending'
+                    },
+                ];
+
+                return (
+                    <ActionButtonGroup
+                        actions={actions}
+                        record={record}
+                    />
+                );
+            },
         },
     ];
 
-    const pendingBookings = bookings.filter(b => b.status === 'pending');
-    const confirmedBookings = bookings.filter(b => b.status === 'confirmed');
-    const completedBookings = bookings.filter(b => b.status === 'completed');
+    if (initialLoading) {
+        return (
+            <div style={{ textAlign: 'center', padding: '50px' }}>
+                <Spin size="large" />
+                <div style={{ marginTop: '16px' }}>Loading appointments...</div>
+            </div>
+        );
+    }
+
+    const filteredBookings = bookings.filter(booking => {
+        if (activeTab === 'rejected_cancelled') {
+            return booking.session_status === 'rejected' ||
+                booking.session_status === 'canceled_by_member' ||
+                booking.session_status === 'canceled_by_coach';
+        } else {
+            return booking.session_status === activeTab;
+        }
+    });
+    console.log('DEBUG: filteredBookings for active tab (', activeTab, '):', filteredBookings);
+
+    const onTabChange = (key) => {
+        setActiveTab(key);
+        console.log('DEBUG: Tab changed to:', key);
+    };
 
     return (
-        <div className="booking-management">
-            <div className="booking-stats">
-                <Card className="stat-card">
-                    <div className="stat-content">
-                        <div className="stat-number">{pendingBookings.length}</div>
-                        <div className="stat-label">Pending Requests</div>
-                    </div>
-                </Card>
-                <Card className="stat-card">
-                    <div className="stat-content">
-                        <div className="stat-number">{confirmedBookings.length}</div>
-                        <div className="stat-label">Confirmed Sessions</div>
-                    </div>
-                </Card>
-                <Card className="stat-card">
-                    <div className="stat-content">
-                        <div className="stat-number">{completedBookings.length}</div>
-                        <div className="stat-label">Completed Sessions</div>
-                    </div>
-                </Card>
+        <div style={{ padding: '24px 0' }}>
+            <div style={{ marginBottom: 24 }}>
+                <Row justify="space-between" align="middle">
+                    <Col>
+                        <Title level={2}>
+                            <CheckCircleOutlined /> Appointment Management
+                        </Title>
+                        <Text type="secondary">
+                            View and manage appointment requests from members
+                        </Text>
+                    </Col>
+                    <Col>
+                        <Button type="primary" icon={<ReloadOutlined />} onClick={loadBookings}>
+                            Refresh
+                        </Button>
+                    </Col>
+                </Row>
             </div>
 
-            <Card title="Booking Requests" className="bookings-table-card">
-                <Table
+            <Card>
+                <Tabs defaultActiveKey="pending" activeKey={activeTab} onChange={onTabChange}>
+                    <TabPane tab={<span>Pending Appointments <Badge count={bookings.filter(b => b.session_status === 'pending').length} /></span>} key="pending" />
+                    <TabPane tab={<span>Accepted Appointments <Badge count={bookings.filter(b => b.session_status === 'accepted').length} /></span>} key="accepted" />
+                    <TabPane tab={<span>Completed Appointments <Badge count={bookings.filter(b => b.session_status === 'completed').length} /></span>} key="completed" />
+                    <TabPane tab={<span>Rejected/Cancelled Appointments <Badge count={bookings.filter(b => b.session_status === 'rejected' || b.session_status === 'canceled_by_member' || b.session_status === 'canceled_by_coach').length} /></span>} key="rejected_cancelled" />
+                </Tabs>
+
+                <DataTable
                     columns={columns}
-                    dataSource={bookings}
-                    rowKey="id"
-                    pagination={{
-                        pageSize: 10,
-                        showSizeChanger: true,
-                        showQuickJumper: true,
-                        showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} bookings`,
-                    }}
+                    dataSource={filteredBookings}
+                    loading={loading}
+                    rowKey="session_id"
+                    noDataContent={activeTab === 'pending' ? 'No pending appointments. All requests have been processed!' : `No ${activeTab} appointments.`}
                 />
-            </Card>
 
-            {/* Booking Details Modal */}
-            <Modal
-                title="Booking Details"
-                open={isModalVisible}
-                onCancel={handleCancel}
-                footer={null}
-                width={700}
-            >
                 {selectedBooking && (
-                    <div className="booking-details">
-                        <div className="booking-info">
-                            <h3>User Information</h3>
-                            <p><strong>Name:</strong> {selectedBooking.userName}</p>
-                            <p><strong>Email:</strong> {selectedBooking.userEmail}</p>
-
-                            <h3>Session Details</h3>
-                            <p><strong>Date:</strong> {selectedBooking.date}</p>
-                            <p><strong>Time:</strong> {selectedBooking.time}</p>
-                            <p><strong>Duration:</strong> {selectedBooking.duration} minutes</p>
-                            <p><strong>Session Type:</strong> {selectedBooking.sessionType}</p>
-
-                            {selectedBooking.notes && (
-                                <>
-                                    <h3>User Notes</h3>
-                                    <p>{selectedBooking.notes}</p>
-                                </>
-                            )}
-
-                            {selectedBooking.coachResponse && (
-                                <>
-                                    <h3>Your Response</h3>
-                                    <p>{selectedBooking.coachResponse}</p>
-                                </>
-                            )}
-
-                            {selectedBooking.meetLink && (
-                                <>
-                                    <h3>Google Meet Link</h3>
-                                    <div style={{
-                                        background: '#f6ffed',
-                                        border: '1px solid #b7eb8f',
-                                        borderRadius: '6px',
-                                        padding: '12px',
-                                        marginBottom: '16px'
-                                    }}>
-                                        <p style={{ margin: '0 0 8px 0', fontWeight: 'bold' }}>
-                                            Meet Link Sent to User:
-                                        </p>
-                                        <a
-                                            href={selectedBooking.meetLink}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            style={{ color: '#52c41a', wordBreak: 'break-all' }}
-                                        >
-                                            {selectedBooking.meetLink}
-                                        </a>
-                                    </div>
-                                </>
-                            )}
-                        </div>
-
-                        {selectedBooking.status === 'pending' && (
-                            <Form
-                                form={responseForm}
-                                layout="vertical"
-                                onFinish={handleRespondToBooking}
-                                initialValues={{ status: 'confirmed' }}
-                            >
-                                <Form.Item
-                                    name="status"
-                                    label="Response"
-                                    rules={[{ required: true, message: 'Please select a response' }]}
-                                >
-                                    <Select>
-                                        <Option value="confirmed">Confirm Booking</Option>
-                                        <Option value="rejected">Reject Booking</Option>
-                                    </Select>
-                                </Form.Item>
-
-                                <Form.Item
-                                    name="response"
-                                    label="Response Message"
-                                    rules={[{ required: true, message: 'Please provide a response message' }]}
-                                >
-                                    <TextArea
-                                        rows={4}
-                                        placeholder="Provide a response message to the user..."
-                                    />
-                                </Form.Item>
-
-                                <Form.Item
-                                    noStyle
-                                    shouldUpdate={(prevValues, currentValues) => prevValues.status !== currentValues.status}
-                                >
-                                    {({ getFieldValue }) => {
-                                        const status = getFieldValue('status');
-                                        return status === 'confirmed' ? (
-                                            <>
-                                                <Form.Item
-                                                    name="confirmedDate"
-                                                    label="Confirmed Date"
-                                                    rules={[{ required: true, message: 'Please select confirmed date' }]}
-                                                >
-                                                    <Input type="date" />
-                                                </Form.Item>
-                                                <Form.Item
-                                                    name="confirmedTime"
-                                                    label="Confirmed Time"
-                                                    rules={[{ required: true, message: 'Please select confirmed time' }]}
-                                                >
-                                                    <Input type="time" />
-                                                </Form.Item>
-                                            </>
-                                        ) : null;
-                                    }}
-                                </Form.Item>
-
-                                <Form.Item>
-                                    <div className="modal-actions">
-                                        <Button onClick={handleCancel}>
-                                            Cancel
-                                        </Button>
-                                        <Button type="primary" htmlType="submit" loading={loading}>
-                                            Submit Response
-                                        </Button>
-                                    </div>
-                                </Form.Item>
-                            </Form>
+                    <Modal
+                        title="Booking Details"
+                        visible={isModalVisible}
+                        onCancel={handleCancel}
+                        footer={null}
+                    >
+                        <p><strong>Member Name:</strong> {selectedBooking.member_name}</p>
+                        <p><strong>Member ID:</strong> {selectedBooking.member_user_id}</p>
+                        <p><strong>Scheduled Time:</strong> {formatDateTime(selectedBooking.scheduled_time).date} {formatDateTime(selectedBooking.scheduled_time).time}</p>
+                        <p><strong>Status:</strong> {getStatusText(selectedBooking.session_status)}</p>
+                        {selectedBooking.google_meet_link && (
+                            <p><strong>Google Meet Link:</strong> <a href={selectedBooking.google_meet_link} target="_blank" rel="noopener noreferrer">{selectedBooking.google_meet_link}</a></p>
                         )}
-                    </div>
+                    </Modal>
                 )}
-            </Modal>
+            </Card>
         </div>
     );
 };

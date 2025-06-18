@@ -42,7 +42,7 @@ const PlanSetupModal = ({ userId, onPlanReady }) => {
       closable={false}
       centered
       width={440}
-      bodyStyle={{ padding: 32, borderRadius: 12 }}
+      styles={{ body: { padding: 32, borderRadius: 12 } }}
     >
       <div style={{ marginBottom: 18 }}>
         <div style={{ fontWeight: 500, marginBottom: 6 }}>Ngày bắt đầu:</div>

@@ -1,254 +1,999 @@
-import React, { useState } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import React, { useState, useEffect } from 'react';
+import {
+    Layout,
+    Card,
+    Button,
+    Table,
+    Modal,
+    Form,
+    Input,
+    Select,
+    Statistic,
+    Row,
+    Col,
+    Space,
+    Tag,
+    Avatar,
+    Typography,
+    message,
+    Popconfirm,
+    Tooltip,
+    Divider,
+    DatePicker
+} from 'antd';
+import {
+    UserOutlined,
+    TeamOutlined,
+    UserAddOutlined,
+    SafetyCertificateOutlined,
+    EditOutlined,
+    DeleteOutlined,
+    PlusOutlined,
+    ReloadOutlined,
+    EyeOutlined,
+    CopyOutlined,
+    CheckOutlined,
+    SearchOutlined,
+    FilterOutlined,
+    UndoOutlined
+} from '@ant-design/icons';
+import Navbar from '../../layouts/Navbar';
+import StatisticCard from '../../components/ui/StatisticCard';
+import DataTable from '../../components/ui/DataTable';
+import FormModal from '../../components/ui/FormModal';
+import ActionButtonGroup from '../../components/ui/ActionButtonGroup';
+import './AdminDashboard.css';
+
+const { Header, Content } = Layout;
+const { Title, Text } = Typography;
+const { Option } = Select;
+const { Search } = Input;
+const { TextArea } = Input;
 
 const AdminDashboard = () => {
-    const { user, createCoachAccount } = useAuth();
-    const [showCreateCoach, setShowCreateCoach] = useState(false);
-    const [coachFormData, setCoachFormData] = useState({
-        name: '',
-        email: '',
-        specialization: '',
-        experience_years: '',
-        phone: ''
-    });
+    // State management
+    const [coaches, setCoaches] = useState([]);
+    const [filteredCoaches, setFilteredCoaches] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [createCoachModal, setCreateCoachModal] = useState(false);
+    const [editCoachModal, setEditCoachModal] = useState(false);
+    const [selectedCoach, setSelectedCoach] = useState(null);
+    const [viewCoachModal, setViewCoachModal] = useState(false);
+    const [credentialsModal, setCredentialsModal] = useState(false);
+    const [newCoachCredentials, setNewCoachCredentials] = useState(null);
+    const [copiedField, setCopiedField] = useState('');
 
-    // Handle coach creation - Xử lý tạo coach
-    const handleCreateCoach = async (e) => {
-        e.preventDefault();
+    // Search and filter states
+    const [searchText, setSearchText] = useState('');
+    const [statusFilter, setStatusFilter] = useState('all');
+
+    // Form instances
+    const [coachForm] = Form.useForm();
+    const [editForm] = Form.useForm();
+
+    // API Base URL
+    const API_BASE_URL = 'http://localhost:5000/api';
+
+    // Helper function to get auth headers
+    const getAuthHeaders = () => {
+        const token = localStorage.getItem('token');
+        return {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        };
+    };
+
+    // Helper function to handle API responses
+    const handleResponse = async (response) => {
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.message || 'API request failed');
+        }
+        return data;
+    };
+
+    // Load coaches on component mount
+    useEffect(() => {
+        loadCoaches();
+    }, []);
+
+    // Filter coaches based on search and filters
+    useEffect(() => {
+        filterCoaches();
+    }, [coaches, searchText, statusFilter]);
+
+    const filterCoaches = () => {
+        let filtered = [...coaches];
+
+        // Search filter
+        if (searchText) {
+            filtered = filtered.filter(coach =>
+                coach.full_name?.toLowerCase().includes(searchText.toLowerCase()) ||
+                coach.email?.toLowerCase().includes(searchText.toLowerCase()) ||
+                coach.phone_number?.toLowerCase().includes(searchText.toLowerCase()) ||
+                coach.specialization?.toLowerCase().includes(searchText.toLowerCase())
+            );
+        }
+
+        // Status filter
+        if (statusFilter !== 'all') {
+            filtered = filtered.filter(coach => coach.account_status === statusFilter);
+        }
+
+        setFilteredCoaches(filtered);
+    };
+
+    const clearFilters = () => {
+        setSearchText('');
+        setStatusFilter('all');
+    };
+
+    const loadCoaches = async () => {
+        setLoading(true);
         try {
-            const result = await createCoachAccount(coachFormData);
-            alert(result.message);
-            setShowCreateCoach(false);
-            setCoachFormData({
-                name: '',
-                email: '',
-                specialization: '',
-                experience_years: '',
-                phone: ''
+            const response = await fetch(`${API_BASE_URL}/admin/get-coaches`, {
+                method: 'GET',
+                headers: getAuthHeaders()
             });
+            const data = await handleResponse(response);
+            setCoaches(data.data || []);
+            message.success('Coaches list loaded successfully!');
         } catch (error) {
-            alert('Error creating coach account: ' + error.message);
+            console.error('Error loading coaches:', error);
+            message.error('Failed to load coaches list');
+        } finally {
+            setLoading(false);
         }
     };
 
+    // Create coach account
+    const handleCreateCoach = async (values) => {
+        try {
+            setLoading(true);
+
+            // Format date for backend
+            const coachData = {
+                username: values.email.split('@')[0], // Generate username from email
+                full_name: values.full_name,
+                email: values.email,
+                phone_number: values.phone_number || '',
+                date_of_birth: values.date_of_birth?.format('YYYY-MM-DD') || '1990-01-01',
+                password: values.password || '123456',
+                google_meet_link: values.google_meet_link || ''
+            };
+
+            const response = await fetch(`${API_BASE_URL}/admin/create-coach`, {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify(coachData)
+            });
+            await handleResponse(response);
+
+            // Set credentials for modal
+            setNewCoachCredentials({
+                name: values.full_name,
+                email: values.email,
+                password: coachData.password
+            });
+
+            setCreateCoachModal(false);
+            setCredentialsModal(true);
+            coachForm.resetFields();
+
+            // Reload coaches list
+            await loadCoaches();
+
+            message.success('Coach account created successfully!');
+        } catch (error) {
+            console.error('Error creating coach:', error);
+            message.error(error.message || 'Failed to create coach account');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Edit coach
+    const handleEditCoach = (coach) => {
+        setSelectedCoach(coach);
+        editForm.setFieldsValue({
+            full_name: coach.full_name,
+            email: coach.email,
+            phone_number: coach.phone_number,
+            account_status: coach.account_status,
+            specialization: coach.specialization,
+            bio: coach.bio,
+            experience_years: coach.experience_years,
+            google_meet_link: coach.google_meet_link,
+            coach_status: coach.coach_status
+        });
+        setEditCoachModal(true);
+    };
+
+    // Update coach
+    const handleUpdateCoach = async (values) => {
+        try {
+            setLoading(true);
+
+            const updateData = {
+                full_name: values.full_name,
+                phone_number: values.phone_number,
+                account_status: values.account_status,
+                specialization: values.specialization,
+                bio: values.bio,
+                experience_years: values.experience_years,
+                google_meet_link: values.google_meet_link,
+                coach_status: values.coach_status
+            };
+
+            const response = await fetch(`${API_BASE_URL}/admin/update-coach/${selectedCoach.coach_id}`, {
+                method: 'PUT',
+                headers: getAuthHeaders(),
+                body: JSON.stringify(updateData)
+            });
+            await handleResponse(response);
+
+            message.success('Coach updated successfully!');
+            setEditCoachModal(false);
+            setSelectedCoach(null);
+            editForm.resetFields();
+
+            // Reload coaches list
+            await loadCoaches();
+        } catch (error) {
+            console.error('Error updating coach:', error);
+            message.error(error.message || 'Failed to update coach');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Delete coach (deactivate)
+    const handleDeleteCoach = async (coachId) => {
+        try {
+            setLoading(true);
+            const response = await fetch(`${API_BASE_URL}/admin/delete-coach/${coachId}`, {
+                method: 'DELETE',
+                headers: getAuthHeaders()
+            });
+            await handleResponse(response);
+            message.success('Coach deactivated successfully!');
+            await loadCoaches();
+        } catch (error) {
+            console.error('Error deleting coach:', error);
+            message.error(error.message || 'Failed to deactivate coach');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Restore coach
+    const handleRestoreCoach = async (coachId) => {
+        try {
+            setLoading(true);
+            const response = await fetch(`${API_BASE_URL}/admin/restore-coach/${coachId}`, {
+                method: 'PUT',
+                headers: getAuthHeaders()
+            });
+            await handleResponse(response);
+            message.success('Coach restored successfully!');
+            await loadCoaches();
+        } catch (error) {
+            console.error('Error restoring coach:', error);
+            message.error(error.message || 'Failed to restore coach');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // View coach details
+    const handleViewCoach = (coach) => {
+        setSelectedCoach(coach);
+        setViewCoachModal(true);
+    };
+
+    const handleCopy = async (text, field) => {
+        try {
+            await navigator.clipboard.writeText(text);
+            setCopiedField(field);
+            message.success('Copied to clipboard!');
+            setTimeout(() => setCopiedField(''), 2000);
+        } catch (error) {
+            message.error('Failed to copy');
+        }
+    };
+
+    const handleCopyAll = async () => {
+        const credentialsText = `Name: ${newCoachCredentials.name}\nEmail: ${newCoachCredentials.email}\nPassword: ${newCoachCredentials.password}`;
+        try {
+            await navigator.clipboard.writeText(credentialsText);
+            message.success('All credentials copied to clipboard!');
+        } catch (error) {
+            message.error('Failed to copy credentials');
+        }
+    };
+
+    // Calculate statistics based on filtered coaches
+    const stats = {
+        totalCoaches: filteredCoaches.length,
+        activeCoaches: filteredCoaches.filter(coach => coach.account_status === 'active').length,
+        inactiveCoaches: filteredCoaches.filter(coach => coach.account_status === 'inactive').length,
+        totalUsers: filteredCoaches.length, // For compatibility with existing UI
+    };
+
+    // Table columns
+    const columns = [
+        {
+            title: 'Coach',
+            key: 'coach',
+            render: (_, record) => (
+                <Space>
+                    <Avatar
+                        size="large"
+                        style={{ backgroundColor: '#52c41a' }}
+                    >
+                        {record.full_name?.charAt(0).toUpperCase()}
+                    </Avatar>
+                    <div>
+                        <div style={{ fontWeight: 'bold' }}>{record.full_name}</div>
+                        <Text type="secondary">{record.email}</Text>
+                    </div>
+                </Space>
+            ),
+        },
+        {
+            title: 'Specialization',
+            key: 'specialization',
+            render: (_, record) => (
+                <Text>{record.specialization || 'Not updated'}</Text>
+            ),
+        },
+        {
+            title: 'Experience',
+            key: 'experience',
+            render: (_, record) => (
+                <Text>{record.experience_years ? `${record.experience_years} years` : 'Not updated'}</Text>
+            ),
+        },
+        {
+            title: 'Status',
+            key: 'status',
+            render: (_, record) => {
+                const color = record.account_status === 'active' ? 'green' : 'orange';
+                return (
+                    <Tag color={color} style={{ textTransform: 'capitalize' }}>
+                        {record.account_status === 'active' ? 'Active' : 'Inactive'}
+                    </Tag>
+                );
+            },
+        },
+        {
+            title: 'Registration Date',
+            key: 'registration',
+            render: (_, record) => (
+                <Text>{record.registration_date ? new Date(record.registration_date).toLocaleDateString() : 'N/A'}</Text>
+            ),
+        },
+        {
+            title: 'Actions',
+            key: 'actions',
+            render: (_, record) => (
+                <Space>
+                    <Tooltip title="View Details">
+                        <Button
+                            type="text"
+                            icon={<EyeOutlined />}
+                            onClick={() => handleViewCoach(record)}
+                        />
+                    </Tooltip>
+                    <Tooltip title="Edit">
+                        <Button
+                            type="text"
+                            icon={<EditOutlined />}
+                            onClick={() => handleEditCoach(record)}
+                        />
+                    </Tooltip>
+                    {record.account_status === 'active' ? (
+                        <Popconfirm
+                            title="Deactivate Coach"
+                            description="Are you sure you want to deactivate this coach?"
+                            onConfirm={() => handleDeleteCoach(record.coach_id)}
+                            okText="Yes"
+                            cancelText="No"
+                        >
+                            <Tooltip title="Deactivate">
+                                <Button
+                                    type="text"
+                                    icon={<DeleteOutlined />}
+                                    danger
+                                />
+                            </Tooltip>
+                        </Popconfirm>
+                    ) : (
+                        <Popconfirm
+                            title="Restore Coach"
+                            description="Are you sure you want to restore this coach?"
+                            onConfirm={() => handleRestoreCoach(record.coach_id)}
+                            okText="Yes"
+                            cancelText="No"
+                        >
+                            <Tooltip title="Restore">
+                                <Button
+                                    type="text"
+                                    icon={<UndoOutlined />}
+                                    style={{ color: '#52c41a' }}
+                                />
+                            </Tooltip>
+                        </Popconfirm>
+                    )}
+                </Space>
+            ),
+        },
+    ];
+
     return (
-        <div className="min-h-screen bg-gray-50 py-8">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                {/* Header - Tiêu đề */}
-                <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                        Admin Dashboard
-                    </h1>
-                    <p className="text-gray-600">
-                        Manage users, coaches, and system settings. Coach accounts are created by Admin and provided to coaches.
-                    </p>
+        <Layout className="admin-dashboard">
+            <Header style={{ padding: 0, height: 'auto' }}>
+                <Navbar />
+            </Header>
+            <Content style={{ padding: '24px', minHeight: 'calc(100vh - 64px)' }}>
+                {/* Header */}
+                <div style={{ marginBottom: '24px' }}>
+                    <Title level={2} style={{ margin: 0, color: '#52c41a' }}>
+                        Coach Management
+                    </Title>
+                    <Text type="secondary">
+                        Create and manage coach accounts
+                    </Text>
                 </div>
 
-                {/* Stats Cards - Thẻ thống kê */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-                    <div className="bg-white rounded-lg shadow-sm p-6">
-                        <div className="flex items-center">
-                            <div className="p-2 bg-blue-100 rounded-lg">
-                                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                                </svg>
-                            </div>
-                            <div className="ml-4">
-                                <p className="text-sm font-medium text-gray-600">Total Users</p>
-                                <p className="text-2xl font-semibold text-gray-900">1,234</p>
-                            </div>
-                        </div>
-                    </div>
+                {/* Statistics */}
+                <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
+                    <Col xs={24} sm={12} lg={6}>
+                        <StatisticCard
+                            title="Total Coaches"
+                            value={stats.totalCoaches}
+                            prefix={<TeamOutlined style={{ color: '#1890ff' }} />}
+                            valueStyle={{ color: '#1890ff' }}
+                        />
+                    </Col>
+                    <Col xs={24} sm={12} lg={6}>
+                        <StatisticCard
+                            title="Active Coaches"
+                            value={stats.activeCoaches}
+                            prefix={<UserOutlined style={{ color: '#52c41a' }} />}
+                            valueStyle={{ color: '#52c41a' }}
+                        />
+                    </Col>
+                    <Col xs={24} sm={12} lg={6}>
+                        <StatisticCard
+                            title="Inactive Coaches"
+                            value={stats.inactiveCoaches}
+                            prefix={<UserAddOutlined style={{ color: '#faad14' }} />}
+                            valueStyle={{ color: '#faad14' }}
+                        />
+                    </Col>
+                    <Col xs={24} sm={12} lg={6}>
+                        <StatisticCard
+                            title="Total Users"
+                            value={stats.totalUsers}
+                            prefix={<SafetyCertificateOutlined style={{ color: '#ff4d4f' }} />}
+                            valueStyle={{ color: '#ff4d4f' }}
+                        />
+                    </Col>
+                </Row>
 
-                    <div className="bg-white rounded-lg shadow-sm p-6">
-                        <div className="flex items-center">
-                            <div className="p-2 bg-green-100 rounded-lg">
-                                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                            </div>
-                            <div className="ml-4">
-                                <p className="text-sm font-medium text-gray-600">Active Coaches</p>
-                                <p className="text-2xl font-semibold text-gray-900">45</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-white rounded-lg shadow-sm p-6">
-                        <div className="flex items-center">
-                            <div className="p-2 bg-yellow-100 rounded-lg">
-                                <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                            </div>
-                            <div className="ml-4">
-                                <p className="text-sm font-medium text-gray-600">New Users</p>
-                                <p className="text-2xl font-semibold text-gray-900">23</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-white rounded-lg shadow-sm p-6">
-                        <div className="flex items-center">
-                            <div className="p-2 bg-purple-100 rounded-lg">
-                                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                                </svg>
-                            </div>
-                            <div className="ml-4">
-                                <p className="text-sm font-medium text-gray-600">Success Rate</p>
-                                <p className="text-2xl font-semibold text-gray-900">78%</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Admin Actions - Hành động Admin */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                    {/* Create Coach Account - Tạo tài khoản Coach */}
-                    <div className="bg-white rounded-lg shadow-sm p-6">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-semibold text-gray-900">Create Coach Account</h3>
-                            <button
-                                onClick={() => setShowCreateCoach(true)}
-                                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                {/* Search and Filter Controls */}
+                <div className="filter-controls" style={{ marginBottom: '16px' }}>
+                    <Row gutter={[16, 16]} align="middle">
+                        <Col xs={24} sm={12} md={8}>
+                            <Search
+                                placeholder="Search by name, email, phone or specialization"
+                                value={searchText}
+                                onChange={(e) => setSearchText(e.target.value)}
+                                allowClear
+                                style={{ width: '100%' }}
+                            />
+                        </Col>
+                        <Col xs={24} sm={12} md={4}>
+                            <Select
+                                placeholder="Filter by status"
+                                value={statusFilter}
+                                onChange={setStatusFilter}
+                                style={{ width: '100%' }}
+                                allowClear
                             >
-                                Create New Coach
-                            </button>
-                        </div>
-                        <p className="text-gray-600 text-sm">
-                            Create a new coach account and provide credentials to the coach.
-                            Coaches contact Admin via email to request account creation.
-                        </p>
-                    </div>
-
-                    {/* System Settings - Cài đặt hệ thống */}
-                    <div className="bg-white rounded-lg shadow-sm p-6">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">System Settings</h3>
-                        <div className="space-y-3">
-                            <button className="w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
-                                <div className="flex items-center">
-                                    <svg className="w-5 h-5 text-gray-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    </svg>
-                                    <span>System Configuration</span>
-                                </div>
-                            </button>
-                            <button className="w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
-                                <div className="flex items-center">
-                                    <svg className="w-5 h-5 text-gray-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                                    </svg>
-                                    <span>Analytics & Reports</span>
-                                </div>
-                            </button>
-                            <button className="w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
-                                <div className="flex items-center">
-                                    <svg className="w-5 h-5 text-gray-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                    </svg>
-                                    <span>Security Settings</span>
-                                </div>
-                            </button>
-                        </div>
-                    </div>
+                                <Option value="all">All Status</Option>
+                                <Option value="active">Active</Option>
+                                <Option value="inactive">Inactive</Option>
+                            </Select>
+                        </Col>
+                        <Col xs={24} sm={12} md={4}>
+                            <Button
+                                icon={<FilterOutlined />}
+                                onClick={clearFilters}
+                                className="clear-filters-btn"
+                                style={{ width: '100%' }}
+                            >
+                                Clear Filters
+                            </Button>
+                        </Col>
+                        <Col xs={24} sm={12} md={4}>
+                            <div className="results-counter">
+                                Showing {filteredCoaches.length} of {coaches.length} coaches
+                            </div>
+                        </Col>
+                    </Row>
                 </div>
 
-                {/* Coach Management Info - Thông tin quản lý Coach */}
-                <div className="bg-white rounded-lg shadow-sm p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Coach Account Management</h3>
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <h4 className="text-sm font-medium text-blue-900 mb-2">How Coach Accounts Work</h4>
-                        <ul className="text-sm text-blue-700 space-y-1">
-                            <li>• Coaches contact Admin via email to request account creation</li>
-                            <li>• Admin reviews coach qualifications and creates account</li>
-                            <li>• Admin provides login credentials to the coach</li>
-                            <li>• Coach can then access the system with provided credentials</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
+                <DataTable
+                    title="Coaches List"
+                    columns={columns}
+                    dataSource={filteredCoaches}
+                    loading={loading}
+                    rowKey="coach_id"
+                    extra={
+                        <Space>
+                            <Button
+                                icon={<ReloadOutlined />}
+                                onClick={loadCoaches}
+                                loading={loading}
+                            >
+                                Refresh
+                            </Button>
+                            <Button
+                                type="primary"
+                                icon={<PlusOutlined />}
+                                onClick={() => setCreateCoachModal(true)}
+                                style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}
+                            >
+                                Create Coach
+                            </Button>
+                        </Space>
+                    }
+                />
+            </Content>
 
             {/* Create Coach Modal */}
-            {showCreateCoach && (
-                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-                    <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-                        <div className="mt-3">
-                            <h3 className="text-lg font-medium text-gray-900 mb-4">Create Coach Account</h3>
-                            <form onSubmit={handleCreateCoach}>
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">Name</label>
-                                        <input
-                                            type="text"
-                                            required
-                                            value={coachFormData.name}
-                                            onChange={(e) => setCoachFormData({ ...coachFormData, name: e.target.value })}
-                                            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">Email</label>
-                                        <input
-                                            type="email"
-                                            required
-                                            value={coachFormData.email}
-                                            onChange={(e) => setCoachFormData({ ...coachFormData, email: e.target.value })}
-                                            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">Specialization</label>
-                                        <input
-                                            type="text"
-                                            required
-                                            value={coachFormData.specialization}
-                                            onChange={(e) => setCoachFormData({ ...coachFormData, specialization: e.target.value })}
-                                            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">Experience (Years)</label>
-                                        <input
-                                            type="number"
-                                            required
-                                            value={coachFormData.experience_years}
-                                            onChange={(e) => setCoachFormData({ ...coachFormData, experience_years: e.target.value })}
-                                            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">Phone</label>
-                                        <input
-                                            type="tel"
-                                            value={coachFormData.phone}
-                                            onChange={(e) => setCoachFormData({ ...coachFormData, phone: e.target.value })}
-                                            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                        />
-                                    </div>
-                                </div>
-                                <div className="flex justify-end space-x-3 mt-6">
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowCreateCoach(false)}
-                                        className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+            <FormModal
+                title="Create Coach Account"
+                visible={createCoachModal}
+                onCancel={() => setCreateCoachModal(false)}
+                onSubmit={handleCreateCoach}
+                form={coachForm}
+                loading={loading}
+                width={700}
+            >
+                <Row gutter={16}>
+                    <Col span={12}>
+                        <Form.Item
+                            name="full_name"
+                            label="Full Name"
+                            rules={[{ required: true, message: 'Please enter the full name!' }]}
+                        >
+                            <Input prefix={<UserOutlined />} placeholder="Enter full name" />
+                        </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                        <Form.Item
+                            name="email"
+                            label="Email"
+                            rules={[
+                                { required: true, message: 'Please enter the email!' },
+                                { type: 'email', message: 'Please enter a valid email!' }
+                            ]}
+                        >
+                            <Input prefix={<UserOutlined />} placeholder="Enter email address" />
+                        </Form.Item>
+                    </Col>
+                </Row>
+
+                <Row gutter={16}>
+                    <Col span={12}>
+                        <Form.Item
+                            name="phone_number"
+                            label="Phone Number"
+                        >
+                            <Input placeholder="Enter phone number" />
+                        </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                        <Form.Item
+                            name="date_of_birth"
+                            label="Date of Birth"
+                        >
+                            <DatePicker style={{ width: '100%' }} placeholder="Select date of birth" />
+                        </Form.Item>
+                    </Col>
+                </Row>
+
+                <Row gutter={16}>
+                    <Col span={12}>
+                        <Form.Item
+                            name="password"
+                            label="Password"
+                            rules={[{ required: true, message: 'Please enter the password!' }]}
+                        >
+                            <Input.Password placeholder="Enter password" />
+                        </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                        <Form.Item
+                            name="google_meet_link"
+                            label="Google Meet Link"
+                        >
+                            <Input placeholder="Enter Google Meet link" />
+                        </Form.Item>
+                    </Col>
+                </Row>
+
+                <div style={{
+                    background: '#f6ffed',
+                    border: '1px solid #b7eb8f',
+                    borderRadius: '6px',
+                    padding: '12px',
+                    marginBottom: '16px'
+                }}>
+                    <Text style={{ color: '#52c41a', fontWeight: '500' }}>
+                        📝 Note: Coach will receive login credentials after successful account creation
+                    </Text>
+                </div>
+            </FormModal>
+
+            {/* Edit Coach Modal */}
+            <FormModal
+                title="Edit Coach Information"
+                visible={editCoachModal}
+                onCancel={() => setEditCoachModal(false)}
+                onSubmit={handleUpdateCoach}
+                form={editForm}
+                loading={loading}
+                width={700}
+            >
+                <Row gutter={16}>
+                    <Col span={12}>
+                        <Form.Item
+                            name="full_name"
+                            label="Full Name"
+                            rules={[{ required: true, message: 'Please enter the full name!' }]}
+                        >
+                            <Input prefix={<UserOutlined />} placeholder="Enter full name" />
+                        </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                        <Form.Item
+                            name="email"
+                            label="Email"
+                        >
+                            <Input prefix={<UserOutlined />} placeholder="Enter email address" disabled />
+                        </Form.Item>
+                    </Col>
+                </Row>
+
+                <Row gutter={16}>
+                    <Col span={12}>
+                        <Form.Item
+                            name="phone_number"
+                            label="Phone Number"
+                        >
+                            <Input placeholder="Enter phone number" />
+                        </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                        <Form.Item
+                            name="account_status"
+                            label="Account Status"
+                            rules={[{ required: true, message: 'Please select a status!' }]}
+                        >
+                            <Select placeholder="Select status">
+                                <Option value="active">Active</Option>
+                                <Option value="inactive">Inactive</Option>
+                            </Select>
+                        </Form.Item>
+                    </Col>
+                </Row>
+
+                <Row gutter={16}>
+                    <Col span={12}>
+                        <Form.Item
+                            name="specialization"
+                            label="Specialization"
+                        >
+                            <Input placeholder="Enter specialization" />
+                        </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                        <Form.Item
+                            name="experience_years"
+                            label="Years of Experience"
+                        >
+                            <Input type="number" placeholder="Enter years of experience" />
+                        </Form.Item>
+                    </Col>
+                </Row>
+
+                <Form.Item
+                    name="bio"
+                    label="Bio"
+                >
+                    <TextArea rows={3} placeholder="Enter bio" />
+                </Form.Item>
+
+                <Row gutter={16}>
+                    <Col span={12}>
+                        <Form.Item
+                            name="google_meet_link"
+                            label="Google Meet Link"
+                        >
+                            <Input placeholder="Enter Google Meet link" />
+                        </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                        <Form.Item
+                            name="coach_status"
+                            label="Coach Status"
+                        >
+                            <Select placeholder="Select status">
+                                <Option value="active">Active</Option>
+                                <Option value="inactive">Inactive</Option>
+                            </Select>
+                        </Form.Item>
+                    </Col>
+                </Row>
+            </FormModal>
+
+            {/* View Coach Modal */}
+            <Modal
+                title="Coach Details"
+                open={viewCoachModal}
+                onCancel={() => {
+                    setViewCoachModal(false);
+                    setSelectedCoach(null);
+                }}
+                footer={[
+                    <Button
+                        key="close"
+                        onClick={() => {
+                            setViewCoachModal(false);
+                            setSelectedCoach(null);
+                        }}
+                    >
+                        Close
+                    </Button>
+                ]}
+                width={600}
+            >
+                {selectedCoach && (
+                    <div>
+                        <Row gutter={[16, 16]}>
+                            <Col span={24}>
+                                <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                                    <Avatar
+                                        size={80}
+                                        style={{ backgroundColor: '#52c41a' }}
                                     >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        className="px-4 py-2 bg-blue-500 text-white rounded-md text-sm font-medium hover:bg-blue-600"
-                                    >
-                                        Create Coach
-                                    </button>
+                                        {selectedCoach.full_name?.charAt(0).toUpperCase()}
+                                    </Avatar>
+                                    <Title level={3} style={{ marginTop: '10px' }}>
+                                        {selectedCoach.full_name}
+                                    </Title>
                                 </div>
-                            </form>
+                            </Col>
+                        </Row>
+
+                        <Divider />
+
+                        <Row gutter={[16, 16]}>
+                            <Col span={12}>
+                                <Text strong>Email:</Text>
+                                <br />
+                                <Text>{selectedCoach.email}</Text>
+                            </Col>
+                            <Col span={12}>
+                                <Text strong>Phone Number:</Text>
+                                <br />
+                                <Text>{selectedCoach.phone_number || 'N/A'}</Text>
+                            </Col>
+                        </Row>
+
+                        <Row gutter={[16, 16]} style={{ marginTop: '16px' }}>
+                            <Col span={12}>
+                                <Text strong>Specialization:</Text>
+                                <br />
+                                <Text>{selectedCoach.specialization || 'Not updated'}</Text>
+                            </Col>
+                            <Col span={12}>
+                                <Text strong>Experience:</Text>
+                                <br />
+                                <Text>{selectedCoach.experience_years ? `${selectedCoach.experience_years} years` : 'Not updated'}</Text>
+                            </Col>
+                        </Row>
+
+                        <Row gutter={[16, 16]} style={{ marginTop: '16px' }}>
+                            <Col span={12}>
+                                <Text strong>Account Status:</Text>
+                                <br />
+                                <Tag
+                                    color={selectedCoach.account_status === 'active' ? 'green' : 'orange'}
+                                    style={{ textTransform: 'capitalize' }}
+                                >
+                                    {selectedCoach.account_status === 'active' ? 'Active' : 'Inactive'}
+                                </Tag>
+                            </Col>
+                            <Col span={12}>
+                                <Text strong>Coach Status:</Text>
+                                <br />
+                                <Tag
+                                    color={selectedCoach.coach_status === 'active' ? 'green' : 'orange'}
+                                    style={{ textTransform: 'capitalize' }}
+                                >
+                                    {selectedCoach.coach_status === 'active' ? 'Active' : 'Inactive'}
+                                </Tag>
+                            </Col>
+                        </Row>
+
+                        <Row gutter={[16, 16]} style={{ marginTop: '16px' }}>
+                            <Col span={12}>
+                                <Text strong>Registration Date:</Text>
+                                <br />
+                                <Text>{selectedCoach.registration_date ? new Date(selectedCoach.registration_date).toLocaleDateString() : 'N/A'}</Text>
+                            </Col>
+                            <Col span={12}>
+                                <Text strong>Google Meet Link:</Text>
+                                <br />
+                                <Text>{selectedCoach.google_meet_link || 'Not updated'}</Text>
+                            </Col>
+                        </Row>
+
+                        {selectedCoach.bio && (
+                            <Row gutter={[16, 16]} style={{ marginTop: '16px' }}>
+                                <Col span={24}>
+                                    <Text strong>Bio:</Text>
+                                    <br />
+                                    <Text>{selectedCoach.bio}</Text>
+                                </Col>
+                            </Row>
+                        )}
+                    </div>
+                )}
+            </Modal>
+
+            {/* Credentials Modal */}
+            <Modal
+                title={
+                    <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '24px', marginBottom: '8px' }}>🎉</div>
+                        <div>Coach Account Created Successfully!</div>
+                    </div>
+                }
+                open={credentialsModal}
+                onCancel={() => {
+                    setCredentialsModal(false);
+                    setNewCoachCredentials(null);
+                    setCopiedField('');
+                }}
+                footer={[
+                    <Button
+                        key="copyAll"
+                        type="primary"
+                        icon={<CopyOutlined />}
+                        onClick={handleCopyAll}
+                        style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}
+                    >
+                        Copy All Credentials
+                    </Button>,
+                    <Button
+                        key="close"
+                        onClick={() => {
+                            setCredentialsModal(false);
+                            setNewCoachCredentials(null);
+                            setCopiedField('');
+                        }}
+                    >
+                        Close
+                    </Button>
+                ]}
+                width={500}
+                centered
+            >
+                {newCoachCredentials && (
+                    <div style={{ textAlign: 'center' }}>
+                        <div style={{
+                            background: '#f6ffed',
+                            border: '1px solid #b7eb8f',
+                            borderRadius: '8px',
+                            padding: '20px',
+                            marginBottom: '20px'
+                        }}>
+                            <Title level={4} style={{ color: '#52c41a', marginBottom: '16px' }}>
+                                📋 Account Credentials
+                            </Title>
+
+                            <Space direction="vertical" size="large" style={{ width: '100%' }}>
+                                {/* Name */}
+                                <div style={{
+                                    background: 'white',
+                                    padding: '12px',
+                                    borderRadius: '6px',
+                                    border: '1px solid #d9d9d9',
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center'
+                                }}>
+                                    <div style={{ textAlign: 'left' }}>
+                                        <Text strong>Name:</Text>
+                                        <br />
+                                        <Text>{newCoachCredentials.name}</Text>
+                                    </div>
+                                    <Button
+                                        type="text"
+                                        icon={copiedField === 'name' ? <CheckOutlined /> : <CopyOutlined />}
+                                        onClick={() => handleCopy(newCoachCredentials.name, 'name')}
+                                        style={{ color: copiedField === 'name' ? '#52c41a' : '#666' }}
+                                    />
+                                </div>
+
+                                {/* Email */}
+                                <div style={{
+                                    background: 'white',
+                                    padding: '12px',
+                                    borderRadius: '6px',
+                                    border: '1px solid #d9d9d9',
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center'
+                                }}>
+                                    <div style={{ textAlign: 'left' }}>
+                                        <Text strong>Email:</Text>
+                                        <br />
+                                        <Text>{newCoachCredentials.email}</Text>
+                                    </div>
+                                    <Button
+                                        type="text"
+                                        icon={copiedField === 'email' ? <CheckOutlined /> : <CopyOutlined />}
+                                        onClick={() => handleCopy(newCoachCredentials.email, 'email')}
+                                        style={{ color: copiedField === 'email' ? '#52c41a' : '#666' }}
+                                    />
+                                </div>
+
+                                {/* Password */}
+                                <div style={{
+                                    background: 'white',
+                                    padding: '12px',
+                                    borderRadius: '6px',
+                                    border: '1px solid #d9d9d9',
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center'
+                                }}>
+                                    <div style={{ textAlign: 'left' }}>
+                                        <Text strong>Password:</Text>
+                                        <br />
+                                        <Text code style={{ fontSize: '16px' }}>{newCoachCredentials.password}</Text>
+                                    </div>
+                                    <Button
+                                        type="text"
+                                        icon={copiedField === 'password' ? <CheckOutlined /> : <CopyOutlined />}
+                                        onClick={() => handleCopy(newCoachCredentials.password, 'password')}
+                                        style={{ color: copiedField === 'password' ? '#52c41a' : '#666' }}
+                                    />
+                                </div>
+                            </Space>
+                        </div>
+
+                        <div style={{
+                            background: '#fff7e6',
+                            border: '1px solid #ffd591',
+                            borderRadius: '6px',
+                            padding: '12px'
+                        }}>
+                            <Text style={{ color: '#d48806' }}>
+                                ⚠️ Please save these credentials securely. The coach will need them to log in.
+                            </Text>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )}
+            </Modal>
+        </Layout>
     );
 };
 

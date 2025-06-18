@@ -211,6 +211,7 @@ body {
   transition: 0.3s;
 }
 
+
 .ant-input:focus,
 .ant-input-password:focus,
 .ant-input-affix-wrapper-focused {
@@ -271,6 +272,8 @@ body {
 }
 
 .google-icon {
+  width: 20px;
+  margin-right: 8px;
   filter: drop-shadow(0 0 3px #1976d2);
 }
 
@@ -368,4 +371,18 @@ body {
     bottom: 100%;
     opacity: 0;
   }
+}
+
+/* Ẩn pin khi collapsed, chỉ hiện khi hover hoặc pinned */
+.pin-icon {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  color: #2e7d32;
+  /* màu xanh đậm cho icon */
+}
+
+/* Khi outer-box mở (hover hoặc pinned) mới show */
+.outer-box.open .pin-icon,
+.outer-box:hover .pin-icon {
+  opacity: 1;
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   DatePicker,
   InputNumber,
@@ -31,6 +31,7 @@ import dayjs from "dayjs";
 import "./QuitPlanCalendar.css";
 import PlanSetupModal from "./PlanSetupModal";
 import axios from "axios";
+import Navbar from "../../layouts/Navbar";
 
 const { Title } = Typography;
 
@@ -318,7 +319,24 @@ const QuitPlan = () => {
     const savedPage = sessionStorage.getItem("quitPlanPage");
     return savedPage ? parseInt(savedPage, 10) : 1;
   });
+  const [ftndLevel, setFtndLevel] = useState("");
   const navigate = useNavigate();
+
+  // Lấy mức độ nghiện từ API
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user?.id) {
+      setFtndLevel("Không xác định");
+      return;
+    }
+
+    fetch(`http://localhost:5000/api/customer/ftnd-level/${user.id}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setFtndLevel(data.ftnd_level || "Không xác định");
+      })
+      .catch(() => setFtndLevel("Không xác định"));
+  }, []);
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
@@ -344,6 +362,29 @@ const QuitPlan = () => {
     setStartDate(dayjs(startDate));
     setMonths(months);
     setShowModal(false);
+  };
+  const handleSubmitDailyCigs = async () => {
+    try {
+      const today = dayjs().format("DD/MM/YYYY");
+      const user_id = user?.id;
+      const total_cigarettes = smokingLog[today] ?? 0;
+
+      if (!user_id || total_cigarettes === undefined) {
+        message.warning("Chưa có thông tin người dùng hoặc chưa nhập số điếu.");
+        return;
+      }
+
+      await axios.post("http://localhost:5000/api/smoking-summary", {
+        user_id,
+        date: today,
+        total_cigarettes,
+      });
+
+      message.success("✅ Đã gửi số điếu hút hôm nay!");
+    } catch (err) {
+      console.error(err);
+      message.error("❌ Gửi dữ liệu thất bại.");
+    }
   };
 
   const handleResetPlan = async () => {
@@ -516,11 +557,16 @@ const QuitPlan = () => {
         const value = smokingLog[date] || 0;
         const suggested = record.suggestedCigs;
         const isOverLimit = value > suggested;
+
+        const isPast = dayjs(date, "DD/MM/YYYY").isBefore(dayjs(), "day");
+
         return (
           <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
             <Tooltip
               title={
-                isOverLimit
+                isPast
+                  ? "Không thể sửa dữ liệu ngày trong quá khứ"
+                  : isOverLimit
                   ? `Vượt quá gợi ý (${suggested} điếu)`
                   : "Nhập số điếu bạn đã hút"
               }
@@ -533,18 +579,79 @@ const QuitPlan = () => {
                   borderColor: isOverLimit ? "red" : undefined,
                   background: isOverLimit ? "#fff1f0" : undefined,
                 }}
+                disabled={isPast}
                 onChange={(val) => {
                   setSmokingLog((prev) => ({ ...prev, [date]: val }));
                   updateWeeklyCigUsage(date, val);
+
+                  const formatted = dayjs(date, "DD/MM/YYYY").format(
+                    "YYYY-MM-DD"
+                  );
+                  const token = localStorage.getItem("token");
+
+                  fetch("http://localhost:5000/api/smoking-summary/single", {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                      Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                      date: formatted,
+                      total_cigarettes: val,
+                    }),
+                  })
+                    .then((res) => res.json())
+                    .then((res) => {
+                      if (res.success) {
+                        message.success("✅ Đã lưu!");
+                      } else {
+                        message.error("❌ Không thể lưu.");
+                      }
+                    })
+                    .catch((err) => {
+                      console.error("Lỗi khi lưu:", err);
+                      message.error("❌ Lỗi khi kết nối server.");
+                    });
                 }}
               />
             </Tooltip>
+
             <Button
               size="small"
               type="link"
+              disabled={isPast}
               onClick={() => {
                 setSmokingLog((prev) => ({ ...prev, [date]: suggested }));
                 updateWeeklyCigUsage(date, suggested);
+
+                const formatted = dayjs(date, "DD/MM/YYYY").format(
+                  "YYYY-MM-DD"
+                );
+                const token = localStorage.getItem("token");
+
+                fetch("http://localhost:5000/api/smoking-summary/single", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                  },
+                  body: JSON.stringify({
+                    date: formatted,
+                    total_cigarettes: suggested,
+                  }),
+                })
+                  .then((res) => res.json())
+                  .then((res) => {
+                    if (res.success) {
+                      message.success("✅ Đã lưu theo gợi ý!");
+                    } else {
+                      message.error("❌ Không thể lưu.");
+                    }
+                  })
+                  .catch((err) => {
+                    console.error("Lỗi khi lưu:", err);
+                    message.error("❌ Lỗi khi kết nối server.");
+                  });
               }}
               style={{ padding: 0 }}
             >
@@ -554,6 +661,7 @@ const QuitPlan = () => {
         );
       },
     },
+
     {
       title: "Còn lại",
       dataIndex: "remainingCigs",
@@ -606,6 +714,7 @@ const QuitPlan = () => {
       className="quit-plan-wrapper"
       style={{ maxWidth: 1200, margin: "0 auto", padding: 24 }}
     >
+      <Navbar />
       <Row justify="center">
         <Col xs={24} md={22} lg={20}>
           <Card variant="outlined" hoverable style={{ marginBottom: 24 }}>
@@ -617,7 +726,7 @@ const QuitPlan = () => {
             <Alert
               message={
                 <span style={{ fontWeight: 500 }}>
-                  Mức độ nghiện hiện tại: Trung bình
+                  Mức độ nghiện hiện tại: <b>{ftndLevel}</b>
                 </span>
               }
               description={
@@ -715,16 +824,16 @@ const QuitPlan = () => {
               pagination={
                 viewMode === "week"
                   ? {
-                    current: currentWeekPage,
-                    pageSize: weekPageSize,
-                    total: planData.length,
-                    showSizeChanger: false,
-                    onChange: (page) => {
-                      setCurrentWeekPage(page);
-                      sessionStorage.setItem("quitPlanPage", page); // Lưu vào session
-                    },
-                    showTotal: () => `Tuần ${currentWeekPage} / ${weekTotal}`,
-                  }
+                      current: currentWeekPage,
+                      pageSize: weekPageSize,
+                      total: planData.length,
+                      showSizeChanger: false,
+                      onChange: (page) => {
+                        setCurrentWeekPage(page);
+                        sessionStorage.setItem("quitPlanPage", page); // Lưu vào session
+                      },
+                      showTotal: () => `Tuần ${currentWeekPage} / ${weekTotal}`,
+                    }
                   : { pageSize: 30 }
               }
               rowClassName={(record) => `week-row-${record.weekIndex % 5}`}
@@ -750,6 +859,21 @@ const QuitPlan = () => {
               })}
               style={{ background: "#fff" }}
             />
+
+            <div style={{ textAlign: "center", marginTop: 24 }}>
+              <Button
+                type="primary"
+                style={{
+                  backgroundColor: "#fa541c",
+                  borderColor: "#fa541c",
+                  fontWeight: 600,
+                  padding: "8px 20px",
+                }}
+                onClick={handleSubmitDailyCigs}
+              >
+                Gửi số điếu hút hôm nay
+              </Button>
+            </div>
           </Card>
         </Col>
       </Row>

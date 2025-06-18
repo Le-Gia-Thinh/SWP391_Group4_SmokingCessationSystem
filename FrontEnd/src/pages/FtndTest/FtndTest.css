@@ -1,3 +1,15 @@
+body, #root, .ftnd-test-container {
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box;
+}
+
+.navbar {
+  position: static !important; /* hoặc bỏ thuộc tính position nếu có */
+  margin-bottom: 0 !important;
+  margin-top: 0 !important;
+}
+
 .ftnd-wrapper {
   background-color: white;
   min-height: 100vh;
@@ -42,3 +54,5 @@
   background: #389e0d !important;
   border-color: #389e0d !important;
 }
+
+

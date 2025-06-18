@@ -286,19 +286,97 @@
 
 /* Footer */
 .footer-section {
-  background: #d8f1e7 !important;
-  margin-top: 0 !important;
+  background: linear-gradient(120deg, #e6fff6 0%, #d6f5e8 100%) !important;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  box-shadow: 0 -2px 12px 0 rgba(56, 249, 215, 0.06);
+  padding: 24px 0 12px 0;
+  color: #222;
+  animation: fadeInFooter 0.7s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@keyframes footerFadeIn {
+  from { opacity: 0; transform: translateY(40px);}
+  to { opacity: 1; transform: translateY(0);}
+}
+
+@keyframes fadeInFooter {
+  from { opacity: 0; transform: translateY(30px);}
+  to { opacity: 1; transform: translateY(0);}
+}
+
+.footer-section .container {
+  padding-top: 32px;
+  padding-bottom: 16px;
+}
+
+.footer-logo {
+  height: 72px;
+  border-radius: 20px;
+  margin-bottom: 8px;
+}
+
+.footer-links .ant-btn-link {
+  color: #222 !important;
+  font-weight: 500;
+  font-size: 16px;
+  margin: 0 10px;
+  padding: 0 4px;
+  background: none;
+  transition: color 0.2s, border-bottom 0.2s;
+}
+
+.footer-links .ant-btn-link.active,
+.footer-links .ant-btn-link:hover {
+  color: #38cfcf !important;
+  border-bottom: 2px solid #38cfcf;
+  background: none;
+  font-weight: 500;
+  box-shadow: none;
+  text-decoration: none;
+}
+
+.footer-legal .ant-btn-link {
+  color: #666 !important;
+  font-size: 14px;
+  margin: 0 6px;
+  padding: 0 2px;
 }
 
 .social-icon {
-  font-size: 24px;
-  color: #52c41a;
+  font-size: 24px !important;
+  margin: 0 6px;
+  transition: transform 0.2s, filter 0.2s;
   cursor: pointer;
-  transition: color 0.3s;
+}
+.social-icon:hover {
+  transform: scale(1.18);
+  filter: brightness(1.4);
 }
 
-.social-icon:hover {
-  color: #389e0d;
+.social-btn {
+  transition: transform 0.2s, filter 0.2s;
+}
+.social-btn:hover {
+  transform: scale(1.18);
+  filter: brightness(1.4);
+  background: #38cfcf !important; /* Nền xanh nhạt khi hover */
+}
+
+.social-btn:hover .anticon {
+  color: #fff !important; /* Icon chuyển sang trắng */
+  transition: color 0.2s;
+}
+
+/* Nếu muốn icon luôn ở giữa nút tròn */
+.social-btn .anticon {
+  vertical-align: middle;
+}
+
+.footer-copyright {
+  margin-top: 10px;
+  color: #666;
+  font-size: 14px;
 }
 
 /* Responsive Design */
