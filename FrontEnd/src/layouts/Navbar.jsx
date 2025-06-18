@@ -1,14 +1,7 @@
-import React, { useEffect, useState } from "react";
+// FrontEnd/src/components/Navbar.jsx
+import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import {
-  Layout,
-  Menu,
-  Button,
-  Avatar,
-  Space,
-  Popover,
-  Descriptions,
-} from "antd";
+import { Layout, Menu, Button, Avatar, Space, Badge } from "antd";
 import {
   UserOutlined,
   LogoutOutlined,
@@ -20,6 +13,7 @@ import {
   CalendarOutlined,
   BellOutlined,
 } from "@ant-design/icons";
+import { useAuth } from "../contexts/AuthContext";
 import axios from "axios";
 import "./Navbar.css";
 
@@ -28,37 +22,15 @@ const { Header } = Layout;
 export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [user, setUser] = useState(null);
+  const { user, logout, isCoach, isAdmin } = useAuth();
 
-  // 📌 Fetch user info
-  const fetchUser = async () => {
-    try {
-      const res = await axios.get("http://localhost:5000/api/user/me", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        withCredentials: true,
-      });
-      setUser(res.data);
-    } catch (err) {
-      console.error("❌ Lỗi fetch /me:", err);
-      setUser(null);
-    }
-  };
-
-  useEffect(() => {
-    fetchUser();
-  }, []);
-
-  const logout = () => {
-    localStorage.removeItem("token");
-    setUser(null);
+  // Logout
+  const handleLogout = () => {
+    logout();
     navigate("/login");
   };
 
-  const isAdmin = () => user?.role === "admin";
-  const isCoach = () => user?.role === "coach";
-
+  // Khi click Plan: nếu chưa login → /login, nếu đã login check FTND → điều hướng
   const handlePlanClick = async () => {
     if (!user) {
       return navigate("/login");
@@ -79,6 +51,7 @@ export default function Navbar() {
     }
   };
 
+  // Các mục menu
   const getMenuItems = () => {
     const items = [
       {
@@ -113,6 +86,7 @@ export default function Navbar() {
       },
     ];
 
+    // Chỉ hiển thị "Book Coach" nếu không phải là Coach
     if (!isCoach()) {
       items.push({
         key: "/book-coach",
@@ -140,7 +114,6 @@ export default function Navbar() {
         onClick: () => navigate("/admin-dashboard"),
       });
     }
-
     if (isCoach()) {
       items.push({
         key: "/coach-dashboard",
@@ -150,55 +123,13 @@ export default function Navbar() {
       });
     }
 
-    items.push({
-      key: "/coaches",
-      icon: <TeamOutlined />,
-      label: "Coaches",
-      onClick: () => navigate("/coaches"),
-    });
-
     return items;
   };
-
-  const userInfoPopover = (
-    <Descriptions
-      title={user?.name || user?.username || "Người dùng"}
-      size="small"
-      column={1}
-      bordered
-      labelStyle={{ fontWeight: 600 }}
-    >
-      <Descriptions.Item label="Email">{user?.email}</Descriptions.Item>
-      <Descriptions.Item label="SĐT">{user?.phone_number}</Descriptions.Item>
-      <Descriptions.Item label="Ngày đăng ký">
-        {user?.registration_date?.slice(0, 10)}
-      </Descriptions.Item>
-      <Descriptions.Item label="Vai trò">{user?.role}</Descriptions.Item>
-      <Descriptions.Item label="FTND Level">
-        {user?.ftnd_level}
-      </Descriptions.Item>
-      <Descriptions.Item label="Tổng điểm">
-        {user?.total_points} 🪙
-      </Descriptions.Item>
-      <Descriptions.Item label="Cấp độ">
-        {user?.current_level}
-      </Descriptions.Item>
-      <Descriptions.Item label="Thao tác">
-        <Button icon={<LogoutOutlined />} danger type="text" onClick={logout}>
-          Đăng xuất
-        </Button>
-      </Descriptions.Item>
-    </Descriptions>
-  );
 
   return (
     <Header className="navbar">
       <div className="navbar-content">
-        <div
-          className="navbar-logo"
-          style={{ cursor: "pointer" }}
-          onClick={() => navigate("/")}
-        >
+        <div className="navbar-logo">
           <div className="logo-text">
             <span>QuitSmoking</span>
           </div>
@@ -218,7 +149,7 @@ export default function Navbar() {
         />
 
         <div className="navbar-actions">
-          {!user?.id ? (
+          {!user ? (
             <Space>
               <Button type="link" onClick={() => navigate("/login")}>
                 Sign in
@@ -228,28 +159,47 @@ export default function Navbar() {
               </Button>
             </Space>
           ) : (
-            <Popover
-              content={userInfoPopover}
-              trigger="click"
-              placement="bottomRight"
-            >
-              <Space wrap={false} align="center" style={{ cursor: "pointer" }}>
-                <Avatar
-                  icon={<UserOutlined />}
-                  style={{ backgroundColor: "#52c41a" }}
-                />
-                <span
-                  style={{
-                    fontWeight: 600,
-                    marginLeft: 8,
-                    fontSize: 15,
-                    color: "#fff",
-                  }}
-                >
-                  {user?.name || user?.email || "Người dùng"}
-                </span>
-              </Space>
-            </Popover>
+            <Space wrap={false}>
+              <Button
+                type="text"
+                icon={
+                  <BellOutlined style={{ fontSize: 20, color: "#52c41a" }} />
+                }
+                onClick={() => navigate("/notifications")}
+                style={{ marginRight: 4 }}
+              />
+              <Badge
+                count={
+                  user.role === "admin"
+                    ? "Admin"
+                    : user.role === "coach"
+                    ? "Coach"
+                    : "Member"
+                }
+                style={{
+                  backgroundColor:
+                    user.role === "admin" ? "#ff4d4f" : "#52c41a",
+                }}
+              />
+              <Avatar
+                icon={<UserOutlined />}
+                style={{
+                  backgroundColor:
+                    user.role === "admin" ? "#ff4d4f" : "#52c41a",
+                  cursor: "pointer",
+                }}
+                onClick={() => navigate("/profile")}
+              />
+              <span className="username-text">{user.name || user.email}</span>
+              <Button
+                type="text"
+                icon={<LogoutOutlined />}
+                onClick={handleLogout}
+                danger
+              >
+                Logout
+              </Button>
+            </Space>
           )}
         </div>
       </div>
