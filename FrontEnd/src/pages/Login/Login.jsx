@@ -1,114 +1,131 @@
-// FrontEnd/src/pages/Login.jsx
 import React, { useState } from "react";
-import { Form, Input, Button, Typography, Divider, message } from "antd";
-import { MailOutlined } from "@ant-design/icons";
+import { Form, Input, Button, Typography, Divider } from "antd";
+import { MailOutlined, PushpinOutlined, PushpinFilled } from "@ant-design/icons";
 import { useNavigate, Link as RouterLink } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 
 import "./Login.css";
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [pinned, setPinned] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const onFinish = async (values) => {
     setLoading(true);
+    setErrorMessage("");
     try {
-      // Use AuthContext to login with MockData - Sử dụng AuthContext để đăng nhập với MockData
       const user = await login(values.email, values.password);
-
-      // Redirect based on role - Chuyển hướng dựa trên vai trò
-      if (user.role === 'admin') {
-        navigate("/admin-dashboard");
-      } else if (user.role === 'coach') {
-        navigate("/coach-dashboard");
-      } else if (user.role === 'member') {
-        navigate("/"); // Redirect to home page for regular members
-      } else {
-        navigate("/"); // Fallback for any other roles
-      }
-
-      message.success("Login successful!");
-    } catch (error) {
-      message.error(error.message || "Login failed");
+      if (user.role === "admin") navigate("/admin-dashboard");
+      else if (user.role === "coach") navigate("/coach-dashboard");
+      else navigate("/");
+    } catch {
+      setErrorMessage("Sai email hoặc mật khẩu");
     } finally {
       setLoading(false);
     }
   };
 
+  const handleMouseEnter = () => setOpen(true);
+  const handleMouseLeave = () => {
+    if (!pinned) setOpen(false);
+  };
+
   return (
     <div className="login-wrapper">
-      <div className="login-container">
-        <Title level={2} className="login-title">
-          Login
-        </Title>
+      <div
+        className={`outer-box${open || pinned ? " open" : ""}`}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
+        {/* animated border lines */}
+        <span className="line top" />
+        <span className="line right" />
+        <span className="line bottom" />
+        <span className="line left" />
 
-        <Form name="login" layout="vertical" onFinish={onFinish}>
-          <Form.Item
-            name="email"
-            label="Email"
-            rules={[{ required: true, message: "Please enter your email!" }]}
-          >
-            <Input
-              placeholder="abc@gmail.com"
-              type="email"
-              suffix={<MailOutlined />}
-            />
-          </Form.Item>
+        {/* pin icon outside the container box */}
+        <span
+          className="pin-icon"
+          onClick={() => setPinned(!pinned)}
+          style={{ position: 'absolute', top: 8, right: 8, cursor: 'pointer', fontSize: 18 }}
+        >
+          {pinned ? <PushpinFilled /> : <PushpinOutlined />}
+        </span>
 
-          <Form.Item
-            name="password"
-            label="Password"
-            rules={[{ required: true, message: "Please enter your password!" }]}
-          >
-            <Input.Password placeholder="•••••••" />
-          </Form.Item>
+        <div className="login-container">
+          <div className="login-title">🚭 Login</div>
 
-          <div className="forgot-password">
-            <RouterLink to="/ForgetPassword">Forgot password?</RouterLink>
+          <div className="form-content">
+            <Form name="login" layout="vertical" onFinish={onFinish}>
+              <Form.Item
+                name="email"
+                label="Email"
+                rules={[{ required: true, message: "Please enter your email!" }]}
+              >
+                <Input
+                  placeholder="abc@gmail.com"
+                  type="email"
+                  suffix={<MailOutlined />}
+                />
+              </Form.Item>
+
+              <Form.Item
+                name="password"
+                label="Password"
+                rules={[{ required: true, message: "Please enter your password!" }]}
+              >
+                <Input.Password placeholder="•••••••" />
+              </Form.Item>
+
+              {errorMessage && (
+                <Text type="danger" style={{ display: "block", marginBottom: 16 }}>
+                  {errorMessage}
+                </Text>
+              )}
+
+              <div className="forgot-password">
+                <RouterLink to="/ForgetPassword">Forgot password?</RouterLink>
+              </div>
+
+              <Form.Item>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  block
+                  className="login-button"
+                  loading={loading}
+                >
+                  Login
+                </Button>
+              </Form.Item>
+
+              <Divider>or continue with</Divider>
+
+              <Button
+                icon={<img src="https://developers.google.com/identity/images/g-logo.png" alt="google" className="google-icon" />}
+                block
+                className="google-button"
+                onClick={() => {
+                  window.location.href = "http://localhost:5000/api/auth/google";
+                }}
+              >
+                Google
+              </Button>
+
+              <div className="signup-text">
+                <Text>
+                  Don't have an account? <RouterLink to="/register">Sign up</RouterLink>
+                </Text>
+              </div>
+            </Form>
           </div>
-
-          <Form.Item>
-            <Button
-              type="primary"
-              htmlType="submit"
-              block
-              className="login-button"
-              loading={loading}
-            >
-              Login
-            </Button>
-          </Form.Item>
-
-          <Divider>or continue with</Divider>
-
-          <Button
-            icon={
-              <img
-                src="https://developers.google.com/identity/images/g-logo.png"
-                alt="google"
-                className="google-icon"
-                style={{ width: 20, marginRight: 8 }}
-              />
-            }
-            block
-            className="google-button"
-            onClick={() => {
-              window.location.href = "http://localhost:5000/api/auth/google";
-            }}
-          >
-            Google
-          </Button>
-
-          <div className="signup-text">
-            <Text>
-              Don't have an account? <RouterLink to="/register">Sign up</RouterLink>
-            </Text>
-          </div>
-        </Form>
+        </div>
       </div>
     </div>
   );

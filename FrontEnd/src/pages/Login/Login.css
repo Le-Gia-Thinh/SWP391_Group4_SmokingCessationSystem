@@ -1,21 +1,239 @@
+/* ==== Global Setup ==== */
+body {
+  background: radial-gradient(rgba(220, 208, 208, 0.941), rgba(172, 232, 171, 0.832));
+  backdrop-filter: blur(5px);
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* ==== Centering ==== */
 .login-wrapper {
   height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #ffffff;
-  /* hoặc bỏ nếu đã set body trắng */
-  overflow: hidden;
+  background: transparent;
 }
 
+/* ==== Outer Box ==== */
+.outer-box {
+  position: relative;
+  width: 260px;
+  height: 100px;
+  padding: 15px;
+  box-sizing: border-box;
+  border-radius: 20px;
+  background: #c5e7a8;
+  overflow: hidden;
+  transition: all 0.5s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 0 25px rgba(178, 236, 180, 0.2),
+    inset 0 0 12px rgba(123, 165, 80, 0.136);
+  cursor: pointer;
+}
 
+/* Neon rotating border */
+.outer-box::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border-radius: 20px;
+  background: conic-gradient(#a5d6a7 0deg 120deg,
+      #81c784 120deg 240deg,
+      #4caf50 240deg 360deg);
+  animation: rotateBorder 6s linear infinite;
+  z-index: -1;
+}
 
+/* Inner cover layer */
+.outer-box::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  right: 3px;
+  bottom: 3px;
+  background: #c9e9ad;
+  border-radius: 16px;
+  z-index: -1;
+}
+
+/* 4 animated lines */
+.outer-box .line {
+  position: absolute;
+  opacity: 1;
+  filter: blur(0.5px);
+  animation-timing-function: linear;
+}
+
+.outer-box .line.top,
+.outer-box .line.bottom {
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(to right,
+      transparent,
+      #c4f2c6,
+      #afefb2,
+      #94ed96,
+      transparent);
+}
+
+.outer-box .line.top {
+  top: 0;
+  left: -100%;
+  animation: moveTop 2s linear infinite;
+}
+
+.outer-box .line.bottom {
+  bottom: 0;
+  left: 100%;
+  animation: moveBottom 2s linear infinite 0.6s;
+}
+
+.outer-box .line.left,
+.outer-box .line.right {
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(to bottom,
+      transparent,
+      #9cf89f,
+      #b9f3bd,
+      #9feda0,
+      transparent);
+}
+
+.outer-box .line.right {
+  top: -100%;
+  right: 0;
+  animation: moveRight 2s linear infinite 0.3s;
+}
+
+.outer-box .line.left {
+  left: 0;
+  bottom: -100%;
+  animation: moveLeft 2s linear infinite 0.9s;
+}
+
+/* ==== Inner Login Container ==== */
 .login-container {
-  width: 350px;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  background: #ffffff;
+  border-radius: 16px;
+  box-sizing: border-box;
+  overflow: hidden;
+  transition: all 0.5s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  cursor: pointer;
+}
+
+/* ==== Hover / Open Effect ==== */
+.outer-box:hover,
+.outer-box.open {
+  width: 380px;
+  height: auto;
+  padding: 30px;
+  justify-content: flex-start;
+  cursor: default;
+}
+
+.outer-box:hover .login-container,
+.outer-box.open .login-container {
+  width: 100%;
+  height: auto;
+  padding: 0;
+  border-radius: 16px;
+}
+
+.form-content {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.95) translateY(20px);
+  transition: all 0.5s ease;
+  padding: 15px;
+}
+
+.outer-box:hover .form-content,
+.outer-box.open .form-content {
+  opacity: 1;
+  pointer-events: all;
+  transform: scale(1) translateY(0);
+  transition-delay: 0.2s;
 }
 
 .login-title {
-  text-align: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #2e7d32;
+  font-size: 24px;
+  font-weight: bold;
+  text-shadow: 0 0 4px #a5d6a7;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 15px;
+}
+
+.outer-box:hover .login-title,
+.outer-box.open .login-title {
+  position: static;
+  transform: none;
+  margin-bottom: 20px;
+  justify-content: center;
+}
+
+/* ==== Ant Design Overrides ==== */
+.ant-form-item-label>label {
+  color: #2e7d32 !important;
+  font-weight: 600;
+}
+
+.ant-input,
+.ant-input-password,
+.ant-input-affix-wrapper {
+  background-color: #ffffff !important;
+  color: #333 !important;
+  border: 1px solid #ccc;
+  border-radius: 20px !important;
+  padding: 10px 15px;
+  transition: 0.3s;
+}
+
+
+.ant-input:focus,
+.ant-input-password:focus,
+.ant-input-affix-wrapper-focused {
+  border-color: #4caf50 !important;
+  box-shadow: 0 0 6px #81c784;
+}
+
+.login-button {
+  background: #4caf50;
+  border: none;
+  color: #fff;
+  font-weight: bold;
+  border-radius: 25px;
+  height: 45px;
+  transition: all 0.3s ease-in-out;
+}
+
+.login-button:hover {
+  background: #43a047;
+  box-shadow: 0 0 8px #4caf50;
 }
 
 .forgot-password {
@@ -23,32 +241,150 @@
   margin-bottom: 16px;
 }
 
-.login-button {
-  background-color: #4bac4f;
-  border-color: #4bac4f;
-  color: #fff;
+.forgot-password a {
+  color: #2e7d32;
   font-weight: 500;
-  height: 40px;
-  border-radius: 8px;
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+.forgot-password a:hover {
+  color: #43a047;
+  text-shadow: 0 0 3px #a5d6a7;
+}
+
+.ant-divider-inner-text {
+  color: #888;
 }
 
 .google-button {
-  background-color: #f2fef2;
-  border-color: #d0f0d0;
-  color: #333;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  height: 40px;
+  background-color: #fff;
+  border: 1px solid #1976d2;
+  color: #1976d2;
+  border-radius: 25px;
+  height: 45px;
+  margin-top: 10px;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.google-button:hover {
+  background: #1976d2;
+  color: #fff;
 }
 
 .google-icon {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  margin-right: 8px;
+  filter: drop-shadow(0 0 3px #1976d2);
 }
 
 .signup-text {
   margin-top: 24px;
   text-align: center;
+}
+
+.signup-text .ant-typography {
+  color: #444 !important;
+}
+
+.signup-text a {
+  color: #2e7d32;
+  font-weight: 500;
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+.signup-text a:hover {
+  color: #43a047;
+  text-shadow: 0 0 4px #a5d6a7;
+}
+
+/* ==== Keyframes ==== */
+@keyframes rotateBorder {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes moveTop {
+  0% {
+    left: -100%;
+    opacity: 0;
+  }
+
+  50% {
+    left: 0;
+    opacity: 1;
+  }
+
+  100% {
+    left: 100%;
+    opacity: 0;
+  }
+}
+
+@keyframes moveRight {
+  0% {
+    top: -100%;
+    opacity: 0;
+  }
+
+  50% {
+    top: 0;
+    opacity: 1;
+  }
+
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+@keyframes moveBottom {
+  0% {
+    left: 100%;
+    opacity: 0;
+  }
+
+  50% {
+    left: 0;
+    opacity: 1;
+  }
+
+  100% {
+    left: -100%;
+    opacity: 0;
+  }
+}
+
+@keyframes moveLeft {
+  0% {
+    bottom: -100%;
+    opacity: 0;
+  }
+
+  50% {
+    bottom: 0;
+    opacity: 1;
+  }
+
+  100% {
+    bottom: 100%;
+    opacity: 0;
+  }
+}
+
+/* Ẩn pin khi collapsed, chỉ hiện khi hover hoặc pinned */
+.pin-icon {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  color: #2e7d32;
+  /* màu xanh đậm cho icon */
+}
+
+/* Khi outer-box mở (hover hoặc pinned) mới show */
+.outer-box.open .pin-icon,
+.outer-box:hover .pin-icon {
+  opacity: 1;
 }
