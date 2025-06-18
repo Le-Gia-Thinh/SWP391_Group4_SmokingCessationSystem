@@ -38,6 +38,16 @@ const auth = async (req, res, next) => {
 
     // Gán thông tin user cho req để các middleware hoặc controller sau dùng
     req.user = result.recordset[0];
+
+    // Nếu user là coach, lấy thêm coach_id
+    if (req.user.role === 'coach') {
+      const coachResult = await pool.request()
+        .input('user_id', sql.Int, req.user.id)
+        .query('SELECT coach_id FROM COACH WHERE user_id = @user_id');
+      if (coachResult.recordset.length > 0) {
+        req.user.coach_id = coachResult.recordset[0].coach_id;
+      }
+    }
     next();
 
   } catch (error) {

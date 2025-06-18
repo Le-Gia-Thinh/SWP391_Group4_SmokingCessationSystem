@@ -18,6 +18,7 @@ import {
   TeamOutlined,
   ContactsOutlined,
   CalendarOutlined,
+  BellOutlined,
 } from "@ant-design/icons";
 import axios from "axios";
 import "./Navbar.css";
@@ -119,6 +120,16 @@ export default function Navbar() {
         label: "Book Coach",
         onClick: () => navigate("/book-coach"),
       });
+
+      // Add "My Bookings" for members
+      if (user && user.role === "member") {
+        items.push({
+          key: "/my-bookings",
+          icon: <CalendarOutlined />,
+          label: "My Bookings",
+          onClick: () => navigate("/my-bookings"),
+        });
+      }
     }
 
     if (isAdmin()) {

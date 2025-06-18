@@ -1,15 +1,17 @@
 // controllers/adminController.js
 const { sql, dbConfig } = require('../config/database');
 const bcrypt = require('bcrypt');
+const sendCoachCredentials = require('../utils/sendCoachCredentials');
+const defaultPassword = 'T123456';
 
 // 1. Tạo Coach mới
 exports.createCoachAccount = async (req, res) => {
   try {
     const {
-      username, full_name, email, phone_number, date_of_birth, password, google_meet_link
+      username, full_name, email, phone_number, date_of_birth, google_meet_link
     } = req.body;
 
-    const password_hash = await bcrypt.hash(password, 10);
+    const password_hash = await bcrypt.hash(defaultPassword, 10);
     const pool = await sql.connect(dbConfig);
 
     // Thêm vào Customer
@@ -41,6 +43,13 @@ exports.createCoachAccount = async (req, res) => {
         INSERT INTO COACH (user_id, google_meet_link)
         VALUES (@user_id, @google_meet_link)
       `);
+
+    await sendCoachCredentials({
+      to: user.email,
+      name: user.full_name,
+      email: user.email,
+      password: defaultPassword
+    });
 
     return res.status(201).json({
       success: true,
