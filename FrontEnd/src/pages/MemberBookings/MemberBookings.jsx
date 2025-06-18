@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Button, Table, Tag, Modal, message, Avatar, Space, Typography, Spin, Row, Col, Alert } from 'antd';
+import { Card, Button, Table, Tag, message, Avatar, Space, Typography, Spin, Row, Col, Alert, Popconfirm, Tooltip } from 'antd';
 import {
     CloseOutlined,
     ReloadOutlined,
@@ -17,8 +17,6 @@ const MemberBookings = () => {
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(false);
     const [initialLoading, setInitialLoading] = useState(true);
-
-    console.log("Current logged-in user:", user);
 
     // API Base URL
     const API_BASE_URL = 'http://localhost:5000/api';
@@ -63,22 +61,6 @@ const MemberBookings = () => {
         }
     };
 
-    const confirmCancelAppointment = (sessionId) => {
-        Modal.confirm({
-            title: 'Confirm Cancellation',
-            content: 'Are you sure you want to cancel this appointment? This action cannot be undone.',
-            okText: 'Yes, Cancel',
-            okType: 'danger',
-            cancelText: 'No',
-            onOk() {
-                handleCancelAppointment(sessionId);
-            },
-            onCancel() {
-                message.info('Cancellation cancelled.');
-            },
-        });
-    };
-
     const handleCancelAppointment = async (sessionId) => {
         try {
             setLoading(true);
@@ -113,7 +95,7 @@ const MemberBookings = () => {
                 return 'red';
             case 'canceled_by_member':
                 return 'gray';
-            case 'completed': // Added completed status color
+            case 'completed':
                 return 'blue';
             default:
                 return 'default';
@@ -130,7 +112,7 @@ const MemberBookings = () => {
                 return 'Rejected';
             case 'canceled_by_member':
                 return 'Canceled';
-            case 'completed': // Added completed status text
+            case 'completed':
                 return 'Completed';
             default:
                 return status;
@@ -184,36 +166,41 @@ const MemberBookings = () => {
         {
             title: 'Actions',
             key: 'actions',
-            render: (_, record) => {
-                const actions = [];
-
-                // Only allow cancellation for pending appointments
-                if (record.session_status === 'pending') {
-                    actions.push({
-                        type: 'cancel',
-                        tooltip: 'Cancel Appointment',
-                        onClick: confirmCancelAppointment, // Call confirmation modal first
-                        icon: <CloseOutlined />,
-                        danger: true
-                    });
-                }
-
-                return (
-                    <Space>
-                        {actions.map((action, index) => (
+            render: (_, record) => (
+                <Space>
+                    {record.session_status === 'pending' && (
+                        <Popconfirm
+                            title="Cancel Appointment"
+                            description="Are you sure you want to cancel this appointment? This action cannot be undone."
+                            onConfirm={() => handleCancelAppointment(record.session_id)}
+                            okText="Yes, Cancel"
+                            okType="danger"
+                            cancelText="No"
+                        >
+                            <Tooltip title="Cancel Appointment">
+                                <Button
+                                    type="default"
+                                    icon={<CloseOutlined />}
+                                    danger
+                                    loading={loading}
+                                />
+                            </Tooltip>
+                        </Popconfirm>
+                    )}
+                    {record.session_status === 'accepted' && record.google_meet_link && (
+                        <Tooltip title="Join Google Meet">
                             <Button
-                                key={index}
-                                type={action.danger ? 'default' : 'primary'}
-                                size="small"
-                                icon={action.icon}
-                                onClick={() => action.onClick(record.session_id)}
-                                loading={loading}
-                                danger={action.danger}
-                            />
-                        ))}
-                    </Space>
-                );
-            },
+                                type="primary"
+                                href={record.google_meet_link.startsWith('http') ? record.google_meet_link : `https://${record.google_meet_link}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                Join Meeting
+                            </Button>
+                        </Tooltip>
+                    )}
+                </Space>
+            ),
         },
     ];
 

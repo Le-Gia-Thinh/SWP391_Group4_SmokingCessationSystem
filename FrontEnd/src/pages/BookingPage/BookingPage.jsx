@@ -203,92 +203,81 @@ const BookingPage = () => {
                     </Text>
 
                     <Card style={{ marginTop: 24 }}>
-                        <Row gutter={[24, 24]}>
-                            <Col xs={24} md={8}>
-                                <div className="date-selection">
-                                    <Title level={4}>
-                                        <CalendarOutlined /> Select Date
-                                    </Title>
-                                    <DatePicker
-                                        style={{ width: '100%' }}
-                                        placeholder="Choose a date"
-                                        onChange={handleDateChange}
-                                        disabledDate={(current) => {
-                                            // Disable past dates
-                                            return current && current < moment().startOf('day');
-                                        }}
-                                    />
+                        <div className="date-selection" style={{ maxWidth: 350, margin: '0 auto', marginBottom: 32 }}>
+                            <Title level={4}>
+                                <CalendarOutlined /> Select Date
+                            </Title>
+                            <DatePicker
+                                style={{ width: '100%' }}
+                                placeholder="Choose a date"
+                                onChange={handleDateChange}
+                                disabledDate={(current) => current && current < moment().startOf('day')}
+                            />
+                        </div>
+                        <div className="coaches-section-below">
+                            <Title level={4} style={{ textAlign: 'center', marginBottom: 24 }}>
+                                <UserOutlined /> Available Coaches
+                            </Title>
+                            {selectedDate ? (
+                                availableCoaches.length > 0 ? (
+                                    <Row gutter={[24, 24]} justify="center">
+                                        {availableCoaches.map((coach) => (
+                                            <Col xs={24} sm={12} md={8} key={coach.coach_id} style={{ display: 'flex', justifyContent: 'center' }}>
+                                                <Card className="coach-card improved-coach-card">
+                                                    <div className="coach-header improved-coach-header">
+                                                        <Avatar size={72} icon={<UserOutlined />} className="improved-coach-avatar" />
+                                                    </div>
+                                                    <div className="coach-info improved-coach-info" style={{ alignItems: 'center', textAlign: 'center' }}>
+                                                        <Title level={5} style={{ marginBottom: 0, color: '#189c38', fontWeight: 700 }}>{coach.name}</Title>
+                                                        <Text type="secondary" style={{ color: '#189c38', fontWeight: 500 }}>{coach.specialization}</Text>
+                                                        <div className="coach-stats improved-coach-stats">
+                                                            <Rate disabled defaultValue={coach.rating} style={{ color: '#52c41a' }} />
+                                                            <Text type="secondary" style={{ marginLeft: 8 }}>({coach.totalSessions} sessions)</Text>
+                                                        </div>
+                                                    </div>
+                                                    <div className="coach-bio improved-coach-bio" style={{ textAlign: 'center', margin: '10px 0', color: '#333', fontSize: 14 }}>
+                                                        <Text>{coach.bio}</Text>
+                                                    </div>
+                                                    <div className="available-slots improved-available-slots">
+                                                        <Title level={5} style={{ color: '#189c38', marginBottom: 8, fontSize: 15 }}>
+                                                            <ClockCircleOutlined /> Available Slots
+                                                        </Title>
+                                                        <div className="slots-grid improved-slots-grid">
+                                                            {coach.availableSchedules.map((schedule) => {
+                                                                const slot = formatTimeSlot(schedule);
+                                                                return (
+                                                                    <Button
+                                                                        key={schedule.schedule_id}
+                                                                        type="primary"
+                                                                        size="small"
+                                                                        onClick={() => handleSelectSlotForBooking(coach, schedule)}
+                                                                        style={{ margin: '4px', background: '#52c41a', borderColor: '#52c41a', fontWeight: 600, fontSize: 15, borderRadius: 8 }}
+                                                                    >
+                                                                        {slot.time} - {slot.endTime}
+                                                                    </Button>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    </div>
+                                                </Card>
+                                            </Col>
+                                        ))}
+                                    </Row>
+                                ) : (
+                                    <div className="no-availability" style={{ textAlign: 'center', margin: '32px 0' }}>
+                                        <Text type="secondary">
+                                            No coaches available for the selected date. Please try another date.
+                                        </Text>
+                                    </div>
+                                )
+                            ) : (
+                                <div className="select-date-prompt" style={{ textAlign: 'center', margin: '32px 0' }}>
+                                    <Text type="secondary">
+                                        Please select a date to see available coaches and time slots.
+                                    </Text>
                                 </div>
-                            </Col>
-                            <Col xs={24} md={16}>
-                                <div className="coaches-section">
-                                    <Title level={4}>
-                                        <UserOutlined /> Available Coaches
-                                    </Title>
-                                    {selectedDate ? (
-                                        availableCoaches.length > 0 ? (
-                                            <Row gutter={[16, 16]}>
-                                                {availableCoaches.map((coach) => (
-                                                    <Col xs={24} md={12} key={coach.coach_id}>
-                                                        <Card className="coach-card">
-                                                            <div className="coach-header">
-                                                                <Avatar size={64} icon={<UserOutlined />} />
-                                                                <div className="coach-info">
-                                                                    <Title level={5}>{coach.name}</Title>
-                                                                    <Text type="secondary">{coach.specialization}</Text>
-                                                                    <div className="coach-stats">
-                                                                        <Rate disabled defaultValue={coach.rating} />
-                                                                        <Text type="secondary">({coach.totalSessions} sessions)</Text>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-
-                                                            <div className="coach-bio">
-                                                                <Text>{coach.bio}</Text>
-                                                            </div>
-
-                                                            <div className="available-slots">
-                                                                <Title level={5}>
-                                                                    <ClockCircleOutlined /> Available Slots
-                                                                </Title>
-                                                                <div className="slots-grid">
-                                                                    {coach.availableSchedules.map((schedule) => {
-                                                                        const slot = formatTimeSlot(schedule);
-                                                                        return (
-                                                                            <Button
-                                                                                key={schedule.schedule_id}
-                                                                                type="primary"
-                                                                                size="small"
-                                                                                onClick={() => handleSelectSlotForBooking(coach, schedule)}
-                                                                                style={{ margin: '4px' }}
-                                                                            >
-                                                                                {slot.time} - {slot.endTime}
-                                                                            </Button>
-                                                                        );
-                                                                    })}
-                                                                </div>
-                                                            </div>
-                                                        </Card>
-                                                    </Col>
-                                                ))}
-                                            </Row>
-                                        ) : (
-                                            <div className="no-availability">
-                                                <Text type="secondary">
-                                                    No coaches available for the selected date. Please try another date.
-                                                </Text>
-                                            </div>
-                                        )
-                                    ) : (
-                                        <div className="select-date-prompt">
-                                            <Text type="secondary">
-                                                Please select a date to see available coaches and time slots.
-                                            </Text>
-                                        </div>
-                                    )}
-                                </div>
-                            </Col>
-                        </Row>
+                            )}
+                        </div>
                     </Card>
                 </div>
 

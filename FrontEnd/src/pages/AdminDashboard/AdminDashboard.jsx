@@ -543,8 +543,10 @@ const AdminDashboard = () => {
                             <Button
                                 type="primary"
                                 icon={<PlusOutlined />}
-                                onClick={() => setCreateCoachModal(true)}
-                                style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}
+                                onClick={() => {
+                                    setCreateCoachModal(true);
+                                coachForm.setFieldsValue({ password: 'Coach@123' });
+                                }}
                             >
                                 Create Coach
                             </Button>
@@ -611,9 +613,13 @@ const AdminDashboard = () => {
                         <Form.Item
                             name="password"
                             label="Password"
-                            rules={[{ required: true, message: 'Please enter the password!' }]}
+                            initialValue="T123456" //hiện password cố định
                         >
-                            <Input.Password placeholder="Enter password" />
+                            <Input.Password readOnly style={{
+                            backgroundColor: '#f5f5f5', // xám nhạt
+                            cursor: 'not-allowed'         // hiển thị dấu cấm khi rê chuột
+                            }}
+                             />
                         </Form.Item>
                     </Col>
                     <Col span={12}>

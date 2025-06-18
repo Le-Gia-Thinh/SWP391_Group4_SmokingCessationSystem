@@ -11,6 +11,7 @@ import {
   TeamOutlined,
   ContactsOutlined,
   CalendarOutlined,
+  BellOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "../contexts/AuthContext";
 import axios from "axios";
@@ -121,12 +122,6 @@ export default function Navbar() {
         onClick: () => navigate("/coach-dashboard"),
       });
     }
-    items.push({
-      key: "/coaches",
-      icon: <TeamOutlined />,
-      label: "Coaches",
-      onClick: () => navigate("/coaches"),
-    });
 
     return items;
   };
@@ -165,13 +160,21 @@ export default function Navbar() {
             </Space>
           ) : (
             <Space wrap={false}>
+              <Button
+                type="text"
+                icon={
+                  <BellOutlined style={{ fontSize: 20, color: "#52c41a" }} />
+                }
+                onClick={() => navigate("/notifications")}
+                style={{ marginRight: 4 }}
+              />
               <Badge
                 count={
                   user.role === "admin"
                     ? "Admin"
                     : user.role === "coach"
-                      ? "Coach"
-                      : "Member"
+                    ? "Coach"
+                    : "Member"
                 }
                 style={{
                   backgroundColor:
@@ -183,7 +186,9 @@ export default function Navbar() {
                 style={{
                   backgroundColor:
                     user.role === "admin" ? "#ff4d4f" : "#52c41a",
+                  cursor: "pointer",
                 }}
+                onClick={() => navigate("/profile")}
               />
               <span className="username-text">{user.name || user.email}</span>
               <Button

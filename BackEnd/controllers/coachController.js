@@ -62,3 +62,26 @@ exports.getAllCoaches = async (req, res) => {
     res.status(500).json({ success: false, message: 'Lỗi khi lấy danh sách coach' });
   }
 };
+
+// Lấy thông tin coach hiện tại
+exports.getCurrentCoach = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const pool = await sql.connect(dbConfig);
+    const result = await pool.request()
+      .input('user_id', sql.Int, userId)
+      .query(`
+        SELECT c.user_id, c.full_name, c.email, coach.coach_id, coach.specialization, coach.bio, coach.experience_years, coach.status AS coach_status, coach.google_meet_link
+        FROM CUSTOMER c
+        JOIN COACH coach ON c.user_id = coach.user_id
+        WHERE c.user_id = @user_id
+      `);
+    if (!result.recordset.length) {
+      return res.status(404).json({ success: false, message: 'Coach not found' });
+    }
+    res.json({ success: true, data: result.recordset[0] });
+  } catch (error) {
+    console.error('❌ Lỗi khi lấy thông tin coach hiện tại:', error);
+    res.status(500).json({ success: false, message: 'Lỗi server khi lấy thông tin coach' });
+  }
+};
