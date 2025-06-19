@@ -24,46 +24,51 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className="auth-container">
-      <Title level={2}>Reset Password</Title>
-      <Text>Enter your new password</Text>
+  <div className="auth-outer-wrapper">
+    <div className="auth-wrapper">
+      <div className="auth-container">
+        <Title className="auth-title" level={2}>Reset Password</Title>
+        <Text className="auth-subtitle">Enter your new password</Text>
 
-      <Form layout="vertical" onFinish={onFinish}>
-        <Form.Item
-          name="newPassword"
-          label="New Password"
-          rules={[{ required: true, message: "Please input new password!" }]}
-        >
-          <Input.Password placeholder="New password" />
-        </Form.Item>
+        <Form layout="vertical" onFinish={onFinish}>
+          <Form.Item
+            name="newPassword"
+            label="New Password"
+            rules={[{ required: true, message: "Please input new password!" }]}
+          >
+            <Input.Password placeholder="New password" />
+          </Form.Item>
 
-        <Form.Item
-          name="confirmPassword"
-          label="Confirm Password"
-          dependencies={["newPassword"]}
-          rules={[
-            { required: true, message: "Please confirm your password!" },
-            ({ getFieldValue }) => ({
-              validator(_, value) {
-                if (!value || getFieldValue("newPassword") === value) {
-                  return Promise.resolve();
-                }
-                return Promise.reject(new Error("Passwords do not match!"));
-              },
-            }),
-          ]}
-        >
-          <Input.Password placeholder="Confirm password" />
-        </Form.Item>
+          <Form.Item
+            name="confirmPassword"
+            label="Confirm Password"
+            dependencies={["newPassword"]}
+            rules={[
+              { required: true, message: "Please confirm your password!" },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue("newPassword") === value) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(new Error("Passwords do not match!"));
+                },
+              }),
+            ]}
+          >
+            <Input.Password placeholder="Confirm password" />
+          </Form.Item>
 
-        <Form.Item>
-          <Button type="primary" htmlType="submit" block>
-            Reset Password
-          </Button>
-        </Form.Item>
-      </Form>
+          <Form.Item>
+            <Button className="auth-button" type="primary" htmlType="submit" block>
+              Reset Password
+            </Button>
+          </Form.Item>
+        </Form>
+        <Text className="auth-note">Quay lại đăng nhập nếu bạn nhớ mật khẩu</Text>
+      </div>
     </div>
-  );
+  </div>
+);
 };
 
 export default ResetPassword;

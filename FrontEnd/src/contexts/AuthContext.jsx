@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const AuthContext = createContext();
 
-export const useAuth = () => {
+const useAuth = () => {
     const context = useContext(AuthContext);
     if (!context) {
         throw new Error('useAuth must be used within an AuthProvider');
@@ -10,50 +10,85 @@ export const useAuth = () => {
     return context;
 };
 
+export { useAuth };
+
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
     // Check if user is logged in when app loads - Kiểm tra user đã đăng nhập chưa khi load app
     useEffect(() => {
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-            setUser(JSON.parse(storedUser));
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    setLoading(false);
+    return;
+  }
+
+  const fetchUser = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/api/user/me", {
+        headers: {
+          Authorization: `Bearer ${token}`
         }
-        setLoading(false);
-    }, []);
+      });
+
+      if (!res.ok) throw new Error("Không lấy được user");
+
+      const data = await res.json();
+      setUser(data);
+      localStorage.setItem("user", JSON.stringify(data));
+    } catch (err) {
+      console.error("Lỗi khi xác thực:", err);
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchUser();
+}, []);
 
     // Login with real API - Đăng nhập với API thực tế
     const login = async (email, password) => {
-        try {
-            const response = await fetch('http://localhost:5000/api/auth/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, password }),
-            });
+    try {
+        const response = await fetch('http://localhost:5000/api/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password }),
+        });
 
-            const data = await response.json();
+        const data = await response.json();
 
-            if (!response.ok) {
-                throw new Error(data.message || 'Login failed');
-            }
-
-            if (!data.success) {
-                throw new Error(data.message || 'Login failed');
-            }
-
-            // Save user to localStorage - Lưu user vào localStorage
-            localStorage.setItem('user', JSON.stringify(data.user));
-            localStorage.setItem('token', data.token);
-            setUser(data.user);
-
-            return data.user;
-        } catch (error) {
-            console.error('Login error:', error);
-            throw error;
+        if (!response.ok || !data.success) {
+            throw new Error(data.message || 'Login failed');
         }
+
+        // Lưu token
+        localStorage.setItem('token', data.token);
+
+        // Gọi /api/user/me để lấy thông tin đầy đủ
+        const userRes = await fetch('http://localhost:5000/api/user/me', {
+            headers: {
+                Authorization: `Bearer ${data.token}`
+            }
+        });
+
+        const userData = await userRes.json();
+
+        if (!userRes.ok || !userData) {
+            throw new Error('Không lấy được thông tin chi tiết người dùng');
+        }
+        localStorage.setItem('user', JSON.stringify(userData));
+        setUser(userData);
+
+        return userData;
+    } catch (error) {
+        console.error('Login error:', error);
+        throw error;
+    }
     };
 
     // Logout - Đăng xuất
@@ -109,6 +144,7 @@ export const AuthProvider = ({ children }) => {
         loading
     };
 
+    console.log("👤 user in Profile.jsx:", user);
     return (
         <AuthContext.Provider value={value}>
             {children}

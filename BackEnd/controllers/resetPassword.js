@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
-const { sendResetEmail } = require('../utils/mailer');
+const sendResetEmail = require('../utils/mailer');
 
 
 const { sql, dbConfig } = require('../config/database');
