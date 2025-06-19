@@ -16,6 +16,7 @@ const scheduleRoutes = require('./routes/schedule');
 const coachRoutes = require('./routes/coach');
 const memberRoutes = require('./routes/member');
 const userRoutes = require("./routes/user"); 
+const userScoreRoutes = require("./routes/userScore");
 
 const app = express();
 
@@ -46,6 +47,10 @@ app.use("/api/customer", customerRoutes);
 
 // ranking
 app.use("/api/user-score", require("./routes/userScore"));
+
+// Update user score
+const { auth } = require("./middleware/auth");
+app.use("/api/user-score", userScoreRoutes);
 
 // 3) Session middleware (phải nằm trước passport.session())
 app.use(

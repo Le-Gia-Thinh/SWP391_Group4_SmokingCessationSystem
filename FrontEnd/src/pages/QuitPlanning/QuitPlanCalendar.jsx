@@ -360,22 +360,22 @@ const QuitPlan = () => {
   }, []);
 
   useEffect(() => {
-  if (!user?.id || !startDate) return;
+    if (!user?.id || !startDate) return;
 
-  fetch(`http://localhost:5000/api/smoking-summary/all/${user.id}`)
-    .then((res) => res.json())
-    .then((data) => {
-      const log = {};
-      data.forEach((entry) => {
-        const formattedDate = dayjs(entry.date).format("DD/MM/YYYY");
-        log[formattedDate] = entry.total_cigarettes;
+    fetch(`http://localhost:5000/api/smoking-summary/all/${user.id}`)
+      .then((res) => res.json())
+      .then((data) => {
+        const log = {};
+        data.forEach((entry) => {
+          const formattedDate = dayjs(entry.date).format("DD/MM/YYYY");
+          log[formattedDate] = entry.total_cigarettes;
+        });
+        setSmokingLog(log); // Gán lại vào state
+      })
+      .catch((err) => {
+        console.error("Lỗi khi tải dữ liệu số điếu:", err);
       });
-      setSmokingLog(log); // Gán lại vào state
-    })
-    .catch((err) => {
-      console.error("Lỗi khi tải dữ liệu số điếu:", err);
-    });
-}, [user?.id, startDate]);
+  }, [user?.id, startDate]);
 
   const handlePlanReady = ({ startDate, months }) => {
     setStartDate(dayjs(startDate));
@@ -842,7 +842,7 @@ const QuitPlan = () => {
             </div>
           </Card>
 
-          <Card variant="outlined">
+          <Card variant="outlined" style={{ overflowX: "auto" }}>
             <Divider orientation="left" plain>
               <Tag color="blue" style={{ fontSize: 16 }}>
                 Bảng kế hoạch chi tiết
