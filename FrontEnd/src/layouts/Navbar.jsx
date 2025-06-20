@@ -86,8 +86,8 @@ export default function Navbar() {
       },
     ];
 
-    // Chỉ hiển thị "Book Coach" nếu không phải là Coach
-    if (!isCoach()) {
+    // Chỉ hiển thị "Book Coach" nếu không phải là Coach và không phải là Admin
+    if (!isCoach() && !isAdmin()) {
       items.push({
         key: "/book-coach",
         icon: <ContactsOutlined />,
@@ -162,7 +162,9 @@ export default function Navbar() {
             <Space wrap={false}>
               <Button
                 type="text"
-                icon={<BellOutlined style={{ fontSize: 20, color: '#52c41a' }} />}
+                icon={
+                  <BellOutlined style={{ fontSize: 20, color: "#52c41a" }} />
+                }
                 onClick={() => navigate("/notifications")}
                 style={{ marginRight: 4 }}
               />

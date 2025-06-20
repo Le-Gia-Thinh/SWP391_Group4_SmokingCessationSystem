@@ -1,4 +1,3 @@
-
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const JwtStrategy = require('passport-jwt').Strategy;
@@ -101,14 +100,15 @@ passport.use(new GoogleStrategy({
       return done(null, {
         id: user.user_id,
         email: user.email,
-        name: user.full_name || profile.displayName
+        name: user.full_name || profile.displayName,
+        role: user.user_role
         //avatar: userFromDb.avatar_url 
       });
     }
 
     // Nếu chưa có user, tạo mới trong database
     console.log('🆕 Creating new user...');
-    
+
     let username = profile.emails[0].value.split('@')[0];
 
     // Kiểm tra username đã tồn tại chưa
@@ -118,7 +118,7 @@ passport.use(new GoogleStrategy({
 
     if (checkUsername.recordset.length > 0) {
       username = `${username}_${Date.now()}`; // thêm thời gian để tránh trùng
-    } 
+    }
 
     const insertResult = await pool.request()
       .input('email', sql.VarChar, profile.emails[0].value)
@@ -151,7 +151,8 @@ passport.use(new GoogleStrategy({
     return done(null, {
       id: newUserId,
       email: profile.emails[0].value,
-      name: profile.displayName
+      name: profile.displayName,
+      role: 'member'
     });
 
   } catch (error) {

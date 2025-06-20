@@ -187,6 +187,18 @@ const MemberBookings = () => {
                             </Tooltip>
                         </Popconfirm>
                     )}
+                    {record.session_status === 'accepted' && record.google_meet_link && (
+                        <Tooltip title="Join Google Meet">
+                            <Button
+                                type="primary"
+                                href={record.google_meet_link.startsWith('http') ? record.google_meet_link : `https://${record.google_meet_link}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                Join Meeting
+                            </Button>
+                        </Tooltip>
+                    )}
                 </Space>
             ),
         },

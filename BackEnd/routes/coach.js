@@ -10,4 +10,7 @@ router.put('/update-meet-link', auth, authorize('coach'), coachController.update
 // Route để lấy danh sách coaches cho member
 router.get('/list', coachController.getAllCoaches);
 
+// Route lấy thông tin coach hiện tại
+router.get('/me', auth, authorize('coach'), coachController.getCurrentCoach);
+
 module.exports = router;

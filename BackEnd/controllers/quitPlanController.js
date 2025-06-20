@@ -94,7 +94,10 @@ exports.resetPlan = async (req, res) => {
     await pool
       .request()
       .input("user_id", sql.Int, user_id)
-      .query("DELETE FROM CESSATION_PLAN WHERE user_id = @user_id");
+      .query(`
+        DELETE FROM HABIT_LOG WHERE user_id = @user_id;
+        DELETE FROM CESSATION_PLAN WHERE user_id = @user_id;
+      `);
 
     res.json({ success: true, message: "Reset thành công" });
   } catch (err) {
