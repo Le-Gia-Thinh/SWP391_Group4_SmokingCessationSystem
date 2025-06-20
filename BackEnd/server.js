@@ -9,7 +9,7 @@ const authRoutes = require('./routes/auth');
 const roleRoutes = require('./routes/roleTestRoutes');
 const habitLogRoutes = require('./routes/habitLogRoutes');
 const smokingSummaryRoutes = require('./routes/smokingSummaryRoutes');
-
+const communityRoutes = require('./routes/community');
 
 const adminRoutes = require('./routes/admin');
 const appointmentRoutes = require('./routes/appointment');
@@ -79,6 +79,10 @@ app.use('/api/schedule', scheduleRoutes);
 app.use('/api/coach', coachRoutes);
 // 5.6) Route member
 app.use('/api/member', memberRoutes);
+
+// Community Post & Comment
+app.use('/api/community', require('./routes/community'));
+app.use('/api/comment', require('./routes/comment'));
 
 //xử lý phần submit từ plan
 app.use('/api/habit-log', habitLogRoutes);
