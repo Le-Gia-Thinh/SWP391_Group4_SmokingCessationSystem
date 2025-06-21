@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, Link as RouterLink } from "react-router-dom";
 import { Form, Input, Button, Typography } from "antd";
 import {
@@ -26,6 +26,7 @@ const Register = () => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [pinned, setPinned] = useState(false);
+  const leaveTimerRef = useRef(null);
 
   const onFinish = async (values) => {
     try {
@@ -36,10 +37,31 @@ const Register = () => {
     }
   };
 
-  const handleMouseEnter = () => setOpen(true);
-  const handleMouseLeave = () => {
-    if (!pinned) setOpen(false);
+  const handleMouseEnter = () => {
+    // nếu có timer đang chờ thì hủy
+    if (leaveTimerRef.current) {
+      clearTimeout(leaveTimerRef.current);
+      leaveTimerRef.current = null;
+    }
+    setOpen(true);
   };
+
+  const handleMouseLeave = () => {
+    // nếu đã pin thì không auto-close
+    if (pinned) return;
+    // sau 5s mới setOpen(false)
+    leaveTimerRef.current = setTimeout(() => {
+      setOpen(false);
+      leaveTimerRef.current = null;
+    }, 5000);
+  };
+
+  // cleanup khi unmount
+  useEffect(() => {
+    return () => {
+      if (leaveTimerRef.current) clearTimeout(leaveTimerRef.current);
+    };
+  }, []);
 
   return (
     <div className="register-wrapper">
@@ -54,11 +76,18 @@ const Register = () => {
         <span className="line bottom" />
         <span className="line left" />
 
-        {/* pin icon outside */}
+        {/* pin icon */}
         <span
           className="pin-icon-register"
-          onClick={() => setPinned(!pinned)}
-          style={{ position: 'absolute', top: 8, right: 8, cursor: 'pointer', fontSize: 18 }}
+          onClick={() => {
+            setPinned((prev) => !prev);
+            // nếu vừa unpin thì clear timer nếu có
+            if (!pinned && leaveTimerRef.current) {
+              clearTimeout(leaveTimerRef.current);
+              leaveTimerRef.current = null;
+            }
+          }}
+          style={{ position: "absolute", top: 8, right: 8, cursor: "pointer", fontSize: 18 }}
         >
           {pinned ? <PushpinFilled /> : <PushpinOutlined />}
         </span>
