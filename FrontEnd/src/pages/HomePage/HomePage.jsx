@@ -33,6 +33,8 @@ import meditationImg from "../../assets/meditation.jpg";
 import healthyEatingImg from "../../assets/healthy-eating.jpg";
 import fitnessImg from "../../assets/fitness.jpg";
 
+import videoSrc from "../../assets/video/13225520_3840_2160_30fps (1).mp4";
+
 import "./HomePage.css";
 
 const { Title, Paragraph, Text } = Typography;
@@ -142,7 +144,7 @@ const HomePage = () => {
         <PlanUpgradeModal
           open={showUpgrade}
           onClose={() => setShowUpgrade(false)}
-          scrollContainer={homepageRef}  // ← truyền prop scrollContainer
+          scrollContainer={homepageRef} // ← truyền prop scrollContainer
         />
       )}
       {/* ---------- HERO ---------- */}
@@ -172,14 +174,15 @@ const HomePage = () => {
           </Col>
 
           <Col xs={24} lg={12} className="hero-video">
-            <div className="video-placeholder">Add video</div>
+            <video width="100%" height="auto" controls autoPlay muted loop>
+              <source src={videoSrc} type="video/mp4" />
+            </video>
           </Col>
         </Row>
       </section>
 
       {/* ---------- BENEFITS ---------- */}
       <section className="benefits-section scroll-section " data-reveal="left">
-
         <div className="container">
           <Row gutter={[48, 32]} align="middle">
             <Col xs={24} lg={10}>
@@ -286,10 +289,7 @@ const HomePage = () => {
       </section>
 
       {/* ---------- CTA ---------- */}
-      <section
-        className="cta-section scroll-section split"
-        data-reveal="split"
-      >
+      <section className="cta-section scroll-section split" data-reveal="split">
         <div className="container">
           <Card className="cta-card">
             <Row justify="space-between" align="middle">
@@ -297,7 +297,8 @@ const HomePage = () => {
               <Col xs={24} lg={14} className="split-left">
                 <Title level={3}>Ready to plan your quit journey?</Title>
                 <Paragraph>
-                  Sign in today and start your personalized quit plan with HealthyBite.
+                  Sign in today and start your personalized quit plan with
+                  HealthyBite.
                 </Paragraph>
               </Col>
               {/* Right half */}
@@ -312,13 +313,14 @@ const HomePage = () => {
       </section>
 
       {/* ---------- CATEGORY ---------- */}
-      <section className="category-section scroll-section" data-reveal="up" >
+      <section className="category-section scroll-section" data-reveal="up">
         <div className="container">
           <Row gutter={[48, 32]} align="middle">
             <Col xs={24} lg={12}>
               <Space direction="vertical" size="large">
                 <Title level={2}>
-                  What is a <span className="highlight">phoi khoe</span> for you?
+                  What is a <span className="highlight">phoi khoe</span> for
+                  you?
                 </Title>
                 <img
                   src={meditationImg}
@@ -351,10 +353,18 @@ const HomePage = () => {
           <Title level={2} style={{ textAlign: "center", marginBottom: 32 }}>
             dang ky khoa 2
           </Title>
-          <Carousel autoplay autoplaySpeed={4000} className="registration-carousel">
+          <Carousel
+            autoplay
+            autoplaySpeed={4000}
+            className="registration-carousel"
+          >
             {[meditationImg, healthyEatingImg, fitnessImg].map((img, i) => (
               <div key={i}>
-                <img src={img} alt={`Slide ${i + 1}`} className="carousel-img" />
+                <img
+                  src={img}
+                  alt={`Slide ${i + 1}`}
+                  className="carousel-img"
+                />
               </div>
             ))}
           </Carousel>
@@ -381,8 +391,8 @@ const HomePage = () => {
                   Our team of expert nutritionists is here to help you achieve
                   your health and wellness goals. Our nutritionists are highly
                   trained and qualified professionals with a deep understanding
-                  of the science behind nutrition and how it can impact your body
-                  and mind.
+                  of the science behind nutrition and how it can impact your
+                  body and mind.
                 </Paragraph>
                 <List
                   dataSource={expertQualifications}
@@ -444,7 +454,7 @@ const HomePage = () => {
       </section>
 
       {/* ---------- RESULTS ---------- */}
-      <section className="results-section scroll-section" data-reveal="up"    >
+      <section className="results-section scroll-section" data-reveal="up">
         <div className="container">
           <Title level={2}>vd cai nghiên thành công</Title>
           <Card className="testimonial-card">
@@ -462,9 +472,7 @@ const HomePage = () => {
                   <div>
                     <Text strong>Anshuman Khuranna</Text>
                     <br />
-                    <Text type="secondary">
-                      3 week weight loss meal plan
-                    </Text>
+                    <Text type="secondary">3 week weight loss meal plan</Text>
                   </div>
                 </Space>
               </Col>
