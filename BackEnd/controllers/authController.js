@@ -108,21 +108,21 @@ const register = async (req, res) => {
     const userId = insertResult.recordset[0].user_id;
 
     await pool.request()
-  .input('user_id', sql.Int, userId)
-  .input('provider', sql.VarChar, 'local')
-  .input('username', sql.VarChar, username)
-  .input('password_hash', sql.VarChar, hashedPassword)
-  .query(`
+      .input('user_id', sql.Int, userId)
+      .input('provider', sql.VarChar, 'local')
+      .input('username', sql.VarChar, username)
+      .input('password_hash', sql.VarChar, hashedPassword)
+      .query(`
     INSERT INTO USER_LOGIN (user_id, login_provider, username, password_hash)
     VALUES (@user_id, @provider, @username, @password_hash)
   `);
 
     const token = generateToken({
-  id: userId,
-  email,
-  name
-});
-    
+      id: userId,
+      email,
+      name
+    });
+
 
     res.status(201).json({
       success: true,
@@ -218,11 +218,12 @@ const googleSuccess = (req, res) => {
       id: user.id,
       email: user.email,
       name: user.name,
+      role: user.role,
       // Nếu trong database bạn lưu avatarUrl, gán vào đây:
       // avatar: user.avatar  (nếu bảng CUSTOMER có field này)
     });
 
-    console.log('✅ User found:', { id: user.id, email: user.email, name: user.name });
+    console.log('✅ User found:', { id: user.id, email: user.email, name: user.name, role: user.role });
     console.log('🔑 Generated token:', token.substring(0, 20) + '...');
 
     // Redirect về React route với token

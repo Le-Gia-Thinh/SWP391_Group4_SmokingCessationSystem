@@ -47,6 +47,7 @@ const GoogleRedirectHandler = () => {
           id: payload.id,
           email: payload.email,
           name: payload.name,
+          role: payload.role,
           // Nếu trong payload có trường avatar, gán vào avatarUrl
           avatar: payload.avatar || null
         };

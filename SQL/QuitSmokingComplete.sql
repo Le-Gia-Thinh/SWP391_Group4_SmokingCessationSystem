@@ -279,10 +279,10 @@ BEGIN
         date DATE NOT NULL,                                    -- Ngày cụ thể
         total_cigarettes INT CHECK (total_cigarettes >= 0),    -- Tổng số điếu hút
         relapsed BIT DEFAULT 0,                                -- Đánh dấu tái nghiện
-        plan_id INT,                                           -- Liên kết kế hoạch (có thể null)
+        -- plan_id INT,                                           -- Liên kết kế hoạch (có thể null)
 
         CONSTRAINT fk_dsm_summary_customer FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id) ON DELETE SET NULL,
-        CONSTRAINT fk_dsm_summary_plan FOREIGN KEY (plan_id) REFERENCES CESSATION_PLAN(plan_id) ON DELETE SET NULL
+        -- CONSTRAINT fk_dsm_summary_plan FOREIGN KEY (plan_id) REFERENCES CESSATION_PLAN(plan_id) ON DELETE SET NULL
     );
 END
 GO
@@ -550,6 +550,55 @@ BEGIN
         created_at DATETIME DEFAULT GETDATE(),              -- Ngày tạo token
 
         FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id) ON DELETE CASCADE
+    );
+END
+GO
+
+-- 29. HABIT_LOG: Ghi nhận hành vi không hút thuốc theo từng mốc giờ trong ngày
+IF OBJECT_ID('HABIT_LOG', 'U') IS NULL
+BEGIN
+    CREATE TABLE HABIT_LOG (
+        log_id INT IDENTITY(1,1) PRIMARY KEY,                  -- Khóa chính tự tăng
+        user_id INT NOT NULL,                                 -- Người dùng thực hiện hành vi
+        log_date DATE NOT NULL,                               -- Ngày ghi nhận
+        time_slot INT NOT NULL CHECK (time_slot BETWEEN 0 AND 8), -- Mốc thời gian (0: 7h, ..., 8: 22h)
+        completed BIT NOT NULL DEFAULT 0,                     -- Đã hoàn thành không hút tại slot đó hay chưa
+        points_awarded INT DEFAULT 0,                         -- Điểm thưởng cho hành vi này
+        created_at DATETIME DEFAULT GETDATE(),                -- Ngày tạo bản ghi
+
+        CONSTRAINT fk_habitlog_user FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id) ON DELETE CASCADE,
+        UNIQUE(user_id, log_date, time_slot)                  -- Một người chỉ có 1 bản ghi/slot/ngày
+    );
+END
+GO
+
+-- 30. USER_SCORE: Tổng điểm và cấp bậc hiện tại của người dùng trong hệ thống
+IF OBJECT_ID('USER_SCORE', 'U') IS NULL
+BEGIN
+    CREATE TABLE USER_SCORE (
+        user_id INT PRIMARY KEY,                              -- Mỗi user có 1 dòng duy nhất
+        total_points INT NOT NULL DEFAULT 0,                  -- Tổng điểm tích lũy
+        current_level VARCHAR(50) DEFAULT 'Beginner',         -- Cấp độ (Beginner, Intermediate, Expert...)
+        last_updated DATETIME DEFAULT GETDATE(),              -- Thời điểm cập nhật gần nhất
+
+        CONSTRAINT fk_score_user FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id) ON DELETE CASCADE
+    );
+END
+GO
+
+-- 31. USER_SCORE_LOG: Lưu chi tiết điểm được cộng theo từng mốc giờ
+IF OBJECT_ID('USER_SCORE_LOG', 'U') IS NULL
+BEGIN
+    CREATE TABLE USER_SCORE_LOG (
+        id INT IDENTITY(1,1) PRIMARY KEY,                     -- Khóa chính tự tăng
+        user_id INT NOT NULL,                                 -- Người dùng nhận điểm
+        log_date DATE NOT NULL,                               -- Ngày ghi nhận điểm
+        time_slot INT NOT NULL CHECK (time_slot BETWEEN 0 AND 8), -- Mốc thời gian điểm được ghi nhận
+        points_awarded INT NOT NULL,                          -- Số điểm được cộng
+        created_at DATETIME DEFAULT GETDATE(),                -- Thời điểm ghi nhận
+
+        CONSTRAINT fk_scorelog_user FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id),
+        UNIQUE(user_id, log_date, time_slot)                  -- Một người chỉ có 1 lần cộng điểm/slot/ngày
     );
 END
 GO

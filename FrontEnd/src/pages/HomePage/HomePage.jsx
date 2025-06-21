@@ -1,5 +1,4 @@
-// src/pages/HomePage.jsx
-import React, { useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 import {
   Button,
@@ -13,12 +12,10 @@ import {
   Carousel,
   Badge,
   Layout,
-  Avatar,
   Tooltip,
 } from "antd";
 import {
   CheckOutlined,
-  RightOutlined,
   FacebookOutlined,
   InstagramOutlined,
   TwitterOutlined,
@@ -27,16 +24,21 @@ import {
   PinterestOutlined,
 } from "@ant-design/icons";
 import { GiLevelTwo, GiLevelThree, GiLevelFour } from "react-icons/gi";
+
 import Navbar from "../../layouts/Navbar";
+import PlanUpgradeModal from "./PlanUpgradeModal";
+import BlogCarousel from "../../components/BlogCarousel";
+import { useScrollReveal } from "../../hooks/useScrollReveal";
 import meditationImg from "../../assets/meditation.jpg";
 import healthyEatingImg from "../../assets/healthy-eating.jpg";
 import fitnessImg from "../../assets/fitness.jpg";
+
 import "./HomePage.css";
-import BlogCarousel from "../../components/BlogCarousel";
 
 const { Title, Paragraph, Text } = Typography;
-const { Content, Footer } = Layout;
+const { Footer } = Layout;
 
+/* ===== DỮ LIỆU TĨNH ===== */
 const plans = [
   { label: "Cơ bản", Icon: GiLevelTwo },
   { label: "Nâng cao", Icon: GiLevelThree },
@@ -113,6 +115,7 @@ const footerLinks = [
   "Reviews",
   "Sign in",
 ];
+
 const legalLinks = [
   "Terms & Conditions",
   "Privacy policy",
@@ -121,23 +124,29 @@ const legalLinks = [
   "Support",
 ];
 
+/* ===== TRANG CHÍNH ===== */
 const HomePage = () => {
+  const [showUpgrade, setShowUpgrade] = useState(false);
+  const timerRef = useRef(null);
+  const homepageRef = useRef(null);
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get("token");
-
-    if (token) {
-      localStorage.setItem("token", token);
-      window.history.replaceState(null, "", "/home");
-    }
+    // sau 2s kể từ khi mount
+    timerRef.current = setTimeout(() => setShowUpgrade(true), 2000);
+    return () => clearTimeout(timerRef.current);
   }, []);
-
+  useScrollReveal();
   return (
-    <Layout className="homepage">
+    <Layout className="homepage" ref={homepageRef}>
       <Navbar />
-
-      {/* Hero Section */}
-      <section className="hero-section">
+      {showUpgrade && (
+        <PlanUpgradeModal
+          open={showUpgrade}
+          onClose={() => setShowUpgrade(false)}
+          scrollContainer={homepageRef}  // ← truyền prop scrollContainer
+        />
+      )}
+      {/* ---------- HERO ---------- */}
+      <section className="hero-section scroll-section">
         <Row align="middle" style={{ minHeight: "500px" }}>
           <Col xs={24} lg={12} className="hero-content">
             <Space direction="vertical" size="large">
@@ -161,14 +170,16 @@ const HomePage = () => {
               </Space>
             </Space>
           </Col>
+
           <Col xs={24} lg={12} className="hero-video">
             <div className="video-placeholder">Add video</div>
           </Col>
         </Row>
       </section>
 
-      {/* Benefits Section */}
-      <section className="benefits-section">
+      {/* ---------- BENEFITS ---------- */}
+      <section className="benefits-section scroll-section " data-reveal="left">
+
         <div className="container">
           <Row gutter={[48, 32]} align="middle">
             <Col xs={24} lg={10}>
@@ -185,6 +196,7 @@ const HomePage = () => {
                 )}
               />
             </Col>
+
             <Col xs={24} lg={14}>
               <Row gutter={[16, 16]}>
                 <Col span={10}>
@@ -214,8 +226,8 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Plans Section */}
-      <section className="plans-section">
+      {/* ---------- PLANS ---------- */}
+      <section className="plans-section scroll-section" data-reveal="right">
         <div className="container">
           <Space
             direction="vertical"
@@ -233,7 +245,6 @@ const HomePage = () => {
               {plans.map(({ label }, i) => (
                 <Col key={i}>
                   <Space direction="vertical" align="center">
-                    {/* <Avatar size={64} icon={<Icon />} className="plan-avatar" /> */}
                     <Text strong>{label}</Text>
                   </Space>
                 </Col>
@@ -243,19 +254,17 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Lifestyle Section */}
-      <section className="lifestyle-section">
+      {/* ---------- LIFESTYLE STEPS ---------- */}
+      <section className="lifestyle-section scroll-section" data-reveal="up">
         <div className="container">
           <Title level={2} style={{ textAlign: "center", marginBottom: 48 }}>
             Have a Smoke-Free Life with HealthyBite
           </Title>
+
           <Row gutter={[32, 48]}>
             {lifestyleSteps.map((step, i) => (
               <Col xs={24} lg={12} key={i}>
-                <Card
-                  className="lifestyle-card"
-                  styles={{ body: { padding: 0 } }}
-                >
+                <Card className="lifestyle-card" bodyStyle={{ padding: 0 }}>
                   <Row>
                     <Col span={8}>
                       <img
@@ -276,19 +285,23 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="cta-section">
+      {/* ---------- CTA ---------- */}
+      <section
+        className="cta-section scroll-section split"
+        data-reveal="split"
+      >
         <div className="container">
           <Card className="cta-card">
             <Row justify="space-between" align="middle">
-              <Col>
+              {/* Left half */}
+              <Col xs={24} lg={14} className="split-left">
                 <Title level={3}>Ready to plan your quit journey?</Title>
                 <Paragraph>
-                  Sign in today and start your personalized quit plan with
-                  HealthyBite.
+                  Sign in today and start your personalized quit plan with HealthyBite.
                 </Paragraph>
               </Col>
-              <Col>
+              {/* Right half */}
+              <Col xs={24} lg={10} className="split-right">
                 <Button type="primary" size="large">
                   Sign in today
                 </Button>
@@ -298,15 +311,14 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Category Section */}
-      <section className="category-section">
+      {/* ---------- CATEGORY ---------- */}
+      <section className="category-section scroll-section" data-reveal="up" >
         <div className="container">
           <Row gutter={[48, 32]} align="middle">
             <Col xs={24} lg={12}>
               <Space direction="vertical" size="large">
                 <Title level={2}>
-                  What is a <span className="highlight">phoi khoe</span> for
-                  you?
+                  What is a <span className="highlight">phoi khoe</span> for you?
                 </Title>
                 <img
                   src={meditationImg}
@@ -315,6 +327,7 @@ const HomePage = () => {
                 />
               </Space>
             </Col>
+
             <Col xs={24} lg={12}>
               <List
                 dataSource={categoryFeatures}
@@ -332,32 +345,24 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Registration Carousel Section */}
-      <section className="register-section">
+      {/* ---------- REGISTER (CAROUSEL) ---------- */}
+      <section className="register-section scroll-section">
         <div className="container">
           <Title level={2} style={{ textAlign: "center", marginBottom: 32 }}>
             dang ky khoa 2
           </Title>
-          <Carousel
-            autoplay
-            autoplaySpeed={4000}
-            className="registration-carousel"
-          >
+          <Carousel autoplay autoplaySpeed={4000} className="registration-carousel">
             {[meditationImg, healthyEatingImg, fitnessImg].map((img, i) => (
               <div key={i}>
-                <img
-                  src={img}
-                  alt={`Slide ${i + 1}`}
-                  className="carousel-img"
-                />
+                <img src={img} alt={`Slide ${i + 1}`} className="carousel-img" />
               </div>
             ))}
           </Carousel>
         </div>
       </section>
 
-      {/* Profile Section */}
-      <section className="profile-section">
+      {/* ---------- PROFILE ---------- */}
+      <section className="profile-section scroll-section" data-reveal="up">
         <div className="container">
           <div className="profile-header">
             <Badge.Ribbon text="Get the best" color="green">
@@ -376,8 +381,8 @@ const HomePage = () => {
                   Our team of expert nutritionists is here to help you achieve
                   your health and wellness goals. Our nutritionists are highly
                   trained and qualified professionals with a deep understanding
-                  of the science behind nutrition and how it can impact your
-                  body and mind.
+                  of the science behind nutrition and how it can impact your body
+                  and mind.
                 </Paragraph>
                 <List
                   dataSource={expertQualifications}
@@ -392,8 +397,9 @@ const HomePage = () => {
                 />
               </Space>
             </Col>
+
             <Col xs={24} lg={10}>
-              <Carousel autoplay className="profile-carousel">
+              <Carousel autoplay className="profile-carousel scroll-section">
                 {[meditationImg, healthyEatingImg, fitnessImg].map((img, i) => (
                   <div key={i}>
                     <img
@@ -409,10 +415,11 @@ const HomePage = () => {
         </div>
       </section>
 
+      {/* ---------- BLOG / NEWS ---------- */}
       <BlogCarousel />
 
-      {/* Start Today Section */}
-      <section className="start-section">
+      {/* ---------- START TODAY ---------- */}
+      <section className="start-section scroll-section " data-reveal="right">
         <div className="container">
           <Space
             direction="vertical"
@@ -436,8 +443,8 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Results Section */}
-      <section className="results-section">
+      {/* ---------- RESULTS ---------- */}
+      <section className="results-section scroll-section" data-reveal="up"    >
         <div className="container">
           <Title level={2}>vd cai nghiên thành công</Title>
           <Card className="testimonial-card">
@@ -455,7 +462,9 @@ const HomePage = () => {
                   <div>
                     <Text strong>Anshuman Khuranna</Text>
                     <br />
-                    <Text type="secondary">3 week weight loss meal plan</Text>
+                    <Text type="secondary">
+                      3 week weight loss meal plan
+                    </Text>
                   </div>
                 </Space>
               </Col>
@@ -471,8 +480,8 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Pricing Section */}
-      <section className="pricing-section">
+      {/* ---------- PRICING BANNER ---------- */}
+      <section className="pricing-section scroll-section" data-reveal="left">
         <div className="container">
           <Title level={3} style={{ textAlign: "center" }}>
             A whole year of <strong>HEALTHYBITE</strong> costs about the same as
@@ -481,8 +490,8 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Footer */}
-      <Footer className="footer-section">
+      {/* ---------- FOOTER ---------- */}
+      <Footer className="footer-section scroll-section">
         <div className="container">
           <Space
             direction="vertical"
