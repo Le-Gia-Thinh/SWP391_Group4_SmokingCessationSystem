@@ -106,6 +106,7 @@ export default function Navbar() {
           onClick: () => navigate("/my-bookings"),
         });
       }
+      console.log("Navbar user:", user);
     }
 
     if (isAdmin()) {
@@ -193,18 +194,19 @@ export default function Navbar() {
                 onClick={() => navigate("/profile")}
               /> */}
               <Dropdown
-              popupRender={() => <UserDropdownMenu />}
-              placement="bottomRight"
-              trigger={["click"]}
-            >
-              <Avatar
-                icon={<UserOutlined />}
-                style={{
-                  backgroundColor: user.role === "admin" ? "#ff4d4f" : "#52c41a",
-                  cursor: "pointer",
-                }}
-              />
-            </Dropdown>
+                popupRender={() => <UserDropdownMenu />}
+                placement="bottomRight"
+                trigger={["click"]}
+              >
+                <Avatar
+                  icon={<UserOutlined />}
+                  style={{
+                    backgroundColor:
+                      user.role === "admin" ? "#ff4d4f" : "#52c41a",
+                    cursor: "pointer",
+                  }}
+                />
+              </Dropdown>
               <span className="username-text">{user.name || user.email}</span>
               <Button
                 type="text"

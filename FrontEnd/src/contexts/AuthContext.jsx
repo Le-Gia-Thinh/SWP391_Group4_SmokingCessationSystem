@@ -1,153 +1,152 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from "react";
 
 const AuthContext = createContext();
 
 const useAuth = () => {
-    const context = useContext(AuthContext);
-    if (!context) {
-        throw new Error('useAuth must be used within an AuthProvider');
-    }
-    return context;
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
 };
 
 export { useAuth };
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-    // Check if user is logged in when app loads - Kiểm tra user đã đăng nhập chưa khi load app
-    useEffect(() => {
-  const token = localStorage.getItem("token");
+  // Check if user is logged in when app loads - Kiểm tra user đã đăng nhập chưa khi load app
+  useEffect(() => {
+    const token = localStorage.getItem("token");
 
-  if (!token) {
-    setLoading(false);
-    return;
-  }
+    if (!token) {
+      setLoading(false);
+      return;
+    }
 
-  const fetchUser = async () => {
+    const fetchUser = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/user/me", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!res.ok) throw new Error("Không lấy được user");
+
+        const data = await res.json();
+        setUser({ ...data, role: data.user_role });
+        localStorage.setItem("user", JSON.stringify(data));
+      } catch (err) {
+        console.error("Lỗi khi xác thực:", err);
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  // Login with real API - Đăng nhập với API thực tế
+  const login = async (email, password) => {
     try {
-      const res = await fetch("http://localhost:5000/api/user/me", {
+      const response = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
         headers: {
-          Authorization: `Bearer ${token}`
-        }
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
       });
 
-      if (!res.ok) throw new Error("Không lấy được user");
+      const data = await response.json();
 
-      const data = await res.json();
-      setUser(data);
-      localStorage.setItem("user", JSON.stringify(data));
-    } catch (err) {
-      console.error("Lỗi khi xác thực:", err);
-      setUser(null);
-    } finally {
-      setLoading(false);
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || "Login failed");
+      }
+
+      // Lưu token
+      localStorage.setItem("token", data.token);
+
+      // Gọi /api/user/me để lấy thông tin đầy đủ
+      const userRes = await fetch("http://localhost:5000/api/user/me", {
+        headers: {
+          Authorization: `Bearer ${data.token}`,
+        },
+      });
+
+      const userData = await userRes.json();
+
+      if (!userRes.ok || !userData) {
+        throw new Error("Không lấy được thông tin chi tiết người dùng");
+      }
+      const mappedUser = { ...userData, role: userData.user_role };
+      localStorage.setItem("user", JSON.stringify(mappedUser));
+      setUser(mappedUser);
+
+      return userData;
+    } catch (error) {
+      console.error("Login error:", error);
+      throw error;
     }
   };
 
-  fetchUser();
-}, []);
+  // Logout - Đăng xuất
+  const logout = () => {
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    setUser(null);
+  };
 
-    // Login with real API - Đăng nhập với API thực tế
-    const login = async (email, password) => {
-    try {
-        const response = await fetch('http://localhost:5000/api/auth/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email, password }),
-        });
+  // Check permissions - Kiểm tra quyền
+  const hasRole = (allowedRoles) => {
+    if (!user) return false;
+    return allowedRoles.includes(user.role);
+  };
 
-        const data = await response.json();
+  // Check if is regular User - Kiểm tra là User thường
+  const isUser = () => hasRole(["member", "coach", "admin"]);
 
-        if (!response.ok || !data.success) {
-            throw new Error(data.message || 'Login failed');
-        }
+  // Check if is Coach - Kiểm tra là Coach
+  const isCoach = () => hasRole(["coach"]);
 
-        // Lưu token
-        localStorage.setItem('token', data.token);
+  // Check if is Admin - Kiểm tra là Admin
+  const isAdmin = () => hasRole(["admin"]);
 
-        // Gọi /api/user/me để lấy thông tin đầy đủ
-        const userRes = await fetch('http://localhost:5000/api/user/me', {
-            headers: {
-                Authorization: `Bearer ${data.token}`
-            }
-        });
+  // Admin function: Create coach account - Hàm Admin: Tạo tài khoản coach
+  const createCoachAccount = async (coachData) => {
+    // Simulate API call to create coach account
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
-        const userData = await userRes.json();
+    // In real system, this would create a new coach account
+    // Trong hệ thống thực tế, điều này sẽ tạo tài khoản coach mới
+    console.log("Creating coach account:", coachData);
 
-        if (!userRes.ok || !userData) {
-            throw new Error('Không lấy được thông tin chi tiết người dùng');
-        }
-        localStorage.setItem('user', JSON.stringify(userData));
-        setUser(userData);
-
-        return userData;
-    } catch (error) {
-        console.error('Login error:', error);
-        throw error;
-    }
+    return {
+      success: true,
+      message:
+        "Coach account created successfully. Credentials have been sent to the coach.",
+      coachCredentials: {
+        email: coachData.email,
+        temporaryPassword:
+          "Coach" + Math.random().toString(36).substr(2, 6) + "!",
+      },
     };
+  };
 
-    // Logout - Đăng xuất
-    const logout = () => {
-        localStorage.removeItem('user');
-        localStorage.removeItem('token');
-        setUser(null);
-    };
+  const value = {
+    user,
+    login,
+    logout,
+    hasRole,
+    isUser,
+    isCoach,
+    isAdmin,
+    createCoachAccount,
+    loading,
+  };
 
-    // Check permissions - Kiểm tra quyền
-    const hasRole = (allowedRoles) => {
-        if (!user) return false;
-        return allowedRoles.includes(user.role);
-    };
-
-    // Check if is regular User - Kiểm tra là User thường
-    const isUser = () => hasRole(['member', 'coach', 'admin']);
-
-    // Check if is Coach - Kiểm tra là Coach
-    const isCoach = () => hasRole(['coach']);
-
-    // Check if is Admin - Kiểm tra là Admin
-    const isAdmin = () => hasRole(['admin']);
-
-    // Admin function: Create coach account - Hàm Admin: Tạo tài khoản coach
-    const createCoachAccount = async (coachData) => {
-        // Simulate API call to create coach account
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        // In real system, this would create a new coach account
-        // Trong hệ thống thực tế, điều này sẽ tạo tài khoản coach mới
-        console.log('Creating coach account:', coachData);
-
-        return {
-            success: true,
-            message: 'Coach account created successfully. Credentials have been sent to the coach.',
-            coachCredentials: {
-                email: coachData.email,
-                temporaryPassword: 'Coach' + Math.random().toString(36).substr(2, 6) + '!'
-            }
-        };
-    };
-
-    const value = {
-        user,
-        login,
-        logout,
-        hasRole,
-        isUser,
-        isCoach,
-        isAdmin,
-        createCoachAccount,
-        loading
-    };
-
-    console.log("👤 user in Profile.jsx:", user);
-    return (
-        <AuthContext.Provider value={value}>
-            {children}
-        </AuthContext.Provider>
-    );
-}; 
+  console.log("👤 user in Profile.jsx:", user);
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
