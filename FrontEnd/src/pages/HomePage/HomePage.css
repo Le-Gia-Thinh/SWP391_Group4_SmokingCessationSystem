@@ -1,0 +1,429 @@
+/* src/pages/HomePage.css */
+
+.homepage {
+  background-color: #f9fff9;
+  min-height: 100vh;
+  width: 100%;
+  font-family: "Segoe UI", sans-serif;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* Hero Section */
+.hero-section {
+  background: linear-gradient(135deg, #f4fff6 0%, #e8f5e8 100%);
+  padding: 60px 24px;
+}
+
+.hero-content {
+  padding: 40px 0;
+}
+
+.hero-title {
+  font-size: 3rem !important;
+  font-weight: 700 !important;
+  margin-bottom: 8px !important;
+}
+
+.hero-slogan {
+  font-size: 1.5rem !important;
+  margin: 8px 0 16px 0 !important;
+  font-weight: 500 !important;
+}
+
+.hero-subtext {
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+.highlight {
+  color: #d22f2f;
+}
+
+.hero-btn {
+  background: linear-gradient(90deg, #52c41a 0%, #73d13d 100%) !important;
+  border: none !important;
+  border-radius: 8px !important;
+  height: 48px !important;
+  font-size: 16px !important;
+  font-weight: 500 !important;
+}
+
+.video-placeholder {
+  background: #fff;
+  border: 2px dashed #d9d9d9;
+  border-radius: 12px;
+  height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: #666;
+}
+
+/* Benefits Section */
+.benefits-section {
+  padding: 80px 0;
+  background: #fff;
+}
+
+.check-icon {
+  color: #f5222d;
+  font-size: 18px;
+}
+
+.benefit-img {
+  width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.benefit-img.tall {
+  height: 200px;
+  object-fit: cover;
+}
+
+.benefit-img.wide {
+  height: 150px;
+  object-fit: cover;
+}
+
+/* Plans Section */
+.plans-section {
+  background: linear-gradient(135deg, #f6ffed 0%, #d9f7be 100%);
+  padding: 80px 0;
+  margin: 60px 24px;
+  border-radius: 24px;
+}
+
+.plans-title {
+  color: #52c41a !important;
+}
+
+.plan-avatar {
+  background: #fff !important;
+  color: #52c41a !important;
+  box-shadow: 0 4px 12px rgba(82, 196, 26, 0.2);
+}
+
+/* Lifestyle Section */
+.lifestyle-section {
+  padding: 80px 0;
+  background: #fafafa;
+}
+
+.lifestyle-card {
+  height: 100%;
+  border-radius: 12px !important;
+  overflow: hidden;
+}
+
+.lifestyle-img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+}
+
+.lifestyle-content {
+  padding: 16px;
+}
+
+/* CTA Section */
+.cta-section {
+  padding: 60px 0;
+  background: linear-gradient(135deg, #e6f7ff 0%, #bae7ff 100%);
+}
+
+.cta-card {
+  border-radius: 16px !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Category Section */
+.category-section {
+  padding: 80px 0;
+  background: #f6ffed;
+}
+
+.category-img {
+  width: 100%;
+  max-width: 400px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Registration Section */
+.register-section {
+  padding: 80px 0;
+  background: #fff;
+}
+
+.registration-carousel .ant-carousel .slick-slide {
+  text-align: center;
+}
+
+.carousel-img {
+  width: 100%;
+  max-height: 400px;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+/* Profile Section */
+.profile-section {
+  padding: 80px 0;
+  background: #f4fff6;
+}
+
+.profile-header {
+  margin-bottom: 40px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.profile-info-card {
+  background: #52c41a !important;
+  border: none !important;
+  max-width: 300px;
+}
+
+.profile-carousel .ant-carousel .slick-slide {
+  text-align: center;
+}
+
+/* Container chung */
+.blog-section {
+  padding: 80px 0;
+  background: #fff;
+}
+
+/* Khoảng giữa các slide */
+.blog-carousel .slick-slide {
+  padding: 0 12px;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: center;  
+  transition: transform 0.3s ease;
+  /* Hiệu ứng chuyển động mượt mà */
+  transform: scale(1);
+  
+}
+
+/* Cho phép phần scale của slide giữa thoát ra */
+.blog-carousel .slick-list,
+.blog-carousel .slick-track {
+  overflow: visible !important;
+  margin-left: 210px;
+}
+
+/* Đẩy slide giữa lên trên cùng */
+.blog-carousel .slick-slide.slick-center {
+  z-index: 2;
+}
+
+/* Slide trung tâm được phóng to */
+.blog-carousel .slick-slide.slick-center .ant-card {
+  transform: scale(1.08);
+  transition: transform 0.3s;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* Tùy chỉnh vị trí mũi tên */
+.blog-carousel .slick-prev,
+.blog-carousel .slick-next {
+  top: 45%;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: rgba(0, 0, 0, 0.3);
+  color: #fff;
+  border-radius: 50%;
+  z-index: 3;
+  /* cao hơn cả slick-center */
+}
+
+.blog-carousel .slick-prev {
+  left: -16px;
+}
+
+.blog-carousel .slick-next {
+  right: -16px;
+}
+
+
+/* Start Section */
+.start-section {
+  padding: 60px 0;
+  background: #f0fff5;
+}
+
+/* Results Section */
+.results-section {
+  padding: 80px 0;
+  background: #fafafa;
+}
+
+.testimonial-card {
+  border-radius: 16px !important;
+}
+
+.testimonial-img {
+  width: 100%;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+/* Pricing Section */
+.pricing-section {
+  padding: 60px 0;
+  background: linear-gradient(135deg, #fff2e8 0%, #ffd8bf 100%);
+}
+
+/* Footer */
+.footer-section {
+  background: linear-gradient(120deg, #e6fff6 0%, #d6f5e8 100%) !important;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  box-shadow: 0 -2px 12px 0 rgba(56, 249, 215, 0.06);
+  padding: 24px 0 12px 0;
+  color: #222;
+  animation: fadeInFooter 0.7s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@keyframes footerFadeIn {
+  from { opacity: 0; transform: translateY(40px);}
+  to { opacity: 1; transform: translateY(0);}
+}
+
+@keyframes fadeInFooter {
+  from { opacity: 0; transform: translateY(30px);}
+  to { opacity: 1; transform: translateY(0);}
+}
+
+.footer-section .container {
+  padding-top: 32px;
+  padding-bottom: 16px;
+}
+
+.footer-logo {
+  height: 72px;
+  border-radius: 20px;
+  margin-bottom: 8px;
+}
+
+.footer-links .ant-btn-link {
+  color: #222 !important;
+  font-weight: 500;
+  font-size: 16px;
+  margin: 0 10px;
+  padding: 0 4px;
+  background: none;
+  transition: color 0.2s, border-bottom 0.2s;
+}
+
+.footer-links .ant-btn-link.active,
+.footer-links .ant-btn-link:hover {
+  color: #38cfcf !important;
+  border-bottom: 2px solid #38cfcf;
+  background: none;
+  font-weight: 500;
+  box-shadow: none;
+  text-decoration: none;
+}
+
+.footer-legal .ant-btn-link {
+  color: #666 !important;
+  font-size: 14px;
+  margin: 0 6px;
+  padding: 0 2px;
+}
+
+.social-icon {
+  font-size: 24px !important;
+  margin: 0 6px;
+  transition: transform 0.2s, filter 0.2s;
+  cursor: pointer;
+}
+.social-icon:hover {
+  transform: scale(1.18);
+  filter: brightness(1.4);
+}
+
+.social-btn {
+  transition: transform 0.2s, filter 0.2s;
+}
+.social-btn:hover {
+  transform: scale(1.18);
+  filter: brightness(1.4);
+  background: #38cfcf !important; /* Nền xanh nhạt khi hover */
+}
+
+.social-btn:hover .anticon {
+  color: #fff !important; /* Icon chuyển sang trắng */
+  transition: color 0.2s;
+}
+
+/* Nếu muốn icon luôn ở giữa nút tròn */
+.social-btn .anticon {
+  vertical-align: middle;
+}
+
+.footer-copyright {
+  margin-top: 10px;
+  color: #666;
+  font-size: 14px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 2rem !important;
+  }
+
+  .hero-slogan {
+    font-size: 1.2rem !important;
+  }
+
+  .plans-section {
+    margin: 20px 12px;
+    border-radius: 16px;
+  }
+
+  .container {
+    padding: 0 16px;
+  }
+
+  .lifestyle-img {
+    height: 100px;
+  }
+
+  .lifestyle-content {
+    padding: 12px;
+  }
+}
+
+@media (max-width: 576px) {
+  .hero-section {
+    padding: 40px 16px;
+  }
+
+  .benefits-section,
+  .lifestyle-section,
+  .category-section,
+  .register-section,
+  .profile-section,
+  .blog-section,
+  .results-section {
+    padding: 60px 0;
+  }
+
+  .video-placeholder {
+    height: 200px;
+    font-size: 1.2rem;
+  }
+}

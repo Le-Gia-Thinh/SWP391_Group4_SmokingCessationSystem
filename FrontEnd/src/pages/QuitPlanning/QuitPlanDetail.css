@@ -1,0 +1,4 @@
+.ant-table-row-success {
+  background: #e6fffb !important;
+  transition: background 0.3s;
+}

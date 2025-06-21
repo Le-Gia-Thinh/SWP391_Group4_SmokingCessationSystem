@@ -1,0 +1,341 @@
+/* ==== Global Setup ==== */
+body {
+  background: radial-gradient(rgba(250, 247, 247, 0.936), rgba(178, 220, 160, 0.799));
+  backdrop-filter: blur(5px);
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* ==== Centering ==== */
+.register-wrapper {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* ==== Outer Box ==== */
+.register-outer-box {
+  position: relative;
+  display: flex;
+  width: 375px;
+  height: 100px;
+  padding: 15px;
+  box-sizing: border-box;
+  border-radius: 20px;
+  background: #c5e7a8;
+  overflow: hidden;
+  transition: all 0.5s ease-in-out;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 0 25px rgba(178, 236, 180, 0.2),
+    inset 0 0 12px rgba(123, 165, 80, 0.136);
+  cursor: pointer;
+}
+
+/* ==== Neon rotating border ==== */
+.register-outer-box::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border-radius: 20px;
+  background: conic-gradient(#a5d6a7 0deg 120deg,
+      #81c784 120deg 240deg,
+      #4caf50 240deg 360deg);
+  animation: rotateBorder 6s linear infinite;
+  z-index: -1;
+}
+
+.register-outer-box::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  right: 3px;
+  bottom: 3px;
+  background: #c9e9ad;
+  border-radius: 16px;
+  z-index: -1;
+}
+
+/* ==== 4 Animated Lines ==== */
+.register-outer-box .line {
+  position: absolute;
+  opacity: 1;
+  filter: blur(0.5px);
+  animation-timing-function: linear;
+}
+
+.register-outer-box .line.top,
+.register-outer-box .line.bottom {
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(to right,
+      transparent, #c4f2c6, #afefb2, #94ed96, transparent);
+}
+
+.register-outer-box .line.top {
+  top: 0;
+  left: -100%;
+  animation: moveTop 2s linear infinite;
+}
+
+.register-outer-box .line.bottom {
+  bottom: 0;
+  left: 100%;
+  animation: moveBottom 2s linear infinite 0.6s;
+}
+
+.register-outer-box .line.left,
+.register-outer-box .line.right {
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(to bottom,
+      transparent, #9cf89f, #b9f3bd, #9feda0, transparent);
+}
+
+.register-outer-box .line.right {
+  top: -100%;
+  right: 0;
+  animation: moveRight 2s linear infinite 0.3s;
+}
+
+.register-outer-box .line.left {
+  left: 0;
+  bottom: -100%;
+  animation: moveLeft 2s linear infinite 0.9s;
+}
+
+/* ==== Pin Icon ==== */
+.pin-icon-register {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-size: 18px;
+  cursor: pointer;
+  color: #2e7d32;
+  opacity: 0;
+  transition: opacity 0.3s;
+  z-index: 2;
+}
+
+.register-outer-box:hover .pin-icon-register,
+.register-outer-box.open .pin-icon-register {
+  opacity: 1;
+}
+
+/* ==== Hover / Open ==== */
+.register-outer-box:hover,
+.register-outer-box.open {
+  width: 450px;
+  height: auto;
+  padding: 30px;
+  justify-content: flex-start;
+  align-items: flex-start;
+  cursor: default;
+}
+
+/* ==== Inner Container Reveal ==== */
+.register-outer-box:hover .register-container,
+.register-outer-box.open .register-container {
+  width: 100%;
+  height: auto;
+  padding: 0;
+  border-radius: 16px;
+}
+
+/* ==== Inner Register Container ==== */
+.register-container {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  background: #ffffff;
+  border-radius: 16px;
+  box-sizing: border-box;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: all 0.5s ease-in-out;
+}
+
+/* ==== Form Reveal ==== */
+.register-form-content {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.95) translateY(20px);
+  transition: all 0.5s ease;
+  width: 100%;
+  padding: 15px;
+}
+
+.register-outer-box:hover .register-form-content,
+.register-outer-box.open .register-form-content {
+  opacity: 1;
+  pointer-events: all;
+  transform: scale(1) translateY(0);
+  transition-delay: 0.2s;
+}
+
+/* ==== Title ==== */
+.register-title {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #2e7d32;
+  font-size: 24px;
+  font-weight: bold;
+  text-shadow: 0 0 4px #a5d6a7;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 15px;
+}
+
+.register-outer-box:hover .register-title,
+.register-outer-box.open .register-title {
+  position: static;
+  transform: none;
+  margin: 0 auto 20px;
+  justify-content: center;
+}
+
+/* ==== Ant Design Overrides ==== */
+.ant-form-item-label>label {
+  color: #2e7d32 !important;
+  font-weight: 600;
+}
+
+.register-container .ant-input,
+.register-container .ant-input-password,
+.register-container .ant-input-affix-wrapper {
+  background-color: #ffffff !important;
+  color: #333 !important;
+  border: 1px solid #ccc;
+  border-radius: 20px !important;
+  padding: 10px 15px;
+  transition: 0.3s;
+}
+
+.ant-input:focus,
+.ant-input-password:focus,
+.ant-input-affix-wrapper-focused {
+  border-color: #4caf50 !important;
+  box-shadow: 0 0 6px #81c784;
+}
+
+/* ==== Button ==== */
+.register-button {
+  background: #4caf50 !important;
+  border: none !important;
+  color: #fff !important;
+  font-weight: bold;
+  border-radius: 25px !important;
+  height: 45px;
+  width: 100%;
+  transition: all 0.3s ease-in-out;
+}
+
+.register-button:hover {
+  background: #43a047 !important;
+  box-shadow: 0 0 8px #4caf50;
+}
+
+/* ==== Signup Text ==== */
+.signup-text {
+  margin-top: 24px;
+  text-align: center;
+}
+
+.signup-text a {
+  color: #2e7d32;
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+.signup-text a:hover {
+  color: #43a047;
+}
+
+/* ==== Keyframes ==== */
+@keyframes rotateBorder {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes moveTop {
+  0% {
+    left: -100%;
+    opacity: 0;
+  }
+
+  50% {
+    left: 0;
+    opacity: 1;
+  }
+
+  100% {
+    left: 100%;
+    opacity: 0;
+  }
+}
+
+@keyframes moveRight {
+  0% {
+    top: -100%;
+    opacity: 0;
+  }
+
+  50% {
+    top: 0;
+    opacity: 1;
+  }
+
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+@keyframes moveBottom {
+  0% {
+    left: 100%;
+    opacity: 0;
+  }
+
+  50% {
+    left: 0;
+    opacity: 1;
+  }
+
+  100% {
+    left: -100%;
+    opacity: 0;
+  }
+}
+
+@keyframes moveLeft {
+  0% {
+    bottom: -100%;
+    opacity: 0;
+  }
+
+  50% {
+    bottom: 0;
+    opacity: 1;
+  }
+
+  100% {
+    bottom: 100%;
+    opacity: 0;
+  }
+}
