@@ -292,9 +292,11 @@ const BEHAVIOR_PLAN_PHASES = [
 
 const generateWeeklyQuota = (months, level) => {
   const totalWeeks = Math.round(months * 4.3);
-  const startingQuota = { light: 35, medium: 70, heavy: 119 };
+  const startingQuota = { low: 35, medium: 70, high: 119 };
   const start = startingQuota[level];
-  const step = start / totalWeeks;
+  // Nếu chỉ có 1 tuần thì luôn là start
+  if (totalWeeks <= 1) return [{ week: 1, maxCigs: start }];
+  const step = (start - 0) / (totalWeeks - 1);
   return Array.from({ length: totalWeeks }, (_, i) => ({
     week: i + 1,
     maxCigs: Math.round(Math.max(0, start - step * i)),
@@ -304,7 +306,29 @@ const generateWeeklyQuota = (months, level) => {
 const distributeDailyQuota = (weeklyCigs) => {
   const basePattern = [14, 13, 12, 11, 9, 6, 5];
   const baseTotal = basePattern.reduce((a, b) => a + b, 0);
-  return basePattern.map((val) => Math.round((val / baseTotal) * weeklyCigs));
+  let raw = basePattern.map((val) => (val / baseTotal) * weeklyCigs);
+
+  // Làm tròn xuống từng ngày
+  let rounded = raw.map(Math.floor);
+  let sum = rounded.reduce((a, b) => a + b, 0);
+
+  // Phân bổ số còn thiếu (nếu tổng < weeklyCigs)
+  let diff = Math.round(weeklyCigs - sum);
+  while (diff > 0) {
+    // Tìm ngày có phần thập phân lớn nhất để cộng thêm 1
+    let maxIdx = 0;
+    let maxFrac = 0;
+    raw.forEach((v, i) => {
+      const frac = v - Math.floor(v);
+      if (frac > maxFrac) {
+        maxFrac = frac;
+        maxIdx = i;
+      }
+    });
+    rounded[maxIdx]++;
+    diff--;
+  }
+  return rounded;
 };
 
 const QuitPlan = () => {
@@ -314,7 +338,8 @@ const QuitPlan = () => {
   const [user, setUser] = useState(null);
   const [viewMode, setViewMode] = useState("week");
   const [smokingLog, setSmokingLog] = useState({});
-  const [weeklyUsage, setWeeklyUsage] = useState({});
+  const [tempSmokingLog, setTempSmokingLog] = useState({});
+
   const [currentWeekPage, setCurrentWeekPage] = useState(() => {
     const savedPage = sessionStorage.getItem("quitPlanPage");
     return savedPage ? parseInt(savedPage, 10) : 1;
@@ -333,6 +358,7 @@ const QuitPlan = () => {
     fetch(`http://localhost:5000/api/customer/ftnd-level/${user.id}`)
       .then((res) => res.json())
       .then((data) => {
+        console.log("ftnd_level từ DB:", data.ftnd_level);
         setFtndLevel(data.ftnd_level || "Không xác định");
       })
       .catch(() => setFtndLevel("Không xác định"));
@@ -360,22 +386,74 @@ const QuitPlan = () => {
   }, []);
 
   useEffect(() => {
-    if (!user?.id || !startDate) return;
+    if (!user?.id || !startDate || !months || !ftndLevel) return;
 
     fetch(`http://localhost:5000/api/smoking-summary/all/${user.id}`)
       .then((res) => res.json())
-      .then((data) => {
-        const log = {};
-        data.forEach((entry) => {
-          const formattedDate = dayjs(entry.date).format("DD/MM/YYYY");
-          log[formattedDate] = entry.total_cigarettes;
-        });
-        setSmokingLog(log); // Gán lại vào state
+      .then(async (data) => {
+        if (data.length === 0) {
+          // Nếu user này chưa có dữ liệu, tự động lưu số điếu gợi ý vào DB
+          const plan = [];
+          const totalDays = months * 30;
+          const weeklyQuota = generateWeeklyQuota(months, level);
+          for (let i = 0; i < totalDays; i++) {
+            const currentDate = startDate.add(i, "day");
+            const formattedDate = currentDate.format("DD/MM/YYYY");
+            const weekIndex = Math.floor(i / 7);
+            const weeklyCigs = weeklyQuota[weekIndex]?.maxCigs || 0;
+            console.log(
+              "Ngày:",
+              formattedDate,
+              "weekIndex:",
+              weekIndex,
+              "weeklyCigs:",
+              weeklyCigs
+            );
+            const dailyPattern = distributeDailyQuota(weeklyCigs);
+            console.log("dailyPattern:", dailyPattern);
+            const dailyQuota = dailyPattern[i % 7] || 0;
+            plan.push({ date: formattedDate, total_cigarettes: dailyQuota });
+          }
+          // Gửi từng ngày lên server cho user này
+          const token = localStorage.getItem("token");
+          for (const item of plan) {
+            await fetch("http://localhost:5000/api/smoking-summary/single", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                date: dayjs(item.date, "DD/MM/YYYY").format("YYYY-MM-DD"),
+                total_cigarettes: item.total_cigarettes,
+              }),
+            });
+          }
+          // Sau khi lưu xong, reload lại dữ liệu cho user này
+          fetch(`http://localhost:5000/api/smoking-summary/all/${user.id}`)
+            .then((res) => res.json())
+            .then((data) => {
+              const log = {};
+              data.forEach((entry) => {
+                const formattedDate = dayjs(entry.date).format("DD/MM/YYYY");
+                log[formattedDate] = entry.total_cigarettes;
+              });
+              setSmokingLog(log);
+            });
+        } else {
+          // Nếu đã có dữ liệu thì chỉ cần set vào state
+          const log = {};
+          data.forEach((entry) => {
+            const formattedDate = dayjs(entry.date).format("DD/MM/YYYY");
+            log[formattedDate] = entry.total_cigarettes;
+          });
+          setSmokingLog(log);
+        }
       })
       .catch((err) => {
         console.error("Lỗi khi tải dữ liệu số điếu:", err);
       });
-  }, [user?.id, startDate]);
+  }, [user?.id, startDate, months, ftndLevel]);
 
   const handlePlanReady = ({ startDate, months }) => {
     setStartDate(dayjs(startDate));
@@ -388,6 +466,8 @@ const QuitPlan = () => {
       await axios.post("http://localhost:5000/api/quitplan/reset", {
         user_id: user.id,
       });
+      // Xóa luôn log cũ
+      // await axios.delete(`http://localhost:5000/api/smoking-summary/all/${user.id}`);
       sessionStorage.removeItem("quitPlanPage");
       message.success("Đã đặt lại kế hoạch");
       setShowModal(true);
@@ -398,25 +478,49 @@ const QuitPlan = () => {
   };
 
   const totalDays = months ? months * 30 : 0;
-  const level = "medium";
+  const normalizeLevel = (level) => {
+    if (!level) return "medium";
+    const l = level.trim().toLowerCase();
+    if (l === "low") return "low";
+    if (l === "medium") return "medium";
+    if (l === "high") return "high";
+    return "medium";
+  };
+
+  const level = useMemo(() => normalizeLevel(ftndLevel), [ftndLevel]);
   const weeklyQuota = useMemo(
-    () => generateWeeklyQuota(months, level),
-    [months, level]
+    () =>
+      startDate && months && ftndLevel
+        ? generateWeeklyQuota(months, level)
+        : [],
+    [months, level, startDate, ftndLevel]
   );
+  console.log("weeklyQuota:", weeklyQuota);
   const getRemainingCigs = (
     dateStr,
     weeklyQuota,
     log = smokingLog,
+    tempLog = tempSmokingLog,
     excludeCurrent = false
   ) => {
     const date = dayjs(dateStr, "DD/MM/YYYY");
     const weekIndex = Math.floor(date.diff(startDate, "day") / 7);
-    const weekData = Object.entries(log).filter(([key]) => {
+
+    // Lấy tất cả ngày trong tuần từ cả log và tempLog
+    const allDates = new Set([...Object.keys(log), ...Object.keys(tempLog)]);
+    const weekDates = Array.from(allDates).filter((key) => {
       const d = dayjs(key, "DD/MM/YYYY");
       const wi = Math.floor(d.diff(startDate, "day") / 7);
       return wi === weekIndex && (!excludeCurrent || key !== dateStr);
     });
-    const used = weekData.reduce((sum, [, val]) => sum + Number(val || 0), 0);
+
+    // Tính tổng số điếu đã nhập (ưu tiên tempLog nếu có)
+    let used = weekDates.reduce((sum, key) => {
+      const tempVal = tempLog[key];
+      const val = log[key];
+      return sum + Number(tempVal !== undefined ? tempVal : val || 0);
+    }, 0);
+
     const quota = weeklyQuota[weekIndex]?.maxCigs || 0;
     return Math.max(0, quota - used);
   };
@@ -448,23 +552,20 @@ const QuitPlan = () => {
         phase: `${phase.phase} – ${phase.goal}`,
         suggestedCigs: dailyQuota,
         actualCigs: smokingLog[formattedDate] || "",
-        remainingCigs: getRemainingCigs(formattedDate, weeklyQuota, smokingLog),
+        // Sửa dòng này: truyền tempSmokingLog vào để tính luôn giá trị tạm thời
+        remainingCigs: getRemainingCigs(
+          formattedDate,
+          weeklyQuota,
+          smokingLog,
+          tempSmokingLog // <-- thêm vào đây
+        ),
         weekIndex,
         weekDayLabel: label,
         detailPlan: BEHAVIOR_PLAN_PHASES[PHASES.indexOf(phase)],
       });
     }
     return data;
-  }, [startDate, months, viewMode, smokingLog, weeklyUsage]);
-
-  const updateWeeklyCigUsage = (dateStr, value) => {
-    const date = dayjs(dateStr, "DD/MM/YYYY");
-    const weekIndex = Math.floor(date.diff(startDate, "day") / 7);
-    setWeeklyUsage((prev) => {
-      const currentWeek = prev[weekIndex] || {};
-      return { ...prev, [weekIndex]: { ...currentWeek, [dateStr]: value } };
-    });
-  };
+  }, [startDate, months, viewMode, smokingLog, tempSmokingLog]); // <-- thêm tempSmokingLog vào dependency
 
   const columns = [
     {
@@ -520,142 +621,21 @@ const QuitPlan = () => {
         return <Tag color={color}>{val}</Tag>;
       },
     },
-    {
-      title: "Gợi ý",
-      dataIndex: "suggestedCigs",
-      key: "suggestedCigs",
-      render: (val, record) => (
-        <Popover
-          title="Chi tiết hành vi thay thế"
-          content={
-            <div>
-              {record.detailPlan.map((item, idx) => (
-                <div key={idx} style={{ marginBottom: 4 }}>
-                  <b>{item.time}:</b> {item.behavior} <br />
-                  <span style={{ color: "#52c41a" }}>{item.replacement}</span>
-                </div>
-              ))}
-            </div>
-          }
-          trigger="hover"
-        >
-          <Button size="small" icon={<InfoCircleOutlined />}>
-            Gợi ý: {val} điếu
-          </Button>
-        </Popover>
-      ),
-    },
+
     {
       title: "Bạn hút",
       dataIndex: "date",
       key: "actualCigs",
-      render: (date, record) => {
-        const value = smokingLog[date] || 0;
-        const suggested = record.suggestedCigs;
-        const isOverLimit = value > suggested;
-
-        const isPast = dayjs(date, "DD/MM/YYYY").isBefore(dayjs(), "day");
-
-        return (
-          <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-            <Tooltip
-              title={
-                isPast
-                  ? "Không thể sửa dữ liệu ngày trong quá khứ"
-                  : isOverLimit
-                  ? `Vượt quá gợi ý (${suggested} điếu)`
-                  : "Nhập số điếu bạn đã hút"
-              }
-            >
-              <InputNumber
-                min={0}
-                value={value}
-                style={{
-                  width: 70,
-                  borderColor: isOverLimit ? "red" : undefined,
-                  background: isOverLimit ? "#fff1f0" : undefined,
-                }}
-                disabled={isPast}
-                onChange={(val) => {
-                  setSmokingLog((prev) => ({ ...prev, [date]: val }));
-                  updateWeeklyCigUsage(date, val);
-
-                  const formatted = dayjs(date, "DD/MM/YYYY").format(
-                    "YYYY-MM-DD"
-                  );
-                  const token = localStorage.getItem("token");
-
-                  fetch("http://localhost:5000/api/smoking-summary/single", {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json",
-                      Authorization: `Bearer ${token}`,
-                    },
-                    body: JSON.stringify({
-                      date: formatted,
-                      total_cigarettes: val,
-                    }),
-                  })
-                    .then((res) => res.json())
-                    .then((res) => {
-                      if (res.success) {
-                        message.success("✅ Đã lưu!");
-                      } else {
-                        message.error("❌ Không thể lưu.");
-                      }
-                    })
-                    .catch((err) => {
-                      console.error("Lỗi khi lưu:", err);
-                      message.error("❌ Lỗi khi kết nối server.");
-                    });
-                }}
-              />
-            </Tooltip>
-
-            <Button
-              size="small"
-              type="link"
-              disabled={isPast}
-              onClick={() => {
-                setSmokingLog((prev) => ({ ...prev, [date]: suggested }));
-                updateWeeklyCigUsage(date, suggested);
-
-                const formatted = dayjs(date, "DD/MM/YYYY").format(
-                  "YYYY-MM-DD"
-                );
-                const token = localStorage.getItem("token");
-
-                fetch("http://localhost:5000/api/smoking-summary/single", {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                  },
-                  body: JSON.stringify({
-                    date: formatted,
-                    total_cigarettes: suggested,
-                  }),
-                })
-                  .then((res) => res.json())
-                  .then((res) => {
-                    if (res.success) {
-                      message.success("✅ Đã lưu theo gợi ý!");
-                    } else {
-                      message.error("❌ Không thể lưu.");
-                    }
-                  })
-                  .catch((err) => {
-                    console.error("Lỗi khi lưu:", err);
-                    message.error("❌ Lỗi khi kết nối server.");
-                  });
-              }}
-              style={{ padding: 0 }}
-            >
-              Theo gợi ý
-            </Button>
-          </div>
-        );
-      },
+      render: (date) => (
+        <SmokingInputCell
+          date={date}
+          value={smokingLog[date] || 0}
+          tempValue={tempSmokingLog[date]}
+          isPast={dayjs(date, "DD/MM/YYYY").isBefore(dayjs(), "day")}
+          setSmokingLog={setSmokingLog}
+          setTempSmokingLog={setTempSmokingLog}
+        />
+      ),
     },
 
     {
@@ -702,8 +682,9 @@ const QuitPlan = () => {
     );
   }
 
-  if (!startDate || !months)
+  if (!startDate || !months || !ftndLevel) {
     return <Spin fullscreen tip="Đang tải kế hoạch..." />;
+  }
 
   return (
     <div
@@ -874,6 +855,86 @@ const QuitPlan = () => {
           </Card>
         </Col>
       </Row>
+    </div>
+  );
+};
+
+const SmokingInputCell = ({
+  date,
+  value,
+  tempValue,
+  isPast,
+  setSmokingLog,
+  setTempSmokingLog,
+}) => {
+  const [inputValue, setInputValue] = useState(
+    tempValue !== undefined ? tempValue : value
+  );
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setInputValue(tempValue !== undefined ? tempValue : value);
+  }, [value, tempValue]);
+
+  const handleSave = async () => {
+    setLoading(true);
+    const formatted = dayjs(date, "DD/MM/YYYY").format("YYYY-MM-DD");
+    const token = localStorage.getItem("token");
+    try {
+      const res = await fetch(
+        "http://localhost:5000/api/smoking-summary/single",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            date: formatted,
+            total_cigarettes: inputValue,
+          }),
+        }
+      );
+      const data = await res.json();
+      if (data.success) {
+        message.success("✅ Đã lưu!");
+        setSmokingLog((prev) => ({ ...prev, [date]: inputValue }));
+        setTempSmokingLog((prev) => {
+          const { [date]: _, ...rest } = prev;
+          return rest;
+        });
+      } else {
+        message.error("❌ Không thể lưu.");
+      }
+    } catch {
+      message.error("❌ Lỗi khi kết nối server.");
+    }
+    setLoading(false);
+  };
+
+  const handleChange = (val) => {
+    setInputValue(val);
+    setTempSmokingLog((prev) => ({ ...prev, [date]: val }));
+  };
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+      <InputNumber
+        min={0}
+        value={inputValue}
+        style={{ width: 70 }}
+        disabled={isPast}
+        onChange={handleChange}
+      />
+      <Button
+        size="small"
+        type="primary"
+        loading={loading}
+        disabled={isPast || inputValue === value}
+        onClick={handleSave}
+      >
+        Xác nhận
+      </Button>
     </div>
   );
 };
