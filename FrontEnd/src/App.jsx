@@ -13,7 +13,6 @@ import BookingPage from "./pages/BookingPage/BookingPage";
 import MemberBookings from "./pages/MemberBookings/MemberBookings";
 import CoachDashboard from "./pages/CoachDashboard/CoachDashboard";
 import AdminDashboard from "./pages/AdminDashboard/AdminDashboard";
-import Navbar from "./layouts/Navbar";
 import FtndTest from "./pages/FtndTest/FtndTest";
 import QuitPlanCalendar from "./pages/QuitPlanning/QuitPlanCalendar";
 import QuitPlanDetail from "./pages/QuitPlanning/QuitPlanDetail";
@@ -22,6 +21,7 @@ import Profile from './pages/Profile/Profile.jsx';
 import Notifications from './pages/Notifications/Notifications.jsx';
 import "./App.css";
 import CheckoutPage from "./pages/Payment/CheckoutPage";
+import BlogList from "./pages/Blog/BlogList";
 const { Title, Paragraph } = Typography;
 
 function App() {
@@ -62,6 +62,7 @@ function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/checkout" element={<CheckoutPage />} />
+          <Route path="/blog" element={<BlogList />} />
           {/* Protected routes - Member Bookings */}
           <Route
             path="/my-bookings"
