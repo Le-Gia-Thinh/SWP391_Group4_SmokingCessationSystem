@@ -42,8 +42,8 @@ const BookingPage = () => {
                 const transformedCoaches = data.data.map(coach => ({
                     coach_id: coach.coach_id,
                     name: coach.full_name,
-                    specialization: coach.specialization || 'Smoking Cessation Coach',
-                    bio: coach.bio || 'Experienced coach helping people quit smoking',
+                    specialization: coach.specialization || 'Huấn luyện viên bỏ thuốc lá',
+                    bio: coach.bio || 'Huấn luyện viên có kinh nghiệm giúp mọi người bỏ thuốc lá',
                     rating: 4.5,
                     totalSessions: 50,
                     email: coach.email
@@ -54,7 +54,7 @@ const BookingPage = () => {
             }
         } catch (error) {
             console.error('Error loading coaches:', error);
-            message.error('Failed to load coaches');
+            message.error('Không thể tải danh sách huấn luyện viên');
             setCoaches([]);
         } finally {
             setInitialLoading(false);
@@ -107,7 +107,7 @@ const BookingPage = () => {
             setAvailableCoaches(availableCoachesWithSchedules);
         } catch (error) {
             console.error('Error loading available schedules:', error);
-            message.error('Failed to load available schedules');
+            message.error('Không thể tải lịch trình có sẵn');
         }
     };
 
@@ -157,7 +157,7 @@ const BookingPage = () => {
                 throw new Error(data.message || 'Failed to book appointment');
             }
 
-            message.success('Booking submitted successfully! The coach will review your request.');
+            message.success('Đặt lịch thành công! Huấn luyện viên sẽ xem xét yêu cầu của bạn.');
             setIsModalVisible(false);
             bookingForm.resetFields();
             setSelectedCoach(null);
@@ -167,7 +167,7 @@ const BookingPage = () => {
             loadAvailableSchedules();
         } catch (error) {
             console.error('Error booking appointment:', error);
-            message.error(error.message || 'Failed to book appointment');
+            message.error(error.message || 'Không thể đặt lịch');
         } finally {
             setLoading(false);
         }
@@ -186,7 +186,7 @@ const BookingPage = () => {
                 <Navbar />
                 <div style={{ textAlign: 'center', padding: '50px' }}>
                     <Spin size="large" />
-                    <div style={{ marginTop: '16px' }}>Loading coaches...</div>
+                    <div style={{ marginTop: '16px' }}>Đang tải huấn luyện viên...</div>
                 </div>
             </div>
         );
@@ -197,26 +197,26 @@ const BookingPage = () => {
             <Navbar />
             <div className="booking-page">
                 <div className="booking-container">
-                    <Title level={2}>Book a Coaching Session</Title>
+                    <Title level={2}>Đặt lịch huấn luyện</Title>
                     <Text type="secondary">
-                        Select a date and choose from available coaches to book your smoking cessation session.
+                        Chọn ngày và chọn từ các huấn luyện viên có sẵn để đặt lịch huấn luyện bỏ thuốc lá.
                     </Text>
 
                     <Card style={{ marginTop: 24 }}>
                         <div className="date-selection" style={{ maxWidth: 350, margin: '0 auto', marginBottom: 32 }}>
                             <Title level={4}>
-                                <CalendarOutlined /> Select Date
+                                <CalendarOutlined /> Chọn ngày
                             </Title>
                             <DatePicker
                                 style={{ width: '100%' }}
-                                placeholder="Choose a date"
+                                placeholder="Chọn một ngày"
                                 onChange={handleDateChange}
                                 disabledDate={(current) => current && current < moment().startOf('day')}
                             />
                         </div>
                         <div className="coaches-section-below">
                             <Title level={4} style={{ textAlign: 'center', marginBottom: 24 }}>
-                                <UserOutlined /> Available Coaches
+                                <UserOutlined /> Huấn luyện viên có sẵn
                             </Title>
                             {selectedDate ? (
                                 availableCoaches.length > 0 ? (
@@ -232,7 +232,7 @@ const BookingPage = () => {
                                                         <Text type="secondary" style={{ color: '#189c38', fontWeight: 500 }}>{coach.specialization}</Text>
                                                         <div className="coach-stats improved-coach-stats">
                                                             <Rate disabled defaultValue={coach.rating} style={{ color: '#52c41a' }} />
-                                                            <Text type="secondary" style={{ marginLeft: 8 }}>({coach.totalSessions} sessions)</Text>
+                                                            <Text type="secondary" style={{ marginLeft: 8 }}>({coach.totalSessions} buổi)</Text>
                                                         </div>
                                                     </div>
                                                     <div className="coach-bio improved-coach-bio" style={{ textAlign: 'center', margin: '10px 0', color: '#333', fontSize: 14 }}>
@@ -240,7 +240,7 @@ const BookingPage = () => {
                                                     </div>
                                                     <div className="available-slots improved-available-slots">
                                                         <Title level={5} style={{ color: '#189c38', marginBottom: 8, fontSize: 15 }}>
-                                                            <ClockCircleOutlined /> Available Slots
+                                                            <ClockCircleOutlined /> Khung giờ có sẵn
                                                         </Title>
                                                         <div className="slots-grid improved-slots-grid">
                                                             {coach.availableSchedules.map((schedule) => {
@@ -266,14 +266,14 @@ const BookingPage = () => {
                                 ) : (
                                     <div className="no-availability" style={{ textAlign: 'center', margin: '32px 0' }}>
                                         <Text type="secondary">
-                                            No coaches available for the selected date. Please try another date.
+                                            Không có huấn luyện viên nào có sẵn cho ngày đã chọn. Vui lòng thử ngày khác.
                                         </Text>
                                     </div>
                                 )
                             ) : (
                                 <div className="select-date-prompt" style={{ textAlign: 'center', margin: '32px 0' }}>
                                     <Text type="secondary">
-                                        Please select a date to see available coaches and time slots.
+                                        Vui lòng chọn ngày để xem các huấn luyện viên và khung giờ có sẵn.
                                     </Text>
                                 </div>
                             )}
@@ -283,7 +283,7 @@ const BookingPage = () => {
 
                 {/* Booking Modal */}
                 <FormModal
-                    title="Book Appointment"
+                    title="Đặt lịch hẹn"
                     visible={isModalVisible}
                     onCancel={handleCancel}
                     onSubmit={handleBookingSubmit}
@@ -294,7 +294,7 @@ const BookingPage = () => {
                     {selectedCoach && selectedSlot && (
                         <>
                             <div style={{ marginBottom: 16 }}>
-                                <h4>Coach Information</h4>
+                                <h4>Thông tin huấn luyện viên</h4>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                                     <Avatar size={48} icon={<UserOutlined />} />
                                     <div>
@@ -306,21 +306,21 @@ const BookingPage = () => {
                             </div>
 
                             <div style={{ marginBottom: 16 }}>
-                                <h4>Session Details</h4>
+                                <h4>Chi tiết buổi học</h4>
                                 <div style={{ background: '#f6ffed', padding: 12, borderRadius: 6 }}>
-                                    <div><strong>Date:</strong> {selectedDate?.format('MMMM DD, YYYY')}</div>
-                                    <div><strong>Time:</strong> {selectedSlot.time} - {selectedSlot.endTime}</div>
-                                    <div><strong>Duration:</strong> {selectedSlot.duration} minutes</div>
+                                    <div><strong>Ngày:</strong> {selectedDate?.format('DD/MM/YYYY')}</div>
+                                    <div><strong>Thời gian:</strong> {selectedSlot.time} - {selectedSlot.endTime}</div>
+                                    <div><strong>Thời lượng:</strong> {selectedSlot.duration} phút</div>
                                 </div>
                             </div>
 
                             <Form.Item
                                 name="notes"
-                                label="Additional Notes (Optional)"
+                                label="Ghi chú bổ sung (Tùy chọn)"
                             >
                                 <Input.TextArea
                                     rows={4}
-                                    placeholder="Any specific concerns or topics you'd like to discuss..."
+                                    placeholder="Bất kỳ mối quan tâm cụ thể hoặc chủ đề nào bạn muốn thảo luận..."
                                 />
                             </Form.Item>
                         </>

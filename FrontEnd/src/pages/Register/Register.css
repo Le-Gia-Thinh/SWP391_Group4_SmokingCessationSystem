@@ -23,14 +23,14 @@ body {
   padding: 15px;
   box-sizing: border-box;
   border-radius: 20px;
-  background: #c5e7a8;
+  background: #b4ebb3;
   overflow: hidden;
   transition: all 0.5s ease-in-out;
   align-items: center;
   justify-content: center;
   box-shadow:
     0 0 25px rgba(178, 236, 180, 0.2),
-    inset 0 0 12px rgba(123, 165, 80, 0.136);
+    inset 0 0 12px rgba(159, 230, 88, 0.136);
   cursor: pointer;
 }
 
@@ -43,9 +43,9 @@ body {
   right: -2px;
   bottom: -2px;
   border-radius: 20px;
-  background: conic-gradient(#a5d6a7 0deg 120deg,
-      #81c784 120deg 240deg,
-      #4caf50 240deg 360deg);
+  background: conic-gradient(#90f6a6 0deg 120deg,
+      hsl(123, 94%, 40%) 120deg 240deg,
+      #028206 240deg 360deg);
   animation: rotateBorder 6s linear infinite;
   z-index: -1;
 }
@@ -75,7 +75,7 @@ body {
   width: 100%;
   height: 4px;
   background: linear-gradient(to right,
-      transparent, #c4f2c6, #afefb2, #94ed96, transparent);
+      transparent, #bcfdbf, #0ec865, #06a656e7, transparent);
 }
 
 .register-outer-box .line.top {
@@ -234,7 +234,7 @@ body {
 
 /* ==== Button ==== */
 .register-button {
-  background: #4caf50 !important;
+  background: #35f03b !important;
   border: none !important;
   color: #fff !important;
   font-weight: bold;
@@ -245,7 +245,7 @@ body {
 }
 
 .register-button:hover {
-  background: #43a047 !important;
+  background: #43d1bc !important;
   box-shadow: 0 0 8px #4caf50;
 }
 

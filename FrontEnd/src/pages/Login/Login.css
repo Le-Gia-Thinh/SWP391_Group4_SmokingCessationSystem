@@ -23,7 +23,7 @@ body {
   padding: 15px;
   box-sizing: border-box;
   border-radius: 20px;
-  background: #c5e7a8;
+  background: #b9f6ae;
   overflow: hidden;
   transition: all 0.5s ease-in-out;
   display: flex;
@@ -45,7 +45,7 @@ body {
   bottom: -2px;
   border-radius: 20px;
   background: conic-gradient(#a5d6a7 0deg 120deg,
-      #81c784 120deg 240deg,
+      #7bfb82 120deg 240deg,
       #4caf50 240deg 360deg);
   animation: rotateBorder 6s linear infinite;
   z-index: -1;
@@ -59,7 +59,7 @@ body {
   left: 3px;
   right: 3px;
   bottom: 3px;
-  background: #c9e9ad;
+  background: #b8eabf;
   border-radius: 16px;
   z-index: -1;
 }
@@ -78,9 +78,9 @@ body {
   height: 4px;
   background: linear-gradient(to right,
       transparent,
-      #c4f2c6,
-      #afefb2,
-      #94ed96,
+      #baf4bd,
+      #4ae752,
+      #0bdd07ed,
       transparent);
 }
 
@@ -102,9 +102,9 @@ body {
   height: 100%;
   background: linear-gradient(to bottom,
       transparent,
-      #9cf89f,
-      #b9f3bd,
-      #9feda0,
+      #a8f9aa,
+      #07f516,
+      #16be19,
       transparent);
 }
 

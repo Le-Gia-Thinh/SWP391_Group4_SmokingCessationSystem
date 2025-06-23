@@ -1,9 +1,10 @@
+
 // controllers/authController.js
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { sql, dbConfig } = require('../config/database');
 
-// Hàm tạo JWT token dựa trên object user (id, email, name, avatar)
+// Hàm tạo JWT token
 const generateToken = (userData) => {
   return jwt.sign(
     {
@@ -11,22 +12,28 @@ const generateToken = (userData) => {
       email: userData.email,
       name: userData.name,
       role: userData.role || userData.user_role
-      //avatar: userData.avatar || null // nếu bạn muốn kèm avatar
     },
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRE || '30d' }
   );
 };
-// Gửi response kèm token và thông tin user
+
+// Gửi token + user về client
 const sendTokenWithUser = (res, user) => {
-  // user trả về từ DB có { user_id, email, full_name, user_role }
   const token = generateToken({
     id: user.user_id || user.id,
     email: user.email,
     name: user.full_name || user.name,
     role: user.user_role || user.role
-    //avatar: user.avatar_url || null 
   });
+
+  res.cookie('token', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'Lax',
+    maxAge: 30 * 24 * 60 * 60 * 1000
+  });
+
   res.json({
     success: true,
     token,
@@ -35,7 +42,6 @@ const sendTokenWithUser = (res, user) => {
       email: user.email,
       name: user.full_name || user.name,
       role: user.user_role || user.role
-      //avatar: user.avatar_url || null
     }
   });
 };
@@ -89,7 +95,7 @@ const register = async (req, res) => {
       .input('password', sql.VarChar, hashedPassword)
       .input('name', sql.VarChar, name)
       .input('phone_number', sql.VarChar, phone_number)
-      .input('role', sql.VarChar, 'member')
+.input('role', sql.VarChar, 'member')
       .input('status', sql.VarChar, 'active')
       .input('provider', sql.VarChar, 'local')
       .input('created', sql.Date, new Date())
@@ -128,48 +134,56 @@ const register = async (req, res) => {
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-
-    // Kiểm tra dữ liệu đầu vào
     if (!email || !password) {
-      return res.status(400).json({ success: false, message: 'Vui lòng điền email và mật khẩu' });
+      return res
+        .status(400)
+        .json({ success: false, message: 'Vui lòng điền email và mật khẩu' });
     }
 
-    // Tìm user theo email
     const pool = await sql.connect(dbConfig);
     const result = await pool.request()
       .input('email', sql.VarChar, email)
-      .query('SELECT * FROM CUSTOMER WHERE email = @email');
-
+      .query(`
+    SELECT 
+      user_id, 
+      full_name, 
+      email, 
+      user_role, 
+      password_hash 
+    FROM CUSTOMER
+    WHERE email = @email
+  `);
     if (result.recordset.length === 0) {
-      return res.status(400).json({ success: false, message: 'Email hoặc mật khẩu không đúng' });
+      return res
+        .status(400)
+        .json({ success: false, message: 'Email hoặc mật khẩu không đúng' });
     }
 
     const user = result.recordset[0];
-    const stored = user.password_hash; // có thể là hash của bcrypt hoặc plain‐text (khi bạn test)
+    const stored = user.password_hash;
 
-    let isMatch = false;
-
-    // Nếu stored bắt đầu bằng "$2a$" / "$2b$" / "$2y$" → dùng bcrypt.compare
-    if (typeof stored === 'string' && (stored.startsWith('$2a$') || stored.startsWith('$2b$') || stored.startsWith('$2y$'))) {
+    // Chỉ so sánh qua bcrypt.compare
+    let isMatch;
+    if (typeof stored === 'string' && stored.startsWith('$2')) {
       isMatch = await bcrypt.compare(password, stored);
     } else {
-      // Ngược lại, giả sử đây là plain‐text password, so sánh thẳng
-      isMatch = (password === stored);
+      isMatch = password === stored;
     }
 
     if (!isMatch) {
       return res.status(400).json({ success: false, message: 'Email hoặc mật khẩu không đúng' });
     }
-
-    // Nếu match thì gửi token
+    // Nếu đúng, trả token
     sendTokenWithUser(res, user);
-
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: 'Lỗi server' });
+    console.error('❌ Lỗi đăng nhập:', error);
+    res
+      .status(500)
+      .json({ success: false, message: 'Lỗi server khi đăng nhập' });
   }
 };
-// Lấy thông tin user hiện tại (dựa trên session hoặc token đã xác thực)
+
+//Lấy dữ liệu người dùng khi đăng nhập
 const getMe = async (req, res) => {
   res.json({
     success: true,
@@ -180,7 +194,7 @@ const getMe = async (req, res) => {
 // Callback xử lý khi đăng nhập bằng Google thành công
 const googleSuccess = (req, res) => {
   console.log('=== GOOGLE SUCCESS CALLBACK ===');
-  console.log('req.user:', req.user);
+console.log('req.user:', req.user);
   console.log('CLIENT_URL:', process.env.CLIENT_URL);
 
   try {

@@ -18,7 +18,7 @@ import {
   CheckCircleTwoTone,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
-import Navbar from "../../layouts/Navbar"; // Đường dẫn tùy theo cấu trúc dự án
+import Navbar from "../../layouts/Navbar";
 
 const { Title, Paragraph } = Typography;
 
@@ -40,15 +40,17 @@ const QuitPlanDetail = () => {
 
   const info = data && data.detailPlan ? data : fallback;
 
-  const startDate = dayjs("2025-06-08", "YYYY-MM-DD");
+  // ✅ Sử dụng ngày bắt đầu thật từ state truyền sang, không hard-code
+  const planStartDate = location.state?.rawStartDate || "2025-06-17";
+  const startDate = dayjs(planStartDate);
+
   let weekNumber = "Không xác định";
-  if (info.date) {
+  if (info.date && startDate.isValid()) {
     const selectedDate = dayjs(info.date, "DD/MM/YYYY");
     const diffDays = selectedDate.diff(startDate, "day");
     weekNumber = Math.floor(diffDays / 7) + 1;
   }
 
-  // 🔄 Load dữ liệu từ DB khi mở trang
   useEffect(() => {
     const token = localStorage.getItem("token");
     const formattedDate = dayjs(date, ["DD/MM/YYYY", "YYYY-MM-DD"]).format(
@@ -65,9 +67,11 @@ const QuitPlanDetail = () => {
         if (Array.isArray(result.data)) {
           setCompleted(result.data.map((x) => !!x));
 
-          // ✅ Cộng điểm cho từng slot đã tick
           for (let i = 0; i < result.data.length; i++) {
             if (result.data[i] === true) {
+              const tokenPayload = JSON.parse(atob(token.split(".")[1]));
+              const user_id = tokenPayload.id;
+
               await fetch("http://localhost:5000/api/user-score/update", {
                 method: "POST",
                 headers: {
@@ -75,6 +79,7 @@ const QuitPlanDetail = () => {
                   Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify({
+                  user_id,
                   date: formattedDate,
                   timeSlot: i,
                   point: 1,
@@ -89,7 +94,6 @@ const QuitPlanDetail = () => {
       });
   }, [date]);
 
-  // ✅ Tick / Bỏ tick checkbox
   const handleCheckbox = async (idx) => {
     const updated = [...completed];
     const newState = !updated[idx];

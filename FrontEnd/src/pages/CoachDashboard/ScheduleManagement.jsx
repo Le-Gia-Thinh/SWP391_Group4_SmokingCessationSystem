@@ -36,15 +36,15 @@ const ScheduleManagement = () => {
             const data = await response.json(); // Parse response once
 
             if (!response.ok) {
-                throw new Error(data.message || 'Failed to load schedules');
+                throw new Error(data.message || 'Không thể tải lịch trình');
             }
 
             console.log('Loaded schedules data:', data);
             // Ensure data is an array
             setSchedules(Array.isArray(data) ? data : []);
         } catch (error) {
-            console.error('Error loading schedules:', error);
-            message.error(error.message || 'Failed to load schedules');
+            console.error('Lỗi tải lịch trình:', error);
+            message.error(error.message || 'Không thể tải lịch trình');
             setSchedules([]);
         } finally {
             setInitialLoading(false);
@@ -67,16 +67,16 @@ const ScheduleManagement = () => {
 
             if (!response.ok) {
                 const data = await response.json();
-                throw new Error(data.message || 'Failed to create schedule');
+                throw new Error(data.message || 'Không thể tạo lịch trình');
             }
 
-            message.success('Schedule created successfully!');
+            message.success('Tạo lịch trình thành công!');
             setIsModalVisible(false);
             form.resetFields();
             loadSchedules();
         } catch (error) {
-            console.error('Error creating schedule:', error);
-            message.error(error.message || 'Failed to create schedule');
+            console.error('Lỗi tạo lịch trình:', error);
+            message.error(error.message || 'Không thể tạo lịch trình');
         } finally {
             setLoading(false);
         }
@@ -98,47 +98,47 @@ const ScheduleManagement = () => {
 
     const columns = [
         {
-            title: 'Date',
+            title: 'Ngày',
             key: 'date',
             render: (_, record) => formatDateTime(record.start_time).date,
             sorter: (a, b) => new Date(a.start_time) - new Date(b.start_time),
         },
         {
-            title: 'Start Time',
+            title: 'Thời gian bắt đầu',
             key: 'start_time',
             render: (_, record) => formatDateTime(record.start_time).time,
         },
         {
-            title: 'End Time',
+            title: 'Thời gian kết thúc',
             key: 'end_time',
             render: (_, record) => formatDateTime(record.end_time).time,
         },
         {
-            title: 'Duration',
+            title: 'Thời lượng',
             key: 'duration',
             render: (_, record) => {
                 const start = dayjs(record.start_time);
                 const end = dayjs(record.end_time);
                 const duration = end.diff(start, 'minute');
-                return `${duration} minutes`;
+                return `${duration} phút`;
             },
         },
         {
-            title: 'Status',
+            title: 'Trạng thái',
             key: 'status',
             render: (_, record) => (
                 <Tag color={record.is_booked ? 'red' : 'green'}>
-                    {record.is_booked ? 'Booked' : 'Available'}
+                    {record.is_booked ? 'Đã đặt' : 'Có sẵn'}
                 </Tag>
             ),
             filters: [
-                { text: 'Available', value: 0 },
-                { text: 'Booked', value: 1 },
+                { text: 'Có sẵn', value: 0 },
+                { text: 'Đã đặt', value: 1 },
             ],
             onFilter: (value, record) => record.is_booked === value,
         },
         {
-            title: 'Actions',
+            title: 'Hành động',
             key: 'actions',
             render: (_, record) => (
                 <Space>
@@ -149,7 +149,7 @@ const ScheduleManagement = () => {
                             size="small"
                             onClick={() => handleDeleteSchedule(record.schedule_id)}
                         >
-                            Delete
+                            Xóa
                         </Button>
                     )}
                 </Space>
@@ -167,14 +167,14 @@ const ScheduleManagement = () => {
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.message || 'Failed to delete schedule');
+                throw new Error(data.message || 'Không thể xóa lịch trình');
             }
 
-            message.success('Schedule deleted successfully!');
+            message.success('Xóa lịch trình thành công!');
             loadSchedules(); // Reload the list
         } catch (error) {
-            console.error('Error deleting schedule:', error);
-            message.error(error.message || 'Failed to delete schedule');
+            console.error('Lỗi xóa lịch trình:', error);
+            message.error(error.message || 'Không thể xóa lịch trình');
         }
     };
 
@@ -182,7 +182,7 @@ const ScheduleManagement = () => {
         return (
             <div style={{ textAlign: 'center', padding: '50px' }}>
                 <Spin size="large" />
-                <div style={{ marginTop: '16px' }}>Loading schedules...</div>
+                <div style={{ marginTop: '16px' }}>Đang tải lịch trình...</div>
             </div>
         );
     }
@@ -194,14 +194,14 @@ const ScheduleManagement = () => {
                 <Row gutter={16}>
                     <Col span={8}>
                         <Statistic
-                            title="Total Schedules"
+                            title="Tổng số lịch trình"
                             value={schedules.length}
                             prefix={<CalendarOutlined />}
                         />
                     </Col>
                     <Col span={8}>
                         <Statistic
-                            title="Available"
+                            title="Có sẵn"
                             value={schedules.filter(s => !s.is_booked).length}
                             valueStyle={{ color: '#52c41a' }}
                             prefix={<CheckCircleOutlined />}
@@ -209,7 +209,7 @@ const ScheduleManagement = () => {
                     </Col>
                     <Col span={8}>
                         <Statistic
-                            title="Booked"
+                            title="Đã đặt"
                             value={schedules.filter(s => s.is_booked).length}
                             valueStyle={{ color: '#ff4d4f' }}
                             prefix={<ClockCircleOutlined />}
@@ -219,7 +219,7 @@ const ScheduleManagement = () => {
             </Card>
 
             <Card
-                title="Schedule Management"
+                title="Quản lý lịch trình"
                 extra={
                     <Space>
                         <Button
@@ -227,14 +227,14 @@ const ScheduleManagement = () => {
                             onClick={loadSchedules}
                             loading={loading}
                         >
-                            Refresh
+                            Làm mới
                         </Button>
                         <Button
                             type="primary"
                             icon={<PlusOutlined />}
                             onClick={() => setIsModalVisible(true)}
                         >
-                            Create Schedule
+                            Tạo lịch trình
                         </Button>
                     </Space>
                 }
@@ -247,17 +247,17 @@ const ScheduleManagement = () => {
                         pageSize: 10,
                         showSizeChanger: true,
                         showQuickJumper: true,
-                        showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} schedules`,
+                        showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} lịch trình`,
                     }}
                     locale={{
                         emptyText: (
                             <div style={{ padding: '40px 0', textAlign: 'center' }}>
                                 <CalendarOutlined style={{ fontSize: 48, color: '#d9d9d9', marginBottom: 16 }} />
                                 <div style={{ fontSize: 16, color: '#666', marginBottom: 8 }}>
-                                    No schedules found
+                                    Không tìm thấy lịch trình nào
                                 </div>
                                 <div style={{ fontSize: 14, color: '#999' }}>
-                                    Create your first schedule to start accepting bookings
+                                    Tạo lịch trình đầu tiên của bạn để bắt đầu nhận đặt lịch
                                 </div>
                             </div>
                         )
@@ -267,7 +267,7 @@ const ScheduleManagement = () => {
 
             {/* Create Schedule Modal */}
             <Modal
-                title="Create New Schedule"
+                title="Tạo lịch trình mới"
                 open={isModalVisible}
                 onCancel={handleCancel}
                 footer={null}
@@ -279,9 +279,9 @@ const ScheduleManagement = () => {
                 >
                     <Form.Item
                         name="dateTime"
-                        label="Date and Time Range"
+                        label="Phạm vi ngày và giờ"
                         rules={[
-                            { required: true, message: 'Please select date and time range' },
+                            { required: true, message: 'Vui lòng chọn phạm vi ngày và giờ' },
                             {
                                 validator: (_, value) => {
                                     if (value && value[0] && value[1]) {
@@ -290,20 +290,20 @@ const ScheduleManagement = () => {
                                         const now = dayjs();
 
                                         if (start.isBefore(now)) {
-                                            return Promise.reject('Start time cannot be in the past');
+                                            return Promise.reject('Thời gian bắt đầu không thể ở trong quá khứ');
                                         }
 
                                         if (end.isBefore(start)) {
-                                            return Promise.reject('End time must be after start time');
+                                            return Promise.reject('Thời gian kết thúc phải sau thời gian bắt đầu');
                                         }
 
                                         const duration = end.diff(start, 'minute');
                                         if (duration < 15) {
-                                            return Promise.reject('Minimum duration is 15 minutes');
+                                            return Promise.reject('Thời lượng tối thiểu là 15 phút');
                                         }
 
                                         if (duration > 480) { // 8 hours
-                                            return Promise.reject('Maximum duration is 8 hours');
+                                            return Promise.reject('Thời lượng tối đa là 8 giờ');
                                         }
                                     }
                                     return Promise.resolve();
@@ -315,7 +315,7 @@ const ScheduleManagement = () => {
                             showTime
                             format="YYYY-MM-DD HH:mm"
                             style={{ width: '100%' }}
-                            placeholder={['Start Date & Time', 'End Date & Time']}
+                            placeholder={['Ngày & giờ bắt đầu', 'Ngày & giờ kết thúc']}
                             disabledDate={(current) => current && current < dayjs().startOf('day')}
                         />
                     </Form.Item>
@@ -323,10 +323,10 @@ const ScheduleManagement = () => {
                     <Form.Item>
                         <Space>
                             <Button onClick={handleCancel}>
-                                Cancel
+                                Hủy
                             </Button>
                             <Button type="primary" htmlType="submit" loading={loading}>
-                                Create Schedule
+                                Tạo lịch trình
                             </Button>
                         </Space>
                     </Form.Item>

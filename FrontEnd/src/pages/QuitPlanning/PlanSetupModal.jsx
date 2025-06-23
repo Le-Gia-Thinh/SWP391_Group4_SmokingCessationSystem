@@ -1,13 +1,45 @@
 // 📁 PlanSetupModal.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react"; // 👈 THÊM useEffect
 import { Modal, DatePicker, InputNumber, Button, message } from "antd";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 const PlanSetupModal = ({ userId, onPlanReady }) => {
   const [startDate, setStartDate] = useState(null);
-  const [months, setMonths] = useState(1);
+  const [months, setMonths] = useState(null);
+  const [ftndLevel, setFtndLevel] = useState(null); //
+
   const navigate = useNavigate();
+
+  // 👇 THÊM: Gọi API lấy mức độ nghiện khi mở modal
+  useEffect(() => {
+    const fetchFTNDLevel = async () => {
+      try {
+        const res = await axios.get(
+          `http://localhost:5000/api/ftnd/getFtndLevel/${userId}`
+        );
+        setFtndLevel(res.data.ftnd_level);
+      } catch (err) {
+        console.error("Lỗi lấy FTND level:", err);
+      }
+    };
+
+    if (userId) fetchFTNDLevel();
+  }, [userId]);
+
+  // 👇 THÊM: Hàm gợi ý placeholder theo mức độ nghiện
+  const getPlaceholderByFTND = (ftndLevel) => {
+    switch (ftndLevel) {
+      case "Low":
+        return "Gợi ý: 2–6 tháng";
+      case "Medium":
+        return "Gợi ý: 6–12 tháng";
+      case "High":
+        return "Gợi ý: 10–18 tháng";
+      default:
+        return "Nhập số tháng cai";
+    }
+  };
 
   const handleSubmit = async () => {
     if (!startDate || !months) return message.warning("Nhập đủ thông tin");
@@ -28,9 +60,9 @@ const PlanSetupModal = ({ userId, onPlanReady }) => {
 
   const handleCancel = () => {
     if (window.history.length > 2) {
-      navigate(-1); // Quay lại trang trước
+      navigate(-1);
     } else {
-      navigate("/"); // Nếu không có trang trước thì về Home
+      navigate("/");
     }
   };
 
@@ -55,8 +87,7 @@ const PlanSetupModal = ({ userId, onPlanReady }) => {
       <div style={{ marginBottom: 18 }}>
         <div style={{ fontWeight: 500, marginBottom: 6 }}>Số tháng cai:</div>
         <InputNumber
-          min={1}
-          max={12}
+          placeholder={getPlaceholderByFTND(ftndLevel)} //
           value={months}
           onChange={setMonths}
           style={{ width: "100%" }}

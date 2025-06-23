@@ -22,7 +22,14 @@ const Profile = () => {
                             {user.role}
                         </Tag>
                     </div>
-                    {/* Thêm các thông tin khác nếu có */}
+                    <Text>📞 SĐT: {user.phone_number || "Chưa cập nhật"}</Text><br />
+                    {user.role === 'member' && (
+                    <>
+                        <Text>🎯 Mức độ FTND: {user.ftnd_level ?? "Chưa có"}</Text><br />
+                        <Text>🗓️ Ngày đăng ký: {user.registration_date?.substring(0, 10)}</Text><br />
+                        <Text>🏆 Điểm số: {user.total_points ?? 0} – Cấp độ: {user.current_level ?? "Mới"}</Text>
+                    </>
+                    )}
                 </Card>
             </div>
         </>

@@ -74,3 +74,23 @@
   font-weight: 600;
   opacity: 1 !important;
 }
+
+
+
+/* Bo tròn góc trái ở hàng đầu tiên mỗi tuần */
+.ant-table-row:nth-child(7n + 1) td:first-child {
+  border-top-left-radius: 8px;
+}
+.ant-table-row:nth-child(7n + 1) td:last-child {
+  border-top-right-radius: 8px;
+}
+
+/* Bo tròn góc dưới ở hàng cuối cùng mỗi tuần */
+.ant-table-row:nth-child(7n) td:first-child {
+  border-bottom-left-radius: 8px;
+}
+.ant-table-row:nth-child(7n) td:last-child {
+  border-bottom-right-radius: 8px;
+}
+
+

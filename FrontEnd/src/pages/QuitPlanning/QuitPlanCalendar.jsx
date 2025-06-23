@@ -360,50 +360,27 @@ const QuitPlan = () => {
   }, []);
 
   useEffect(() => {
-  if (!user?.id || !startDate) return;
+    if (!user?.id || !startDate) return;
 
-  fetch(`http://localhost:5000/api/smoking-summary/all/${user.id}`)
-    .then((res) => res.json())
-    .then((data) => {
-      const log = {};
-      data.forEach((entry) => {
-        const formattedDate = dayjs(entry.date).format("DD/MM/YYYY");
-        log[formattedDate] = entry.total_cigarettes;
+    fetch(`http://localhost:5000/api/smoking-summary/all/${user.id}`)
+      .then((res) => res.json())
+      .then((data) => {
+        const log = {};
+        data.forEach((entry) => {
+          const formattedDate = dayjs(entry.date).format("DD/MM/YYYY");
+          log[formattedDate] = entry.total_cigarettes;
+        });
+        setSmokingLog(log); // Gán lại vào state
+      })
+      .catch((err) => {
+        console.error("Lỗi khi tải dữ liệu số điếu:", err);
       });
-      setSmokingLog(log); // Gán lại vào state
-    })
-    .catch((err) => {
-      console.error("Lỗi khi tải dữ liệu số điếu:", err);
-    });
-}, [user?.id, startDate]);
+  }, [user?.id, startDate]);
 
   const handlePlanReady = ({ startDate, months }) => {
     setStartDate(dayjs(startDate));
     setMonths(months);
     setShowModal(false);
-  };
-  const handleSubmitDailyCigs = async () => {
-    try {
-      const today = dayjs().format("DD/MM/YYYY");
-      const user_id = user?.id;
-      const total_cigarettes = smokingLog[today] ?? 0;
-
-      if (!user_id || total_cigarettes === undefined) {
-        message.warning("Chưa có thông tin người dùng hoặc chưa nhập số điếu.");
-        return;
-      }
-
-      await axios.post("http://localhost:5000/api/smoking-summary/single", {
-        user_id,
-        date: today,
-        total_cigarettes,
-      });
-
-      message.success("✅ Đã gửi số điếu hút hôm nay!");
-    } catch (err) {
-      console.error(err);
-      message.error("❌ Gửi dữ liệu thất bại.");
-    }
   };
 
   const handleResetPlan = async () => {
@@ -735,7 +712,7 @@ const QuitPlan = () => {
     >
       <Navbar />
       <Row justify="center">
-        <Col xs={24} md={22} lg={20}>
+        <Col xs={24} sm={24} md={24} lg={24}>
           <Card variant="outlined" hoverable style={{ marginBottom: 24 }}>
             <Title
               level={3}
@@ -883,27 +860,17 @@ const QuitPlan = () => {
                   }
                   navigate(
                     `/quit-plan-detail/${record.date.replaceAll("/", "-")}`,
-                    { state: record }
+                    {
+                      state: {
+                        ...record,
+                        rawStartDate: startDate.toISOString(), // ✅ truyền ngày bắt đầu kế hoạch
+                      },
+                    }
                   );
                 },
               })}
-              style={{ background: "#fff" }}
+              style={{ background: "#fff", width: "100%" }}
             />
-
-            <div style={{ textAlign: "center", marginTop: 24 }}>
-              <Button
-                type="primary"
-                style={{
-                  backgroundColor: "#fa541c",
-                  borderColor: "#fa541c",
-                  fontWeight: 600,
-                  padding: "8px 20px",
-                }}
-                onClick={handleSubmitDailyCigs}
-              >
-                Gửi số điếu hút hôm nay
-              </Button>
-            </div>
           </Card>
         </Col>
       </Row>

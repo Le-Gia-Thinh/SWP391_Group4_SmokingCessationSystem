@@ -42,7 +42,7 @@ const MemberBookings = () => {
             });
 
             if (!response.ok) {
-                throw new Error('Failed to load bookings');
+                throw new Error('Không thể tải lịch đặt');
             }
 
             const data = await response.json();
@@ -52,8 +52,8 @@ const MemberBookings = () => {
                 setBookings([]);
             }
         } catch (error) {
-            console.error('Error loading bookings:', error);
-            message.error('Failed to load bookings');
+            console.error('Lỗi tải lịch đặt:', error);
+            message.error('Không thể tải lịch đặt');
             setBookings([]);
         } finally {
             setLoading(false);
@@ -70,16 +70,15 @@ const MemberBookings = () => {
             });
 
             if (!response.ok) {
-                // Read error message from backend
                 const errorData = await response.json();
-                throw new Error(errorData.message || 'Failed to cancel appointment');
+                throw new Error(errorData.message || 'Không thể hủy cuộc hẹn');
             }
 
-            message.success('Appointment cancelled successfully!');
+            message.success('Hủy cuộc hẹn thành công!');
             loadMyBookings(); // Reload to get updated data
         } catch (error) {
-            console.error('Error cancelling appointment:', error);
-            message.error(error.message || 'Failed to cancel appointment');
+            console.error('Lỗi hủy cuộc hẹn:', error);
+            message.error(error.message || 'Không thể hủy cuộc hẹn');
         } finally {
             setLoading(false);
         }
@@ -105,15 +104,15 @@ const MemberBookings = () => {
     const getStatusText = (status) => {
         switch (status) {
             case 'pending':
-                return 'Pending';
+                return 'Đang chờ';
             case 'accepted':
-                return 'Accepted';
+                return 'Đã chấp nhận';
             case 'rejected':
-                return 'Rejected';
+                return 'Đã từ chối';
             case 'canceled_by_member':
-                return 'Canceled';
+                return 'Đã hủy';
             case 'completed':
-                return 'Completed';
+                return 'Đã hoàn thành';
             default:
                 return status;
         }
@@ -129,7 +128,7 @@ const MemberBookings = () => {
 
     const columns = [
         {
-            title: 'Coach',
+            title: 'Huấn luyện viên',
             key: 'coach',
             render: (_, record) => (
                 <Space>
@@ -142,7 +141,7 @@ const MemberBookings = () => {
             ),
         },
         {
-            title: 'Scheduled Time',
+            title: 'Thời gian dự kiến',
             key: 'scheduled_time',
             render: (_, record) => {
                 const { date, time } = formatDateTime(record.scheduled_time);
@@ -155,7 +154,7 @@ const MemberBookings = () => {
             },
         },
         {
-            title: 'Status',
+            title: 'Trạng thái',
             key: 'session_status',
             render: (_, record) => (
                 <Tag color={getStatusColor(record.session_status)}>
@@ -164,20 +163,20 @@ const MemberBookings = () => {
             ),
         },
         {
-            title: 'Actions',
+            title: 'Hành động',
             key: 'actions',
             render: (_, record) => (
                 <Space>
                     {record.session_status === 'pending' && (
                         <Popconfirm
-                            title="Cancel Appointment"
-                            description="Are you sure you want to cancel this appointment? This action cannot be undone."
+                            title="Hủy cuộc hẹn"
+                            description="Bạn có chắc chắn muốn hủy cuộc hẹn này không? Hành động này không thể hoàn tác."
                             onConfirm={() => handleCancelAppointment(record.session_id)}
-                            okText="Yes, Cancel"
+                            okText="Có, hủy"
                             okType="danger"
-                            cancelText="No"
+                            cancelText="Không"
                         >
-                            <Tooltip title="Cancel Appointment">
+                            <Tooltip title="Hủy cuộc hẹn">
                                 <Button
                                     type="default"
                                     icon={<CloseOutlined />}
@@ -188,14 +187,14 @@ const MemberBookings = () => {
                         </Popconfirm>
                     )}
                     {record.session_status === 'accepted' && record.google_meet_link && (
-                        <Tooltip title="Join Google Meet">
+                        <Tooltip title="Tham gia Google Meet">
                             <Button
                                 type="primary"
                                 href={record.google_meet_link.startsWith('http') ? record.google_meet_link : `https://${record.google_meet_link}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >
-                                Join Meeting
+                                Tham gia cuộc họp
                             </Button>
                         </Tooltip>
                     )}
@@ -210,7 +209,7 @@ const MemberBookings = () => {
                 <Navbar />
                 <div style={{ textAlign: 'center', padding: '50px' }}>
                     <Spin size="large" />
-                    <div style={{ marginTop: '16px' }}>Loading appointments...</div>
+                    <div style={{ marginTop: '16px' }}>Đang tải lịch hẹn...</div>
                 </div>
             </div>
         );
@@ -226,10 +225,10 @@ const MemberBookings = () => {
                             <Row justify="space-between" align="middle">
                                 <Col>
                                     <Title level={2}>
-                                        <CalendarOutlined /> My Appointments
+                                        <CalendarOutlined /> Các cuộc hẹn của tôi
                                     </Title>
                                     <Text type="secondary">
-                                        View and manage your coaching appointments.
+                                        Xem và quản lý các cuộc hẹn huấn luyện của bạn.
                                     </Text>
                                 </Col>
                                 <Col>
@@ -239,7 +238,7 @@ const MemberBookings = () => {
                                         onClick={loadMyBookings}
                                         loading={loading}
                                     >
-                                        Refresh
+                                        Làm mới
                                     </Button>
                                 </Col>
                             </Row>
@@ -247,13 +246,13 @@ const MemberBookings = () => {
 
                         {bookings.length === 0 ? (
                             <Alert
-                                message="No appointments found"
-                                description="You don't have any coaching appointments yet. Book a session with a coach to start your quitting journey!"
+                                message="Không tìm thấy cuộc hẹn nào"
+                                description="Bạn chưa có cuộc hẹn huấn luyện nào. Hãy đặt lịch với một huấn luyện viên để bắt đầu hành trình bỏ thuốc của bạn!"
                                 type="info"
                                 showIcon
                                 action={
                                     <Button size="small" type="primary" href="/book-coach">
-                                        Book Now
+                                        Đặt lịch ngay
                                     </Button>
                                 }
                             />
@@ -267,7 +266,7 @@ const MemberBookings = () => {
                                     pageSize: 10,
                                     showSizeChanger: true,
                                     showQuickJumper: true,
-                                    showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} appointments`,
+                                    showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} cuộc hẹn`,
                                 }}
                             />
                         )}
