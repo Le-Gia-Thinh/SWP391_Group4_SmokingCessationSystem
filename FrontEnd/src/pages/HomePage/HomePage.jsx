@@ -162,8 +162,18 @@ const HomePage = () => {
             </Space>
           </Col>
           <Col xs={24} lg={12} className="hero-video">
-            <div className="video-placeholder">Add video</div>
-          </Col>
+          <div className="video-wrapper">
+            <iframe
+              width="100%"
+              height="315"
+              src="https://www.youtube.com/embed/MCNS4lhTZy0"
+              title="Video tuyên truyền tác hại thuốc lá"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            ></iframe>
+          </div>
+        </Col>
         </Row>
       </section>
 
