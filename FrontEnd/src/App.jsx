@@ -23,6 +23,7 @@ import Notifications from './pages/Notifications/Notifications.jsx';
 import "./App.css";
 import CheckoutPage from "./pages/Payment/CheckoutPage";
 import BlogList from "./pages/Blog/BlogList";
+import PostApproval from './pages/PostApproval/PostApproval';
 const { Title, Paragraph } = Typography;
 
 function App() {
@@ -100,6 +101,16 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <ScheduleManagement />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Protected routes - Post Approval */}
+          <Route
+            path="/post-approval"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <PostApproval />
               </ProtectedRoute>
             }
           />

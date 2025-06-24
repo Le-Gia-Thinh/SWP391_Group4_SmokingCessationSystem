@@ -12,4 +12,8 @@ router.delete('/:id', auth, communityController.deletePost);
 // Admin duyệt
 router.put('/:id/approve', auth, authorize('admin'), communityController.approvePost);
 
+// Admin routes
+router.get('/pending', auth, authorize('admin'), communityController.getPendingPosts);
+router.delete('/admin/:id', auth, authorize('admin'), communityController.adminDeletePost);
+
 module.exports = router;
