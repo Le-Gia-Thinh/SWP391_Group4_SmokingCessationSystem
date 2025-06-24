@@ -4,6 +4,7 @@ import { PlusOutlined, StarFilled } from "@ant-design/icons";
 import axios from "axios";
 import Navbar from "../../layouts/Navbar";
 import "./Blog.css";
+import CommentSection from "./CommentSection";
 
 const { Title, Paragraph } = Typography;
 const { Content } = Layout;
@@ -15,9 +16,6 @@ export default function BlogList() {
     const [form] = Form.useForm();
     const token = localStorage.getItem("token"); // Get token once
     const [viewBlog, setViewBlog] = useState(null);
-    const [comments, setComments] = useState([]);
-    const [commentLoading, setCommentLoading] = useState(false);
-    const [commentContent, setCommentContent] = useState("");
 
     const fetchBlogs = async () => {
         setLoading(true);
@@ -35,44 +33,6 @@ export default function BlogList() {
     useEffect(() => {
         fetchBlogs();
     }, []);
-
-    useEffect(() => {
-        if (viewBlog) {
-            fetchComments(viewBlog.post_id);
-        }
-    }, [viewBlog]);
-
-    const fetchComments = async (postId) => {
-        setCommentLoading(true);
-        try {
-            const res = await axios.get(`http://localhost:5000/api/comment/${postId}`);
-            setComments(res.data);
-        } catch (err) {
-            message.error("Lỗi khi tải bình luận");
-        } finally {
-            setCommentLoading(false);
-        }
-    };
-
-    const handleAddComment = async () => {
-        if (!commentContent.trim()) return;
-        try {
-            const token = localStorage.getItem("token");
-            await axios.post(
-                "http://localhost:5000/api/comment/",
-                { post_id: viewBlog.post_id, content: commentContent },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-            setCommentContent("");
-            fetchComments(viewBlog.post_id); // Refresh comment list
-        } catch (err) {
-            message.error("Lỗi khi gửi bình luận");
-        }
-    };
-
-    // Coi 2 bài mới nhất là bài nổi bật
-    const featuredBlogs = blogs.slice(0, 2);
-    const normalBlogs = blogs.slice(2);
 
     const handleCreateBlog = async (values) => {
         if (!token) {
@@ -100,6 +60,10 @@ export default function BlogList() {
             );
         }
     };
+
+    // Coi 2 bài mới nhất là bài nổi bật
+    const featuredBlogs = blogs.slice(0, 2);
+    const normalBlogs = blogs.slice(2);
 
     return (
         <Layout>
@@ -175,7 +139,7 @@ export default function BlogList() {
                                         locale={{ emptyText: <Empty description="Chưa có bài viết nào." /> }}
                                         renderItem={item => (
                                             <List.Item>
-                                                <Card hoverable>
+                                                <Card hoverable onClick={() => setViewBlog(item)}>
                                                     <Card.Meta
                                                         avatar={<Avatar src={item.avatar} style={{ backgroundColor: "#87d068" }}>{item.full_name?.[0] || "U"}</Avatar>}
                                                         title={<Title level={5}>{item.title}</Title>}
@@ -234,35 +198,7 @@ export default function BlogList() {
                                 <span style={{ float: "right", color: "#888" }}>{viewBlog && new Date(viewBlog.created_at).toLocaleDateString()}</span>
                             </div>
                             <Divider />
-                            <Typography.Title level={5}>Bình luận</Typography.Title>
-                            {commentLoading ? <Spin /> : (
-                                <List
-                                    dataSource={comments}
-                                    locale={{ emptyText: "Chưa có bình luận nào." }}
-                                    renderItem={item => (
-                                        <List.Item>
-                                            <List.Item.Meta
-                                                avatar={<Avatar>{item.full_name?.[0] || "U"}</Avatar>}
-                                                title={item.full_name || "Ẩn danh"}
-                                                description={item.content}
-                                            />
-                                            <span style={{ color: "#888", fontSize: 12 }}>{new Date(item.created_at).toLocaleString()}</span>
-                                        </List.Item>
-                                    )}
-                                />
-                            )}
-                            {token && (
-                                <Input.Group compact style={{ marginTop: 8 }}>
-                                    <Input.TextArea
-                                        value={commentContent}
-                                        onChange={e => setCommentContent(e.target.value)}
-                                        rows={2}
-                                        placeholder="Nhập bình luận..."
-                                        style={{ width: "80%" }}
-                                    />
-                                    <Button type="primary" onClick={handleAddComment}>Gửi</Button>
-                                </Input.Group>
-                            )}
+                            {viewBlog && <CommentSection postId={viewBlog.post_id} token={token} />}
                         </Modal>
                     </div>
                 </div>
