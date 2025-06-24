@@ -19,7 +19,6 @@ import { useAuth } from '../../contexts/AuthContext';
 import StatisticCard from '../../components/ui/StatisticCard';
 import FormModal from '../../components/ui/FormModal';
 import BookingManagement from '../BookingManagement/BookingManagement';
-import ScheduleManagement from './ScheduleManagement';
 import Navbar from '../../layouts/Navbar';
 
 const { Title, Text } = Typography;
@@ -423,7 +422,7 @@ const CoachDashboard = () => {
                                 }
                                 key="schedule"
                             >
-                                <ScheduleManagement />
+                                {/* <ScheduleManagement /> */}
                             </TabPane>
                             <TabPane
                                 tab={
