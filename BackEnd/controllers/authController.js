@@ -97,25 +97,16 @@ const register = async (req, res) => {
       .input('phone_number', sql.VarChar, phone_number)
 .input('role', sql.VarChar, 'member')
       .input('status', sql.VarChar, 'active')
+      .input('provider', sql.VarChar, 'local')
       .input('created', sql.Date, new Date())
       .query(`
-          INSERT INTO CUSTOMER (email, password_hash, full_name, username, phone_number, user_role, account_status, registration_date)
-          OUTPUT INSERTED.user_id
-          VALUES (@email, @password, @name, @username, @phone_number,@role, @status, @created)
-        `);
+        INSERT INTO CUSTOMER (email, password_hash, full_name, username, phone_number, user_role, account_status, login_provider, registration_date)
+        OUTPUT INSERTED.user_id
+        VALUES (@email, @password, @name, @username, @phone_number, @role, @status, @provider, @created)
+      `);
 
     const userId = insertResult.recordset[0].user_id;
-
-    await pool.request()
-      .input('user_id', sql.Int, userId)
-      .input('provider', sql.VarChar, 'local')
-      .input('username', sql.VarChar, username)
-      .input('password_hash', sql.VarChar, hashedPassword)
-      .query(`
-    INSERT INTO USER_LOGIN (user_id, login_provider, username, password_hash)
-    VALUES (@user_id, @provider, @username, @password_hash)
-  `);
-
+    
     const token = generateToken({
       id: userId,
       email,
