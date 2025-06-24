@@ -193,9 +193,7 @@ export default function Navbar() {
               </Dropdown>
               <span className="username-text">{user.name || user.email}</span>
 
-              <span className="username-text">
-                {user.name || user.email}
-              </span>
+
               <Button
                 type="text"
                 icon={<LogoutOutlined />}
