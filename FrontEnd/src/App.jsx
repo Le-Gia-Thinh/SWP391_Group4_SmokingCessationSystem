@@ -13,6 +13,7 @@ import BookingPage from "./pages/BookingPage/BookingPage";
 import MemberBookings from "./pages/MemberBookings/MemberBookings";
 import CoachDashboard from "./pages/CoachDashboard/CoachDashboard";
 import AdminDashboard from "./pages/AdminDashboard/AdminDashboard";
+import ScheduleManagement from "./pages/ScheduleManagement/ScheduleManagement";
 import FtndTest from "./pages/FtndTest/FtndTest";
 import QuitPlanCalendar from "./pages/QuitPlanning/QuitPlanCalendar";
 import QuitPlanDetail from "./pages/QuitPlanning/QuitPlanDetail";
@@ -89,6 +90,16 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Protected routes - Schedule Management */}
+          <Route
+            path="/schedule-management"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <ScheduleManagement />
               </ProtectedRoute>
             }
           />

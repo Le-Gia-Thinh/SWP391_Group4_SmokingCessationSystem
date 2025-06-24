@@ -21,6 +21,7 @@ import {
   BellOutlined,
   MenuOutlined,    // ← hamburger
   MoreOutlined,    // ← overflow indicator
+  ScheduleOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "../contexts/AuthContext";
 import axios from "axios";
@@ -89,6 +90,12 @@ export default function Navbar() {
         icon: <UserOutlined />,
         label: "Bảng điều khiển Admin",
         onClick: () => navigate("/admin-dashboard"),
+      });
+      items.push({
+        key: "/schedule-management",
+        icon: <ScheduleOutlined />,
+        label: "Quản lý Lịch",
+        onClick: () => navigate("/schedule-management"),
       });
     }
     if (isCoach()) {
