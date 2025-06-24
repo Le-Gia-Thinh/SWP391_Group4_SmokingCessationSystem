@@ -358,3 +358,18 @@ exports.deleteSchedule = async (req, res) => {
     res.status(500).json({ success: false, message: 'Lỗi server khi xóa lịch' });
   }
 };
+
+// API: Admin xem tất cả lịch của một coach bất kỳ
+exports.getAllSchedulesByCoachId = async (req, res) => {
+  try {
+    const coachId = req.params.coachId;
+    const pool = await sql.connect(dbConfig);
+    const result = await pool.request()
+      .input('coach_id', sql.Int, coachId)
+      .query('SELECT * FROM COACH_SCHEDULE WHERE coach_id = @coach_id ORDER BY start_time DESC');
+    res.status(200).json({ success: true, data: result.recordset });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Lỗi server khi lấy lịch coach' });
+  }
+};

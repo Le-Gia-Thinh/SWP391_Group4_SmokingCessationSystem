@@ -19,4 +19,7 @@ router.get('/available/:coachId', scheduleController.getAvailableSchedules);
 // 3. Coach xóa lịch (chỉ lịch chưa được đặt)
 router.delete('/:scheduleId', auth, authorize('coach'), scheduleController.deleteSchedule);
 
+// API: Admin xem tất cả lịch của một coach bất kỳ
+router.get('/all/:coachId', auth, authorize('admin'), scheduleController.getAllSchedulesByCoachId);
+
 module.exports = router;

@@ -73,7 +73,8 @@ exports.getAllCoaches = async (req, res) => {
       SELECT 
         c.user_id, c.username, c.full_name, c.email, c.phone_number, c.account_status,
         coach.coach_id, coach.specialization, coach.bio, coach.experience_years,
-        coach.status AS coach_status, coach.google_meet_link
+        coach.status AS coach_status, coach.google_meet_link,
+        (SELECT COUNT(*) FROM COACH_SCHEDULE s WHERE s.coach_id = coach.coach_id) AS scheduleCount
       FROM CUSTOMER c
       JOIN COACH coach ON c.user_id = coach.user_id
     `);

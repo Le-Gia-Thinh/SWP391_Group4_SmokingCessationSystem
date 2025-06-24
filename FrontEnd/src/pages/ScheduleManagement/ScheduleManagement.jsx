@@ -35,6 +35,8 @@ import {
 import Navbar from '../../layouts/Navbar';
 import { useAuth } from '../../contexts/AuthContext';
 import './ScheduleManagement.css';
+import dayjs from 'dayjs';
+import CoachScheduleModal from './CoachScheduleModal';
 
 const { Option } = Select;
 const { Title, Text } = Typography;
@@ -49,6 +51,9 @@ const ScheduleManagement = () => {
     const [selectedCoaches, setSelectedCoaches] = useState([]);
     const [scheduleType, setScheduleType] = useState('single'); // 'single' or 'multiple'
     const [initialLoading, setInitialLoading] = useState(true);
+    const [modalCoach, setModalCoach] = useState(null);
+    const [modalOpen, setModalOpen] = useState(false);
+    const token = localStorage.getItem('token');
 
     // API Base URL
     const API_BASE_URL = 'http://localhost:5000/api';
@@ -276,8 +281,8 @@ const ScheduleManagement = () => {
                                 title: 'Trạng thái lịch',
                                 key: 'scheduleStatus',
                                 render: (_, record) => (
-                                    <Tag color={record.hasSchedules ? 'green' : 'orange'}>
-                                        {record.hasSchedules ? 'Có lịch' : 'Chưa có lịch'}
+                                    <Tag color={record.scheduleCount > 0 ? 'green' : 'orange'}>
+                                        {record.scheduleCount > 0 ? 'Đã có lịch' : 'Chưa có lịch'}
                                     </Tag>
                                 )
                             },
@@ -300,8 +305,8 @@ const ScheduleManagement = () => {
                                         <Button
                                             size="small"
                                             onClick={() => {
-                                                // TODO: Xem lịch của coach này
-                                                message.info('Tính năng xem lịch chi tiết sẽ được phát triển');
+                                                setModalCoach(record);
+                                                setModalOpen(true);
                                             }}
                                         >
                                             Xem lịch
@@ -408,7 +413,10 @@ const ScheduleManagement = () => {
                                                         label="Phạm vi ngày"
                                                         rules={[{ required: true, message: 'Vui lòng chọn phạm vi ngày' }]}
                                                     >
-                                                        <DatePicker.RangePicker style={{ width: '100%' }} />
+                                                        <DatePicker.RangePicker
+                                                            style={{ width: '100%' }}
+                                                            disabledDate={(current) => current && current < dayjs().startOf('day')}
+                                                        />
                                                     </Form.Item>
                                                 </Col>
                                                 <Col span={12}>
@@ -480,6 +488,13 @@ const ScheduleManagement = () => {
                         </Form.Item>
                     </Form>
                 </Modal>
+
+                <CoachScheduleModal
+                    open={modalOpen}
+                    onClose={() => setModalOpen(false)}
+                    coach={modalCoach}
+                    token={token}
+                />
             </div>
         </div>
     );
