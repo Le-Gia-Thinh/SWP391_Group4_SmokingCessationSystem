@@ -95,7 +95,7 @@ const register = async (req, res) => {
       .input('password', sql.VarChar, hashedPassword)
       .input('name', sql.VarChar, name)
       .input('phone_number', sql.VarChar, phone_number)
-.input('role', sql.VarChar, 'member')
+      .input('role', sql.VarChar, 'member')
       .input('status', sql.VarChar, 'active')
       .input('provider', sql.VarChar, 'local')
       .input('created', sql.Date, new Date())
@@ -106,7 +106,7 @@ const register = async (req, res) => {
       `);
 
     const userId = insertResult.recordset[0].user_id;
-    
+
     const token = generateToken({
       id: userId,
       email,
@@ -194,7 +194,7 @@ const getMe = async (req, res) => {
 // Callback xử lý khi đăng nhập bằng Google thành công
 const googleSuccess = (req, res) => {
   console.log('=== GOOGLE SUCCESS CALLBACK ===');
-console.log('req.user:', req.user);
+  console.log('req.user:', req.user);
   console.log('CLIENT_URL:', process.env.CLIENT_URL);
 
   try {
