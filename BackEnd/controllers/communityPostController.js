@@ -97,3 +97,23 @@ exports.deletePost = async (req, res) => {
     res.status(500).json({ message: 'Lỗi server khi xóa bài viết' });
   }
 };
+
+exports.approvePost = async (req, res) => {
+  try {
+    const postId = req.params.id;
+
+    const pool = await sql.connect(dbConfig);
+    const result = await pool.request()
+      .input('id', sql.Int, postId)
+      .query(`
+        UPDATE COMMUNITY_POST
+        SET is_approved = 1
+        WHERE post_id = @id
+      `);
+
+    res.json({ success: true, message: 'Bài viết đã được duyệt' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Lỗi server khi duyệt bài viết' });
+  }
+};

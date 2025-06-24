@@ -72,4 +72,14 @@ const authorize = (allowedRoles) => {
     next();
   };
 };
+
+exports.authorize = (role) => {
+  return (req, res, next) => {
+    if (req.user.role !== role) {
+      return res.status(403).json({ message: 'Không có quyền truy cập' });
+    }
+    next();
+  };
+};
+
 module.exports = { auth, authorize };

@@ -9,4 +9,7 @@ router.get('/', communityController.getAllPosts);
 router.put('/:id', auth, communityController.updatePost);
 router.delete('/:id', auth, communityController.deletePost);
 
+// Admin duyệt
+router.put('/:id/approve', auth, authorize('admin'), communityController.approvePost);
+
 module.exports = router;
