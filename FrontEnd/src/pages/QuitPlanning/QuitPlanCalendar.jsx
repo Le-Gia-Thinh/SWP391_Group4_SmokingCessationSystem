@@ -644,25 +644,49 @@ const QuitPlan = () => {
       key: "remainingCigs",
       render: (val, record) => {
         let color = "green";
-        if (val <= 10) color = "orange";
-        if (val <= 3) color = "red";
-        const weekQuota = weeklyQuota[record.weekIndex]?.maxCigs || 0;
-        const used = weekQuota - val;
+        let groupDates = [];
+        let quota = 0;
+        if (viewMode === "week") {
+          groupDates = planData
+            .filter((r) => r.weekIndex === record.weekIndex)
+            .map((r) => r.date);
+          quota = weeklyQuota[record.weekIndex]?.maxCigs || 0;
+        } else {
+          // Lấy đúng 30 ngày của tháng này
+          const monthIndex = Math.floor(record.key / 30);
+          groupDates = planData
+            .filter((r) => Math.floor(r.key / 30) === monthIndex)
+            .map((r) => r.date);
+
+          // Tổng quota tháng = tổng suggestedCigs của 30 ngày này
+          quota = planData
+            .filter((r) => Math.floor(r.key / 30) === monthIndex)
+            .reduce((sum, r) => sum + (Number(r.suggestedCigs) || 0), 0);
+        }
+        // Tổng số điếu đã nhập (ưu tiên temp, nếu chưa thì lấy log)
+        const totalUsed = groupDates.reduce((sum, date) => {
+          const tempVal = tempSmokingLog[date];
+          const val = tempVal !== undefined ? tempVal : smokingLog[date] || 0;
+          return sum + Number(val);
+        }, 0);
+        const remain = Math.max(0, quota - totalUsed);
+
+        if (remain <= 10) color = "orange";
+        if (remain <= 3) color = "red";
         return (
-          <Tooltip title={`Còn lại trong tuần này`}>
+          <Tooltip
+            title={
+              viewMode === "week"
+                ? "Còn lại trong tuần này"
+                : "Còn lại trong tháng này"
+            }
+          >
             <Badge
-              count={val}
+              count={remain}
               style={{ backgroundColor: color, marginRight: 8 }}
               showZero
             />
-            <Progress
-              percent={weekQuota ? Math.round((used / weekQuota) * 100) : 0}
-              size="small"
-              status={val === 0 ? "exception" : "active"}
-              style={{ width: 60, display: "inline-block" }}
-              showInfo={false}
-            />
-            <span style={{ marginLeft: 8, color }}>{val} điếu</span>
+            <span style={{ marginLeft: 8, color }}>{remain} điếu</span>
           </Tooltip>
         );
       },
@@ -871,6 +895,7 @@ const SmokingInputCell = ({
     tempValue !== undefined ? tempValue : value
   );
   const [loading, setLoading] = useState(false);
+  const [clicked, setClicked] = useState(false);
 
   useEffect(() => {
     setInputValue(tempValue !== undefined ? tempValue : value);
@@ -878,6 +903,8 @@ const SmokingInputCell = ({
 
   const handleSave = async () => {
     setLoading(true);
+    setClicked(true); // Thêm hiệu ứng
+    setTimeout(() => setClicked(false), 400); // Reset hiệu ứng sau 0.4s
     const formatted = dayjs(date, "DD/MM/YYYY").format("YYYY-MM-DD");
     const token = localStorage.getItem("token");
     try {
@@ -922,16 +949,18 @@ const SmokingInputCell = ({
       <InputNumber
         min={0}
         value={inputValue}
-        style={{ width: 70 }}
+        style={{ width: 100, height: 44, fontSize: 18 }} // tăng width, height, font
         disabled={isPast}
         onChange={handleChange}
       />
       <Button
-        size="small"
+        size="large"
         type="primary"
         loading={loading}
         disabled={isPast || inputValue === value}
         onClick={handleSave}
+        className={`confirm-btn${clicked ? " clicked" : ""}`}
+        style={{ height: 44, fontSize: 16 }} // tăng size nút
       >
         Xác nhận
       </Button>
