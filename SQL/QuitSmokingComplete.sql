@@ -413,7 +413,7 @@ IF OBJECT_ID('ACHIEVEMENT', 'U') IS NULL
 BEGIN
     CREATE TABLE ACHIEVEMENT (
         achievement_id INT IDENTITY(1,1) PRIMARY KEY,      -- Khóa chính tự tăng
-        title VARCHAR(100) NOT NULL,                       -- Tiêu đề thành tích (ví dụ: '7 ngày không hút thuốc')
+        title NVARCHAR(100) NOT NULL,                       -- Tiêu đề thành tích (ví dụ: '7 ngày không hút thuốc')
         description TEXT,                                  -- Mô tả chi tiết về thành tích
         badge_image VARCHAR(255),                          -- Đường dẫn tới ảnh huy hiệu (biểu tượng thành tích)
         achievement_type VARCHAR(20),                      -- Loại thành tích: 'daily', 'milestone', 'event'...
@@ -489,6 +489,7 @@ BEGIN
         last_updated DATETIME,                             -- Thời điểm chỉnh sửa gần nhất
         view_count INT DEFAULT 0,                          -- Lượt xem bài viết
         is_pinned BIT DEFAULT 0,                           -- Bài được ghim (1: có, 0: không)
+        is_approved BIT DEFAULT 0,                         -- 0: chưa duyệt, 1: đã duyệt
 
         CONSTRAINT fk_post_user FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id) ON DELETE SET NULL -- Xóa user sẽ xóa bài
     );
