@@ -1,5 +1,4 @@
-// src/pages/HomePage.jsx
-import React, { useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 import {
   Button,
@@ -13,12 +12,10 @@ import {
   Carousel,
   Badge,
   Layout,
-  Avatar,
   Tooltip,
 } from "antd";
 import {
   CheckOutlined,
-  RightOutlined,
   FacebookOutlined,
   InstagramOutlined,
   TwitterOutlined,
@@ -27,16 +24,23 @@ import {
   PinterestOutlined,
 } from "@ant-design/icons";
 import { GiLevelTwo, GiLevelThree, GiLevelFour } from "react-icons/gi";
+
 import Navbar from "../../layouts/Navbar";
+import PlanUpgradeModal from "./PlanUpgradeModal";
+import BlogCarousel from "../../components/BlogCarousel";
+import { useScrollReveal } from "../../hooks/useScrollReveal";
 import meditationImg from "../../assets/meditation.jpg";
 import healthyEatingImg from "../../assets/healthy-eating.jpg";
 import fitnessImg from "../../assets/fitness.jpg";
+
+import videoSrc from "../../assets/video/13225520_3840_2160_30fps (1).mp4";
+
 import "./HomePage.css";
-import BlogCarousel from "../../components/BlogCarousel";
 
 const { Title, Paragraph, Text } = Typography;
-const { Content, Footer } = Layout;
+const { Footer } = Layout;
 
+/* ===== DỮ LIỆU TĨNH ===== */
 const plans = [
   { label: "Cơ bản", Icon: GiLevelTwo },
   { label: "Nâng cao", Icon: GiLevelThree },
@@ -44,145 +48,145 @@ const plans = [
 ];
 
 const benefits = [
-  "Improved physical health",
-  "Better mental health",
-  "Increased longevity",
-  "Weight management",
-  "Improved self-confidence",
-  "Reduced stress",
+  "Cải thiện sức khỏe thể chất",
+  "Sức khỏe tinh thần tốt hơn",
+  "Tăng tuổi thọ",
+  "Quản lý cân nặng",
+  "Tăng sự tự tin",
+  "Giảm căng thẳng",
 ];
 
 const lifestyleSteps = [
   {
-    title: "1. Find your motivation to quit",
+    title: "1. Tìm động lực để bỏ thuốc",
     description:
-      "Discover the personal reasons that matter most to you — from health to family or finance. Your motivation will guide your journey to quit smoking and stay healthy.",
+      "Khám phá những lý do cá nhân quan trọng nhất đối với bạn — từ sức khỏe đến gia đình hoặc tài chính. Động lực của bạn sẽ hướng dẫn hành trình bỏ thuốc và sống khỏe mạnh.",
     image: meditationImg,
   },
   {
-    title: "2. Start a personalized quit plan",
+    title: "2. Bắt đầu kế hoạch bỏ thuốc cá nhân hóa",
     description:
-      "Create or follow a 7–30 day Quit Plan tailored to your lifestyle. Set a quit date, outline triggers, and get daily guidance to build smoke-free habits.",
+      "Tạo hoặc làm theo Kế hoạch Bỏ thuốc 7-30 ngày được điều chỉnh theo lối sống của bạn. Đặt ngày bỏ thuốc, xác định các yếu tố kích thích và nhận hướng dẫn hàng ngày để xây dựng thói quen không hút thuốc.",
     image: healthyEatingImg,
   },
   {
-    title: "3. Track your smoke-free progress",
+    title: "3. Theo dõi tiến độ không hút thuốc",
     description:
-      "Monitor your smoke-free days, money saved, and health gains. Use our tracking tools to stay on top of your achievements and stay motivated.",
+      "Theo dõi những ngày không hút thuốc, tiền tiết kiệm được và những cải thiện về sức khỏe. Sử dụng các công cụ theo dõi của chúng tôi để theo dõi thành tích và duy trì động lực.",
     image: fitnessImg,
   },
   {
-    title: "4. Build your own quit journey",
+    title: "4. Xây dựng hành trình bỏ thuốc của riêng bạn",
     description:
-      "Customize your journey by saving your favorite tips, activities, achievements, and rewards. Every step brings you closer to a healthier life.",
+      "Tùy chỉnh hành trình bằng cách lưu những lời khuyên, hoạt động, thành tích và phần thưởng yêu thích. Mỗi bước đưa bạn đến gần hơn với cuộc sống khỏe mạnh.",
     image: meditationImg,
   },
 ];
 
 const categoryFeatures = [
-  "Diet tracker",
-  "Best nutrition advice",
-  "Exercise portal",
-  "Meal planner",
-  "Recipes database",
-  "One stop shop for nutrition",
-  "Community",
+  "Theo dõi chế độ ăn",
+  "Lời khuyên dinh dưỡng tốt nhất",
+  "Cổng thông tin tập thể dục",
+  "Lập kế hoạch bữa ăn",
+  "Cơ sở dữ liệu công thức nấu ăn",
+  "Một điểm dừng cho dinh dưỡng",
+  "Cộng đồng",
 ];
 
 const expertQualifications = [
-  "Registered Dietitian with the Academy of Nutrition and Dietetics",
-  "5+ years of experience in the field",
-  "Specialize in weight management, chronic disease prevention, and sports nutrition",
-  "Skilled in developing recipes and meal plans",
-  "Passionate about helping people live healthy, fulfilling lives",
-  "Committed to staying up-to-date with the latest research and trends in nutrition",
+  "Chuyên gia dinh dưỡng đã đăng ký với Viện Dinh dưỡng và Chế độ ăn",
+  "Hơn 5 năm kinh nghiệm trong lĩnh vực",
+  "Chuyên về quản lý cân nặng, phòng ngừa bệnh mãn tính và dinh dưỡng thể thao",
+  "Thành thạo trong việc phát triển công thức và kế hoạch bữa ăn",
+  "Đam mê giúp mọi người sống khỏe mạnh, trọn vẹn",
+  "Cam kết cập nhật những nghiên cứu và xu hướng mới nhất trong dinh dưỡng",
 ];
 
 const startFeatures = [
-  "Quick account creation",
-  "No commitment — cancel at any time",
-  "Join over 45 million other users",
+  "Tạo tài khoản nhanh chóng",
+  "Không cam kết — hủy bất cứ lúc nào",
+  "Tham gia cùng hơn 45 triệu người dùng khác",
 ];
 
 const footerLinks = [
-  "About us",
-  "Features",
-  "Blogs",
-  "Food",
-  "Recipes",
-  "Reviews",
-  "Sign in",
+  "Về chúng tôi",
+  "Tính năng",
+  "Blog",
+  "Thực phẩm",
+  "Công thức",
+  "Đánh giá",
+  "Đăng nhập",
 ];
+
 const legalLinks = [
-  "Terms & Conditions",
-  "Privacy policy",
-  "Contact",
-  "Cookie policy",
-  "Support",
+  "Điều khoản & Điều kiện",
+  "Chính sách bảo mật",
+  "Liên hệ",
+  "Chính sách cookie",
+  "Hỗ trợ",
 ];
 
+/* ===== TRANG CHÍNH ===== */
 const HomePage = () => {
+  const [showUpgrade, setShowUpgrade] = useState(false);
+  const timerRef = useRef(null);
+  const homepageRef = useRef(null);
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get("token");
-
-    if (token) {
-      localStorage.setItem("token", token);
-      window.history.replaceState(null, "", "/home");
-    }
+    // sau 2s kể từ khi mount
+    timerRef.current = setTimeout(() => setShowUpgrade(true), 2000);
+    return () => clearTimeout(timerRef.current);
   }, []);
-
+  useScrollReveal();
   return (
-    <Layout className="homepage">
+    <Layout className="homepage" ref={homepageRef}>
       <Navbar />
-
-      {/* Hero Section */}
-      <section className="hero-section">
+      {showUpgrade && (
+        <PlanUpgradeModal
+          open={showUpgrade}
+          onClose={() => setShowUpgrade(false)}
+          scrollContainer={homepageRef} // ← truyền prop scrollContainer
+        />
+      )}
+      {/* ---------- HERO ---------- */}
+      <section className="hero-section scroll-section">
         <Row align="middle" style={{ minHeight: "500px" }}>
           <Col xs={24} lg={12} className="hero-content">
             <Space direction="vertical" size="large">
               <div>
                 <Title level={1} className="hero-title">
-                  <span className="highlight">Healthy</span> living
+                  <span className="highlight">Sống khỏe</span> mạnh
                 </Title>
                 <Title level={2} className="hero-slogan">
-                  made easy!!
+                  thật dễ dàng!!
                 </Title>
                 <Paragraph className="hero-subtext">
-                  Get your custom plans &<br />
-                  one-on-one guidance from our experts
+                  Nhận kế hoạch tùy chỉnh &<br />
+                  hướng dẫn một-một từ chuyên gia của chúng tôi
                 </Paragraph>
               </div>
               <Space direction="vertical" size="small">
                 <Button type="primary" size="large" className="hero-btn">
-                  Sign in
+                  Đăng nhập
                 </Button>
-                <Text type="secondary">Sign in & get started today</Text>
+                <Text type="secondary">Đăng nhập và bắt đầu ngay hôm nay</Text>
               </Space>
             </Space>
           </Col>
+
           <Col xs={24} lg={12} className="hero-video">
-          <div className="video-wrapper">
-            <iframe
-              width="100%"
-              height="315"
-              src="https://www.youtube.com/embed/MCNS4lhTZy0"
-              title="Video tuyên truyền tác hại thuốc lá"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            ></iframe>
-          </div>
-        </Col>
+            <video width="100%" height="auto" controls autoPlay muted loop>
+              <source src={videoSrc} type="video/mp4" />
+            </video>
+          </Col>
         </Row>
       </section>
 
-      {/* Benefits Section */}
-      <section className="benefits-section">
+      {/* ---------- BENEFITS ---------- */}
+      <section className="benefits-section scroll-section " data-reveal="left">
         <div className="container">
           <Row gutter={[48, 32]} align="middle">
             <Col xs={24} lg={10}>
-              <Title level={2}>Why cai nghiện</Title>
+              <Title level={2}>Tại sao bỏ thuốc</Title>
               <List
                 dataSource={benefits}
                 renderItem={(item) => (
@@ -195,6 +199,7 @@ const HomePage = () => {
                 )}
               />
             </Col>
+
             <Col xs={24} lg={14}>
               <Row gutter={[16, 16]}>
                 <Col span={10}>
@@ -224,8 +229,8 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Plans Section */}
-      <section className="plans-section">
+      {/* ---------- PLANS ---------- */}
+      <section className="plans-section scroll-section" data-reveal="right">
         <div className="container">
           <Space
             direction="vertical"
@@ -233,17 +238,16 @@ const HomePage = () => {
             style={{ width: "100%", textAlign: "center" }}
           >
             <Title level={2} className="plans-title">
-              We have plans for
+              Chúng tôi có kế hoạch cho
             </Title>
             <Paragraph>
-              Build healthier habits with personalized lessons
+              Xây dựng thói quen khỏe mạnh với các bài học cá nhân hóa
             </Paragraph>
             <Divider />
             <Row gutter={[32, 32]} justify="space-around">
               {plans.map(({ label }, i) => (
                 <Col key={i}>
                   <Space direction="vertical" align="center">
-                    {/* <Avatar size={64} icon={<Icon />} className="plan-avatar" /> */}
                     <Text strong>{label}</Text>
                   </Space>
                 </Col>
@@ -253,19 +257,17 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Lifestyle Section */}
-      <section className="lifestyle-section">
+      {/* ---------- LIFESTYLE STEPS ---------- */}
+      <section className="lifestyle-section scroll-section" data-reveal="up">
         <div className="container">
           <Title level={2} style={{ textAlign: "center", marginBottom: 48 }}>
-            Have a Smoke-Free Life with HealthyBite
+            Có cuộc sống không khói thuốc với HealthyBite
           </Title>
+
           <Row gutter={[32, 48]}>
             {lifestyleSteps.map((step, i) => (
               <Col xs={24} lg={12} key={i}>
-                <Card
-                  className="lifestyle-card"
-                  styles={{ body: { padding: 0 } }}
-                >
+                <Card className="lifestyle-card" bodyStyle={{ padding: 0 }}>
                   <Row>
                     <Col span={8}>
                       <img
@@ -286,21 +288,23 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="cta-section">
+      {/* ---------- CTA ---------- */}
+      <section className="cta-section scroll-section split" data-reveal="split">
         <div className="container">
           <Card className="cta-card">
             <Row justify="space-between" align="middle">
-              <Col>
-                <Title level={3}>Ready to plan your quit journey?</Title>
+              {/* Left half */}
+              <Col xs={24} lg={14} className="split-left">
+                <Title level={3}>Sẵn sàng lập kế hoạch bỏ thuốc?</Title>
                 <Paragraph>
-                  Sign in today and start your personalized quit plan with
+                  Đăng nhập hôm nay và bắt đầu kế hoạch bỏ thuốc cá nhân hóa với
                   HealthyBite.
                 </Paragraph>
               </Col>
-              <Col>
+              {/* Right half */}
+              <Col xs={24} lg={10} className="split-right">
                 <Button type="primary" size="large">
-                  Sign in today
+                  Đăng nhập hôm nay
                 </Button>
               </Col>
             </Row>
@@ -308,15 +312,15 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Category Section */}
-      <section className="category-section">
+      {/* ---------- CATEGORY ---------- */}
+      <section className="category-section scroll-section" data-reveal="up">
         <div className="container">
           <Row gutter={[48, 32]} align="middle">
             <Col xs={24} lg={12}>
               <Space direction="vertical" size="large">
                 <Title level={2}>
-                  What is a <span className="highlight">phoi khoe</span> for
-                  you?
+                  <span className="highlight">Phổi khỏe</span> là gì đối với
+                  bạn?
                 </Title>
                 <img
                   src={meditationImg}
@@ -325,6 +329,7 @@ const HomePage = () => {
                 />
               </Space>
             </Col>
+
             <Col xs={24} lg={12}>
               <List
                 dataSource={categoryFeatures}
@@ -342,11 +347,11 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Registration Carousel Section */}
-      <section className="register-section">
+      {/* ---------- REGISTER (CAROUSEL) ---------- */}
+      <section className="register-section scroll-section">
         <div className="container">
           <Title level={2} style={{ textAlign: "center", marginBottom: 32 }}>
-            dang ky khoa 2
+            Đăng ký khóa học
           </Title>
           <Carousel
             autoplay
@@ -366,14 +371,14 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Profile Section */}
-      <section className="profile-section">
+      {/* ---------- PROFILE ---------- */}
+      <section className="profile-section scroll-section" data-reveal="up">
         <div className="container">
           <div className="profile-header">
-            <Badge.Ribbon text="Get the best" color="green">
+            <Badge.Ribbon text="Nhận điều tốt nhất" color="green">
               <Card className="profile-info-card">
                 <Title level={2} style={{ margin: 0, color: "white" }}>
-                  profile 3
+                  Hồ sơ chuyên gia
                 </Title>
               </Card>
             </Badge.Ribbon>
@@ -383,11 +388,11 @@ const HomePage = () => {
             <Col xs={24} lg={14}>
               <Space direction="vertical" size="large">
                 <Paragraph>
-                  Our team of expert nutritionists is here to help you achieve
-                  your health and wellness goals. Our nutritionists are highly
-                  trained and qualified professionals with a deep understanding
-                  of the science behind nutrition and how it can impact your
-                  body and mind.
+                  Đội ngũ chuyên gia dinh dưỡng của chúng tôi ở đây để giúp bạn đạt được
+                  mục tiêu sức khỏe và thể chất. Các chuyên gia dinh dưỡng của chúng tôi là những
+                  chuyên gia được đào tạo cao và có trình độ với sự hiểu biết sâu sắc
+                  về khoa học đằng sau dinh dưỡng và cách nó có thể tác động đến
+                  cơ thể và tâm trí của bạn.
                 </Paragraph>
                 <List
                   dataSource={expertQualifications}
@@ -402,8 +407,9 @@ const HomePage = () => {
                 />
               </Space>
             </Col>
+
             <Col xs={24} lg={10}>
-              <Carousel autoplay className="profile-carousel">
+              <Carousel autoplay className="profile-carousel scroll-section">
                 {[meditationImg, healthyEatingImg, fitnessImg].map((img, i) => (
                   <div key={i}>
                     <img
@@ -419,10 +425,11 @@ const HomePage = () => {
         </div>
       </section>
 
+      {/* ---------- BLOG / NEWS ---------- */}
       <BlogCarousel />
 
-      {/* Start Today Section */}
-      <section className="start-section">
+      {/* ---------- START TODAY ---------- */}
+      <section className="start-section scroll-section " data-reveal="right">
         <div className="container">
           <Space
             direction="vertical"
@@ -446,8 +453,8 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Results Section */}
-      <section className="results-section">
+      {/* ---------- RESULTS ---------- */}
+      <section className="results-section scroll-section" data-reveal="up">
         <div className="container">
           <Title level={2}>vd cai nghiên thành công</Title>
           <Card className="testimonial-card">
@@ -481,8 +488,8 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Pricing Section */}
-      <section className="pricing-section">
+      {/* ---------- PRICING BANNER ---------- */}
+      <section className="pricing-section scroll-section" data-reveal="left">
         <div className="container">
           <Title level={3} style={{ textAlign: "center" }}>
             A whole year of <strong>HEALTHYBITE</strong> costs about the same as
@@ -491,8 +498,8 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Footer */}
-      <Footer className="footer-section">
+      {/* ---------- FOOTER ---------- */}
+      <Footer className="footer-section scroll-section">
         <div className="container">
           <Space
             direction="vertical"

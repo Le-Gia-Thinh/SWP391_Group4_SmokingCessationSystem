@@ -1,4 +1,3 @@
-
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const JwtStrategy = require('passport-jwt').Strategy;
@@ -46,112 +45,81 @@ passport.use(new GoogleStrategy({
 }, async (accessToken, refreshToken, profile, done) => {
   try {
     console.log('=== GOOGLE STRATEGY CALLED ===');
-    console.log('Profile ID:', profile.id);
-    console.log('Profile Email:', profile.emails[0].value);
-    console.log('Profile Name:', profile.displayName);
-    //const googleAvatar = profile.photos && profile.photos.length > 0
-    // ? profile.photos[0].value
-    // : null;
+    const email = profile.emails[0].value;
+    const displayName = profile.displayName;
+    const googleId = profile.id;
+
     const pool = await sql.connect(dbConfig);
 
-    // 1. Kiểm tra xem user đã tồn tại trong CUSTOMER chưa (theo email)
+    // 1. Kiểm tra user theo email
     const result = await pool.request()
-      .input('email', sql.VarChar, profile.emails[0].value)
-      .query(`SELECT * FROM CUSTOMER WHERE email = @email`);
+      .input('email', sql.VarChar, email)
+      .query('SELECT * FROM CUSTOMER WHERE email = @email');
 
     if (result.recordset.length > 0) {
       const user = result.recordset[0];
       console.log('✅ Existing user found:', user.user_id);
 
-      // 2. Cập nhật full_name nếu có thay đổi
+      // 2. Cập nhật tên và google_id nếu cần
       await pool.request()
         .input('id', sql.Int, user.user_id)
-        .input('name', sql.VarChar, profile.displayName)
+        .input('name', sql.VarChar, displayName)
+        .input('google_id', sql.VarChar, googleId)
         .query(`
           UPDATE CUSTOMER
-          SET full_name = @name
+          SET full_name = @name, google_id = @google_id
           WHERE user_id = @id
         `);
-
-      // 3. Kiểm tra USER_LOGIN theo user_id
-      const loginResult = await pool.request()
-        .input('user_id', sql.Int, user.user_id)
-        .query(`SELECT * FROM USER_LOGIN WHERE user_id = @user_id`);
-
-      if (loginResult.recordset.length > 0) {
-        // Nếu đã tồn tại, cập nhật google_id
-        await pool.request()
-          .input('user_id', sql.Int, user.user_id)
-          .input('google_id', sql.VarChar, profile.id)
-          .query(`UPDATE USER_LOGIN SET google_id = @google_id WHERE user_id = @user_id`);
-      } else {
-        // Nếu chưa tồn tại, tạo mới bản ghi USER_LOGIN
-        await pool.request()
-          .input('user_id', sql.Int, user.user_id)
-          .input('username', sql.VarChar, profile.emails[0].value.split('@')[0])
-          .input('login_provider', sql.VarChar, 'google')
-          .input('google_id', sql.VarChar, profile.id)
-          .input('created', sql.DateTime, new Date())
-          .query(`
-            INSERT INTO USER_LOGIN (user_id, username, login_provider, google_id, created_at)
-            VALUES (@user_id, @username, @login_provider, @google_id, @created)
-          `);
-      }
 
       return done(null, {
         id: user.user_id,
         email: user.email,
-        name: user.full_name || profile.displayName
-        //avatar: userFromDb.avatar_url 
+        name: user.full_name || displayName,
+        role: user.user_role
       });
     }
 
-    // Nếu chưa có user, tạo mới trong database
+    // 3. Nếu chưa tồn tại, tạo user mới
     console.log('🆕 Creating new user...');
-    
-    let username = profile.emails[0].value.split('@')[0];
+    let username = email.split('@')[0];
 
-    // Kiểm tra username đã tồn tại chưa
     const checkUsername = await pool.request()
       .input('username', sql.VarChar, username)
       .query('SELECT 1 FROM CUSTOMER WHERE username = @username');
 
     if (checkUsername.recordset.length > 0) {
-      username = `${username}_${Date.now()}`; // thêm thời gian để tránh trùng
-    } 
+      username = `${username}_${Date.now()}`;
+    }
 
     const insertResult = await pool.request()
-      .input('email', sql.VarChar, profile.emails[0].value)
-      .input('name', sql.VarChar, profile.displayName)
+      .input('email', sql.VarChar, email)
+      .input('name', sql.VarChar, displayName)
       .input('username', sql.VarChar, username)
+      .input('google_id', sql.VarChar, googleId)
+      .input('provider', sql.VarChar, 'google')
       .input('status', sql.VarChar, 'active')
       .input('role', sql.VarChar, 'member')
       .input('created', sql.DateTime, new Date())
       .query(`
-        INSERT INTO CUSTOMER (email, full_name, username, account_status, user_role, registration_date)
+        INSERT INTO CUSTOMER (
+          email, full_name, username, google_id, login_provider,
+          account_status, user_role, registration_date
+        )
         OUTPUT INSERTED.user_id
-        VALUES (@email, @name, @username, @status, @role, @created)
+        VALUES (
+          @email, @name, @username, @google_id, @provider,
+          @status, @role, @created
+        )
       `);
 
     const newUserId = insertResult.recordset[0].user_id;
     console.log('✅ New user created:', newUserId);
 
-    // Tạo bản ghi USER_LOGIN tương ứng
-    await pool.request()
-      .input('user_id', sql.Int, newUserId)
-      .input('username', sql.VarChar, username)
-      .input('login_provider', sql.VarChar, 'google')
-      .input('google_id', sql.VarChar, profile.id)
-      .input('created', sql.DateTime, new Date())
-      .query(`
-        INSERT INTO USER_LOGIN (user_id, username, login_provider, google_id, created_at)
-        VALUES (@user_id, @username, @login_provider, @google_id, @created)
-      `);
-
     return done(null, {
       id: newUserId,
-      email: profile.emails[0].value,
-      name: profile.displayName
+      email,
+      name: displayName,
+      role: 'member'
     });
 
   } catch (error) {

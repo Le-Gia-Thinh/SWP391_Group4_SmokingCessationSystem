@@ -11,45 +11,54 @@ IF OBJECT_ID('CUSTOMER', 'U') IS NULL
 BEGIN
     CREATE TABLE CUSTOMER (
         user_id INT IDENTITY(1,1) PRIMARY KEY,                       -- Khóa chính tự động tăng
-        username NVARCHAR(100) NOT NULL UNIQUE,                     -- Tên đăng nhập (cho phép tiếng Việt, không trùng lặp)
-        password_hash VARCHAR(255) NULL,                            -- Mật khẩu mã hóa (null nếu dùng Google Login)
-        full_name NVARCHAR(100) NOT NULL,                           -- Họ tên đầy đủ (có dấu, tiếng Việt)
+
+        -- Thông tin cá nhân
+        username NVARCHAR(100) NOT NULL UNIQUE,                     -- Tên đăng nhập (local)
+        password_hash VARCHAR(255) NULL,                            -- Mật khẩu (local) – NULL nếu dùng Google
+        full_name NVARCHAR(100) NOT NULL,                           -- Họ tên
         email VARCHAR(100) NOT NULL UNIQUE,                         -- Email duy nhất
-        phone_number VARCHAR(20) NULL,                              -- Số điện thoại (có thể null)
-        date_of_birth DATE NULL,                                    -- Ngày sinh (có thể bỏ qua)
+        avatar_url VARCHAR(255) NULL,                               -- Avatar URL
+        phone_number VARCHAR(20) NULL,                              -- Số điện thoại
+        date_of_birth DATE NULL,                                    -- Ngày sinh
         registration_date DATE NOT NULL,                            -- Ngày đăng ký
-        user_role VARCHAR(20) NOT NULL CHECK (                      -- Vai trò: 'admin', 'member', 'coach'
+
+        -- Vai trò & trạng thái
+        user_role VARCHAR(20) NOT NULL CHECK (
             user_role IN ('admin', 'member', 'coach')
         ),
-        account_status VARCHAR(20) NOT NULL,                        -- Trạng thái: 'active', 'inactive', 'banned'
-        ftnd_level NVARCHAR(20) NULL CHECK (                        -- Mức độ nghiện (theo FTND): 'Low', 'Medium', 'High'
+        account_status VARCHAR(20) NOT NULL CHECK (
+            account_status IN ('active', 'inactive', 'banned')
+        ),
+        ftnd_level NVARCHAR(20) NULL CHECK (
             ftnd_level IN (N'Low', N'Medium', N'High')
-        )
-    );
-END
-GO
+        ),
 
--- 2. USER_LOGIN: Bảng lưu thông tin đăng nhập Local và Google OAuth
-IF OBJECT_ID('USER_LOGIN', 'U') IS NULL
-BEGIN
-    CREATE TABLE USER_LOGIN (
-        login_id INT IDENTITY(1,1) PRIMARY KEY,              -- Khóa chính tự tăng
-        user_id INT NULL,                                    -- Khóa ngoại liên kết với CUSTOMER
-        login_provider NVARCHAR(20) NOT NULL,                -- 'local' hoặc 'google'
-        username NVARCHAR(100),                              -- Tên đăng nhập (chỉ dùng cho local)
-        password_hash VARCHAR(255),                          -- Mật khẩu mã hóa (chỉ dùng cho local)
-        google_id VARCHAR(255),                              -- ID Google (chỉ dùng cho google login)
-        created_at DATETIME DEFAULT GETDATE(),               -- Ngày tạo tài khoản login
+        -- Thông tin đăng nhập (gộp từ USER_LOGIN)
+        login_provider NVARCHAR(20) NOT NULL CHECK (
+            login_provider IN ('local', 'google')
+        ),                                                          -- Xác định loại đăng nhập
+        google_id VARCHAR(255),                                     -- ID Google nếu login bằng Google
+        created_at DATETIME DEFAULT GETDATE(),                      -- Ngày tạo tài khoản
 
-        -- Ràng buộc: Local thì phải có username và password; Google thì phải có google_id
-        CONSTRAINT fk_login_user FOREIGN KEY (user_id)REFERENCES CUSTOMER(user_id) ON DELETE SET NULL,
-        CONSTRAINT chk_login_data CHECK (
+        -- Ràng buộc logic cho đăng nhập: hoặc local (username + password) hoặc google (google_id)
+        CONSTRAINT chk_login_combination CHECK (
             (login_provider = 'local' AND username IS NOT NULL AND password_hash IS NOT NULL)
             OR
             (login_provider = 'google' AND google_id IS NOT NULL)
         )
     );
 END
+GO
+
+-- Unique constraint và chỉ mục (dùng sau CREATE TABLE)
+        -- Dành cho tài khoản local (username phải unique)
+        CREATE UNIQUE INDEX idx_unique_username_local ON CUSTOMER(username) WHERE login_provider = 'local';
+
+        -- Dành cho tài khoản Google (google_id phải unique nếu có)
+        CREATE UNIQUE INDEX idx_unique_google_id ON CUSTOMER(google_id) WHERE google_id IS NOT NULL;
+
+        -- Tăng tốc tìm kiếm login
+        CREATE INDEX idx_login_email_provider ON CUSTOMER(email, login_provider);
 GO
 
 -- 3. USER_PROFILE: Hồ sơ chi tiết thói quen hút thuốc của người dùng
@@ -182,6 +191,7 @@ BEGIN
         plan_name NVARCHAR(100) NOT NULL,                         -- Tên kế hoạch hỗ trợ tiếng Việt
         start_date DATE NOT NULL,                                 -- Ngày bắt đầu
         end_date DATE NOT NULL,                                   -- Ngày kết thúc
+        month_quit INT NOT NULL DEFAULT 0,                        -- Số tháng đã cai thuốc (tính từ start đến end)
         target_quit_date DATE,                                    -- Ngày mục tiêu bỏ thuốc
         frequency_per_day INT CHECK (frequency_per_day >= 0),     -- Số lần hút/ngày (>=0)
         plan_type NVARCHAR(20),                                   -- Loại kế hoạch: 'custom', 'template'
@@ -279,10 +289,10 @@ BEGIN
         date DATE NOT NULL,                                    -- Ngày cụ thể
         total_cigarettes INT CHECK (total_cigarettes >= 0),    -- Tổng số điếu hút
         relapsed BIT DEFAULT 0,                                -- Đánh dấu tái nghiện
-        plan_id INT,                                           -- Liên kết kế hoạch (có thể null)
+        -- plan_id INT,                                           -- Liên kết kế hoạch (có thể null)
 
         CONSTRAINT fk_dsm_summary_customer FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id) ON DELETE SET NULL,
-        CONSTRAINT fk_dsm_summary_plan FOREIGN KEY (plan_id) REFERENCES CESSATION_PLAN(plan_id) ON DELETE SET NULL
+        -- CONSTRAINT fk_dsm_summary_plan FOREIGN KEY (plan_id) REFERENCES CESSATION_PLAN(plan_id) ON DELETE SET NULL
     );
 END
 GO
@@ -550,6 +560,57 @@ BEGIN
         created_at DATETIME DEFAULT GETDATE(),              -- Ngày tạo token
 
         FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id) ON DELETE CASCADE
+    );
+END
+GO
+
+-- 29. HABIT_LOG: Ghi nhận hành vi không hút thuốc theo từng mốc giờ trong ngày
+IF OBJECT_ID('HABIT_LOG', 'U') IS NULL
+BEGIN
+    CREATE TABLE HABIT_LOG (
+        log_id INT IDENTITY(1,1) PRIMARY KEY,                  -- Khóa chính tự tăng
+        user_id INT NOT NULL,                                 -- Người dùng thực hiện hành vi
+        plan_id INT NOT NULL,                                 -- Kế hoạch bỏ thuốc liên qua
+        log_date DATE NOT NULL,                               -- Ngày ghi nhận
+        time_slot INT NOT NULL CHECK (time_slot BETWEEN 0 AND 8), -- Mốc thời gian (0: 7h, ..., 8: 22h)
+        completed BIT NOT NULL DEFAULT 0,                     -- Đã hoàn thành không hút tại slot đó hay chưa
+        points_awarded FlOAT DEFAULT 0,                         -- Điểm thưởng cho hành vi này
+        created_at DATETIME DEFAULT GETDATE(),                -- Ngày tạo bản ghi
+
+        CONSTRAINT fk_habitlog_user FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id) ON DELETE CASCADE,
+        CONSTRAINT fk_habitlog_plan FOREIGN KEY (plan_id) REFERENCES CESSATION_PLAN(plan_id),
+        UNIQUE(user_id, log_date, time_slot)                  -- Một người chỉ có 1 bản ghi/slot/ngày
+    );
+END
+GO
+
+-- 30. USER_SCORE: Tổng điểm và cấp bậc hiện tại của người dùng trong hệ thống
+IF OBJECT_ID('USER_SCORE', 'U') IS NULL
+BEGIN
+    CREATE TABLE USER_SCORE (
+        user_id INT PRIMARY KEY,                              -- Mỗi user có 1 dòng duy nhất
+        total_points FlOAT NOT NULL DEFAULT 0,                  -- Tổng điểm tích lũy
+        current_level VARCHAR(50) DEFAULT 'Beginner',         -- Cấp độ (Beginner, Intermediate, Expert...)
+        last_updated DATETIME DEFAULT GETDATE(),              -- Thời điểm cập nhật gần nhất
+
+        CONSTRAINT fk_score_user FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id) ON DELETE CASCADE
+    );
+END
+GO
+
+-- 31. USER_SCORE_LOG: Lưu chi tiết điểm được cộng theo từng mốc giờ
+IF OBJECT_ID('USER_SCORE_LOG', 'U') IS NULL
+BEGIN
+    CREATE TABLE USER_SCORE_LOG (
+        id INT IDENTITY(1,1) PRIMARY KEY,                     -- Khóa chính tự tăng
+        user_id INT NOT NULL,                                 -- Người dùng nhận điểm
+        log_date DATE NOT NULL,                               -- Ngày ghi nhận điểm
+        time_slot INT NOT NULL CHECK (time_slot BETWEEN 0 AND 8), -- Mốc thời gian điểm được ghi nhận
+        points_awarded FLOAT NOT NULL,                        -- Số điểm (kiểu float để đồng nhất)
+        created_at DATETIME DEFAULT GETDATE(),                -- Thời điểm ghi nhận
+
+        CONSTRAINT fk_scorelog_user FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id),
+        UNIQUE(user_id, log_date, time_slot)                  -- Một người chỉ có 1 lần cộng điểm/slot/ngày
     );
 END
 GO

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, Link as RouterLink } from "react-router-dom";
 import { Form, Input, Button, Typography } from "antd";
 import {
@@ -26,6 +26,7 @@ const Register = () => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [pinned, setPinned] = useState(false);
+  const leaveTimerRef = useRef(null);
 
   const onFinish = async (values) => {
     try {
@@ -36,10 +37,31 @@ const Register = () => {
     }
   };
 
-  const handleMouseEnter = () => setOpen(true);
-  const handleMouseLeave = () => {
-    if (!pinned) setOpen(false);
+  const handleMouseEnter = () => {
+    // nếu có timer đang chờ thì hủy
+    if (leaveTimerRef.current) {
+      clearTimeout(leaveTimerRef.current);
+      leaveTimerRef.current = null;
+    }
+    setOpen(true);
   };
+
+  const handleMouseLeave = () => {
+    // nếu đã pin thì không auto-close
+    if (pinned) return;
+    // sau 5s mới setOpen(false)
+    leaveTimerRef.current = setTimeout(() => {
+      setOpen(false);
+      leaveTimerRef.current = null;
+    }, 5000);
+  };
+
+  // cleanup khi unmount
+  useEffect(() => {
+    return () => {
+      if (leaveTimerRef.current) clearTimeout(leaveTimerRef.current);
+    };
+  }, []);
 
   return (
     <div className="register-wrapper">
@@ -54,34 +76,41 @@ const Register = () => {
         <span className="line bottom" />
         <span className="line left" />
 
-        {/* pin icon outside */}
+        {/* pin icon */}
         <span
           className="pin-icon-register"
-          onClick={() => setPinned(!pinned)}
-          style={{ position: 'absolute', top: 8, right: 8, cursor: 'pointer', fontSize: 18 }}
+          onClick={() => {
+            setPinned((prev) => !prev);
+            // nếu vừa unpin thì clear timer nếu có
+            if (!pinned && leaveTimerRef.current) {
+              clearTimeout(leaveTimerRef.current);
+              leaveTimerRef.current = null;
+            }
+          }}
+          style={{ position: "absolute", top: 8, right: 8, cursor: "pointer", fontSize: 18 }}
         >
           {pinned ? <PushpinFilled /> : <PushpinOutlined />}
         </span>
 
         <div className="register-container">
-          <div className="register-title">📝 Sign up 💪</div>
+          <div className="register-title">📝 Đăng ký 💪</div>
 
           <div className="register-form-content">
             <Form layout="vertical" onFinish={onFinish}>
               <Form.Item
-                label="Name"
+                label="Họ tên"
                 name="name"
-                rules={[{ required: true, message: "Please enter your name!" }]}
+                rules={[{ required: true, message: "Vui lòng nhập họ tên của bạn!" }]}
               >
-                <Input placeholder="Your full name" suffix={<UserOutlined />} />
+                <Input placeholder="Họ tên đầy đủ" suffix={<UserOutlined />} />
               </Form.Item>
 
               <Form.Item
-                label="Mobile no."
+                label="Số điện thoại"
                 name="phone_number"
                 rules={[
-                  { required: true, message: "Please enter your phone number!" },
-                  { pattern: /^\d{10}$/, message: "Phone number must be exactly 10 digits." },
+                  { required: true, message: "Vui lòng nhập số điện thoại của bạn!" },
+                  { pattern: /^\d{10}$/, message: "Số điện thoại phải có đúng 10 chữ số." },
                 ]}
               >
                 <Input placeholder="0123456789" maxLength={10} suffix={<PhoneOutlined />} />
@@ -91,19 +120,19 @@ const Register = () => {
                 label="Email"
                 name="email"
                 rules={[
-                  { required: true, message: "Please enter your email!" },
-                  { type: "email", message: "Invalid email address" },
+                  { required: true, message: "Vui lòng nhập email của bạn!" },
+                  { type: "email", message: "Địa chỉ email không hợp lệ" },
                 ]}
               >
                 <Input placeholder="abc@gmail.com" type="email" suffix={<MailOutlined />} />
               </Form.Item>
 
               <Form.Item
-                label="Password"
+                label="Mật khẩu"
                 name="password"
                 rules={[
-                  { required: true, message: "Please enter your password!" },
-                  { min: 6, message: "Password must be at least 6 characters." },
+                  { required: true, message: "Vui lòng nhập mật khẩu của bạn!" },
+                  { min: 6, message: "Mật khẩu phải có ít nhất 6 ký tự." },
                 ]}
               >
                 <Input.Password placeholder="********" suffix={<LockOutlined />} />
@@ -111,13 +140,13 @@ const Register = () => {
 
               <Form.Item>
                 <Button type="primary" htmlType="submit" block className="register-button">
-                  Get started
+                  Bắt đầu
                 </Button>
               </Form.Item>
 
               <div className="signup-text">
                 <Text>
-                  Already have an account? <RouterLink to="/login">Sign in</RouterLink>
+                  Đã có tài khoản? <RouterLink to="/login">Đăng nhập</RouterLink>
                 </Text>
               </div>
             </Form>

@@ -15,10 +15,10 @@ const ForgetPassword = () => {
     try {
       // Gửi API đến backend
       const res = await axios.post("http://localhost:5000/api/auth/request-reset-password",
-    {
-      email: values.email,
-    }
-  );
+        {
+          email: values.email,
+        }
+      );
 
       console.log("Yêu cầu gửi email đặt lại mật khẩu:", res.data);
 
@@ -38,10 +38,10 @@ const ForgetPassword = () => {
       <div className="auth-wrapper">
         <div className="auth-container">
           <Title level={2} className="auth-title">
-            Forget password
+            Quên mật khẩu
           </Title>
           <Text className="auth-subtitle">
-            Enter an email id associated with your account
+            Nhập email liên kết với tài khoản của bạn
           </Text>
 
           <Form layout="vertical" onFinish={onFinish}>
@@ -49,7 +49,7 @@ const ForgetPassword = () => {
               name="email"
               label="Email"
               rules={[
-                { required: true, message: "Please input your email!" },
+                { required: true, message: "Vui lòng nhập email của bạn!" },
                 { type: "email", message: "Email không hợp lệ!" },
               ]}
             >
@@ -67,12 +67,12 @@ const ForgetPassword = () => {
                 block
                 className="auth-button"
               >
-                Reset Password
+                Đặt lại mật khẩu
               </Button>
             </Form.Item>
 
             <Text className="auth-note">
-              You will shortly receive an email with further instructions
+              Bạn sẽ sớm nhận được email với hướng dẫn chi tiết
             </Text>
           </Form>
         </div>

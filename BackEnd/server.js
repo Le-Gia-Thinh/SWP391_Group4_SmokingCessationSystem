@@ -9,13 +9,15 @@ const authRoutes = require('./routes/auth');
 const roleRoutes = require('./routes/roleTestRoutes');
 const habitLogRoutes = require('./routes/habitLogRoutes');
 const smokingSummaryRoutes = require('./routes/smokingSummaryRoutes');
-
+const communityRoutes = require('./routes/community');
 
 const adminRoutes = require('./routes/admin');
 const appointmentRoutes = require('./routes/appointment');
 const scheduleRoutes = require('./routes/schedule');
 const coachRoutes = require('./routes/coach');
 const memberRoutes = require('./routes/member');
+const userRoutes = require("./routes/user"); 
+const userScoreRoutes = require("./routes/userScore");
 
 const app = express();
 
@@ -44,10 +46,12 @@ app.use("/api/quitplan", quitPlanRoutes);
 const customerRoutes = require("./routes/customer");
 app.use("/api/customer", customerRoutes);
 
-// tich diem trong daily
-app.use("/api/user-score", require("./routes/userScore"));
 // ranking
 app.use("/api/user-score", require("./routes/userScore"));
+
+// Update user score
+const { auth } = require("./middleware/auth");
+app.use("/api/user-score", userScoreRoutes);
 
 // 3) Session middleware (phải nằm trước passport.session())
 app.use(
@@ -80,11 +84,17 @@ app.use('/api/coach', coachRoutes);
 // 5.6) Route member
 app.use('/api/member', memberRoutes);
 
+// Community Post & Comment
+app.use('/api/community', require('./routes/community'));
+app.use('/api/comment', require('./routes/comment'));
+
 //xử lý phần submit từ plan
 app.use('/api/habit-log', habitLogRoutes);
 
 //xử lí lưu số điếu hằng ngày của users
 app.use('/api/smoking-summary', smokingSummaryRoutes);
+//xu li profile of member
+app.use('/api/user', userRoutes);
 
 // 6) Middleware log request
 app.use((req, res, next) => {

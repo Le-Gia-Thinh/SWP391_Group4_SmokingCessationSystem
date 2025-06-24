@@ -137,10 +137,10 @@ const AdminDashboard = () => {
             });
             const data = await handleResponse(response);
             setCoaches(data.data || []);
-            message.success('Coaches list loaded successfully!');
+            message.success('Danh sách huấn luyện viên đã được tải thành công!');
         } catch (error) {
             console.error('Error loading coaches:', error);
-            message.error('Failed to load coaches list');
+            message.error('Không thể tải danh sách huấn luyện viên');
         } finally {
             setLoading(false);
         }
@@ -183,10 +183,10 @@ const AdminDashboard = () => {
             // Reload coaches list
             await loadCoaches();
 
-            message.success('Coach account created successfully!');
+            message.success('Tài khoản huấn luyện viên đã được tạo thành công!');
         } catch (error) {
             console.error('Error creating coach:', error);
-            message.error(error.message || 'Failed to create coach account');
+            message.error(error.message || 'Không thể tạo tài khoản huấn luyện viên');
         } finally {
             setLoading(false);
         }
@@ -232,7 +232,7 @@ const AdminDashboard = () => {
             });
             await handleResponse(response);
 
-            message.success('Coach updated successfully!');
+            message.success('Huấn luyện viên đã được cập nhật thành công!');
             setEditCoachModal(false);
             setSelectedCoach(null);
             editForm.resetFields();
@@ -241,7 +241,7 @@ const AdminDashboard = () => {
             await loadCoaches();
         } catch (error) {
             console.error('Error updating coach:', error);
-            message.error(error.message || 'Failed to update coach');
+            message.error(error.message || 'Không thể cập nhật huấn luyện viên');
         } finally {
             setLoading(false);
         }
@@ -256,11 +256,11 @@ const AdminDashboard = () => {
                 headers: getAuthHeaders()
             });
             await handleResponse(response);
-            message.success('Coach deactivated successfully!');
+            message.success('Huấn luyện viên đã được vô hiệu hóa thành công!');
             await loadCoaches();
         } catch (error) {
             console.error('Error deleting coach:', error);
-            message.error(error.message || 'Failed to deactivate coach');
+            message.error(error.message || 'Không thể vô hiệu hóa huấn luyện viên');
         } finally {
             setLoading(false);
         }
@@ -275,11 +275,11 @@ const AdminDashboard = () => {
                 headers: getAuthHeaders()
             });
             await handleResponse(response);
-            message.success('Coach restored successfully!');
+            message.success('Huấn luyện viên đã được khôi phục thành công!');
             await loadCoaches();
         } catch (error) {
             console.error('Error restoring coach:', error);
-            message.error(error.message || 'Failed to restore coach');
+            message.error(error.message || 'Không thể khôi phục huấn luyện viên');
         } finally {
             setLoading(false);
         }
@@ -295,10 +295,10 @@ const AdminDashboard = () => {
         try {
             await navigator.clipboard.writeText(text);
             setCopiedField(field);
-            message.success('Copied to clipboard!');
+            message.success('Đã sao chép vào clipboard!');
             setTimeout(() => setCopiedField(''), 2000);
         } catch (error) {
-            message.error('Failed to copy');
+            message.error('Không thể sao chép');
         }
     };
 
@@ -306,9 +306,9 @@ const AdminDashboard = () => {
         const credentialsText = `Name: ${newCoachCredentials.name}\nEmail: ${newCoachCredentials.email}\nPassword: ${newCoachCredentials.password}`;
         try {
             await navigator.clipboard.writeText(credentialsText);
-            message.success('All credentials copied to clipboard!');
+            message.success('Tất cả thông tin đăng nhập đã được sao chép vào clipboard!');
         } catch (error) {
-            message.error('Failed to copy credentials');
+            message.error('Không thể sao chép thông tin đăng nhập');
         }
     };
 
@@ -323,7 +323,7 @@ const AdminDashboard = () => {
     // Table columns
     const columns = [
         {
-            title: 'Coach',
+            title: 'Huấn luyện viên',
             key: 'coach',
             render: (_, record) => (
                 <Space>
@@ -341,51 +341,51 @@ const AdminDashboard = () => {
             ),
         },
         {
-            title: 'Specialization',
+            title: 'Chuyên môn',
             key: 'specialization',
             render: (_, record) => (
-                <Text>{record.specialization || 'Not updated'}</Text>
+                <Text>{record.specialization || 'Chưa cập nhật'}</Text>
             ),
         },
         {
-            title: 'Experience',
+            title: 'Kinh nghiệm',
             key: 'experience',
             render: (_, record) => (
-                <Text>{record.experience_years ? `${record.experience_years} years` : 'Not updated'}</Text>
+                <Text>{record.experience_years ? `${record.experience_years} năm` : 'Chưa cập nhật'}</Text>
             ),
         },
         {
-            title: 'Status',
+            title: 'Trạng thái',
             key: 'status',
             render: (_, record) => {
                 const color = record.account_status === 'active' ? 'green' : 'orange';
                 return (
                     <Tag color={color} style={{ textTransform: 'capitalize' }}>
-                        {record.account_status === 'active' ? 'Active' : 'Inactive'}
+                        {record.account_status === 'active' ? 'Hoạt động' : 'Không hoạt động'}
                     </Tag>
                 );
             },
         },
         {
-            title: 'Registration Date',
+            title: 'Ngày đăng ký',
             key: 'registration',
             render: (_, record) => (
                 <Text>{record.registration_date ? new Date(record.registration_date).toLocaleDateString() : 'N/A'}</Text>
             ),
         },
         {
-            title: 'Actions',
+            title: 'Hành động',
             key: 'actions',
             render: (_, record) => (
                 <Space>
-                    <Tooltip title="View Details">
+                    <Tooltip title="Xem chi tiết">
                         <Button
                             type="text"
                             icon={<EyeOutlined />}
                             onClick={() => handleViewCoach(record)}
                         />
                     </Tooltip>
-                    <Tooltip title="Edit">
+                    <Tooltip title="Chỉnh sửa">
                         <Button
                             type="text"
                             icon={<EditOutlined />}
@@ -394,13 +394,13 @@ const AdminDashboard = () => {
                     </Tooltip>
                     {record.account_status === 'active' ? (
                         <Popconfirm
-                            title="Deactivate Coach"
-                            description="Are you sure you want to deactivate this coach?"
+                            title="Vô hiệu hóa huấn luyện viên"
+                            description="Bạn có chắc chắn muốn vô hiệu hóa huấn luyện viên này?"
                             onConfirm={() => handleDeleteCoach(record.coach_id)}
-                            okText="Yes"
-                            cancelText="No"
+                            okText="Có"
+                            cancelText="Không"
                         >
-                            <Tooltip title="Deactivate">
+                            <Tooltip title="Vô hiệu hóa">
                                 <Button
                                     type="text"
                                     icon={<DeleteOutlined />}
@@ -410,13 +410,13 @@ const AdminDashboard = () => {
                         </Popconfirm>
                     ) : (
                         <Popconfirm
-                            title="Restore Coach"
-                            description="Are you sure you want to restore this coach?"
+                            title="Khôi phục huấn luyện viên"
+                            description="Bạn có chắc chắn muốn khôi phục huấn luyện viên này?"
                             onConfirm={() => handleRestoreCoach(record.coach_id)}
-                            okText="Yes"
-                            cancelText="No"
+                            okText="Có"
+                            cancelText="Không"
                         >
-                            <Tooltip title="Restore">
+                            <Tooltip title="Khôi phục">
                                 <Button
                                     type="text"
                                     icon={<UndoOutlined />}
@@ -439,10 +439,10 @@ const AdminDashboard = () => {
                 {/* Header */}
                 <div style={{ marginBottom: '24px' }}>
                     <Title level={2} style={{ margin: 0, color: '#52c41a' }}>
-                        Coach Management
+                        Quản lý huấn luyện viên
                     </Title>
                     <Text type="secondary">
-                        Create and manage coach accounts
+                        Tạo và quản lý tài khoản huấn luyện viên
                     </Text>
                 </div>
 
@@ -450,7 +450,7 @@ const AdminDashboard = () => {
                 <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
                     <Col xs={24} sm={12} lg={6}>
                         <StatisticCard
-                            title="Total Coaches"
+                            title="Tổng số huấn luyện viên"
                             value={stats.totalCoaches}
                             prefix={<TeamOutlined style={{ color: '#1890ff' }} />}
                             valueStyle={{ color: '#1890ff' }}
@@ -458,7 +458,7 @@ const AdminDashboard = () => {
                     </Col>
                     <Col xs={24} sm={12} lg={6}>
                         <StatisticCard
-                            title="Active Coaches"
+                            title="Huấn luyện viên hoạt động"
                             value={stats.activeCoaches}
                             prefix={<UserOutlined style={{ color: '#52c41a' }} />}
                             valueStyle={{ color: '#52c41a' }}
@@ -466,7 +466,7 @@ const AdminDashboard = () => {
                     </Col>
                     <Col xs={24} sm={12} lg={6}>
                         <StatisticCard
-                            title="Inactive Coaches"
+                            title="Huấn luyện viên không hoạt động"
                             value={stats.inactiveCoaches}
                             prefix={<UserAddOutlined style={{ color: '#faad14' }} />}
                             valueStyle={{ color: '#faad14' }}
@@ -474,7 +474,7 @@ const AdminDashboard = () => {
                     </Col>
                     <Col xs={24} sm={12} lg={6}>
                         <StatisticCard
-                            title="Total Users"
+                            title="Tổng số người dùng"
                             value={stats.totalUsers}
                             prefix={<SafetyCertificateOutlined style={{ color: '#ff4d4f' }} />}
                             valueStyle={{ color: '#ff4d4f' }}
@@ -487,7 +487,7 @@ const AdminDashboard = () => {
                     <Row gutter={[16, 16]} align="middle">
                         <Col xs={24} sm={12} md={8}>
                             <Search
-                                placeholder="Search by name, email, phone or specialization"
+                                placeholder="Tìm kiếm theo tên, email, số điện thoại hoặc chuyên môn"
                                 value={searchText}
                                 onChange={(e) => setSearchText(e.target.value)}
                                 allowClear
@@ -496,15 +496,15 @@ const AdminDashboard = () => {
                         </Col>
                         <Col xs={24} sm={12} md={4}>
                             <Select
-                                placeholder="Filter by status"
+                                placeholder="Lọc theo trạng thái"
                                 value={statusFilter}
                                 onChange={setStatusFilter}
                                 style={{ width: '100%' }}
                                 allowClear
                             >
-                                <Option value="all">All Status</Option>
-                                <Option value="active">Active</Option>
-                                <Option value="inactive">Inactive</Option>
+                                <Option value="all">Tất cả trạng thái</Option>
+                                <Option value="active">Hoạt động</Option>
+                                <Option value="inactive">Không hoạt động</Option>
                             </Select>
                         </Col>
                         <Col xs={24} sm={12} md={4}>
@@ -514,19 +514,19 @@ const AdminDashboard = () => {
                                 className="clear-filters-btn"
                                 style={{ width: '100%' }}
                             >
-                                Clear Filters
+                                Xóa bộ lọc
                             </Button>
                         </Col>
                         <Col xs={24} sm={12} md={4}>
                             <div className="results-counter">
-                                Showing {filteredCoaches.length} of {coaches.length} coaches
+                                Hiển thị {filteredCoaches.length} trong tổng số {coaches.length} huấn luyện viên
                             </div>
                         </Col>
                     </Row>
                 </div>
 
                 <DataTable
-                    title="Coaches List"
+                    title="Danh sách huấn luyện viên"
                     columns={columns}
                     dataSource={filteredCoaches}
                     loading={loading}
@@ -538,17 +538,17 @@ const AdminDashboard = () => {
                                 onClick={loadCoaches}
                                 loading={loading}
                             >
-                                Refresh
+                                Làm mới
                             </Button>
                             <Button
                                 type="primary"
                                 icon={<PlusOutlined />}
                                 onClick={() => {
                                     setCreateCoachModal(true);
-                                coachForm.setFieldsValue({ password: 'Coach@123' });
+                                    coachForm.setFieldsValue({ password: 'Coach@123' });
                                 }}
                             >
-                                Create Coach
+                                Tạo huấn luyện viên
                             </Button>
                         </Space>
                     }
@@ -557,7 +557,7 @@ const AdminDashboard = () => {
 
             {/* Create Coach Modal */}
             <FormModal
-                title="Create Coach Account"
+                title="Tạo tài khoản huấn luyện viên"
                 visible={createCoachModal}
                 onCancel={() => setCreateCoachModal(false)}
                 onSubmit={handleCreateCoach}
@@ -569,10 +569,10 @@ const AdminDashboard = () => {
                     <Col span={12}>
                         <Form.Item
                             name="full_name"
-                            label="Full Name"
-                            rules={[{ required: true, message: 'Please enter the full name!' }]}
+                            label="Họ tên đầy đủ"
+                            rules={[{ required: true, message: 'Vui lòng nhập họ tên đầy đủ!' }]}
                         >
-                            <Input prefix={<UserOutlined />} placeholder="Enter full name" />
+                            <Input prefix={<UserOutlined />} placeholder="Nhập họ tên đầy đủ" />
                         </Form.Item>
                     </Col>
                     <Col span={12}>
@@ -580,11 +580,11 @@ const AdminDashboard = () => {
                             name="email"
                             label="Email"
                             rules={[
-                                { required: true, message: 'Please enter the email!' },
-                                { type: 'email', message: 'Please enter a valid email!' }
+                                { required: true, message: 'Vui lòng nhập email!' },
+                                { type: 'email', message: 'Vui lòng nhập email hợp lệ!' }
                             ]}
                         >
-                            <Input prefix={<UserOutlined />} placeholder="Enter email address" />
+                            <Input prefix={<UserOutlined />} placeholder="Nhập địa chỉ email" />
                         </Form.Item>
                     </Col>
                 </Row>
@@ -593,17 +593,17 @@ const AdminDashboard = () => {
                     <Col span={12}>
                         <Form.Item
                             name="phone_number"
-                            label="Phone Number"
+                            label="Số điện thoại"
                         >
-                            <Input placeholder="Enter phone number" />
+                            <Input placeholder="Nhập số điện thoại" />
                         </Form.Item>
                     </Col>
                     <Col span={12}>
                         <Form.Item
                             name="date_of_birth"
-                            label="Date of Birth"
+                            label="Ngày sinh"
                         >
-                            <DatePicker style={{ width: '100%' }} placeholder="Select date of birth" />
+                            <DatePicker style={{ width: '100%' }} placeholder="Chọn ngày sinh" />
                         </Form.Item>
                     </Col>
                 </Row>
@@ -612,22 +612,22 @@ const AdminDashboard = () => {
                     <Col span={12}>
                         <Form.Item
                             name="password"
-                            label="Password"
+                            label="Mật khẩu"
                             initialValue="T123456" //hiện password cố định
                         >
                             <Input.Password readOnly style={{
-                            backgroundColor: '#f5f5f5', // xám nhạt
-                            cursor: 'not-allowed'         // hiển thị dấu cấm khi rê chuột
+                                backgroundColor: '#f5f5f5', // xám nhạt
+                                cursor: 'not-allowed'         // hiển thị dấu cấm khi rê chuột
                             }}
-                             />
+                            />
                         </Form.Item>
                     </Col>
                     <Col span={12}>
                         <Form.Item
                             name="google_meet_link"
-                            label="Google Meet Link"
+                            label="Liên kết Google Meet"
                         >
-                            <Input placeholder="Enter Google Meet link" />
+                            <Input placeholder="Nhập liên kết Google Meet" />
                         </Form.Item>
                     </Col>
                 </Row>
@@ -640,14 +640,14 @@ const AdminDashboard = () => {
                     marginBottom: '16px'
                 }}>
                     <Text style={{ color: '#52c41a', fontWeight: '500' }}>
-                        📝 Note: Coach will receive login credentials after successful account creation
+                        📝 Lưu ý: Huấn luyện viên sẽ nhận thông tin đăng nhập sau khi tạo tài khoản thành công
                     </Text>
                 </div>
             </FormModal>
 
             {/* Edit Coach Modal */}
             <FormModal
-                title="Edit Coach Information"
+                title="Chỉnh sửa thông tin huấn luyện viên"
                 visible={editCoachModal}
                 onCancel={() => setEditCoachModal(false)}
                 onSubmit={handleUpdateCoach}
@@ -659,10 +659,10 @@ const AdminDashboard = () => {
                     <Col span={12}>
                         <Form.Item
                             name="full_name"
-                            label="Full Name"
-                            rules={[{ required: true, message: 'Please enter the full name!' }]}
+                            label="Họ tên đầy đủ"
+                            rules={[{ required: true, message: 'Vui lòng nhập họ tên đầy đủ!' }]}
                         >
-                            <Input prefix={<UserOutlined />} placeholder="Enter full name" />
+                            <Input prefix={<UserOutlined />} placeholder="Nhập họ tên đầy đủ" />
                         </Form.Item>
                     </Col>
                     <Col span={12}>
@@ -670,7 +670,7 @@ const AdminDashboard = () => {
                             name="email"
                             label="Email"
                         >
-                            <Input prefix={<UserOutlined />} placeholder="Enter email address" disabled />
+                            <Input prefix={<UserOutlined />} placeholder="Nhập địa chỉ email" disabled />
                         </Form.Item>
                     </Col>
                 </Row>
@@ -679,20 +679,20 @@ const AdminDashboard = () => {
                     <Col span={12}>
                         <Form.Item
                             name="phone_number"
-                            label="Phone Number"
+                            label="Số điện thoại"
                         >
-                            <Input placeholder="Enter phone number" />
+                            <Input placeholder="Nhập số điện thoại" />
                         </Form.Item>
                     </Col>
                     <Col span={12}>
                         <Form.Item
                             name="account_status"
-                            label="Account Status"
-                            rules={[{ required: true, message: 'Please select a status!' }]}
+                            label="Trạng thái tài khoản"
+                            rules={[{ required: true, message: 'Vui lòng chọn trạng thái!' }]}
                         >
-                            <Select placeholder="Select status">
-                                <Option value="active">Active</Option>
-                                <Option value="inactive">Inactive</Option>
+                            <Select placeholder="Chọn trạng thái">
+                                <Option value="active">Hoạt động</Option>
+                                <Option value="inactive">Không hoạt động</Option>
                             </Select>
                         </Form.Item>
                     </Col>
@@ -702,45 +702,45 @@ const AdminDashboard = () => {
                     <Col span={12}>
                         <Form.Item
                             name="specialization"
-                            label="Specialization"
+                            label="Chuyên môn"
                         >
-                            <Input placeholder="Enter specialization" />
+                            <Input placeholder="Nhập chuyên môn" />
                         </Form.Item>
                     </Col>
                     <Col span={12}>
                         <Form.Item
                             name="experience_years"
-                            label="Years of Experience"
+                            label="Số năm kinh nghiệm"
                         >
-                            <Input type="number" placeholder="Enter years of experience" />
+                            <Input type="number" placeholder="Nhập số năm kinh nghiệm" />
                         </Form.Item>
                     </Col>
                 </Row>
 
                 <Form.Item
                     name="bio"
-                    label="Bio"
+                    label="Tiểu sử"
                 >
-                    <TextArea rows={3} placeholder="Enter bio" />
+                    <TextArea rows={3} placeholder="Nhập tiểu sử" />
                 </Form.Item>
 
                 <Row gutter={16}>
                     <Col span={12}>
                         <Form.Item
                             name="google_meet_link"
-                            label="Google Meet Link"
+                            label="Liên kết Google Meet"
                         >
-                            <Input placeholder="Enter Google Meet link" />
+                            <Input placeholder="Nhập liên kết Google Meet" />
                         </Form.Item>
                     </Col>
                     <Col span={12}>
                         <Form.Item
                             name="coach_status"
-                            label="Coach Status"
+                            label="Trạng thái huấn luyện viên"
                         >
-                            <Select placeholder="Select status">
-                                <Option value="active">Active</Option>
-                                <Option value="inactive">Inactive</Option>
+                            <Select placeholder="Chọn trạng thái">
+                                <Option value="active">Hoạt động</Option>
+                                <Option value="inactive">Không hoạt động</Option>
                             </Select>
                         </Form.Item>
                     </Col>
@@ -749,7 +749,7 @@ const AdminDashboard = () => {
 
             {/* View Coach Modal */}
             <Modal
-                title="Coach Details"
+                title="Chi tiết huấn luyện viên"
                 open={viewCoachModal}
                 onCancel={() => {
                     setViewCoachModal(false);
@@ -763,7 +763,7 @@ const AdminDashboard = () => {
                             setSelectedCoach(null);
                         }}
                     >
-                        Close
+                        Đóng
                     </Button>
                 ]}
                 width={600}
@@ -795,7 +795,7 @@ const AdminDashboard = () => {
                                 <Text>{selectedCoach.email}</Text>
                             </Col>
                             <Col span={12}>
-                                <Text strong>Phone Number:</Text>
+                                <Text strong>Số điện thoại:</Text>
                                 <br />
                                 <Text>{selectedCoach.phone_number || 'N/A'}</Text>
                             </Col>
@@ -803,57 +803,57 @@ const AdminDashboard = () => {
 
                         <Row gutter={[16, 16]} style={{ marginTop: '16px' }}>
                             <Col span={12}>
-                                <Text strong>Specialization:</Text>
+                                <Text strong>Chuyên môn:</Text>
                                 <br />
-                                <Text>{selectedCoach.specialization || 'Not updated'}</Text>
+                                <Text>{selectedCoach.specialization || 'Chưa cập nhật'}</Text>
                             </Col>
                             <Col span={12}>
-                                <Text strong>Experience:</Text>
+                                <Text strong>Kinh nghiệm:</Text>
                                 <br />
-                                <Text>{selectedCoach.experience_years ? `${selectedCoach.experience_years} years` : 'Not updated'}</Text>
+                                <Text>{selectedCoach.experience_years ? `${selectedCoach.experience_years} năm` : 'Chưa cập nhật'}</Text>
                             </Col>
                         </Row>
 
                         <Row gutter={[16, 16]} style={{ marginTop: '16px' }}>
                             <Col span={12}>
-                                <Text strong>Account Status:</Text>
+                                <Text strong>Trạng thái tài khoản:</Text>
                                 <br />
                                 <Tag
                                     color={selectedCoach.account_status === 'active' ? 'green' : 'orange'}
                                     style={{ textTransform: 'capitalize' }}
                                 >
-                                    {selectedCoach.account_status === 'active' ? 'Active' : 'Inactive'}
+                                    {selectedCoach.account_status === 'active' ? 'Hoạt động' : 'Không hoạt động'}
                                 </Tag>
                             </Col>
                             <Col span={12}>
-                                <Text strong>Coach Status:</Text>
+                                <Text strong>Trạng thái huấn luyện viên:</Text>
                                 <br />
                                 <Tag
                                     color={selectedCoach.coach_status === 'active' ? 'green' : 'orange'}
                                     style={{ textTransform: 'capitalize' }}
                                 >
-                                    {selectedCoach.coach_status === 'active' ? 'Active' : 'Inactive'}
+                                    {selectedCoach.coach_status === 'active' ? 'Hoạt động' : 'Không hoạt động'}
                                 </Tag>
                             </Col>
                         </Row>
 
                         <Row gutter={[16, 16]} style={{ marginTop: '16px' }}>
                             <Col span={12}>
-                                <Text strong>Registration Date:</Text>
+                                <Text strong>Ngày đăng ký:</Text>
                                 <br />
                                 <Text>{selectedCoach.registration_date ? new Date(selectedCoach.registration_date).toLocaleDateString() : 'N/A'}</Text>
                             </Col>
                             <Col span={12}>
-                                <Text strong>Google Meet Link:</Text>
+                                <Text strong>Liên kết Google Meet:</Text>
                                 <br />
-                                <Text>{selectedCoach.google_meet_link || 'Not updated'}</Text>
+                                <Text>{selectedCoach.google_meet_link || 'Chưa cập nhật'}</Text>
                             </Col>
                         </Row>
 
                         {selectedCoach.bio && (
                             <Row gutter={[16, 16]} style={{ marginTop: '16px' }}>
                                 <Col span={24}>
-                                    <Text strong>Bio:</Text>
+                                    <Text strong>Tiểu sử:</Text>
                                     <br />
                                     <Text>{selectedCoach.bio}</Text>
                                 </Col>
@@ -868,7 +868,7 @@ const AdminDashboard = () => {
                 title={
                     <div style={{ textAlign: 'center' }}>
                         <div style={{ fontSize: '24px', marginBottom: '8px' }}>🎉</div>
-                        <div>Coach Account Created Successfully!</div>
+                        <div>Tài khoản huấn luyện viên đã được tạo thành công!</div>
                     </div>
                 }
                 open={credentialsModal}
@@ -885,7 +885,7 @@ const AdminDashboard = () => {
                         onClick={handleCopyAll}
                         style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}
                     >
-                        Copy All Credentials
+                        Sao chép tất cả thông tin đăng nhập
                     </Button>,
                     <Button
                         key="close"
@@ -895,7 +895,7 @@ const AdminDashboard = () => {
                             setCopiedField('');
                         }}
                     >
-                        Close
+                        Đóng
                     </Button>
                 ]}
                 width={500}
@@ -911,7 +911,7 @@ const AdminDashboard = () => {
                             marginBottom: '20px'
                         }}>
                             <Title level={4} style={{ color: '#52c41a', marginBottom: '16px' }}>
-                                📋 Account Credentials
+                                📋 Thông tin đăng nhập tài khoản
                             </Title>
 
                             <Space direction="vertical" size="large" style={{ width: '100%' }}>
@@ -926,7 +926,7 @@ const AdminDashboard = () => {
                                     alignItems: 'center'
                                 }}>
                                     <div style={{ textAlign: 'left' }}>
-                                        <Text strong>Name:</Text>
+                                        <Text strong>Tên:</Text>
                                         <br />
                                         <Text>{newCoachCredentials.name}</Text>
                                     </div>
@@ -972,7 +972,7 @@ const AdminDashboard = () => {
                                     alignItems: 'center'
                                 }}>
                                     <div style={{ textAlign: 'left' }}>
-                                        <Text strong>Password:</Text>
+                                        <Text strong>Mật khẩu:</Text>
                                         <br />
                                         <Text code style={{ fontSize: '16px' }}>{newCoachCredentials.password}</Text>
                                     </div>
@@ -993,7 +993,7 @@ const AdminDashboard = () => {
                             padding: '12px'
                         }}>
                             <Text style={{ color: '#d48806' }}>
-                                ⚠️ Please save these credentials securely. The coach will need them to log in.
+                                ⚠️ Vui lòng lưu thông tin đăng nhập này một cách an toàn. Huấn luyện viên sẽ cần chúng để đăng nhập.
                             </Text>
                         </div>
                     </div>

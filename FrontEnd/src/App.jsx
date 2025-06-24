@@ -21,7 +21,7 @@ import RankingBoard from "./pages/Ranking/RankingBoard";
 import Profile from './pages/Profile/Profile.jsx';
 import Notifications from './pages/Notifications/Notifications.jsx';
 import "./App.css";
-
+import CheckoutPage from "./pages/Payment/CheckoutPage";
 const { Title, Paragraph } = Typography;
 
 function App() {
@@ -61,7 +61,7 @@ function App() {
           <Route path="/RankingBoard" element={<RankingBoard />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/notifications" element={<Notifications />} />
-
+          <Route path="/checkout" element={<CheckoutPage />} />
           {/* Protected routes - Member Bookings */}
           <Route
             path="/my-bookings"

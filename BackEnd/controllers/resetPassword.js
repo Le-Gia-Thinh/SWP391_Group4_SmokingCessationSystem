@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
-const { sendResetEmail } = require('../utils/mailer');
+const sendResetEmail = require('../utils/mailer');
 
 
 const { sql, dbConfig } = require('../config/database');
@@ -90,13 +90,29 @@ const markTokenUsed = async (token) => {
 const updatePassword = async (email, newPassword) => {
   const hashed = await bcrypt.hash(newPassword, 10);
   const pool = await sql.connect(dbConfig);
-  await pool.request()
+
+  // Check tài khoản local có tồn tại không
+  const check = await pool.request()
+    .input('email', sql.VarChar, email)
+    .query(`SELECT * FROM USER_LOGIN
+            WHERE user_id = (SELECT user_id FROM CUSTOMER WHERE email = @email)
+              AND login_provider = 'local'`);
+
+  if (check.recordset.length === 0) {
+    console.error("❌ Không tìm thấy tài khoản local để cập nhật mật khẩu");
+    throw new Error("Không thể cập nhật mật khẩu – tài khoản không phải local");
+  }
+
+  // Update password
+  const result = await pool.request()
     .input('email', sql.VarChar, email)
     .input('hashed', sql.VarChar, hashed)
     .query(`UPDATE USER_LOGIN
       SET password_hash = @hashed
       WHERE user_id = (SELECT user_id FROM CUSTOMER WHERE email = @email)
         AND login_provider = 'local'`);
+
+  console.log("✅ UPDATE thành công, rowsAffected =", result.rowsAffected);
 };
 
 // ✅ Export đúng cách
