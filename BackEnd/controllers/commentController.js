@@ -44,3 +44,67 @@ exports.getCommentsByPost = async (req, res) => {
     res.status(500).json({ message: 'Lỗi khi lấy danh sách bình luận' });
   }
 };
+
+exports.updateComment = async (req, res) => {
+  try {
+    const commentId = req.params.id;
+    const { content } = req.body;
+    const userId = req.user.id;
+
+    const pool = await sql.connect(dbConfig);
+    const result = await pool.request()
+      .input('id', sql.Int, commentId)
+      .query(`SELECT * FROM POST_COMMENT WHERE comment_id = @id`);
+
+    const comment = result.recordset[0];
+    if (!comment) {
+      return res.status(404).json({ message: 'Không tìm thấy bình luận' });
+    }
+
+    if (comment.user_id !== userId) {
+      return res.status(403).json({ message: 'Bạn không có quyền sửa bình luận này' });
+    }
+
+    await pool.request()
+      .input('id', sql.Int, commentId)
+      .input('content', sql.NVarChar, content)
+      .query(`UPDATE POST_COMMENT SET content = @content WHERE comment_id = @id`);
+
+    res.json({ message: 'Đã cập nhật bình luận' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Lỗi server khi cập nhật bình luận' });
+  }
+};
+
+exports.deleteComment = async (req, res) => {
+  try {
+    const commentId = req.params.id;
+    const userId = req.user.id;
+    const userRole = req.user.role;
+
+    const pool = await sql.connect(dbConfig);
+    const result = await pool.request()
+      .input('id', sql.Int, commentId)
+      .query(`SELECT * FROM POST_COMMENT WHERE comment_id = @id`);
+
+    const comment = result.recordset[0];
+    if (!comment) {
+      return res.status(404).json({ message: 'Không tìm thấy bình luận' });
+    }
+
+    // Admin xóa được tất cả, Member/Coach chỉ xóa của mình
+    if (userRole !== 'admin' && comment.user_id !== userId) {
+      return res.status(403).json({ message: 'Bạn không có quyền xóa bình luận này' });
+    }
+
+    await pool.request()
+      .input('id', sql.Int, commentId)
+      .query(`DELETE FROM POST_COMMENT WHERE comment_id = @id`);
+
+    res.json({ message: 'Đã xóa bình luận' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Lỗi server khi xóa bình luận' });
+  }
+};

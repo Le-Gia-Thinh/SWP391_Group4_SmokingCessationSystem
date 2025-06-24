@@ -95,7 +95,7 @@ const register = async (req, res) => {
       .input('password', sql.VarChar, hashedPassword)
       .input('name', sql.VarChar, name)
       .input('phone_number', sql.VarChar, phone_number)
-.input('role', sql.VarChar, 'member')
+      .input('role', sql.VarChar, 'member')
       .input('status', sql.VarChar, 'active')
       .input('provider', sql.VarChar, 'local')
       .input('created', sql.Date, new Date())
