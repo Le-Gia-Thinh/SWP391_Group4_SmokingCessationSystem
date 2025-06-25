@@ -17,7 +17,7 @@ const appointmentRoutes = require('./routes/appointment');
 const scheduleRoutes = require('./routes/schedule');
 const coachRoutes = require('./routes/coach');
 const memberRoutes = require('./routes/member');
-const userRoutes = require("./routes/user"); 
+const userRoutes = require("./routes/user");
 const userScoreRoutes = require("./routes/userScore");
 const app = express();
 
