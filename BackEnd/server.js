@@ -10,15 +10,15 @@ const roleRoutes = require('./routes/roleTestRoutes');
 const habitLogRoutes = require('./routes/habitLogRoutes');
 const smokingSummaryRoutes = require('./routes/smokingSummaryRoutes');
 const communityRoutes = require('./routes/community');
-
+const communityChatRoutes = require('./routes/communityChat');
+const topicChatRoutes = require('./routes/topicChat');
 const adminRoutes = require('./routes/admin');
 const appointmentRoutes = require('./routes/appointment');
 const scheduleRoutes = require('./routes/schedule');
 const coachRoutes = require('./routes/coach');
 const memberRoutes = require('./routes/member');
-const userRoutes = require("./routes/user"); 
+const userRoutes = require("./routes/user");
 const userScoreRoutes = require("./routes/userScore");
-
 const app = express();
 
 // 1) CORS: bắt buộc phải cho phép credentials (cookie) và origin chạy React (5173 / 3000)
@@ -34,26 +34,26 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-//Check FTND
+// 3) Check FTND: Mức độ nghiện
 const ftndRoutes = require('./routes/ftnd');
 app.use('/api/ftnd', ftndRoutes);
 
-// quitPlan
+// 4) Kết hoạch cai nghiện
 const quitPlanRoutes = require("./routes/quitPlan");
 app.use("/api/quitplan", quitPlanRoutes);
 
-// hien muc do nghien
+// 5) Display mức độ nghiện
 const customerRoutes = require("./routes/customer");
 app.use("/api/customer", customerRoutes);
 
-// ranking
+// 6) Ranking
 app.use("/api/user-score", require("./routes/userScore"));
 
-// Update user score
+// 7) Update user score
 const { auth } = require("./middleware/auth");
 app.use("/api/user-score", userScoreRoutes);
 
-// 3) Session middleware (phải nằm trước passport.session())
+// 8) Session middleware (phải nằm trước passport.session())
 app.use(
   session({
     secret: process.env.JWT_SECRET || 'fallback_secret',
@@ -66,54 +66,59 @@ app.use(
   })
 );
 
-// 4) Khởi tạo Passport và session support
+// 9) Khởi tạo Passport và session support
 app.use(passport.initialize());
 app.use(passport.session());
-// 5) Đăng ký route auth
+
+// 10) Đăng ký route auth
 app.use('/api/auth', authRoutes);
-// 5.1) Route phân quyền
+// 10.1) Route phân quyền
 app.use('/api/role', roleRoutes);
-// 5.2) Route admin
+// 10.2) Route admin
 app.use('/api/admin', adminRoutes);
-// 5.3) Route appointment
-app.use('/api/appointment', appointmentRoutes);
-// 5.4) Route schedule
-app.use('/api/schedule', scheduleRoutes);
-// 5.5) Route coach
+// 10.3) Route coach
 app.use('/api/coach', coachRoutes);
-// 5.6) Route member
+// 10.4) Route member
 app.use('/api/member', memberRoutes);
 
-// Community Post & Comment
+// 11) Route appointment & Schedule
+app.use('/api/appointment', appointmentRoutes);
+app.use('/api/schedule', scheduleRoutes);
+
+// 12) Community Post & Comment
 app.use('/api/community', require('./routes/community'));
 app.use('/api/comment', require('./routes/comment'));
 
-//xử lý phần submit từ plan
-app.use('/api/habit-log', habitLogRoutes);
+// 13) Community Chat (group & topic)
+app.use('/api/community-chat', require('./routes/communityChat'));
+app.use('/api/topic-chat', require('./routes/topicChat'));
 
-//xử lí lưu số điếu hằng ngày của users
+// 14) Xử lý phần submit từ plan
+app.use('/api/habit-log', habitLogRoutes);
+// 14.1) Xử lí lưu số điếu hằng ngày của users
 app.use('/api/smoking-summary', smokingSummaryRoutes);
-//xu li profile of member
+
+// 15) Xử lí profile of member
 app.use('/api/user', userRoutes);
 
-// 6) Middleware log request
+// 16) Middleware log request
 app.use((req, res, next) => {
   console.log(`📥 [INCOMING REQUEST] ${req.method} ${req.originalUrl}`);
   next();
 });
 
-// 7) Route gốc test
+// 17) Route gốc test
 app.get('/', (req, res) => {
   res.json({ success: true, message: 'Auth API đang hoạt động!' });
 });
 
-// 8) Global error handler
+// 18) Global error handler
 app.use((err, req, res, next) => {
   console.error('Unhandled error:', err);
   res.status(500).json({ success: false, message: 'Lỗi server không xác định' });
 })
 
-// 9) 404 handler
+// 19) 404 handler
 app.use('*', (req, res) => {
   res.status(404).json({ success: false, message: 'Endpoint không tồn tại' });
 });
