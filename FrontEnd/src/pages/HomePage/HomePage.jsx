@@ -33,7 +33,7 @@ import meditationImg from "../../assets/meditation.jpg";
 import healthyEatingImg from "../../assets/healthy-eating.jpg";
 import fitnessImg from "../../assets/fitness.jpg";
 
-import { videoSrc } from "../../assets/video/13225520_3840_2160_30fps (1).mp4";
+import videoSrc from "../../assets/video/quit_smoking_bg.mp4";
 
 import "./HomePage.css";
 

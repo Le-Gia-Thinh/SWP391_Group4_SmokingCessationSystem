@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Table, Tag, Typography, Card, Progress, Avatar, Tooltip } from "antd";
 import { CrownTwoTone, StarTwoTone, UserOutlined } from "@ant-design/icons";
 import Navbar from "../../layouts/Navbar";
-
+import "./RankingBoard.css";
 const { Title } = Typography;
 
 const levelColors = {
@@ -11,6 +11,18 @@ const levelColors = {
   Advanced: "green",
   Master: "gold",
 };
+
+const token = localStorage.getItem("token");
+let currentUserId = null;
+
+if (token) {
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    currentUserId = payload.id;
+  } catch (e) {
+    console.error("Lỗi giải mã token:", e);
+  }
+}
 
 const RankingBoard = () => {
   const [data, setData] = useState([]);
@@ -109,6 +121,9 @@ const RankingBoard = () => {
           dataSource={data}
           pagination={false}
           rowKey="user_id"
+          rowClassName={(record) =>
+            record.user_id === currentUserId ? "highlight-row" : ""
+          }
           style={{ marginTop: 24 }}
         />
       </Card>

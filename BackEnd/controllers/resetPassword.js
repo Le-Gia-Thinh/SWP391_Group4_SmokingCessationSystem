@@ -94,7 +94,7 @@ const updatePassword = async (email, newPassword) => {
   // Check tài khoản local có tồn tại không
   const check = await pool.request()
     .input('email', sql.VarChar, email)
-    .query(`SELECT * FROM USER_LOGIN
+    .query(`SELECT * FROM CUSTOMER
             WHERE user_id = (SELECT user_id FROM CUSTOMER WHERE email = @email)
               AND login_provider = 'local'`);
 
@@ -107,7 +107,7 @@ const updatePassword = async (email, newPassword) => {
   const result = await pool.request()
     .input('email', sql.VarChar, email)
     .input('hashed', sql.VarChar, hashed)
-    .query(`UPDATE USER_LOGIN
+    .query(`UPDATE CUSTOMER 
       SET password_hash = @hashed
       WHERE user_id = (SELECT user_id FROM CUSTOMER WHERE email = @email)
         AND login_provider = 'local'`);
