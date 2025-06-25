@@ -1,6 +1,6 @@
 .chat-page {
     min-height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #f4fff6 0%, #e8f5e8 100%);
 }
 
 .chat-content {
@@ -21,6 +21,7 @@
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
+    border: 1.5px solid #d9f7be;
 }
 
 .chat-section {
@@ -33,7 +34,7 @@
     flex: 1;
     overflow-y: auto;
     padding: 16px;
-    background: #f8f9fa;
+    background: #f6ffed;
     border-radius: 8px;
     margin-bottom: 16px;
     max-height: 50vh;
@@ -71,7 +72,7 @@
     padding: 8px 12px;
     background: white;
     border-radius: 8px;
-    border-left: 3px solid #667eea;
+    border-left: 3px solid #52c41a;
 }
 
 .message-input {
@@ -88,13 +89,13 @@
 .send-button {
     height: 40px;
     border-radius: 8px;
-    background: #667eea;
-    border-color: #667eea;
+    background: linear-gradient(90deg, #52c41a 0%, #73d13d 100%);
+    border-color: #52c41a;
 }
 
 .send-button:hover {
-    background: #5a6fd8;
-    border-color: #5a6fd8;
+    background: #73d13d;
+    border-color: #73d13d;
 }
 
 /* Topics Section */
@@ -132,8 +133,8 @@
 }
 
 .topic-item.selected {
-    background: #e6f7ff;
-    border: 1px solid #91d5ff;
+    background: #f6ffed;
+    border: 1.5px solid #52c41a;
 }
 
 .topic-content {
@@ -249,11 +250,11 @@
 }
 
 .ant-tabs-tab-active {
-    color: #667eea !important;
+    color: #52c41a !important;
 }
 
 .ant-tabs-ink-bar {
-    background: #667eea !important;
+    background: #52c41a !important;
 }
 
 /* Empty state styling */
