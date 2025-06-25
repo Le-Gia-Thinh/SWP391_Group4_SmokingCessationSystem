@@ -173,7 +173,7 @@ const HomePage = () => {
 
           <Col xs={24} lg={12} className="hero-video">
             <video width="100%" height="auto" controls autoPlay muted loop>
-              <source src="/src/assets/video/13225520_3840_2160_30fps (1).mp4" type="video/mp4" />
+              <source src="/src/assets/video/quit_smoking_bg.mp4" type="video/mp4" />
             </video>
           </Col>
         </Row>
