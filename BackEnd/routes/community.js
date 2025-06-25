@@ -1,7 +1,7 @@
 // routes/community.js
 const express = require('express');
 const router = express.Router();
-const { auth } = require('../middleware/auth');
+const { auth, authorize } = require('../middleware/auth');
 const communityController = require('../controllers/communityPostController');
 
 router.post('/', auth, communityController.createPost);
