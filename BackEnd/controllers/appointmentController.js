@@ -163,6 +163,7 @@ exports.cancelAppointment = async (req, res) => {
     const sessionId = req.params.id;
     const pool = await sql.connect(dbConfig);
 
+    // 1. Lấy thông tin phiên để kiểm tra quyền và thời gian
     const check = await pool.request()
       .input('id', sql.Int, sessionId)
       .query('SELECT * FROM COACHING_SESSION WHERE session_id = @id');
@@ -172,14 +173,27 @@ exports.cancelAppointment = async (req, res) => {
       return res.status(403).json({ message: 'Không có quyền huỷ phiên này' });
     }
 
+    // 2. Cập nhật trạng thái coaching session
     await pool.request()
       .input('id', sql.Int, sessionId)
       .query(`UPDATE COACHING_SESSION SET session_status = 'canceled_by_member' WHERE session_id = @id`);
 
-    await pool.request()
-      .input('id', sql.Int, session.schedule_id)
-      .query(`UPDATE COACH_SCHEDULE SET is_booked = 0 WHERE schedule_id = @id`);
+    // 3. Nếu có schedule_id thì cập nhật lịch
+    if (session.schedule_id) {
+      const now = new Date();
+      const scheduledTime = new Date(session.scheduled_time);
+      const isEarlyCancel = now < new Date(scheduledTime.getTime() - 2 * 60 * 60 * 1000); // Trước 2 tiếng
 
+      await pool.request()
+        .input('id', sql.Int, session.schedule_id)
+        .query(`
+          UPDATE COACH_SCHEDULE 
+          SET is_booked = 0, status = '${isEarlyCancel ? 'available' : 'cancelled'}'
+          WHERE schedule_id = @id
+        `);
+    }
+
+    // 4. Gửi tin nhắn thông báo
     await pool.request()
       .input('session_id', sql.Int, sessionId)
       .input('content', sql.NVarChar, 'Thành viên đã huỷ lịch hẹn.')
@@ -191,6 +205,7 @@ exports.cancelAppointment = async (req, res) => {
     res.status(500).json({ message: 'Lỗi server' });
   }
 };
+
 
 // Member xem các lịch đã đặt
 exports.getMyAppointments = async (req, res) => {
@@ -266,4 +281,96 @@ exports.getCoachAllAppointments = async (req, res) => {
     console.error('❌ Error fetching all coach appointments:', error);
     res.status(500).json({ success: false, message: 'Server error when fetching all coach appointments' });
   }
+};
+
+// Coach submit sau khi kết thúc buổi tư vấn
+exports.completeAppointment = async (req, res) => {
+  try {
+    const coachId = req.user.coach_id;
+    const sessionId = req.params.id;
+    const { notes } = req.body;
+
+    const pool = await sql.connect(dbConfig);
+
+    // Kiểm tra quyền
+    const check = await pool.request()
+      .input('id', sql.Int, sessionId)
+      .query('SELECT coach_id FROM COACHING_SESSION WHERE session_id = @id');
+
+    if (!check.recordset.length || check.recordset[0].coach_id !== coachId) {
+      return res.status(403).json({ message: 'Không có quyền hoàn thành phiên này' });
+    }
+
+    await pool.request()
+      .input('id', sql.Int, sessionId)
+      .input('notes', sql.NVarChar, notes || 'Cuộc họp đã hoàn tất')
+      .query(`
+        UPDATE COACHING_SESSION
+        SET session_status = 'completed', session_notes = @notes
+        WHERE session_id = @id
+      `);
+
+    res.json({ success: true, message: 'Đã hoàn thành phiên coaching' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Lỗi khi hoàn tất phiên coaching' });
+  }
+};
+
+// Coach báo cáo Member không tham gia buổi tư vấn
+exports.reportMissingMember = async (req, res) => {
+  const coachId = req.user.coach_id;
+  const sessionId = req.params.id;
+  const { reason } = req.body;
+
+  const pool = await sql.connect(dbConfig);
+
+  // Kiểm tra quyền sở hữu
+  const check = await pool.request()
+    .input('id', sql.Int, sessionId)
+    .query('SELECT coach_id, scheduled_time FROM COACHING_SESSION WHERE session_id = @id');
+
+  const session = check.recordset[0];
+  const now = new Date();
+
+  if (!session || session.coach_id !== coachId) {
+    return res.status(403).json({ message: 'Không có quyền' });
+  }
+
+  const minAllowedReportTime = new Date(session.scheduled_time.getTime() + 15 * 60000);
+  if (now < minAllowedReportTime) {
+    return res.status(400).json({ message: 'Chỉ được báo cáo sau 15 phút kể từ giờ hẹn' });
+  }
+
+  await pool.request()
+    .input('id', sql.Int, sessionId)
+    .input('reason', sql.NVarChar, reason)
+    .query(`
+      UPDATE COACHING_SESSION
+      SET session_status = 'completed', session_notes = @reason
+      WHERE session_id = @id
+    `);
+
+  res.json({ success: true, message: 'Đã lưu lý do member không tham dự' });
+};
+
+// Member tố cáo Coach vắng mặt
+exports.reportMissingCoach = async (req, res) => {
+  const userId = req.user.id;
+  const { session_id, reason } = req.body;
+
+  const pool = await sql.connect(dbConfig);
+
+  await pool.request()
+    .input('user_id', sql.Int, userId)
+    .input('rating', sql.Int, 1)
+    .input('content', sql.NVarChar, `[Session ${session_id}] ${reason}`)
+    .input('feedback_type', sql.VarChar, 'coach')
+    .input('submitted_at', sql.DateTime, new Date())
+    .query(`
+      INSERT INTO FEEDBACK (user_id, rating, content, feedback_type, submitted_at)
+      VALUES (@user_id, @rating, @content, @feedback_type, @submitted_at)
+    `);
+
+  res.json({ success: true, message: 'Đã gửi phản hồi về việc coach vắng mặt' });
 };
