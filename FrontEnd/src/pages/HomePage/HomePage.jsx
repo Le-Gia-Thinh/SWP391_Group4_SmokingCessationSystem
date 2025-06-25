@@ -32,8 +32,7 @@ import { useScrollReveal } from "../../hooks/useScrollReveal";
 import meditationImg from "../../assets/meditation.jpg";
 import healthyEatingImg from "../../assets/healthy-eating.jpg";
 import fitnessImg from "../../assets/fitness.jpg";
-
-import { videoSrc } from "../../assets/video/13225520_3840_2160_30fps (1).mp4";
+import videoFile from "../../assets/video/13225520_3840_2160_30fps (1).mp4";
 
 import "./HomePage.css";
 
@@ -175,7 +174,7 @@ const HomePage = () => {
 
           <Col xs={24} lg={12} className="hero-video">
             <video width="100%" height="auto" controls autoPlay muted loop>
-              <source src={videoSrc} type="video/mp4" />
+              <source src={videoFile} type="video/mp4" />
             </video>
           </Col>
         </Row>
