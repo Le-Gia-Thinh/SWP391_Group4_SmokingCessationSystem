@@ -60,7 +60,10 @@ export default function ChatPage() {
         if (!token) return;
         setTopicsLoading(true);
         try {
-            const response = await axios.get("http://localhost:5000/api/chat/topics");
+            const response = await axios.get(
+                "http://localhost:5000/api/topic-chat/topics",
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
             setTopics(response.data);
         } catch (err) {
             message.error("Lỗi khi tải danh sách chủ đề");
@@ -73,7 +76,10 @@ export default function ChatPage() {
     const fetchCommunityMessages = async () => {
         setLoading(true);
         try {
-            const response = await axios.get("http://localhost:5000/api/chat/community");
+            const response = await axios.get(
+                "http://localhost:5000/api/community-chat",
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
             setCommunityMessages(response.data);
         } catch (err) {
             message.error("Lỗi khi tải tin nhắn cộng đồng");
@@ -87,7 +93,10 @@ export default function ChatPage() {
         if (!topicId) return;
         setLoading(true);
         try {
-            const response = await axios.get(`http://localhost:5000/api/chat/topics/${topicId}/messages`);
+            const response = await axios.get(
+                `http://localhost:5000/api/topic-chat/messages/${topicId}`,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
             setTopicMessages(response.data);
         } catch (err) {
             message.error("Lỗi khi tải tin nhắn chủ đề");
@@ -123,7 +132,7 @@ export default function ChatPage() {
 
         try {
             await axios.post(
-                "http://localhost:5000/api/chat/community",
+                "http://localhost:5000/api/community-chat",
                 { content: newMessage },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -151,7 +160,7 @@ export default function ChatPage() {
 
         try {
             await axios.post(
-                "http://localhost:5000/api/chat/topics/message",
+                "http://localhost:5000/api/topic-chat/messages",
                 {
                     topic_id: selectedTopic.topic_id,
                     content: newMessage
@@ -174,7 +183,7 @@ export default function ChatPage() {
 
         try {
             await axios.post(
-                "http://localhost:5000/api/chat/topics",
+                "http://localhost:5000/api/topic-chat/topics",
                 values,
                 { headers: { Authorization: `Bearer ${token}` } }
             );
