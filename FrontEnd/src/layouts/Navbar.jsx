@@ -22,12 +22,14 @@ import {
   MenuOutlined,    // ← hamburger
   MoreOutlined,    // ← overflow indicator
   ScheduleOutlined,
+  FileDoneOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "../contexts/AuthContext";
 import axios from "axios";
 import "./Navbar.css";
 import { Dropdown } from "antd";
 import UserDropdownMenu from "../components/UserDropdownMenu";
+import { Link } from "react-router-dom";
 
 const { Header } = Layout;
 
@@ -96,6 +98,12 @@ export default function Navbar() {
         icon: <ScheduleOutlined />,
         label: "Quản lý Lịch",
         onClick: () => navigate("/schedule-management"),
+      });
+      items.push({
+        key: "/post-approval",
+        icon: <FileDoneOutlined />,
+        label: "Quản lý Bài Viết",
+        onClick: () => navigate("/post-approval"),
       });
     }
     if (isCoach()) {

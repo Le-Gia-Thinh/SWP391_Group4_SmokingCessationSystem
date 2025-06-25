@@ -33,8 +33,6 @@ import meditationImg from "../../assets/meditation.jpg";
 import healthyEatingImg from "../../assets/healthy-eating.jpg";
 import fitnessImg from "../../assets/fitness.jpg";
 
-import { videoSrc } from "../../assets/video/13225520_3840_2160_30fps (1).mp4";
-
 import "./HomePage.css";
 
 const { Title, Paragraph, Text } = Typography;
@@ -175,7 +173,7 @@ const HomePage = () => {
 
           <Col xs={24} lg={12} className="hero-video">
             <video width="100%" height="auto" controls autoPlay muted loop>
-              <source src={videoSrc} type="video/mp4" />
+              <source src="/src/assets/video/13225520_3840_2160_30fps (1).mp4" type="video/mp4" />
             </video>
           </Col>
         </Row>
