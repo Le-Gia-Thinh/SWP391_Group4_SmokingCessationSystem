@@ -11,9 +11,6 @@
 
 .navbar-content {
   width: 100%;
-  /* ← full width viewport */
-  /* max-width: 1200px; */
-  /* ← BỎ hẳn để menu không bị ép */
   margin: 0 auto;
   padding: 0 24px;
   display: flex;
@@ -38,11 +35,10 @@
   background: transparent !important;
 }
 
-/* Menu items */
 .navbar-menu .ant-menu-item {
-  margin: 0 8px !important;
-  border-radius: 6px;
-  transition: all 0.3s;
+  margin: 0 !important;
+  flex: 0 1 auto;
+  text-align: center;
 }
 
 .navbar-menu .ant-menu-item:hover,
@@ -55,13 +51,25 @@
   border-bottom: 2px solid #52c41a !important;
 }
 
+.navbar-menu .ant-menu-ink-bar,
+.navbar-menu.ant-menu-horizontal>.ant-menu-item::after {
+  display: none !important;
+}
+
+.navbar-menu>.ant-menu {
+  display: flex !important;
+  justify-content: space-evenly !important;
+  align-items: center;
+  width: 100%;
+}
+
 /* Action buttons */
 .navbar-actions {
   display: flex;
   align-items: center;
   gap: 16px;
   margin-left: 32px;
-  /* giữ khoảng cách actions */
+
 }
 
 .navbar-actions .username-text {
@@ -104,5 +112,16 @@
   .navbar-actions .ant-btn {
     padding: 2px 6px;
     font-size: 11px;
+  }
+}
+
+@media (min-width: 769px) {
+  .navbar-menu>.ant-menu {
+    display: grid !important;
+    grid-auto-flow: column;
+    grid-auto-columns: max-content;
+    justify-content: space-evenly;
+    align-items: center;
+    width: 100%;
   }
 }
