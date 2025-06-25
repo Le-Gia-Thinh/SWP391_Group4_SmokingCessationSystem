@@ -1,12 +1,34 @@
+// Community Blog Page with enhanced UI and carousel
 import React, { useEffect, useState } from "react";
-import { Card, List, Button, Tag, Avatar, Typography, Badge, Spin, Empty, Modal, Form, Input, message, Layout, Divider } from "antd";
-import { PlusOutlined, StarFilled } from "@ant-design/icons";
+import {
+    Card,
+    List,
+    Button,
+    Tag,
+    Avatar,
+    Typography,
+    Badge,
+    Spin,
+    Empty,
+    Modal,
+    Form,
+    Input,
+    message,
+    Layout,
+    Divider,
+    Carousel,
+    Space
+} from "antd";
+import {
+    PlusOutlined,
+    StarFilled
+} from "@ant-design/icons";
 import axios from "axios";
 import Navbar from "../../layouts/Navbar";
-import "./Blog.css";
 import CommentSection from "./CommentSection";
+import "./Blog.css";
 
-const { Title, Paragraph } = Typography;
+const { Title, Paragraph, Text } = Typography;
 const { Content } = Layout;
 
 export default function BlogList() {
@@ -14,13 +36,12 @@ export default function BlogList() {
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [form] = Form.useForm();
-    const token = localStorage.getItem("token"); // Get token once
     const [viewBlog, setViewBlog] = useState(null);
+    const token = localStorage.getItem("token");
 
     const fetchBlogs = async () => {
         setLoading(true);
         try {
-            // API giờ chỉ trả về các bài đã duyệt
             const res = await axios.get("http://localhost:5000/api/community");
             setBlogs(res.data);
         } catch (err) {
@@ -35,40 +56,51 @@ export default function BlogList() {
     }, []);
 
     const handleCreateBlog = async (values) => {
+        console.log("Form values:", values); // Debug log
+        console.log("Token:", token); // Debug log
+
         if (!token) {
             message.error("Bạn cần đăng nhập để viết bài!");
             return;
         }
+
         try {
-            await axios.post(
+            console.log("Sending request with data:", values); // Debug log
+            const response = await axios.post(
                 "http://localhost:5000/api/community",
-                {
-                    title: values.title,
-                    content: values.content,
-                },
-                {
-                    headers: { Authorization: `Bearer ${token}` },
-                }
+                values,
+                { headers: { Authorization: `Bearer ${token}` } }
             );
+            console.log("Response:", response.data); // Debug log
             setIsModalOpen(false);
             form.resetFields();
-            message.success("Đã gửi bài viết thành công! Bài viết của bạn sẽ được hiển thị sau khi được duyệt.");
-            // Không cần fetchBlogs() lại vì bài mới chưa được duyệt
+            message.success("Bài viết đã gửi và chờ duyệt.");
+            fetchBlogs(); // Refresh the blog list
         } catch (err) {
-            message.error(
-                err.response?.data?.message || "Lỗi khi gửi bài viết, hãy thử lại!"
-            );
+            console.error("Error creating blog:", err); // Debug log
+            console.error("Error response:", err.response); // Debug log
+            message.error(err.response?.data?.message || "Lỗi khi gửi bài viết.");
         }
     };
 
-    // Coi 2 bài mới nhất là bài nổi bật
+    const handleModalOpen = () => {
+        console.log("Opening modal"); // Debug log
+        setIsModalOpen(true);
+    };
+
+    const handleModalClose = () => {
+        console.log("Closing modal"); // Debug log
+        setIsModalOpen(false);
+        form.resetFields();
+    };
+
     const featuredBlogs = blogs.slice(0, 2);
     const normalBlogs = blogs.slice(2);
 
     return (
         <Layout>
             <Navbar />
-            <Content style={{ padding: '0 50px', marginTop: '20px' }}>
+            <Content style={{ padding: 0, background: "#d2f7c5" }}>
                 <div className="blog-page">
                     <div className="blog-content-container">
                         <div className="blog-header">
@@ -78,7 +110,7 @@ export default function BlogList() {
                                     type="primary"
                                     icon={<PlusOutlined />}
                                     style={{ background: "#52c41a", borderColor: "#52c41a" }}
-                                    onClick={() => setIsModalOpen(true)}
+                                    onClick={handleModalOpen}
                                 >
                                     Viết bài mới
                                 </Button>
@@ -95,33 +127,28 @@ export default function BlogList() {
                                 {featuredBlogs.length > 0 && (
                                     <div className="featured-blogs">
                                         <Title level={4} style={{ color: "#52c41a" }}>Bài Viết Nổi Bật</Title>
-                                        <List
-                                            grid={{ gutter: 16, xs: 1, sm: 1, md: 2, lg: 2, xl: 2, xxl: 2 }}
-                                            dataSource={featuredBlogs}
-                                            renderItem={item => (
-                                                <List.Item>
+                                        <Carousel autoplay dots={true}>
+                                            {featuredBlogs.map(item => (
+                                                <div key={item.post_id}>
                                                     <Badge.Ribbon text="Nổi bật" color="green">
                                                         <Card
                                                             hoverable
                                                             onClick={() => setViewBlog(item)}
-                                                            title={
-                                                                <span style={{ fontWeight: 'bold' }}>
-                                                                    <StarFilled style={{ color: "#faad14", marginRight: 8 }} /> {item.title}
-                                                                </span>
-                                                            }
-                                                            style={{ borderColor: "#52c41a" }}
+                                                            title={<Text strong><StarFilled style={{ color: "#faad14", marginRight: 8 }} />{item.title}</Text>}
+                                                            style={{ borderColor: "#52c41a", margin: "0 20px" }}
                                                         >
-                                                            <Paragraph ellipsis={{ rows: 3, expandable: true, symbol: 'Xem thêm' }}>{item.content}</Paragraph>
-                                                            <div className="blog-meta">
-                                                                <Avatar src={item.avatar} style={{ backgroundColor: "#87d068" }}>{item.full_name?.[0] || "U"}</Avatar>
-                                                                <span style={{ marginLeft: 8, fontWeight: 500 }}>{item.full_name || "Ẩn danh"}</span>
-                                                                <span style={{ float: "right", color: "#888" }}>{new Date(item.created_at).toLocaleDateString()}</span>
-                                                            </div>
+                                                            <Paragraph ellipsis={{ rows: 3 }}>{item.content}</Paragraph>
+                                                            <Divider style={{ margin: "12px 0" }} />
+                                                            <Space>
+                                                                <Avatar src={item.avatar}>{item.full_name?.[0] || "U"}</Avatar>
+                                                                <Text strong>{item.full_name || "Ẩn danh"}</Text>
+                                                                <Text type="secondary">• {new Date(item.created_at).toLocaleDateString()}</Text>
+                                                            </Space>
                                                         </Card>
                                                     </Badge.Ribbon>
-                                                </List.Item>
-                                            )}
-                                        />
+                                                </div>
+                                            ))}
+                                        </Carousel>
                                     </div>
                                 )}
 
@@ -133,9 +160,7 @@ export default function BlogList() {
                                     <List
                                         itemLayout="vertical"
                                         dataSource={normalBlogs}
-                                        pagination={{
-                                            pageSize: 5,
-                                        }}
+                                        pagination={{ pageSize: 5 }}
                                         locale={{ emptyText: <Empty description="Chưa có bài viết nào." /> }}
                                         renderItem={item => (
                                             <List.Item>
@@ -145,9 +170,7 @@ export default function BlogList() {
                                                         title={<Title level={5}>{item.title}</Title>}
                                                         description={`Đăng bởi ${item.full_name || "Ẩn danh"} vào ${new Date(item.created_at).toLocaleDateString()}`}
                                                     />
-                                                    <Paragraph ellipsis={{ rows: 2, expandable: true, symbol: 'Xem thêm' }} style={{ marginTop: 16 }}>
-                                                        {item.content}
-                                                    </Paragraph>
+                                                    <Paragraph ellipsis={{ rows: 2 }} style={{ marginTop: 16 }}>{item.content}</Paragraph>
                                                 </Card>
                                             </List.Item>
                                         )}
@@ -159,27 +182,69 @@ export default function BlogList() {
                         <Modal
                             title="Viết bài mới"
                             open={isModalOpen}
-                            onCancel={() => setIsModalOpen(false)}
+                            onCancel={handleModalClose}
                             footer={null}
+                            width={600}
+                            destroyOnClose={true}
+                            maskClosable={false}
+                            style={{ zIndex: 1000 }}
+                            bodyStyle={{ padding: '24px' }}
                         >
-                            <Form form={form} layout="vertical" onFinish={handleCreateBlog}>
+                            <Form
+                                form={form}
+                                layout="vertical"
+                                onFinish={handleCreateBlog}
+                                onFinishFailed={(errorInfo) => {
+                                    console.log('Form validation failed:', errorInfo);
+                                }}
+                                initialValues={{
+                                    title: '',
+                                    content: ''
+                                }}
+                                style={{ width: '100%' }}
+                            >
                                 <Form.Item
                                     label="Tiêu đề"
                                     name="title"
-                                    rules={[{ required: true, message: "Vui lòng nhập tiêu đề" }]}
+                                    rules={[
+                                        { required: true, message: "Vui lòng nhập tiêu đề" },
+                                        { min: 5, message: "Tiêu đề phải có ít nhất 5 ký tự" }
+                                    ]}
                                 >
-                                    <Input />
+                                    <Input
+                                        placeholder="Nhập tiêu đề bài viết..."
+                                        onChange={(e) => console.log("Title changed:", e.target.value)}
+                                        style={{ width: '100%', height: '40px' }}
+                                    />
                                 </Form.Item>
                                 <Form.Item
                                     label="Nội dung"
                                     name="content"
-                                    rules={[{ required: true, message: "Vui lòng nhập nội dung" }]}
+                                    rules={[
+                                        { required: true, message: "Vui lòng nhập nội dung" },
+                                        { min: 20, message: "Nội dung phải có ít nhất 20 ký tự" }
+                                    ]}
                                 >
-                                    <Input.TextArea rows={5} />
+                                    <Input.TextArea
+                                        rows={8}
+                                        placeholder="Nhập nội dung bài viết..."
+                                        showCount
+                                        maxLength={2000}
+                                        onChange={(e) => console.log("Content changed:", e.target.value)}
+                                        style={{ width: '100%', minHeight: '120px', resize: 'vertical' }}
+                                    />
                                 </Form.Item>
-                                <Button type="primary" htmlType="submit" style={{ background: "#52c41a", borderColor: "#52c41a" }}>
-                                    Gửi Bài Viết
-                                </Button>
+                                <Form.Item>
+                                    <Button
+                                        type="primary"
+                                        htmlType="submit"
+                                        style={{ background: "#52c41a", borderColor: "#52c41a", width: '100%', height: '40px' }}
+                                        block
+                                        onClick={() => console.log("Submit button clicked")}
+                                    >
+                                        Gửi Bài Viết
+                                    </Button>
+                                </Form.Item>
                             </Form>
                         </Modal>
 
@@ -188,15 +253,15 @@ export default function BlogList() {
                             onCancel={() => setViewBlog(null)}
                             footer={null}
                             title={viewBlog?.title}
+                            width={700}
                         >
                             <Paragraph>{viewBlog?.content}</Paragraph>
-                            <div>
-                                <Avatar src={viewBlog?.avatar} style={{ backgroundColor: "#87d068" }}>
-                                    {viewBlog?.full_name?.[0] || "U"}
-                                </Avatar>
-                                <span style={{ marginLeft: 8, fontWeight: 500 }}>{viewBlog?.full_name || "Ẩn danh"}</span>
-                                <span style={{ float: "right", color: "#888" }}>{viewBlog && new Date(viewBlog.created_at).toLocaleDateString()}</span>
-                            </div>
+                            <Divider />
+                            <Space direction="horizontal">
+                                <Avatar src={viewBlog?.avatar}>{viewBlog?.full_name?.[0] || "U"}</Avatar>
+                                <Text strong>{viewBlog?.full_name || "Ẩn danh"}</Text>
+                                <Text type="secondary">{viewBlog && new Date(viewBlog.created_at).toLocaleDateString()}</Text>
+                            </Space>
                             <Divider />
                             {viewBlog && <CommentSection postId={viewBlog.post_id} token={token} />}
                         </Modal>
@@ -205,4 +270,4 @@ export default function BlogList() {
             </Content>
         </Layout>
     );
-} 
+}
