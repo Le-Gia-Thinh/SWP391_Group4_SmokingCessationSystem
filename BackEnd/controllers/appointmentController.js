@@ -8,6 +8,33 @@ exports.bookAppointment = async (req, res) => {
     const { schedule_id } = req.body;
 
     const pool = await sql.connect(dbConfig);
+
+    //giới hạn 3 cuộc hẹn tư vấn/tuần
+    const now = new Date();
+    const weekAgo = new Date();
+    weekAgo.setDate(now.getDate() - 7);
+
+    const countResult = await pool.request()
+      .input('user_id', sql.Int, userId)
+      .input('from_date', sql.DateTime, weekAgo)
+      .input('to_date', sql.DateTime, now)
+      .query(`
+        SELECT COUNT(*) AS session_count
+        FROM COACHING_SESSION
+        WHERE user_id = @user_id
+          AND scheduled_time BETWEEN @from_date AND @to_date
+          AND session_status IN ('pending', 'accepted', 'completed')
+      `);
+
+    const sessionCount = countResult.recordset[0].session_count;
+    if (sessionCount >= 3) {
+      return res.status(400).json({
+        success: false,
+        message: `Bạn đã đặt ${sessionCount} buổi. Chỉ được phép tối đa 3 buổi tư vấn mỗi tuần.`
+      });
+    }
+
+    // Lấy lịch và kiểm tra có bị đặt chưa
     const slot = await pool.request()
       .input('id', sql.Int, schedule_id)
       .query(`SELECT * FROM COACH_SCHEDULE WHERE schedule_id = @id AND is_booked = 0`);
@@ -17,8 +44,40 @@ exports.bookAppointment = async (req, res) => {
     }
 
     const coachId = slot.recordset[0].coach_id;
+    
     const scheduledTime = slot.recordset[0].start_time;
+    // Chặn đặt nếu thời gian lịch cách thời điểm hiện tại < 60 phút
+    const nowWithBuffer = new Date();
+    const scheduledDateTime = new Date(scheduledTime);
+    const diffInMinutes = (scheduledDateTime.getTime() - nowWithBuffer.getTime()) / (1000 * 60);
+
+    if (diffInMinutes < 60) {
+      return res.status(400).json({
+        success: false,
+        message: 'Không thể đặt lịch trong vòng 1 tiếng sắp tới.'
+      });
+    }
     const endTime = slot.recordset[0].end_time;
+
+    // Kiểm tra Member đã có phiên trùng giờ chưa
+    const overlapCheck = await pool.request()
+      .input('user_id', sql.Int, userId)
+      .input('new_start', sql.DateTime, scheduledTime)
+      .input('new_end', sql.DateTime, endTime)
+      .query(`
+        SELECT 1 FROM COACHING_SESSION
+        WHERE user_id = @user_id
+          AND session_status IN ('pending', 'accepted')
+          AND ((@new_start < DATEADD(minute, duration_minutes, scheduled_time))
+              AND (@new_end > scheduled_time))
+      `);
+      
+        if (overlapCheck.recordset.length > 0) {
+          return res.status(400).json({
+            success: false,
+            message: 'Bạn đã có lịch hẹn khác trùng giờ. Vui lòng chọn thời gian khác.'
+          });
+        }
 
     // Calculate duration in minutes
     const durationMinutes = (new Date(endTime).getTime() - new Date(scheduledTime).getTime()) / (1000 * 60);
@@ -35,7 +94,9 @@ exports.bookAppointment = async (req, res) => {
         VALUES (@user_id, @coach_id, @schedule_id, @scheduled_time, @duration_minutes, @session_status)
       `);
 
-    await pool.request().input('id', sql.Int, schedule_id).query(`UPDATE COACH_SCHEDULE SET is_booked = 1 WHERE schedule_id = @id`);
+    await pool.request()
+      .input('id', sql.Int, schedule_id)
+      .query(`UPDATE COACH_SCHEDULE SET is_booked = 1 WHERE schedule_id = @id`);
 
     res.status(201).json({ success: true, message: 'Đặt lịch thành công' });
   } catch (err) {

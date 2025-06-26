@@ -54,17 +54,23 @@ WHERE p.title = N'Câu chuyện bỏ thuốc thành công của tôi';
 
 
 -- 5. COACH_SCHEDULE
-INSERT INTO COACH_SCHEDULE (coach_id, start_time, end_time)
-SELECT coach_id, '2025-06-25 09:00:00', '2025-06-25 10:00:00'
-FROM COACH WHERE user_id = (SELECT user_id FROM CUSTOMER WHERE username = 'coach1');
+DECLARE @start1 DATETIME = DATEADD(DAY, -2, DATEADD(HOUR, 9, CONVERT(DATETIME, CONVERT(DATE, GETDATE()))));
+DECLARE @end1   DATETIME = DATEADD(HOUR, 1, @start1); -- từ 9h đến 10h
 
-INSERT INTO COACH_SCHEDULE (coach_id, start_time, end_time)
-SELECT coach_id, '2025-06-25 14:00:00', '2025-06-25 15:00:00'
-FROM COACH WHERE user_id = (SELECT user_id FROM CUSTOMER WHERE username = 'coach1');
+DECLARE @start2 DATETIME = DATEADD(DAY, -1, DATEADD(HOUR, 14, CONVERT(DATETIME, CONVERT(DATE, GETDATE()))));
+DECLARE @end2   DATETIME = DATEADD(HOUR, 1, @start2); -- từ 14h đến 15h
 
+-- Trước 2 ngày lúc 9h sáng
 INSERT INTO COACH_SCHEDULE (coach_id, start_time, end_time)
-SELECT coach_id, '2025-06-26 08:00:00', '2025-06-26 09:00:00'
-FROM COACH WHERE user_id = (SELECT user_id FROM CUSTOMER WHERE username = 'coach1');
+SELECT coach_id, @start1, @end1
+FROM COACH
+WHERE user_id = (SELECT user_id FROM CUSTOMER WHERE username = 'coach1');
+
+-- Trước 1 ngày lúc 14h chiều
+INSERT INTO COACH_SCHEDULE (coach_id, start_time, end_time)
+SELECT coach_id, @start2, @end2
+FROM COACH
+WHERE user_id = (SELECT user_id FROM CUSTOMER WHERE username = 'coach1');
 
 -- 6. FTND_RESULT
 INSERT INTO FTND_RESULT (user_id, level, submitted_at)
@@ -235,3 +241,73 @@ FROM CUSTOMER WHERE username = 'coach1';
 INSERT INTO TOPIC_MESSAGE (topic_id, user_id, content)
 SELECT 2, user_id, N'Mỗi sáng mình uống nước chanh ấm và đọc 10 phút sách.'
 FROM CUSTOMER WHERE username = 'member4';
+
+
+-- 15. USER_PROFILE
+INSERT INTO USER_PROFILE (user_id, smoking_years, daily_cigarettes, monthly_expense, preferred_brand, quit_reasons, health_issues, target_quit_date)
+SELECT user_id, 5, 15, 100000, N'Vinataba', N'Vì gia đình', N'Ho nhiều, khó thở', '2025-07-01'
+FROM CUSTOMER WHERE username = 'member2';
+
+-- 16. COACHING_SESSION (dùng lại @start1, @start2 đã khai báo trước đó)
+
+-- Member2 đặt phiên tư vấn với Coach1 (đã được duyệt)
+INSERT INTO COACHING_SESSION (
+    user_id, coach_id, schedule_id, scheduled_time,
+    duration_minutes, session_status, session_type, google_meet_link
+)
+SELECT
+    u.user_id,
+    c.coach_id,
+    s.schedule_id,
+    s.start_time,
+    DATEDIFF(MINUTE, s.start_time, s.end_time),
+    'accepted',
+    'online',
+    c.google_meet_link
+FROM CUSTOMER u
+JOIN COACH c ON c.user_id = (SELECT user_id FROM CUSTOMER WHERE username = 'coach1')
+JOIN COACH_SCHEDULE s ON s.coach_id = c.coach_id
+WHERE u.username = 'member2' AND s.start_time = @start1;
+
+-- Member3 đặt phiên tư vấn với Coach1 (pending)
+INSERT INTO COACHING_SESSION (
+    user_id, coach_id, schedule_id, scheduled_time,
+    duration_minutes, session_status, session_type
+)
+SELECT
+    u.user_id,
+    c.coach_id,
+    s.schedule_id,
+    s.start_time,
+    DATEDIFF(MINUTE, s.start_time, s.end_time),
+    'pending',
+    'online'
+FROM CUSTOMER u
+JOIN COACH c ON c.user_id = (SELECT user_id FROM CUSTOMER WHERE username = 'coach1')
+JOIN COACH_SCHEDULE s ON s.coach_id = c.coach_id
+WHERE u.username = 'member3' AND s.start_time = @start2;
+
+-- 17. DIRECT_MESSAGE
+DECLARE @session_id1 INT;
+
+SELECT @session_id1 = session_id
+FROM COACHING_SESSION
+WHERE user_id = (SELECT user_id FROM CUSTOMER WHERE username = 'member2')
+  AND scheduled_time = @start1;
+
+-- Gửi tin nhắn
+INSERT INTO DIRECT_MESSAGE (session_id, sender_id, sender_role, message, file_url)
+SELECT @session_id1, user_id, 'coach', N'Chào bạn, chúng ta sẽ bắt đầu buổi tư vấn lúc 9h nhé!', NULL
+FROM CUSTOMER WHERE username = 'coach1';
+
+INSERT INTO DIRECT_MESSAGE (session_id, sender_id, sender_role, message, file_url)
+SELECT @session_id1, user_id, 'member', N'Dạ vâng, em đã sẵn sàng!', NULL
+FROM CUSTOMER WHERE username = 'member2';
+
+-- 18. COACHING_MESSAGE
+INSERT INTO COACHING_MESSAGE (session_id, user_id, coach_id, content, sent_at)
+SELECT @session_id1, u.user_id, c.coach_id,
+       N'Lịch hẹn đã được duyệt. Link Meet: ' + c.google_meet_link, GETDATE()
+FROM CUSTOMER u
+JOIN COACH c ON c.user_id = (SELECT user_id FROM CUSTOMER WHERE username = 'coach1')
+WHERE u.username = 'member2';
