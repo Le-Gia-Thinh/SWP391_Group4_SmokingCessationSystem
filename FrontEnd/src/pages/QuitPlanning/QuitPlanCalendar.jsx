@@ -696,6 +696,45 @@ const QuitPlan = () => {
   const weekPageSize = 7; // Số ngày trong 1 tuần
   const weekTotal = weeklyQuota.length; // Tổng số tuần dựa trên weeklyQuota
 
+  // --- Tiến trình demo ---
+  const percentThucTe =
+    startDate && months
+      ? Math.min(
+          100,
+          Math.round(
+            ((dayjs().diff(startDate, "day") + 1) / (months * 30)) * 100
+          )
+        )
+      : 0;
+  const [animatedPercent, setAnimatedPercent] = useState(percentThucTe);
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  useEffect(() => {
+    if (!isAnimating) setAnimatedPercent(percentThucTe);
+  }, [percentThucTe, isAnimating]);
+
+  const handleRocketClick = () => {
+    if (isAnimating) return;
+    setIsAnimating(true);
+    let current = animatedPercent;
+    const target = 100;
+    const speed = 1;
+    const interval = setInterval(() => {
+      current += speed;
+      if (current >= target) {
+        current = target;
+        setAnimatedPercent(current);
+        clearInterval(interval);
+        setTimeout(() => {
+          setIsAnimating(false);
+          setAnimatedPercent(percentThucTe);
+        }, 1200);
+      } else {
+        setAnimatedPercent(current);
+      }
+    }, 100);
+  };
+
   if (showModal && user) {
     return (
       <PlanSetupModal
@@ -881,18 +920,7 @@ const QuitPlan = () => {
                   />
                   <Progress
                     type="circle"
-                    percent={
-                      startDate && months
-                        ? Math.min(
-                            100,
-                            Math.round(
-                              ((dayjs().diff(startDate, "day") + 1) /
-                                (months * 30)) *
-                                100
-                            )
-                          )
-                        : 0
-                    }
+                    percent={animatedPercent}
                     width={120}
                     strokeWidth={10}
                     strokeColor={{
@@ -923,7 +951,10 @@ const QuitPlan = () => {
                       top: 18,
                       right: 18,
                       zIndex: 2,
+                      cursor: isAnimating ? "not-allowed" : "pointer",
                     }}
+                    onClick={handleRocketClick}
+                    title="Xem thử tiến trình hoàn thành"
                   >
                     <span
                       role="img"
@@ -944,10 +975,9 @@ const QuitPlan = () => {
                     }}
                   >
                     {startDate
-                      ? `${Math.min(
-                          months * 30,
-                          dayjs().diff(startDate, "day") + 1
-                        )} / ${months * 30} ngày`
+                      ? `${Math.round(
+                          (animatedPercent / 100) * totalDays
+                        )} / ${totalDays} ngày`
                       : ""}
                   </div>
                   <div
@@ -996,19 +1026,7 @@ const QuitPlan = () => {
                   </div>
                   <div style={{ marginBottom: 8 }}>
                     {(() => {
-                      // Tính phần trăm hiện tại
-                      const percent =
-                        startDate && months
-                          ? Math.min(
-                              100,
-                              Math.round(
-                                ((dayjs().diff(startDate, "day") + 1) /
-                                  (months * 30)) *
-                                  100
-                              )
-                            )
-                          : 0;
-                      // Tìm giai đoạn hiện tại và tiếp theo
+                      const percent = animatedPercent;
                       const currentPhaseIdx = PHASES.findIndex(
                         ({ range }) =>
                           percent >= range[0] && percent <= range[1]
@@ -1023,19 +1041,7 @@ const QuitPlan = () => {
                     style={{ fontSize: 15, color: "#faad14", fontWeight: 500 }}
                   >
                     {(() => {
-                      // Tính phần trăm hiện tại
-                      const percent =
-                        startDate && months
-                          ? Math.min(
-                              100,
-                              Math.round(
-                                ((dayjs().diff(startDate, "day") + 1) /
-                                  (months * 30)) *
-                                  100
-                              )
-                            )
-                          : 0;
-                      // Tìm giai đoạn hiện tại và tiếp theo
+                      const percent = animatedPercent;
                       const currentPhaseIdx = PHASES.findIndex(
                         ({ range }) =>
                           percent >= range[0] && percent <= range[1]
@@ -1044,7 +1050,9 @@ const QuitPlan = () => {
                       if (!nextPhase) return "Bạn đã ở giai đoạn cuối!";
                       const percentToNext = nextPhase.range[0] - percent;
                       return percentToNext > 0
-                        ? `Còn ${percentToNext}% nữa đến ${nextPhase.phase}`
+                        ? `Còn ${Math.ceil(percentToNext)}% nữa đến ${
+                            nextPhase.phase
+                          }`
                         : `Sắp sang giai đoạn tiếp theo!`;
                     })()}
                   </div>
