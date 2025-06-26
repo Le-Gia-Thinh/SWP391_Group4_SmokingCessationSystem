@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Button, Modal, Form, Input, Select, DatePicker, TimePicker, message, Avatar, Rate, Tag, Row, Col, Typography, Spin } from 'antd';
-import { CalendarOutlined, ClockCircleOutlined, UserOutlined, StarFilled } from '@ant-design/icons';
+import { Card, Button, Modal, Form, Input, Select, DatePicker, TimePicker, message, Avatar, Rate, Tag, Row, Col, Typography, Spin, Alert } from 'antd';
+import { CalendarOutlined, ClockCircleOutlined, UserOutlined, StarFilled, ExclamationCircleOutlined } from '@ant-design/icons';
 import FormModal from '../../components/ui/FormModal';
 import Navbar from '../../layouts/Navbar';
 import { useAuth } from '../../contexts/AuthContext';
@@ -22,10 +22,44 @@ const BookingPage = () => {
     const [availableCoaches, setAvailableCoaches] = useState([]);
     const [selectedSlot, setSelectedSlot] = useState(null);
     const [initialLoading, setInitialLoading] = useState(true);
+    const [userBookingStats, setUserBookingStats] = useState({ weeklyCount: 0, maxAllowed: 3 });
 
     useEffect(() => {
         loadCoaches();
+        loadUserBookingStats();
     }, []);
+
+    const loadUserBookingStats = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('http://localhost:5000/api/appointment/my-bookings', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success) {
+                    const now = moment();
+                    const weekAgo = moment().subtract(7, 'days');
+
+                    const weeklyBookings = data.data.filter(booking => {
+                        const bookingTime = moment(booking.scheduled_time);
+                        return bookingTime.isBetween(weekAgo, now) &&
+                            ['pending', 'accepted', 'completed'].includes(booking.session_status);
+                    });
+
+                    setUserBookingStats({
+                        weeklyCount: weeklyBookings.length,
+                        maxAllowed: 3
+                    });
+                }
+            }
+        } catch (error) {
+            console.error('Error loading user booking stats:', error);
+        }
+    };
 
     const loadCoaches = async () => {
         try {
@@ -87,10 +121,16 @@ const BookingPage = () => {
                     const data = await response.json();
                     const schedules = data || [];
 
-                    // Filter schedules for selected date
+                    // Filter schedules for selected date and check time constraints
+                    const now = moment();
                     const daySchedules = schedules.filter(schedule => {
                         const scheduleDate = moment(schedule.start_time).format('YYYY-MM-DD');
-                        return scheduleDate === dateStr && !schedule.is_booked;
+                        const scheduleTime = moment(schedule.start_time);
+                        const diffInMinutes = scheduleTime.diff(now, 'minutes');
+
+                        return scheduleDate === dateStr &&
+                            !schedule.is_booked &&
+                            diffInMinutes >= 60; // Chặn đặt lịch trong vòng 1 tiếng
                     });
 
                     if (daySchedules.length > 0) {
@@ -131,6 +171,12 @@ const BookingPage = () => {
     };
 
     const handleSelectSlotForBooking = (coach, schedule) => {
+        // Kiểm tra giới hạn 3 cuộc hẹn/tuần
+        if (userBookingStats.weeklyCount >= userBookingStats.maxAllowed) {
+            message.error(`Bạn đã đặt ${userBookingStats.weeklyCount} buổi. Chỉ được phép tối đa ${userBookingStats.maxAllowed} buổi tư vấn mỗi tuần.`);
+            return;
+        }
+
         setSelectedCoach(coach);
         setSelectedSlot(formatTimeSlot(schedule));
         bookingForm.setFieldsValue({
@@ -152,8 +198,9 @@ const BookingPage = () => {
                 body: JSON.stringify({ schedule_id: selectedSlot.schedule_id })
             });
 
+            const data = await response.json();
+
             if (!response.ok) {
-                const data = await response.json();
                 throw new Error(data.message || 'Failed to book appointment');
             }
 
@@ -163,8 +210,9 @@ const BookingPage = () => {
             setSelectedCoach(null);
             setSelectedSlot(null);
 
-            // Reload available schedules
+            // Reload available schedules and user stats
             loadAvailableSchedules();
+            loadUserBookingStats();
         } catch (error) {
             console.error('Error booking appointment:', error);
             message.error(error.message || 'Không thể đặt lịch');
@@ -201,6 +249,15 @@ const BookingPage = () => {
                     <Text type="secondary">
                         Chọn ngày và chọn từ các huấn luyện viên có sẵn để đặt lịch huấn luyện bỏ thuốc lá.
                     </Text>
+
+                    {/* Hiển thị thống kê đặt lịch của user */}
+                    <Alert
+                        message={`Bạn đã đặt ${userBookingStats.weeklyCount}/${userBookingStats.maxAllowed} buổi tư vấn trong tuần này`}
+                        type={userBookingStats.weeklyCount >= userBookingStats.maxAllowed ? "warning" : "info"}
+                        showIcon
+                        style={{ marginTop: 16, marginBottom: 16 }}
+                        icon={<ExclamationCircleOutlined />}
+                    />
 
                     <Card style={{ marginTop: 24 }}>
                         <div className="date-selection" style={{ maxWidth: 350, margin: '0 auto', marginBottom: 32 }}>
@@ -245,13 +302,22 @@ const BookingPage = () => {
                                                         <div className="slots-grid improved-slots-grid">
                                                             {coach.availableSchedules.map((schedule) => {
                                                                 const slot = formatTimeSlot(schedule);
+                                                                const isDisabled = userBookingStats.weeklyCount >= userBookingStats.maxAllowed;
                                                                 return (
                                                                     <Button
                                                                         key={schedule.schedule_id}
                                                                         type="primary"
                                                                         size="small"
+                                                                        disabled={isDisabled}
                                                                         onClick={() => handleSelectSlotForBooking(coach, schedule)}
-                                                                        style={{ margin: '4px', background: '#52c41a', borderColor: '#52c41a', fontWeight: 600, fontSize: 15, borderRadius: 8 }}
+                                                                        style={{
+                                                                            margin: '4px',
+                                                                            background: isDisabled ? '#d9d9d9' : '#52c41a',
+                                                                            borderColor: isDisabled ? '#d9d9d9' : '#52c41a',
+                                                                            fontWeight: 600,
+                                                                            fontSize: 15,
+                                                                            borderRadius: 8
+                                                                        }}
                                                                     >
                                                                         {slot.time} - {slot.endTime}
                                                                     </Button>

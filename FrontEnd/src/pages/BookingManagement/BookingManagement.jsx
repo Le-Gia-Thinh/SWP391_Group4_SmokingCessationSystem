@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Table, Tag, Modal, Form, Input, Select, message, Avatar, Space, Tooltip, Spin, Tabs, Row, Col, Typography, Badge } from 'antd';
-import { EyeOutlined, CheckOutlined, CloseOutlined, ReloadOutlined, UserOutlined, ClockCircleOutlined, CheckCircleOutlined, TrophyOutlined } from '@ant-design/icons';
+import { EyeOutlined, CheckOutlined, CloseOutlined, ReloadOutlined, UserOutlined, ClockCircleOutlined, CheckCircleOutlined, TrophyOutlined, ExclamationCircleOutlined, FileDoneOutlined, WarningOutlined } from '@ant-design/icons';
 import { useAuth } from '../../contexts/AuthContext';
 import ActionButtonGroup from '../../components/ui/ActionButtonGroup';
 import DataTable from '../../components/ui/DataTable';
@@ -18,6 +18,13 @@ const BookingManagement = () => {
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [selectedBooking, setSelectedBooking] = useState(null);
     const [activeTab, setActiveTab] = useState('pending');
+    const [completeModal, setCompleteModal] = useState(false);
+    const [reportModal, setReportModal] = useState(false);
+    const [modalLoading, setModalLoading] = useState(false);
+    const [completeNotes, setCompleteNotes] = useState('');
+    const [reportReason, setReportReason] = useState('');
+    const [currentSessionId, setCurrentSessionId] = useState(null);
+    const [rejectedBadge, setRejectedBadge] = useState(0);
 
     // API Base URL
     const API_BASE_URL = 'http://localhost:5000/api';
@@ -34,6 +41,14 @@ const BookingManagement = () => {
     useEffect(() => {
         loadBookings();
     }, []);
+
+    useEffect(() => {
+        setRejectedBadge(bookings.filter(b =>
+            b.session_status === 'rejected' ||
+            b.session_status === 'canceled_by_member' ||
+            b.session_status === 'canceled_by_coach'
+        ).length);
+    }, [bookings]);
 
     const loadBookings = async () => {
         try {
@@ -153,6 +168,88 @@ const BookingManagement = () => {
         };
     };
 
+    const handleOpenCompleteModal = (sessionId) => {
+        setCurrentSessionId(sessionId);
+        setCompleteNotes('');
+        setCompleteModal(true);
+    };
+
+    const handleCompleteAppointment = async () => {
+        setModalLoading(true);
+        try {
+            const response = await fetch(`${API_BASE_URL}/appointment/${currentSessionId}/complete`, {
+                method: 'PUT',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ notes: completeNotes })
+            });
+            if (!response.ok) throw new Error('Không thể hoàn thành buổi tư vấn');
+            message.success('Đã hoàn thành buổi tư vấn!');
+            setCompleteModal(false);
+            loadBookings();
+        } catch (error) {
+            message.error(error.message || 'Không thể hoàn thành buổi tư vấn');
+        } finally {
+            setModalLoading(false);
+        }
+    };
+
+    const handleOpenReportModal = (sessionId) => {
+        setCurrentSessionId(sessionId);
+        setReportReason('');
+        setReportModal(true);
+    };
+
+    const handleReportMissingMember = async () => {
+        setModalLoading(true);
+        try {
+            const response = await fetch(`${API_BASE_URL}/appointment/${currentSessionId}/report-missing-member`, {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ reason: reportReason })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Không thể báo cáo thành viên vắng mặt');
+            }
+
+            message.success('Đã báo cáo thành viên vắng mặt!');
+            setReportModal(false);
+            loadBookings();
+        } catch (error) {
+            message.error(error.message || 'Không thể báo cáo thành viên vắng mặt');
+        } finally {
+            setModalLoading(false);
+        }
+    };
+
+    const canReportMissingMember = (scheduledTime) => {
+        const now = new Date();
+        const scheduledDateTime = new Date(scheduledTime);
+        const minReportTime = new Date(scheduledDateTime.getTime() + 15 * 60000); // Sau 15 phút
+        return now >= scheduledDateTime && now >= minReportTime;
+    };
+
+    const getReportButtonTooltip = (scheduledTime) => {
+        const now = new Date();
+        const scheduledDateTime = new Date(scheduledTime);
+
+        if (now < scheduledDateTime) {
+            return 'Chỉ được báo cáo sau giờ hẹn';
+        }
+
+        const minReportTime = new Date(scheduledDateTime.getTime() + 15 * 60000);
+        if (now < minReportTime) {
+            const remainingMinutes = Math.ceil((minReportTime.getTime() - now.getTime()) / (1000 * 60));
+            return `Chỉ được báo cáo sau 15 phút kể từ giờ hẹn. Còn ${remainingMinutes} phút`;
+        }
+
+        return 'Báo cáo thành viên vắng mặt';
+    };
+
+    const isActionable = (status) => ['pending', 'accepted'].includes(status);
+
     const columns = [
         {
             title: 'Thành viên',
@@ -192,38 +289,14 @@ const BookingManagement = () => {
         {
             title: 'Hành động',
             key: 'actions',
-            render: (_, record) => {
-                const actions = [
-                    {
-                        type: 'view',
-                        tooltip: 'Xem chi tiết',
-                        onClick: () => handleViewBooking(record),
-                        icon: <EyeOutlined />
-                    },
-                    {
-                        type: 'accept',
-                        tooltip: 'Chấp nhận cuộc hẹn',
-                        onClick: () => handleAcceptAppointment(record.session_id),
-                        icon: <CheckOutlined />,
-                        hidden: record.session_status !== 'pending'
-                    },
-                    {
-                        type: 'reject',
-                        tooltip: 'Từ chối cuộc hẹn',
-                        onClick: () => handleRejectAppointment(record.session_id),
-                        icon: <CloseOutlined />,
-                        danger: true,
-                        hidden: record.session_status !== 'pending'
-                    },
-                ];
-
-                return (
+            render: (_, record) => (
+                isActionable(record.session_status) ? (
                     <ActionButtonGroup
                         actions={actions}
                         record={record}
                     />
-                );
-            },
+                ) : null
+            ),
         },
     ];
 
@@ -247,11 +320,6 @@ const BookingManagement = () => {
     });
     console.log('DEBUG: filteredBookings for active tab (', activeTab, '):', filteredBookings);
 
-    const onTabChange = (key) => {
-        setActiveTab(key);
-        console.log('DEBUG: Tab changed to:', key);
-    };
-
     return (
         <div style={{ padding: '24px 0' }}>
             <div style={{ marginBottom: 24 }}>
@@ -273,11 +341,18 @@ const BookingManagement = () => {
             </div>
 
             <Card>
-                <Tabs defaultActiveKey="pending" activeKey={activeTab} onChange={onTabChange}>
+                <Tabs
+                    defaultActiveKey="pending"
+                    activeKey={activeTab}
+                    onChange={key => {
+                        setActiveTab(key);
+                        if (key === 'rejected_cancelled') setRejectedBadge(0);
+                    }}
+                >
                     <TabPane tab={<span>Cuộc hẹn đang chờ <Badge count={bookings.filter(b => b.session_status === 'pending').length} /></span>} key="pending" />
                     <TabPane tab={<span>Cuộc hẹn đã chấp nhận <Badge count={bookings.filter(b => b.session_status === 'accepted').length} /></span>} key="accepted" />
                     <TabPane tab={<span>Cuộc hẹn đã hoàn thành <Badge count={bookings.filter(b => b.session_status === 'completed').length} /></span>} key="completed" />
-                    <TabPane tab={<span>Cuộc hẹn bị từ chối/hủy <Badge count={bookings.filter(b => b.session_status === 'rejected' || b.session_status === 'canceled_by_member' || b.session_status === 'canceled_by_coach').length} /></span>} key="rejected_cancelled" />
+                    <TabPane tab={<span>Cuộc hẹn bị từ chối/hủy <Badge count={rejectedBadge} /></span>} key="rejected_cancelled" />
                 </Tabs>
 
                 <DataTable
@@ -304,6 +379,48 @@ const BookingManagement = () => {
                         )}
                     </Modal>
                 )}
+
+                <Modal
+                    title="Hoàn thành buổi tư vấn"
+                    open={completeModal}
+                    onCancel={() => setCompleteModal(false)}
+                    onOk={handleCompleteAppointment}
+                    confirmLoading={modalLoading}
+                    okText="Xác nhận hoàn thành"
+                    cancelText="Hủy"
+                >
+                    <Form layout="vertical">
+                        <Form.Item label="Ghi chú (tuỳ chọn)">
+                            <Input.TextArea
+                                value={completeNotes}
+                                onChange={e => setCompleteNotes(e.target.value)}
+                                placeholder="Nhập ghi chú cho buổi tư vấn này..."
+                                rows={3}
+                            />
+                        </Form.Item>
+                    </Form>
+                </Modal>
+
+                <Modal
+                    title="Báo cáo thành viên vắng mặt"
+                    open={reportModal}
+                    onCancel={() => setReportModal(false)}
+                    onOk={handleReportMissingMember}
+                    confirmLoading={modalLoading}
+                    okText="Báo cáo"
+                    cancelText="Hủy"
+                >
+                    <Form layout="vertical">
+                        <Form.Item label="Lý do vắng mặt" required>
+                            <Input.TextArea
+                                value={reportReason}
+                                onChange={e => setReportReason(e.target.value)}
+                                placeholder="Nhập lý do thành viên vắng mặt..."
+                                rows={3}
+                            />
+                        </Form.Item>
+                    </Form>
+                </Modal>
             </Card>
         </div>
     );
