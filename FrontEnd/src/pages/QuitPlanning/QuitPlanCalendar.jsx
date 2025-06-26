@@ -825,11 +825,233 @@ const QuitPlan = () => {
           </Card>
 
           <Card variant="outlined">
-            <Divider orientation="left" plain>
-              <Tag color="blue" style={{ fontSize: 16 }}>
-                Bảng kế hoạch chi tiết
-              </Tag>
-            </Divider>
+            {/* Biểu đồ tiến trình cai + Giai đoạn hiện tại */}
+            <div
+              style={{
+                width: "100%",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "stretch",
+                gap: 32,
+                margin: "16px 0 24px 0",
+                flexWrap: "wrap",
+              }}
+            >
+              {/* Biểu đồ tiến trình cai */}
+              <div
+                style={{
+                  flex: 1,
+                  minWidth: 260,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <div
+                  style={{
+                    background:
+                      "linear-gradient(135deg, #e0ffe9 0%, #e6f7ff 100%)",
+                    borderRadius: 28,
+                    boxShadow: "0 4px 24px 0 rgba(24, 144, 255, 0.10)",
+                    padding: 32,
+                    width: "100%",
+                    maxWidth: 320,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    position: "relative",
+                    overflow: "hidden",
+                  }}
+                >
+                  {/* Hiệu ứng glow */}
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "50%",
+                      left: "50%",
+                      width: 160,
+                      height: 160,
+                      background:
+                        "radial-gradient(circle, #b7eb8f55 0%, #e6f7ff00 80%)",
+                      transform: "translate(-50%, -50%)",
+                      zIndex: 0,
+                      borderRadius: "50%",
+                      pointerEvents: "none",
+                    }}
+                  />
+                  <Progress
+                    type="circle"
+                    percent={
+                      startDate && months
+                        ? Math.min(
+                            100,
+                            Math.round(
+                              ((dayjs().diff(startDate, "day") + 1) /
+                                (months * 30)) *
+                                100
+                            )
+                          )
+                        : 0
+                    }
+                    width={120}
+                    strokeWidth={10}
+                    strokeColor={{
+                      "0%": "#73d13d",
+                      "50%": "#1890ff",
+                      "100%": "#faad14",
+                    }}
+                    trailColor="#f0f0f0"
+                    format={(p) => (
+                      <span
+                        style={{
+                          fontWeight: 700,
+                          fontSize: 32,
+                          color: "linear-gradient(90deg,#1890ff,#52c41a)",
+                          background: "linear-gradient(90deg,#1890ff,#52c41a)",
+                          WebkitBackgroundClip: "text",
+                          WebkitTextFillColor: "transparent",
+                        }}
+                      >
+                        {p}%
+                      </span>
+                    )}
+                  />
+                  {/* Icon động viên */}
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: 18,
+                      right: 18,
+                      zIndex: 2,
+                    }}
+                  >
+                    <span
+                      role="img"
+                      aria-label="rocket"
+                      style={{ fontSize: 28 }}
+                    >
+                      🚀
+                    </span>
+                  </div>
+                  {/* Số ngày đã qua / tổng số ngày */}
+                  <div
+                    style={{
+                      marginTop: 10,
+                      fontSize: 16,
+                      color: "#888",
+                      fontWeight: 500,
+                      zIndex: 1,
+                    }}
+                  >
+                    {startDate
+                      ? `${Math.min(
+                          months * 30,
+                          dayjs().diff(startDate, "day") + 1
+                        )} / ${months * 30} ngày`
+                      : ""}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 20,
+                      marginTop: 8,
+                      fontWeight: 700,
+                      color: "#1890ff",
+                      textShadow: "0 1px 0 #fff, 0 0 8px #b7eb8f44",
+                      zIndex: 1,
+                    }}
+                  >
+                    Tiến trình cai
+                  </div>
+                </div>
+              </div>
+
+              {/* Giai đoạn cai hiện tại + % tới giai đoạn tiếp theo */}
+              <div
+                style={{
+                  flex: 1,
+                  minWidth: 320,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <div
+                  style={{
+                    width: "100%",
+                    maxWidth: 420,
+                    background: "#fffbe6",
+                    borderRadius: 28,
+                    boxShadow: "0 2px 8px rgba(255,215,0,0.08)",
+                    padding: "32px 24px",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    fontWeight: 600,
+                    fontSize: 20,
+                    color: "#faad14",
+                  }}
+                >
+                  <div style={{ fontSize: 15, color: "#888", marginBottom: 4 }}>
+                    Giai đoạn hiện tại
+                  </div>
+                  <div style={{ marginBottom: 8 }}>
+                    {(() => {
+                      // Tính phần trăm hiện tại
+                      const percent =
+                        startDate && months
+                          ? Math.min(
+                              100,
+                              Math.round(
+                                ((dayjs().diff(startDate, "day") + 1) /
+                                  (months * 30)) *
+                                  100
+                              )
+                            )
+                          : 0;
+                      // Tìm giai đoạn hiện tại và tiếp theo
+                      const currentPhaseIdx = PHASES.findIndex(
+                        ({ range }) =>
+                          percent >= range[0] && percent <= range[1]
+                      );
+                      const currentPhase = PHASES[currentPhaseIdx];
+                      return currentPhase
+                        ? `${currentPhase.phase} – ${currentPhase.goal}`
+                        : "";
+                    })()}
+                  </div>
+                  <div
+                    style={{ fontSize: 15, color: "#faad14", fontWeight: 500 }}
+                  >
+                    {(() => {
+                      // Tính phần trăm hiện tại
+                      const percent =
+                        startDate && months
+                          ? Math.min(
+                              100,
+                              Math.round(
+                                ((dayjs().diff(startDate, "day") + 1) /
+                                  (months * 30)) *
+                                  100
+                              )
+                            )
+                          : 0;
+                      // Tìm giai đoạn hiện tại và tiếp theo
+                      const currentPhaseIdx = PHASES.findIndex(
+                        ({ range }) =>
+                          percent >= range[0] && percent <= range[1]
+                      );
+                      const nextPhase = PHASES[currentPhaseIdx + 1];
+                      if (!nextPhase) return "Bạn đã ở giai đoạn cuối!";
+                      const percentToNext = nextPhase.range[0] - percent;
+                      return percentToNext > 0
+                        ? `Còn ${percentToNext}% nữa đến ${nextPhase.phase}`
+                        : `Sắp sang giai đoạn tiếp theo!`;
+                    })()}
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <Table
               columns={columns}
               dataSource={planData}
@@ -842,7 +1064,7 @@ const QuitPlan = () => {
                       showSizeChanger: false,
                       onChange: (page) => {
                         setCurrentWeekPage(page);
-                        sessionStorage.setItem("quitPlanPage", page); // Lưu vào session
+                        sessionStorage.setItem("quitPlanPage", page);
                       },
                       showTotal: () => `Tuần ${currentWeekPage} / ${weekTotal}`,
                     }
