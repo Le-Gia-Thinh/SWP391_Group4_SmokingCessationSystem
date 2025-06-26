@@ -6,7 +6,8 @@ const userController = require("../controllers/userController");
 
 router.get("/me", auth, userController.getMe);
 
-module.exports = router;
+router.put("/profile", auth, userController.updateProfile);
+
 router.get("/plan", auth, async (req, res) => {
     const pool = await sql.connect(dbConfig);
     const { recordset } = await pool
@@ -15,3 +16,6 @@ router.get("/plan", auth, async (req, res) => {
         .query("SELECT plan_type FROM CUSTOMER WHERE user_id = @uid");
     res.json({ plan: recordset[0]?.plan_type || "member" });
 });
+
+
+module.exports = router;

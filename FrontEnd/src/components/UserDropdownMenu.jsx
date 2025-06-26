@@ -2,11 +2,15 @@ import React from "react";
 import { Card, Avatar, Typography, Tag, Divider, Space } from "antd";
 import { UserOutlined } from "@ant-design/icons";
 import { useAuth } from "../contexts/AuthContext";
+import { Menu, Button } from "antd";
+import { Link, useNavigate } from "react-router-dom";
 
 const { Title, Text } = Typography;
 
 const UserDropdownMenu = () => {
     const { user, logout } = useAuth();
+    const navigate = useNavigate();
+    
     if (!user) return null;
 
     return (
@@ -49,13 +53,17 @@ const UserDropdownMenu = () => {
 
             <Divider style={{ margin: '12px 0' }} />
 
-            <Text
-                type="danger"
-                style={{ cursor: "pointer" }}
-                onClick={logout}
-            >
-                🚪 Đăng xuất
-            </Text>
+            <Space direction="vertical" style={{ width: "100%" }}>
+                <Button block onClick={() => navigate('/profile')}>
+                    🧾 Hồ sơ cá nhân
+                </Button>
+                <Button block onClick={() => navigate('/update-profile')}>
+                    ✏️ Chỉnh sửa thông tin
+                </Button>
+                <Button block danger onClick={logout}>
+                    🔓 Đăng xuất
+                </Button>
+            </Space>
         </Card>
     );
 };

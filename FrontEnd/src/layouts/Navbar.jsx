@@ -183,22 +183,14 @@ export default function Navbar() {
                     user.role === "admin" ? "#ff4d4f" : "#52c41a",
                 }}
               />
-              {/* <Avatar
-                icon={<UserOutlined />}
-                style={{
-                  backgroundColor:
-                    user.role === "admin" ? "#ff4d4f" : "#52c41a",
-                  cursor: "pointer",
-                }}
-                onClick={() => navigate("/profile")}
-              /> */}
               <Dropdown
                 popupRender={() => <UserDropdownMenu />}
                 placement="bottomRight"
                 trigger={["click"]}
               >
                 <Avatar
-                  icon={<UserOutlined />}
+                  src={user.avatar_url} // ✅ truyền link avatar
+                  icon={!user.avatar_url && <UserOutlined />} // fallback nếu không có ảnh
                   style={{
                     backgroundColor:
                       user.role === "admin" ? "#ff4d4f" : "#52c41a",

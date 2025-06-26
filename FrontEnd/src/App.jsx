@@ -24,6 +24,7 @@ import "./App.css";
 import CheckoutPage from "./pages/Payment/CheckoutPage";
 import BlogList from "./pages/Blog/BlogList";
 import PostApproval from './pages/PostApproval/PostApproval';
+import UpdateProfile from "./pages/Profile/UpdateProfile";
 const { Title, Paragraph } = Typography;
 
 function App() {
@@ -62,6 +63,14 @@ function App() {
           <Route path="/quit-plan-detail/:date" element={<QuitPlanDetail />} />
           <Route path="/RankingBoard" element={<RankingBoard />} />
           <Route path="/profile" element={<Profile />} />
+          <Route
+            path="/update-profile"
+            element={
+              <ProtectedRoute requireAuth={true}>
+                <UpdateProfile />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/blog" element={<BlogList />} />
