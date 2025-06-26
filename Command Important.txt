@@ -6,6 +6,9 @@ npm run dev (để deloy web)
 npm i 
 npm server.js (để deloy api)
 
+-- 27/6/2025
+npm install socket.io  (giao tiếp hai chiều liên tục)
+npm install multer
 
 
 Front-End 
