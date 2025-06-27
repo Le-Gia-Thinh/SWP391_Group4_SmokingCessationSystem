@@ -19,15 +19,12 @@ import {
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import Navbar from "../../layouts/Navbar";
-import { useNavigate } from "react-router-dom";
 
 const { Title, Paragraph } = Typography;
 
 const QuitPlanDetail = () => {
   const location = useLocation();
   const { date } = useParams(); // dạng DD-MM-YYYY
-  const navigate = useNavigate();
-  const navigateBack = () => navigate(-1);
   const data = location.state;
   const [completed, setCompleted] = useState(Array(9).fill(false));
 
@@ -121,6 +118,7 @@ const QuitPlanDetail = () => {
           date: formattedDate,
           timeSlot: idx,
           completed: newState,
+          points: newState ? 1 : 0,
         }),
       });
 
@@ -169,20 +167,6 @@ const QuitPlanDetail = () => {
   return (
     <div style={{ padding: 24, background: "#f6faff", minHeight: "100vh" }}>
       <Navbar />
-      <div style={{ marginBottom: 16, maxWidth: 700, marginInline: "auto" }}>
-        <Tag
-          color="blue"
-          onClick={navigateBack}
-          style={{
-            cursor: "pointer",
-            fontSize: 16,
-            padding: "4px 12px",
-            display: "inline-block",
-          }}
-        >
-          ⬅️ Quay lại trang kế hoạch
-        </Tag>
-      </div>
       <Card
         style={{
           maxWidth: 700,

@@ -1,5 +1,4 @@
 const { sql, dbConfig } = require("../config/database");
-
 // Hàm tính cấp độ dựa vào điểm
 function getUserLevel(points) {
   if (points < 100) return "Beginner";
@@ -8,43 +7,43 @@ function getUserLevel(points) {
   return "Master";
 }
 
-// GET habit log theo ngày
-const getHabitLogByDate = async (req, res) => {
-  const userId = req.user.id;
-  const { date } = req.query;
+  // GET habit log theo ngày
+  const getHabitLogByDate = async (req, res) => {
+    const userId = req.user.id;
+    const { date } = req.query;
 
-  try {
-    const pool = await sql.connect(dbConfig);
-    const result = await pool.request()
-      .input("user_id", sql.Int, userId)
-      .input("log_date", sql.Date, date)
-      .query(`
-        SELECT time_slot, completed 
-        FROM HABIT_LOG 
-        WHERE user_id = @user_id AND log_date = @log_date
-        ORDER BY time_slot
-      `);
+    try {
+      const pool = await sql.connect(dbConfig);
+      const result = await pool.request()
+        .input("user_id", sql.Int, userId)
+        .input("log_date", sql.Date, date)
+        .query(`
+          SELECT time_slot, completed 
+          FROM HABIT_LOG 
+          WHERE user_id = @user_id AND log_date = @log_date
+          ORDER BY time_slot
+        `);
 
-    const completedArray = Array(9).fill(false);
-result.recordset.forEach(row => {
-  completedArray[row.time_slot] = row.completed;
-});
-const completedCount = completedArray.filter(x => x === 1).length;
+      const completedArray = Array(9).fill(false);
+  result.recordset.forEach(row => {
+    completedArray[row.time_slot] = row.completed;
+  });
+  const completedCount = completedArray.filter(x => x === 1).length;
 
-res.json({
-  success: true,
-  data: completedArray,
-  completedCount, // số tích
-  totalSlots: 9
-});
-  } catch (err) {
-    console.error("❌ Lỗi khi truy vấn habit log:", err);
-    res.status(500).json({
-      success: false,
-      error: "Lỗi máy chủ khi truy vấn habit log",
-    });
-  }
-};
+  res.json({
+    success: true,
+    data: completedArray,
+    completedCount, // số tích
+    totalSlots: 9
+  });
+    } catch (err) {
+      console.error("❌ Lỗi khi truy vấn habit log:", err);
+      res.status(500).json({
+        success: false,
+        error: "Lỗi máy chủ khi truy vấn habit log",
+      });
+    }
+  };
 
 // POST 1 hành vi (tick hoặc bỏ tick)
 const submitSingleLog = async (req, res) => {
