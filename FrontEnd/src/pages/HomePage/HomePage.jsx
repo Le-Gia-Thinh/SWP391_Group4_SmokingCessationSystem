@@ -32,9 +32,6 @@ import { useScrollReveal } from "../../hooks/useScrollReveal";
 import meditationImg from "../../assets/meditation.jpg";
 import healthyEatingImg from "../../assets/healthy-eating.jpg";
 import fitnessImg from "../../assets/fitness.jpg";
-
-import { videoSrc } from "../../assets/video/13225520_3840_2160_30fps (1).mp4";
-
 import "./HomePage.css";
 
 const { Title, Paragraph, Text } = Typography;
@@ -125,28 +122,37 @@ const legalLinks = [
   "Chính sách cookie",
   "Hỗ trợ",
 ];
+const videoModules = import.meta.glob('/src/assets/video/*.mp4', {
+  eager: true,
+  as: 'url'
+});
+const videoList = Object.values(videoModules);
 
 /* ===== TRANG CHÍNH ===== */
 const HomePage = () => {
   const [showUpgrade, setShowUpgrade] = useState(false);
   const timerRef = useRef(null);
   const homepageRef = useRef(null);
+
   useEffect(() => {
-    // sau 2s kể từ khi mount
     timerRef.current = setTimeout(() => setShowUpgrade(true), 2000);
     return () => clearTimeout(timerRef.current);
   }, []);
+
   useScrollReveal();
+
   return (
     <Layout className="homepage" ref={homepageRef}>
       <Navbar />
+
       {showUpgrade && (
         <PlanUpgradeModal
           open={showUpgrade}
           onClose={() => setShowUpgrade(false)}
-          scrollContainer={homepageRef} // ← truyền prop scrollContainer
+          scrollContainer={homepageRef}
         />
       )}
+
       {/* ---------- HERO ---------- */}
       <section className="hero-section scroll-section">
         <Row align="middle" style={{ minHeight: "500px" }}>
@@ -175,7 +181,7 @@ const HomePage = () => {
 
           <Col xs={24} lg={12} className="hero-video">
             <video width="100%" height="auto" controls autoPlay muted loop>
-              <source src={videoSrc} type="video/mp4" />
+              <source src={videoList[0]} type="video/mp4" />
             </video>
           </Col>
         </Row>

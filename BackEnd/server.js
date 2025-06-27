@@ -16,9 +16,9 @@ const appointmentRoutes = require('./routes/appointment');
 const scheduleRoutes = require('./routes/schedule');
 const coachRoutes = require('./routes/coach');
 const memberRoutes = require('./routes/member');
-const userRoutes = require("./routes/user"); 
+const userRoutes = require("./routes/user");
 const userScoreRoutes = require("./routes/userScore");
-
+const paymentRoutes = require('./routes/payment');
 const app = express();
 
 // 1) CORS: bắt buộc phải cho phép credentials (cookie) và origin chạy React (5173 / 3000)
@@ -96,6 +96,7 @@ app.use('/api/smoking-summary', smokingSummaryRoutes);
 //xu li profile of member
 app.use('/api/user', userRoutes);
 
+app.use('/api/payment', paymentRoutes);
 // 6) Middleware log request
 app.use((req, res, next) => {
   console.log(`📥 [INCOMING REQUEST] ${req.method} ${req.originalUrl}`);
