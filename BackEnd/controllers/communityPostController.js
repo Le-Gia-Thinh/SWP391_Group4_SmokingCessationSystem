@@ -28,14 +28,33 @@ exports.getAllPosts = async (req, res) => {
     const pool = await sql.connect(dbConfig);
     const result = await pool.request()
       .query(`
-        SELECT p.*, c.full_name FROM COMMUNITY_POST p
+        SELECT p.*, c.full_name
+        FROM COMMUNITY_POST p
         LEFT JOIN CUSTOMER c ON p.user_id = c.user_id
+        WHERE p.is_approved = 1
         ORDER BY created_at DESC
       `);
     res.json(result.recordset);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Lỗi server khi lấy danh sách bài viết' });
+  }
+};
+
+exports.getPendingPosts = async (req, res) => {
+  try {
+    const pool = await sql.connect(dbConfig);
+    const result = await pool.request().query(`
+      SELECT p.*, c.full_name
+      FROM COMMUNITY_POST p
+      LEFT JOIN CUSTOMER c ON p.user_id = c.user_id
+      WHERE p.is_approved = 0 OR p.is_approved IS NULL
+      ORDER BY created_at ASC
+    `);
+    res.json(result.recordset);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Lỗi server khi lấy bài viết chờ duyệt' });
   }
 };
 
@@ -95,5 +114,39 @@ exports.deletePost = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Lỗi server khi xóa bài viết' });
+  }
+};
+
+exports.adminDeletePost = async (req, res) => {
+  try {
+    const postId = req.params.id;
+    const pool = await sql.connect(dbConfig);
+    await pool.request()
+      .input('id', sql.Int, postId)
+      .query('DELETE FROM COMMUNITY_POST WHERE post_id = @id');
+    res.json({ message: 'Đã xóa bài viết' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Lỗi server khi xóa bài viết' });
+  }
+};
+
+exports.approvePost = async (req, res) => {
+  try {
+    const postId = req.params.id;
+
+    const pool = await sql.connect(dbConfig);
+    const result = await pool.request()
+      .input('id', sql.Int, postId)
+      .query(`
+        UPDATE COMMUNITY_POST
+        SET is_approved = 1
+        WHERE post_id = @id
+      `);
+
+    res.json({ success: true, message: 'Bài viết đã được duyệt' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Lỗi server khi duyệt bài viết' });
   }
 };

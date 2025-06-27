@@ -13,15 +13,18 @@ import BookingPage from "./pages/BookingPage/BookingPage";
 import MemberBookings from "./pages/MemberBookings/MemberBookings";
 import CoachDashboard from "./pages/CoachDashboard/CoachDashboard";
 import AdminDashboard from "./pages/AdminDashboard/AdminDashboard";
-import Navbar from "./layouts/Navbar";
+import ScheduleManagement from "./pages/ScheduleManagement/ScheduleManagement";
 import FtndTest from "./pages/FtndTest/FtndTest";
 import QuitPlanCalendar from "./pages/QuitPlanning/QuitPlanCalendar";
 import QuitPlanDetail from "./pages/QuitPlanning/QuitPlanDetail";
 import RankingBoard from "./pages/Ranking/RankingBoard";
 import Profile from './pages/Profile/Profile.jsx';
 import Notifications from './pages/Notifications/Notifications.jsx';
+import ChatPage from './pages/Chat/ChatPage.jsx';
 import "./App.css";
 import CheckoutPage from "./pages/Payment/CheckoutPage";
+import BlogList from "./pages/Blog/BlogList";
+import PostApproval from './pages/PostApproval/PostApproval';
 const { Title, Paragraph } = Typography;
 
 function App() {
@@ -62,6 +65,8 @@ function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/checkout" element={<CheckoutPage />} />
+          <Route path="/blog" element={<BlogList />} />
+          <Route path="/chat" element={<ChatPage />} />
           {/* Protected routes - Member Bookings */}
           <Route
             path="/my-bookings"
@@ -88,6 +93,26 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Protected routes - Schedule Management */}
+          <Route
+            path="/schedule-management"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <ScheduleManagement />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Protected routes - Post Approval */}
+          <Route
+            path="/post-approval"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <PostApproval />
               </ProtectedRoute>
             }
           />

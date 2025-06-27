@@ -33,8 +33,6 @@ import meditationImg from "../../assets/meditation.jpg";
 import healthyEatingImg from "../../assets/healthy-eating.jpg";
 import fitnessImg from "../../assets/fitness.jpg";
 
-import videoSrc from "../../assets/video/13225520_3840_2160_30fps (1).mp4";
-
 import "./HomePage.css";
 
 const { Title, Paragraph, Text } = Typography;
@@ -48,82 +46,82 @@ const plans = [
 ];
 
 const benefits = [
-  "Improved physical health",
-  "Better mental health",
-  "Increased longevity",
-  "Weight management",
-  "Improved self-confidence",
-  "Reduced stress",
+  "Cải thiện sức khỏe thể chất",
+  "Sức khỏe tinh thần tốt hơn",
+  "Tăng tuổi thọ",
+  "Quản lý cân nặng",
+  "Tăng sự tự tin",
+  "Giảm căng thẳng",
 ];
 
 const lifestyleSteps = [
   {
-    title: "1. Find your motivation to quit",
+    title: "1. Tìm động lực để bỏ thuốc",
     description:
-      "Discover the personal reasons that matter most to you — from health to family or finance. Your motivation will guide your journey to quit smoking and stay healthy.",
+      "Khám phá những lý do cá nhân quan trọng nhất đối với bạn — từ sức khỏe đến gia đình hoặc tài chính. Động lực của bạn sẽ hướng dẫn hành trình bỏ thuốc và sống khỏe mạnh.",
     image: meditationImg,
   },
   {
-    title: "2. Start a personalized quit plan",
+    title: "2. Bắt đầu kế hoạch bỏ thuốc cá nhân hóa",
     description:
-      "Create or follow a 7–30 day Quit Plan tailored to your lifestyle. Set a quit date, outline triggers, and get daily guidance to build smoke-free habits.",
+      "Tạo hoặc làm theo Kế hoạch Bỏ thuốc 7-30 ngày được điều chỉnh theo lối sống của bạn. Đặt ngày bỏ thuốc, xác định các yếu tố kích thích và nhận hướng dẫn hàng ngày để xây dựng thói quen không hút thuốc.",
     image: healthyEatingImg,
   },
   {
-    title: "3. Track your smoke-free progress",
+    title: "3. Theo dõi tiến độ không hút thuốc",
     description:
-      "Monitor your smoke-free days, money saved, and health gains. Use our tracking tools to stay on top of your achievements and stay motivated.",
+      "Theo dõi những ngày không hút thuốc, tiền tiết kiệm được và những cải thiện về sức khỏe. Sử dụng các công cụ theo dõi của chúng tôi để theo dõi thành tích và duy trì động lực.",
     image: fitnessImg,
   },
   {
-    title: "4. Build your own quit journey",
+    title: "4. Xây dựng hành trình bỏ thuốc của riêng bạn",
     description:
-      "Customize your journey by saving your favorite tips, activities, achievements, and rewards. Every step brings you closer to a healthier life.",
+      "Tùy chỉnh hành trình bằng cách lưu những lời khuyên, hoạt động, thành tích và phần thưởng yêu thích. Mỗi bước đưa bạn đến gần hơn với cuộc sống khỏe mạnh.",
     image: meditationImg,
   },
 ];
 
 const categoryFeatures = [
-  "Diet tracker",
-  "Best nutrition advice",
-  "Exercise portal",
-  "Meal planner",
-  "Recipes database",
-  "One stop shop for nutrition",
-  "Community",
+  "Theo dõi chế độ ăn",
+  "Lời khuyên dinh dưỡng tốt nhất",
+  "Cổng thông tin tập thể dục",
+  "Lập kế hoạch bữa ăn",
+  "Cơ sở dữ liệu công thức nấu ăn",
+  "Một điểm dừng cho dinh dưỡng",
+  "Cộng đồng",
 ];
 
 const expertQualifications = [
-  "Registered Dietitian with the Academy of Nutrition and Dietetics",
-  "5+ years of experience in the field",
-  "Specialize in weight management, chronic disease prevention, and sports nutrition",
-  "Skilled in developing recipes and meal plans",
-  "Passionate about helping people live healthy, fulfilling lives",
-  "Committed to staying up-to-date with the latest research and trends in nutrition",
+  "Chuyên gia dinh dưỡng đã đăng ký với Viện Dinh dưỡng và Chế độ ăn",
+  "Hơn 5 năm kinh nghiệm trong lĩnh vực",
+  "Chuyên về quản lý cân nặng, phòng ngừa bệnh mãn tính và dinh dưỡng thể thao",
+  "Thành thạo trong việc phát triển công thức và kế hoạch bữa ăn",
+  "Đam mê giúp mọi người sống khỏe mạnh, trọn vẹn",
+  "Cam kết cập nhật những nghiên cứu và xu hướng mới nhất trong dinh dưỡng",
 ];
 
 const startFeatures = [
-  "Quick account creation",
-  "No commitment — cancel at any time",
-  "Join over 45 million other users",
+  "Tạo tài khoản nhanh chóng",
+  "Không cam kết — hủy bất cứ lúc nào",
+  "Tham gia cùng hơn 45 triệu người dùng khác",
 ];
 
 const footerLinks = [
-  "About us",
-  "Features",
-  "Blogs",
-  "Food",
-  "Recipes",
-  "Reviews",
-  "Sign in",
+  "Về chúng tôi",
+  "Tính năng",
+  "Blog",
+  "Thực phẩm",
+  "Công thức",
+  "Đánh giá",
+  "Đăng nhập",
 ];
 
 const legalLinks = [
-  "Terms & Conditions",
-  "Privacy policy",
-  "Contact",
-  "Cookie policy",
-  "Support",
+  "Điều khoản & Điều kiện",
+  "Chính sách bảo mật",
+  "Liên hệ",
+  "Chính sách cookie",
+  "Hỗ trợ",
 ];
 
 /* ===== TRANG CHÍNH ===== */
@@ -154,28 +152,28 @@ const HomePage = () => {
             <Space direction="vertical" size="large">
               <div>
                 <Title level={1} className="hero-title">
-                  <span className="highlight">Healthy</span> living
+                  <span className="highlight">Sống khỏe</span> mạnh
                 </Title>
                 <Title level={2} className="hero-slogan">
-                  made easy!!
+                  thật dễ dàng!!
                 </Title>
                 <Paragraph className="hero-subtext">
-                  Get your custom plans &<br />
-                  one-on-one guidance from our experts
+                  Nhận kế hoạch tùy chỉnh &<br />
+                  hướng dẫn một-một từ chuyên gia của chúng tôi
                 </Paragraph>
               </div>
               <Space direction="vertical" size="small">
                 <Button type="primary" size="large" className="hero-btn">
-                  Sign in
+                  Đăng nhập
                 </Button>
-                <Text type="secondary">Sign in & get started today</Text>
+                <Text type="secondary">Đăng nhập và bắt đầu ngay hôm nay</Text>
               </Space>
             </Space>
           </Col>
 
           <Col xs={24} lg={12} className="hero-video">
             <video width="100%" height="auto" controls autoPlay muted loop>
-              <source src={videoSrc} type="video/mp4" />
+              <source src="/src/assets/video/quit_smoking_bg.mp4" type="video/mp4" />
             </video>
           </Col>
         </Row>
@@ -186,7 +184,7 @@ const HomePage = () => {
         <div className="container">
           <Row gutter={[48, 32]} align="middle">
             <Col xs={24} lg={10}>
-              <Title level={2}>Why cai nghiện</Title>
+              <Title level={2}>Tại sao bỏ thuốc</Title>
               <List
                 dataSource={benefits}
                 renderItem={(item) => (
@@ -238,10 +236,10 @@ const HomePage = () => {
             style={{ width: "100%", textAlign: "center" }}
           >
             <Title level={2} className="plans-title">
-              We have plans for
+              Chúng tôi có kế hoạch cho
             </Title>
             <Paragraph>
-              Build healthier habits with personalized lessons
+              Xây dựng thói quen khỏe mạnh với các bài học cá nhân hóa
             </Paragraph>
             <Divider />
             <Row gutter={[32, 32]} justify="space-around">
@@ -261,7 +259,7 @@ const HomePage = () => {
       <section className="lifestyle-section scroll-section" data-reveal="up">
         <div className="container">
           <Title level={2} style={{ textAlign: "center", marginBottom: 48 }}>
-            Have a Smoke-Free Life with HealthyBite
+            Có cuộc sống không khói thuốc với HealthyBite
           </Title>
 
           <Row gutter={[32, 48]}>
@@ -295,16 +293,16 @@ const HomePage = () => {
             <Row justify="space-between" align="middle">
               {/* Left half */}
               <Col xs={24} lg={14} className="split-left">
-                <Title level={3}>Ready to plan your quit journey?</Title>
+                <Title level={3}>Sẵn sàng lập kế hoạch bỏ thuốc?</Title>
                 <Paragraph>
-                  Sign in today and start your personalized quit plan with
+                  Đăng nhập hôm nay và bắt đầu kế hoạch bỏ thuốc cá nhân hóa với
                   HealthyBite.
                 </Paragraph>
               </Col>
               {/* Right half */}
               <Col xs={24} lg={10} className="split-right">
                 <Button type="primary" size="large">
-                  Sign in today
+                  Đăng nhập hôm nay
                 </Button>
               </Col>
             </Row>
@@ -319,8 +317,8 @@ const HomePage = () => {
             <Col xs={24} lg={12}>
               <Space direction="vertical" size="large">
                 <Title level={2}>
-                  What is a <span className="highlight">phoi khoe</span> for
-                  you?
+                  <span className="highlight">Phổi khỏe</span> là gì đối với
+                  bạn?
                 </Title>
                 <img
                   src={meditationImg}
@@ -351,7 +349,7 @@ const HomePage = () => {
       <section className="register-section scroll-section">
         <div className="container">
           <Title level={2} style={{ textAlign: "center", marginBottom: 32 }}>
-            dang ky khoa 2
+            Đăng ký khóa học
           </Title>
           <Carousel
             autoplay
@@ -375,10 +373,10 @@ const HomePage = () => {
       <section className="profile-section scroll-section" data-reveal="up">
         <div className="container">
           <div className="profile-header">
-            <Badge.Ribbon text="Get the best" color="green">
+            <Badge.Ribbon text="Nhận điều tốt nhất" color="green">
               <Card className="profile-info-card">
                 <Title level={2} style={{ margin: 0, color: "white" }}>
-                  profile 3
+                  Hồ sơ chuyên gia
                 </Title>
               </Card>
             </Badge.Ribbon>
@@ -388,11 +386,11 @@ const HomePage = () => {
             <Col xs={24} lg={14}>
               <Space direction="vertical" size="large">
                 <Paragraph>
-                  Our team of expert nutritionists is here to help you achieve
-                  your health and wellness goals. Our nutritionists are highly
-                  trained and qualified professionals with a deep understanding
-                  of the science behind nutrition and how it can impact your
-                  body and mind.
+                  Đội ngũ chuyên gia dinh dưỡng của chúng tôi ở đây để giúp bạn đạt được
+                  mục tiêu sức khỏe và thể chất. Các chuyên gia dinh dưỡng của chúng tôi là những
+                  chuyên gia được đào tạo cao và có trình độ với sự hiểu biết sâu sắc
+                  về khoa học đằng sau dinh dưỡng và cách nó có thể tác động đến
+                  cơ thể và tâm trí của bạn.
                 </Paragraph>
                 <List
                   dataSource={expertQualifications}
