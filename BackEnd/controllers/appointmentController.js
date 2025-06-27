@@ -292,7 +292,7 @@ exports.getMyAppointments = async (req, res) => {
       .input('user_id', sql.Int, userId)
       .query(`
         SELECT 
-          cs.session_id, cs.scheduled_time, cs.session_status, cs.google_meet_link,
+          cs.session_id, cs.scheduled_time, cs.session_status, cs.google_meet_link, cs.duration_minutes,
           c.full_name AS coach_name, c.email AS coach_email
         FROM COACHING_SESSION cs
         JOIN COACH ch ON cs.coach_id = ch.coach_id
@@ -338,7 +338,7 @@ exports.getCoachAllAppointments = async (req, res) => {
       .input('coach_id', sql.Int, coachId)
       .query(`
         SELECT 
-          cs.session_id, cs.scheduled_time, cs.session_status, cs.google_meet_link,
+          cs.session_id, cs.scheduled_time, cs.session_status, cs.google_meet_link, cs.duration_minutes,
           c.full_name AS member_name, c.email AS member_email, c.user_id as member_user_id
         FROM COACHING_SESSION cs
         LEFT JOIN CUSTOMER c ON cs.user_id = c.user_id

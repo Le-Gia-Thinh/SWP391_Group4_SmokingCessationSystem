@@ -15,14 +15,16 @@ import {
     Divider,
     Badge,
     Spin,
-    Empty
+    Empty,
+    Tag
 } from "antd";
 import {
     SendOutlined,
     PlusOutlined,
     MessageOutlined,
     UserOutlined,
-    ClockCircleOutlined
+    ClockCircleOutlined,
+    TeamOutlined
 } from "@ant-design/icons";
 import axios from "axios";
 import Navbar from "../../layouts/Navbar";
@@ -46,6 +48,13 @@ export default function ChatPage() {
     const token = localStorage.getItem("token");
     const [form] = Form.useForm();
 
+    // Coach chat states
+    const [coachingSessions, setCoachingSessions] = useState([]);
+    const [selectedSession, setSelectedSession] = useState(null);
+    const [coachMessages, setCoachMessages] = useState([]);
+    const [coachLoading, setCoachLoading] = useState(false);
+    const [sessionsLoading, setSessionsLoading] = useState(false);
+
     // Auto scroll to bottom
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -53,7 +62,112 @@ export default function ChatPage() {
 
     useEffect(() => {
         scrollToBottom();
-    }, [communityMessages, topicMessages]);
+    }, [communityMessages, topicMessages, coachMessages]);
+
+    // Fetch coaching sessions
+    const fetchCoachingSessions = async () => {
+        if (!token) return;
+        setSessionsLoading(true);
+        try {
+            const response = await axios.get(
+                "http://localhost:5000/api/appointment/my-bookings",
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            if (response.data.success) {
+                // Chỉ lấy các session đã được accept
+                const acceptedSessions = response.data.data.filter(
+                    session => session.session_status === 'accepted'
+                );
+                setCoachingSessions(acceptedSessions);
+            }
+        } catch (err) {
+            message.error("Lỗi khi tải danh sách phiên tư vấn");
+        } finally {
+            setSessionsLoading(false);
+        }
+    };
+
+    // Fetch coach messages
+    const fetchCoachMessages = async (sessionId) => {
+        if (!sessionId) return;
+        setCoachLoading(true);
+        try {
+            const response = await axios.get(
+                `http://localhost:5000/api/chat/${sessionId}/messages`,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            if (response.data.success) {
+                setCoachMessages(response.data.data.reverse()); // Đảo ngược để hiển thị tin nhắn cũ trước
+            }
+        } catch (err) {
+            message.error("Lỗi khi tải tin nhắn");
+        } finally {
+            setCoachLoading(false);
+        }
+    };
+
+    // Send coach message
+    const sendCoachMessage = async () => {
+        if (!token) {
+            message.error("Bạn cần đăng nhập để gửi tin nhắn!");
+            return;
+        }
+        if (!newMessage.trim()) {
+            message.error("Vui lòng nhập nội dung tin nhắn!");
+            return;
+        }
+        if (!selectedSession) {
+            message.error("Vui lòng chọn phiên tư vấn!");
+            return;
+        }
+
+        try {
+            const formData = new FormData();
+            formData.append('message', newMessage);
+
+            await axios.post(
+                `http://localhost:5000/api/chat/${selectedSession.session_id}/message`,
+                formData,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'multipart/form-data'
+                    }
+                }
+            );
+            setNewMessage("");
+            fetchCoachMessages(selectedSession.session_id);
+        } catch (err) {
+            if (err.response?.status === 403) {
+                message.error("Chỉ được chat trong khung giờ tư vấn");
+            } else {
+                message.error("Lỗi khi gửi tin nhắn");
+            }
+        }
+    };
+
+    // Handle session selection
+    const handleSessionSelect = (session) => {
+        setSelectedSession(session);
+        fetchCoachMessages(session.session_id);
+    };
+
+    // Check if session is currently active (within chat time window)
+    const isSessionActive = (session) => {
+        const now = new Date();
+        const start = new Date(session.scheduled_time);
+        const end = new Date(start.getTime() + session.duration_minutes * 60000);
+        const allowedStart = new Date(start.getTime() - 15 * 60000);
+        const allowedEnd = new Date(end.getTime() + 15 * 60000);
+
+        return now >= allowedStart && now <= allowedEnd;
+    };
+
+    // Format session time
+    const formatSessionTime = (dateTimeString) => {
+        const date = new Date(dateTimeString);
+        return date.toLocaleString("vi-VN");
+    };
 
     // Fetch topics
     const fetchTopics = async () => {
@@ -110,6 +224,7 @@ export default function ChatPage() {
         fetchCommunityMessages();
         if (token) {
             fetchTopics();
+            fetchCoachingSessions();
         }
     }, [token]);
 
@@ -201,8 +316,12 @@ export default function ChatPage() {
         setActiveTab(key);
         setSelectedTopic(null);
         setTopicMessages([]);
+        setSelectedSession(null);
+        setCoachMessages([]);
         if (key === "community") {
             fetchCommunityMessages();
+        } else if (key === "coach") {
+            fetchCoachingSessions();
         }
     };
 
@@ -212,8 +331,10 @@ export default function ChatPage() {
             e.preventDefault();
             if (activeTab === "community") {
                 sendCommunityMessage();
-            } else {
+            } else if (activeTab === "topics") {
                 sendTopicMessage();
+            } else if (activeTab === "coach") {
+                sendCoachMessage();
             }
         }
     };
@@ -408,6 +529,138 @@ export default function ChatPage() {
                                                 ) : (
                                                     <div className="no-topic-selected">
                                                         <Empty description="Chọn một chủ đề để bắt đầu chat" />
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ),
+                                },
+                                {
+                                    key: "coach",
+                                    label: (
+                                        <span>
+                                            <TeamOutlined />
+                                            Chat với Coach
+                                            {coachingSessions.length > 0 && (
+                                                <Badge count={coachingSessions.length} style={{ marginLeft: 8 }} />
+                                            )}
+                                        </span>
+                                    ),
+                                    children: (
+                                        <div className="topics-section">
+                                            <div className="topics-sidebar">
+                                                <div className="topics-header">
+                                                    <Title level={5}>Phiên Tư Vấn</Title>
+                                                </div>
+                                                {sessionsLoading ? (
+                                                    <Spin />
+                                                ) : coachingSessions.length === 0 ? (
+                                                    <Empty description="Chưa có phiên tư vấn nào" />
+                                                ) : (
+                                                    <List
+                                                        dataSource={coachingSessions}
+                                                        renderItem={(session) => (
+                                                            <List.Item
+                                                                className={`topic-item ${selectedSession?.session_id === session.session_id ? 'selected' : ''}`}
+                                                                onClick={() => handleSessionSelect(session)}
+                                                            >
+                                                                <div className="topic-content">
+                                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                                                                        <Text strong>Coach: {session.coach_name}</Text>
+                                                                        <Tag
+                                                                            color={isSessionActive(session) ? 'green' : 'orange'}
+                                                                            size="small"
+                                                                        >
+                                                                            {isSessionActive(session) ? 'Đang hoạt động' : 'Chưa đến giờ'}
+                                                                        </Tag>
+                                                                    </div>
+                                                                    <Text type="secondary" style={{ fontSize: '12px' }}>
+                                                                        <ClockCircleOutlined /> {formatSessionTime(session.scheduled_time)}
+                                                                    </Text>
+                                                                    <Text type="secondary" style={{ fontSize: '12px', display: 'block' }}>
+                                                                        Thời lượng: {session.duration_minutes} phút
+                                                                    </Text>
+                                                                </div>
+                                                            </List.Item>
+                                                        )}
+                                                    />
+                                                )}
+                                            </div>
+                                            <div className="topic-chat">
+                                                {selectedSession ? (
+                                                    <>
+                                                        <div className="topic-header">
+                                                            <Title level={4}>Chat với Coach: {selectedSession.coach_name}</Title>
+                                                            <Text type="secondary">
+                                                                Thời gian: {formatSessionTime(selectedSession.scheduled_time)}
+                                                                ({selectedSession.duration_minutes} phút)
+                                                            </Text>
+                                                            {!isSessionActive(selectedSession) && (
+                                                                <div style={{ marginTop: 8 }}>
+                                                                    <Text type="warning">
+                                                                        ⚠️ Chỉ được chat trong khung giờ tư vấn (15 phút trước và sau giờ hẹn)
+                                                                    </Text>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <div className="messages-container">
+                                                            {coachLoading ? (
+                                                                <div className="loading-container">
+                                                                    <Spin size="large" />
+                                                                </div>
+                                                            ) : coachMessages.length === 0 ? (
+                                                                <Empty description="Chưa có tin nhắn nào trong phiên này" />
+                                                            ) : (
+                                                                <List
+                                                                    dataSource={coachMessages}
+                                                                    renderItem={(msg) => (
+                                                                        <List.Item className="message-item">
+                                                                            <div className="message-content">
+                                                                                <div className="message-header">
+                                                                                    <Avatar icon={<UserOutlined />} />
+                                                                                    <Text strong>
+                                                                                        {msg.sender_role === 'coach' ? 'Coach' : 'Bạn'}
+                                                                                    </Text>
+                                                                                    <Text type="secondary">
+                                                                                        <ClockCircleOutlined /> {formatDate(msg.sent_at)}
+                                                                                    </Text>
+                                                                                </div>
+                                                                                <Paragraph className="message-text">
+                                                                                    {msg.message}
+                                                                                </Paragraph>
+                                                                            </div>
+                                                                        </List.Item>
+                                                                    )}
+                                                                />
+                                                            )}
+                                                            <div ref={messagesEndRef} />
+                                                        </div>
+                                                        <Divider />
+                                                        <div className="message-input">
+                                                            <TextArea
+                                                                value={newMessage}
+                                                                onChange={(e) => setNewMessage(e.target.value)}
+                                                                onKeyPress={handleKeyPress}
+                                                                placeholder={isSessionActive(selectedSession) ? "Nhập tin nhắn..." : "Chưa đến giờ chat"}
+                                                                rows={3}
+                                                                maxLength={500}
+                                                                showCount
+                                                                disabled={!isSessionActive(selectedSession)}
+                                                            />
+                                                            <Button
+                                                                type="primary"
+                                                                icon={<SendOutlined />}
+                                                                onClick={sendCoachMessage}
+                                                                disabled={!newMessage.trim() || !isSessionActive(selectedSession)}
+                                                                className="send-button"
+                                                            >
+                                                                Gửi
+                                                            </Button>
+                                                        </div>
+                                                    </>
+                                                ) : (
+                                                    <div className="no-topic-selected">
+                                                        <Empty description="Chọn một phiên tư vấn để bắt đầu chat với coach" />
                                                     </div>
                                                 )}
                                             </div>

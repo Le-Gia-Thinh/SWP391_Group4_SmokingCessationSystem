@@ -250,6 +250,40 @@ const BookingManagement = () => {
 
     const isActionable = (status) => ['pending', 'accepted'].includes(status);
 
+    // Define actions for ActionButtonGroup
+    const actions = [
+        {
+            type: 'view',
+            icon: <EyeOutlined />,
+            tooltip: 'Xem chi tiết',
+            onClick: (record) => handleViewBooking(record)
+        },
+        {
+            type: 'accept',
+            icon: <CheckOutlined />,
+            tooltip: 'Chấp nhận',
+            onClick: (record) => handleAcceptAppointment(record.session_id)
+        },
+        {
+            type: 'reject',
+            icon: <CloseOutlined />,
+            tooltip: 'Từ chối',
+            onClick: (record) => handleRejectAppointment(record.session_id)
+        },
+        {
+            type: 'complete',
+            icon: <FileDoneOutlined />,
+            tooltip: 'Hoàn thành',
+            onClick: (record) => handleOpenCompleteModal(record.session_id)
+        },
+        {
+            type: 'report',
+            icon: <WarningOutlined />,
+            tooltip: 'Báo cáo vắng mặt',
+            onClick: (record) => handleOpenReportModal(record.session_id)
+        }
+    ];
+
     const columns = [
         {
             title: 'Thành viên',
@@ -289,14 +323,39 @@ const BookingManagement = () => {
         {
             title: 'Hành động',
             key: 'actions',
-            render: (_, record) => (
-                isActionable(record.session_status) ? (
+            render: (_, record) => {
+                if (!isActionable(record.session_status)) return null;
+
+                // Filter actions based on session status
+                const filteredActions = actions.filter(action => {
+                    if (action.type === 'accept' || action.type === 'reject') {
+                        return record.session_status === 'pending';
+                    }
+                    if (action.type === 'complete' || action.type === 'report') {
+                        return record.session_status === 'accepted';
+                    }
+                    return true; // Always show view action
+                });
+
+                // Add disabled state for report action
+                const actionsWithDisabled = filteredActions.map(action => {
+                    if (action.type === 'report') {
+                        return {
+                            ...action,
+                            disabled: !canReportMissingMember(record.scheduled_time),
+                            tooltip: getReportButtonTooltip(record.scheduled_time)
+                        };
+                    }
+                    return action;
+                });
+
+                return (
                     <ActionButtonGroup
-                        actions={actions}
+                        actions={actionsWithDisabled}
                         record={record}
                     />
-                ) : null
-            ),
+                );
+            },
         },
     ];
 
