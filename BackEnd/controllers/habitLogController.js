@@ -26,14 +26,17 @@ const getHabitLogByDate = async (req, res) => {
       `);
 
     const completedArray = Array(9).fill(false);
-    result.recordset.forEach(row => {
-      completedArray[row.time_slot] = row.completed;
-    });
+result.recordset.forEach(row => {
+  completedArray[row.time_slot] = row.completed;
+});
+const completedCount = completedArray.filter(x => x === 1).length;
 
-    res.json({
-      success: true,
-      data: completedArray,
-    });
+res.json({
+  success: true,
+  data: completedArray,
+  completedCount, // số tích
+  totalSlots: 9
+});
   } catch (err) {
     console.error("❌ Lỗi khi truy vấn habit log:", err);
     res.status(500).json({

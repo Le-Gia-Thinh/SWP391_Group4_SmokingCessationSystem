@@ -187,43 +187,58 @@ const QuitPlanDetail = () => {
           </Title>
         </div>
         <Divider />
-        <div style={{ display: "flex", gap: 32, marginBottom: 16 }}>
-          <Badge.Ribbon text={`Tuần ${weekNumber}`} color="cyan">
-            <Card size="small" bordered={false} style={{ minWidth: 160 }}>
-              <Paragraph>
-                <strong>Tiến trình:</strong>{" "}
-                <Tag color="success" style={{ fontWeight: 600 }}>
-                  {info.progress}
-                </Tag>
-              </Paragraph>
-              <Paragraph>
-                <strong>Giai đoạn:</strong>{" "}
-                <Tag color="purple" style={{ fontWeight: 600 }}>
-                  {info.phase}
-                </Tag>
-              </Paragraph>
-            </Card>
-          </Badge.Ribbon>
-          <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
-            <Progress
-              percent={Math.min(
-                Math.round(
-                  (completed.filter(Boolean).length /
-                    (info.detailPlan?.length || 1)) *
-                    100
-                ),
-                100
-              )}
-              status="active"
-              strokeColor={{
-                "0%": "#108ee9",
-                "100%": "#87d068",
+        <Card
+          size="small"
+          bordered={false}
+          style={{
+            maxWidth: 500,
+            margin: "0 auto 24px auto",
+            borderRadius: 12,
+            boxShadow: "0 2px 8px #0001",
+            background: "#f9f9ff",
+          }}
+        >
+          <div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                marginBottom: 8,
               }}
-              showInfo
-              style={{ width: "100%" }}
-            />
+            >
+              <span style={{ fontWeight: 600, fontSize: 18 }}>Giai đoạn:</span>
+              <Tag color="purple" style={{ fontWeight: 600, fontSize: 16 }}>
+                {info.phase}
+              </Tag>
+              <Tag
+                color="cyan"
+                style={{ fontWeight: 600, fontSize: 16, marginLeft: 8 }}
+              >
+                Tuần {weekNumber}
+              </Tag>
+            </div>
+            <div style={{ width: "100%", marginTop: 8 }}>
+              <Progress
+                percent={Math.min(
+                  Math.round(
+                    (completed.filter(Boolean).length /
+                      (info.detailPlan?.length || 1)) *
+                      100
+                  ),
+                  100
+                )}
+                status="active"
+                strokeColor={{
+                  "0%": "#108ee9",
+                  "100%": "#87d068",
+                }}
+                showInfo
+                style={{ width: "100%" }}
+              />
+            </div>
           </div>
-        </div>
+        </Card>
         <Divider orientation="left" plain>
           <SmileTwoTone twoToneColor="#52c41a" /> Thời điểm dễ gây ham muốn &
           hành vi thay thế

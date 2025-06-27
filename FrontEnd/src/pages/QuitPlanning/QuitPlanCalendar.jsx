@@ -25,6 +25,7 @@ import {
   CalendarOutlined,
   CheckCircleTwoTone,
   InfoCircleOutlined,
+  RocketOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
@@ -339,6 +340,7 @@ const QuitPlan = () => {
   const [viewMode, setViewMode] = useState("week");
   const [smokingLog, setSmokingLog] = useState({});
   const [tempSmokingLog, setTempSmokingLog] = useState({});
+  const [habitLogByDate, setHabitLogByDate] = useState({});
 
   const [currentWeekPage, setCurrentWeekPage] = useState(() => {
     const savedPage = sessionStorage.getItem("quitPlanPage");
@@ -346,6 +348,44 @@ const QuitPlan = () => {
   });
   const [ftndLevel, setFtndLevel] = useState("");
   const navigate = useNavigate();
+
+  // Fetch habit log từng ngày
+  useEffect(() => {
+    if (!user?.id || !startDate || !months) return;
+    const token = localStorage.getItem("token");
+    const fetchLogs = async () => {
+      const logs = {};
+      for (let i = 0; i < months * 30; i++) {
+        const date = startDate.clone().add(i, "day").format("YYYY-MM-DD");
+        const res = await fetch(
+          `http://localhost:5000/api/habit-log?date=${date}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        const data = await res.json();
+        // Nếu BE trả về completedCount, totalSlots
+        if (
+          typeof data.completedCount === "number" &&
+          typeof data.totalSlots === "number"
+        ) {
+          logs[date] = {
+            completedCount: data.completedCount,
+            totalSlots: data.totalSlots,
+          };
+        } else if (Array.isArray(data.data)) {
+          // Nếu BE trả về mảng completed
+          logs[date] = {
+            completedCount: data.data.filter((x) => x === 1 || x === true)
+              .length,
+            totalSlots: data.data.length,
+          };
+        } else {
+          logs[date] = { completedCount: 0, totalSlots: 9 };
+        }
+      }
+      setHabitLogByDate(logs);
+    };
+    fetchLogs();
+  }, [user?.id, startDate, months]);
 
   // Lấy mức độ nghiện từ API
   useEffect(() => {
@@ -580,33 +620,30 @@ const QuitPlan = () => {
     },
     { title: "Ngày", dataIndex: "date", key: "date" },
     {
-      title: "Tiến trình",
-      dataIndex: "progress",
+      title: "Tiến trình ngày",
+      dataIndex: "date",
       key: "progress",
-      render: (val) => (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-            justifyContent: "center",
-          }}
-        >
-          <Progress
-            type="circle"
-            percent={parseInt(val)}
-            size="small"
-            strokeColor="#52c41a"
-            format={(p) => <span style={{ fontSize: 12 }}>{p}%</span>}
-          />
-          {parseInt(val) === 100 && (
-            <CheckCircleTwoTone
-              twoToneColor="#52c41a"
-              style={{ fontSize: 20 }}
+      render: (date) => {
+        const log =
+          habitLogByDate[dayjs(date, "DD/MM/YYYY").format("YYYY-MM-DD")];
+        const percent = log
+          ? Math.round((log.completedCount / log.totalSlots) * 100)
+          : 0;
+        return (
+          <div style={{ width: 100, minWidth: 80 }}>
+            <Progress
+              percent={percent}
+              size="small"
+              strokeColor={{
+                "0%": "#108ee9",
+                "100%": "#87d068",
+              }}
+              showInfo
+              style={{ width: "100%" }}
             />
-          )}
-        </div>
-      ),
+          </div>
+        );
+      },
     },
     {
       title: "Giai đoạn",
@@ -792,277 +829,353 @@ const QuitPlan = () => {
               showIcon
               style={{ marginBottom: 16, textAlign: "center" }}
             />
-            <div
-              className="quit-plan-controls"
-              style={{
-                marginBottom: 16,
-                display: "flex",
-                gap: 12,
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <div
-                style={{
-                  background: "#f5f7fa",
-                  borderRadius: 8,
-                  padding: "12px 24px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 24,
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
-                  fontWeight: 600,
-                  fontSize: 18,
-                }}
-              >
-                <span>
-                  <span style={{ color: "#888" }}>Ngày bắt đầu:</span>{" "}
-                  <span style={{ color: "#1890ff" }}>
-                    {startDate?.format("YYYY-MM-DD")}
-                  </span>
-                </span>
-                <span>
-                  <span style={{ color: "#888" }}>Thời gian:</span>{" "}
-                  <span style={{ color: "#52c41a" }}>{months} tháng</span>
-                </span>
-              </div>
-              <Select
-                value={viewMode}
-                onChange={(val) => {
-                  setViewMode(val);
-                  setCurrentWeekPage(1);
-                }}
-                options={[
-                  { label: "Xem theo tuần", value: "week" },
-                  { label: "Xem theo tháng", value: "month" },
-                ]}
-                size="large"
-                style={{
-                  height: 48,
-                  minWidth: 160,
-                  fontWeight: 600,
-                  fontSize: 16,
-                  borderRadius: 8,
-                  background: "#fff",
-                }}
-              />
-              <Button
-                danger
-                onClick={handleResetPlan}
-                style={{
-                  height: 48,
-                  fontWeight: 600,
-                  fontSize: 16,
-                  borderRadius: 8,
-                  marginLeft: 8,
-                }}
-                size="large"
-              >
-                Đặt lại kế hoạch
-              </Button>
-            </div>
           </Card>
 
           <Card variant="outlined">
-            {/* Biểu đồ tiến trình cai + Giai đoạn hiện tại */}
             <div
               style={{
-                width: "100%",
                 display: "flex",
-                justifyContent: "center",
-                alignItems: "stretch",
                 gap: 32,
+                justifyContent: "center",
+                alignItems: "center", // Đảm bảo căn giữa theo chiều dọc
                 margin: "16px 0 24px 0",
                 flexWrap: "wrap",
+                width: "100%",
               }}
             >
-              {/* Biểu đồ tiến trình cai */}
-              <div
+              {/* Tiến trình cai */}
+              <Card
                 style={{
                   flex: 1,
-                  minWidth: 260,
+                  minWidth: 320,
+                  maxWidth: 420,
+                  borderRadius: 20,
+                  boxShadow: "0 4px 24px #e6f7ff",
+                  background: "#fff",
                   display: "flex",
-                  alignItems: "center",
+                  flexDirection: "column",
+                  alignItems: "center", // Căn giữa nội dung
                   justifyContent: "center",
+                  width: "100%", // Thêm width 100%
+                  padding: 32,
                 }}
+                bodyStyle={{ padding: 0, width: "100%" }}
+                bordered={false}
               >
                 <div
                   style={{
-                    background:
-                      "linear-gradient(135deg, #e0ffe9 0%, #e6f7ff 100%)",
-                    borderRadius: 28,
-                    boxShadow: "0 4px 24px 0 rgba(24, 144, 255, 0.10)",
-                    padding: 32,
-                    width: "100%",
-                    maxWidth: 320,
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
-                    position: "relative",
-                    overflow: "hidden",
+                    width: "100%", // Đảm bảo nội dung căn giữa
                   }}
                 >
-                  {/* Hiệu ứng glow */}
                   <div
                     style={{
-                      position: "absolute",
-                      top: "50%",
-                      left: "50%",
-                      width: 160,
-                      height: 160,
-                      background:
-                        "radial-gradient(circle, #b7eb8f55 0%, #e6f7ff00 80%)",
-                      transform: "translate(-50%, -50%)",
-                      zIndex: 0,
-                      borderRadius: "50%",
-                      pointerEvents: "none",
+                      position: "relative",
+                      width: 140,
+                      height: 140,
+                      marginBottom: 8,
+                      margin: "0 auto",
                     }}
-                  />
-                  <Progress
-                    type="circle"
-                    percent={animatedPercent}
-                    width={120}
-                    strokeWidth={10}
-                    strokeColor={{
-                      "0%": "#73d13d",
-                      "50%": "#1890ff",
-                      "100%": "#faad14",
-                    }}
-                    trailColor="#f0f0f0"
-                    format={(p) => (
+                  >
+                    <Progress
+                      type="circle"
+                      percent={animatedPercent}
+                      width={140}
+                      strokeWidth={10}
+                      strokeColor={{
+                        "0%": "#73d13d",
+                        "50%": "#1890ff",
+                        "100%": "#faad14",
+                      }}
+                      trailColor="#f0f0f0"
+                      format={() => null}
+                      style={{ filter: "drop-shadow(0 2px 8px #bae7ff)" }}
+                    />
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: 140,
+                        height: 140,
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        pointerEvents: "none",
+                        userSelect: "none",
+                      }}
+                    >
                       <span
                         style={{
                           fontWeight: 700,
-                          fontSize: 32,
-                          color: "linear-gradient(90deg,#1890ff,#52c41a)",
-                          background: "linear-gradient(90deg,#1890ff,#52c41a)",
-                          WebkitBackgroundClip: "text",
-                          WebkitTextFillColor: "transparent",
+                          fontSize: 36,
+                          color: "#1890ff",
+                          marginBottom: 2,
+                          pointerEvents: "auto",
+                          cursor: isAnimating ? "not-allowed" : "pointer",
+                          transition: "color 0.2s",
                         }}
+                        onClick={!isAnimating ? handleRocketClick : undefined}
+                        title="Tăng tiến trình demo"
                       >
-                        {p}%
+                        {animatedPercent}%
                       </span>
-                    )}
-                  />
-                  {/* Icon động viên */}
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: 18,
-                      right: 18,
-                      zIndex: 2,
-                      cursor: isAnimating ? "not-allowed" : "pointer",
-                    }}
-                    onClick={handleRocketClick}
-                    title="Xem thử tiến trình hoàn thành"
-                  >
-                    <span
-                      role="img"
-                      aria-label="rocket"
-                      style={{ fontSize: 28 }}
+                      <RocketOutlined
+                        style={{
+                          fontSize: 32,
+                          color: isAnimating ? "#faad14" : "#52c41a",
+                          marginTop: 2,
+                          pointerEvents: "auto",
+                          cursor: isAnimating ? "not-allowed" : "pointer",
+                          transition: "color 0.2s",
+                          filter: isAnimating
+                            ? "drop-shadow(0 0 8px #faad14)"
+                            : "none",
+                        }}
+                        onClick={!isAnimating ? handleRocketClick : undefined}
+                        title="Tăng tiến trình demo"
+                      />
+                    </div>
+                  </div>
+                  <div style={{ marginTop: 12, display: "flex", gap: 12 }}>
+                    <Tag
+                      color="blue"
+                      style={{
+                        fontSize: 16,
+                        padding: "4px 16px",
+                        borderRadius: 8,
+                        fontWeight: 600,
+                        background: "#e6f7ff",
+                        color: "#1890ff",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 6,
+                      }}
+                      icon={<CalendarOutlined />}
                     >
-                      🚀
-                    </span>
-                  </div>
-                  {/* Số ngày đã qua / tổng số ngày */}
-                  <div
-                    style={{
-                      marginTop: 10,
-                      fontSize: 16,
-                      color: "#888",
-                      fontWeight: 500,
-                      zIndex: 1,
-                    }}
-                  >
-                    {startDate
-                      ? `${Math.round(
-                          (animatedPercent / 100) * totalDays
-                        )} / ${totalDays} ngày`
-                      : ""}
+                      {startDate
+                        ? `${Math.round(
+                            (animatedPercent / 100) * totalDays
+                          )} / ${totalDays} ngày`
+                        : ""}
+                    </Tag>
                   </div>
                   <div
                     style={{
-                      fontSize: 20,
-                      marginTop: 8,
                       fontWeight: 700,
-                      color: "#1890ff",
-                      textShadow: "0 1px 0 #fff, 0 0 8px #b7eb8f44",
-                      zIndex: 1,
+                      fontSize: 24,
+                      color: "#1d39c4",
+                      marginTop: 16,
+                      textAlign: "center",
+                      letterSpacing: 0.5,
+                      textShadow: "0 2px 8px #e6f7ff",
                     }}
                   >
                     Tiến trình cai
                   </div>
                 </div>
-              </div>
+              </Card>
 
-              {/* Giai đoạn cai hiện tại + % tới giai đoạn tiếp theo */}
-              <div
+              {/* Giai đoạn hiện tại */}
+              <Card
                 style={{
-                  flex: 1,
-                  minWidth: 320,
+                  flex: 2,
+                  minWidth: 340,
+                  maxWidth: 600,
+                  borderRadius: 20,
+                  boxShadow: "0 2px 12px #fffbe6",
+                  padding: 32,
+                  background: "#fff",
                   display: "flex",
-                  alignItems: "center",
+                  flexDirection: "column",
                   justifyContent: "center",
                 }}
+                bodyStyle={{ padding: 0, width: "100%" }}
+                bordered={false}
               >
                 <div
                   style={{
-                    width: "100%",
-                    maxWidth: 420,
-                    background: "#fffbe6",
-                    borderRadius: 28,
-                    boxShadow: "0 2px 8px rgba(255,215,0,0.08)",
-                    padding: "32px 24px",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    fontWeight: 600,
-                    fontSize: 20,
-                    color: "#faad14",
+                    fontSize: 18,
+                    color: "#fa8c16",
+                    fontWeight: 700,
+                    marginBottom: 4,
                   }}
                 >
-                  <div style={{ fontSize: 15, color: "#888", marginBottom: 4 }}>
-                    Giai đoạn hiện tại
-                  </div>
-                  <div style={{ marginBottom: 8 }}>
-                    {(() => {
-                      const percent = animatedPercent;
-                      const currentPhaseIdx = PHASES.findIndex(
-                        ({ range }) =>
-                          percent >= range[0] && percent <= range[1]
-                      );
-                      const currentPhase = PHASES[currentPhaseIdx];
-                      return currentPhase
-                        ? `${currentPhase.phase} – ${currentPhase.goal}`
-                        : "";
-                    })()}
-                  </div>
-                  <div
-                    style={{ fontSize: 15, color: "#faad14", fontWeight: 500 }}
-                  >
-                    {(() => {
-                      const percent = animatedPercent;
-                      const currentPhaseIdx = PHASES.findIndex(
-                        ({ range }) =>
-                          percent >= range[0] && percent <= range[1]
-                      );
-                      const nextPhase = PHASES[currentPhaseIdx + 1];
-                      if (!nextPhase) return "Bạn đã ở giai đoạn cuối!";
-                      const percentToNext = nextPhase.range[0] - percent;
-                      return percentToNext > 0
-                        ? `Còn ${Math.ceil(percentToNext)}% nữa đến ${
-                            nextPhase.phase
-                          }`
-                        : `Sắp sang giai đoạn tiếp theo!`;
-                    })()}
-                  </div>
+                  Giai đoạn hiện tại
                 </div>
-              </div>
+                <div
+                  style={{
+                    fontSize: 22,
+                    color: "#fa8c16",
+                    fontWeight: 700,
+                    marginBottom: 8,
+                  }}
+                >
+                  {(() => {
+                    const percent = animatedPercent;
+                    const currentPhaseIdx = PHASES.findIndex(
+                      ({ range }) => percent >= range[0] && percent <= range[1]
+                    );
+                    const currentPhase = PHASES[currentPhaseIdx];
+                    return currentPhase
+                      ? `${currentPhase.phase} - ${currentPhase.goal}`
+                      : "";
+                  })()}
+                </div>
+                <div style={{ fontSize: 16, color: "#222", marginBottom: 16 }}>
+                  {(() => {
+                    const percent = animatedPercent;
+                    const currentPhaseIdx = PHASES.findIndex(
+                      ({ range }) => percent >= range[0] && percent <= range[1]
+                    );
+                    const nextPhase = PHASES[currentPhaseIdx + 1];
+                    if (!nextPhase) return "Bạn đã ở giai đoạn cuối!";
+                    const percentToNext = nextPhase.range[0] - percent;
+                    return percentToNext > 0
+                      ? `Còn ${Math.ceil(percentToNext)}% nữa đến ${
+                          nextPhase.phase
+                        }`
+                      : `Sắp sang giai đoạn tiếp theo!`;
+                  })()}
+                </div>
+                <div
+                  style={{
+                    height: 8,
+                    background: "#eee",
+                    borderRadius: 4,
+                    overflow: "hidden",
+                    marginBottom: 12,
+                  }}
+                >
+                  <div
+                    style={{
+                      width: `${animatedPercent}%`,
+                      height: "100%",
+                      background: "#faad14",
+                      transition: "width 0.5s",
+                    }}
+                  />
+                </div>
+                {/* Tag màu mè cho Bắt đầu và Thời gian */}
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginTop: 8,
+                    gap: 8,
+                  }}
+                >
+                  <Tag
+                    color="blue"
+                    style={{
+                      fontSize: 16,
+                      padding: "4px 16px",
+                      borderRadius: 8,
+                      fontWeight: 600,
+                      background: "#e6f7ff",
+                      color: "#1890ff",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                    }}
+                    icon={<CalendarOutlined />}
+                  >
+                    Bắt đầu: {startDate?.format("DD/MM/YYYY")}
+                  </Tag>
+                  <Tag
+                    color="green"
+                    style={{
+                      fontSize: 16,
+                      padding: "4px 16px",
+                      borderRadius: 8,
+                      fontWeight: 600,
+                      background: "#f6ffed",
+                      color: "#52c41a",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                    }}
+                    icon={<InfoCircleOutlined />}
+                  >
+                    Thời gian: {months} tháng
+                  </Tag>
+                </div>
+              </Card>
             </div>
 
             <Table
               columns={columns}
               dataSource={planData}
+              title={() => (
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    padding: "12px 16px",
+                    background: "#f5f7fa",
+                    borderRadius: 12,
+                    marginBottom: 8,
+                    boxShadow: "0 2px 8px rgba(24,144,255,0.04)",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontWeight: 700,
+                      fontSize: 20,
+                      color: "#1d39c4",
+                      letterSpacing: 0.5,
+                    }}
+                  >
+                    <CalendarOutlined
+                      style={{ marginRight: 8, color: "#1890ff" }}
+                    />
+                    Bảng kế hoạch chi tiết
+                  </span>
+                  <div style={{ display: "flex", gap: 12 }}>
+                    <Select
+                      value={viewMode}
+                      onChange={(val) => {
+                        setViewMode(val);
+                        setCurrentWeekPage(1);
+                      }}
+                      options={[
+                        { label: "Xem theo tuần", value: "week" },
+                        { label: "Xem theo tháng", value: "month" },
+                      ]}
+                      size="large"
+                      style={{
+                        minWidth: 170,
+                        fontWeight: 600,
+                        fontSize: 16,
+                        borderRadius: 8,
+                        background: "#fff",
+                        boxShadow: "0 1px 4px rgba(24,144,255,0.07)",
+                      }}
+                    />
+                    <Button
+                      danger
+                      onClick={handleResetPlan}
+                      style={{
+                        height: 48,
+                        fontWeight: 600,
+                        fontSize: 16,
+                        borderRadius: 8,
+                        marginLeft: 0,
+                        boxShadow: "0 1px 4px rgba(255,77,79,0.07)",
+                        border: "1.5px solid #ff4d4f",
+                      }}
+                      size="large"
+                    >
+                      Đặt lại kế hoạch
+                    </Button>
+                  </div>
+                </div>
+              )}
               pagination={
                 viewMode === "week"
                   ? {
@@ -1084,7 +1197,6 @@ const QuitPlan = () => {
               }}
               onRow={(record) => ({
                 onClick: (e) => {
-                  // Nếu click vào input, button, select thì không chuyển trang
                   if (
                     e.target.closest("input") ||
                     e.target.closest("button") ||
@@ -1098,7 +1210,7 @@ const QuitPlan = () => {
                     {
                       state: {
                         ...record,
-                        rawStartDate: startDate.toISOString(), // ✅ truyền ngày bắt đầu kế hoạch
+                        rawStartDate: startDate.toISOString(),
                       },
                     }
                   );
