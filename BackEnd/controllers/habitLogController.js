@@ -7,10 +7,12 @@ function getUserLevel(points) {
   return "Master";
 }
 
+
   // GET habit log theo ngày
   const getHabitLogByDate = async (req, res) => {
     const userId = req.user.id;
     const { date } = req.query;
+
 
     try {
       const pool = await sql.connect(dbConfig);
@@ -18,17 +20,19 @@ function getUserLevel(points) {
         .input("user_id", sql.Int, userId)
         .input("log_date", sql.Date, date)
         .query(`
-          SELECT time_slot, completed 
-          FROM HABIT_LOG 
+          SELECT time_slot, completed
+          FROM HABIT_LOG
           WHERE user_id = @user_id AND log_date = @log_date
           ORDER BY time_slot
         `);
+
 
       const completedArray = Array(9).fill(false);
   result.recordset.forEach(row => {
     completedArray[row.time_slot] = row.completed;
   });
-  const completedCount = completedArray.filter(x => x === 1).length;
+  const completedCount = completedArray.filter(Boolean).length;
+
 
   res.json({
     success: true,
@@ -45,18 +49,22 @@ function getUserLevel(points) {
     }
   };
 
+
 // POST 1 hành vi (tick hoặc bỏ tick)
 const submitSingleLog = async (req, res) => {
   const userId = req.user.id;
   const { date, timeSlot, completed } = req.body;
   const completedBool = completed === true || completed === 1 || completed === "1" || completed === "true";
 
+
   if (!date || timeSlot === undefined) {
     return res.status(400).json({ success: false, message: "Thiếu dữ liệu" });
   }
 
+
   try {
     const pool = await sql.connect(dbConfig);
+
 
     // Lấy thông tin kế hoạch để tính điểm
     const planRes = await pool.request()
@@ -69,6 +77,7 @@ const submitSingleLog = async (req, res) => {
     const months = planRes.recordset[0]?.month_quit || 1;
     const totalSlots = months * 30 * 9;
     const pointPerSlot = +(100 / totalSlots).toFixed(3);
+
 
     // Ghi lại hành vi hiện tại
     await pool.request()
@@ -88,6 +97,7 @@ const submitSingleLog = async (req, res) => {
           VALUES (@user_id, @log_date, @time_slot, @completed, @points_awarded);
       `);
 
+
     // Lấy toàn bộ completed trong ngày
     const logOfDay = await pool.request()
       .input("user_id", sql.Int, userId)
@@ -97,7 +107,9 @@ const submitSingleLog = async (req, res) => {
         WHERE user_id = @user_id AND log_date = @log_date
       `);
 
+
     const completedCount = logOfDay.recordset.filter(r => r.completed).length;
+
 
     // Tính multiplier theo completedCount
     let multiplier = 1.0;
@@ -105,6 +117,7 @@ const submitSingleLog = async (req, res) => {
     else if (completedCount >= 7) multiplier = 1.3;
     else if (completedCount >= 5) multiplier = 1.2;
     else if (completedCount >= 3) multiplier = 1.1;
+
 
     const totalPointToday = +(completedCount * pointPerSlot * multiplier).toFixed(3);
     // Reset toàn bộ điểm ngày đó
@@ -116,6 +129,7 @@ await pool.request()
     SET points_awarded = 0
     WHERE user_id = @user_id AND log_date = @log_date
   `);
+
 
 // Gán lại điểm đúng theo multiplier
 await pool.request()
@@ -129,12 +143,16 @@ await pool.request()
   `);
 
 
+
+
     // Lấy điểm hiện tại
     const scoreRes = await pool.request()
       .input("user_id", sql.Int, userId)
       .query(`SELECT total_points FROM USER_SCORE WHERE user_id = @user_id`);
 
+
     const currentPoints = scoreRes.recordset[0]?.total_points || 0;
+
 
     // ⚠️ Để tránh cộng dồn sai → điểm hôm đó được cập nhật lại, không cộng thêm
     // Tính lại toàn bộ tổng điểm từ tất cả HABIT_LOG (đã có points_awarded đúng)
@@ -145,9 +163,12 @@ const allLog = await pool.request()
     WHERE user_id = @user_id AND completed = 1
   `);
 
+
 const newTotal = +(allLog.recordset[0]?.total || 0).toFixed(3);
 
+
     const newLevel = getUserLevel(newTotal);
+
 
     await pool.request()
       .input("user_id", sql.Int, userId)
@@ -164,6 +185,7 @@ const newTotal = +(allLog.recordset[0]?.total || 0).toFixed(3);
           VALUES (@user_id, @total_points, @current_level, GETDATE());
       `);
 
+
     console.log(`✅ Ngày ${date} đạt ${completedCount}/9 slot → +${totalPointToday} điểm (x${multiplier})`);
     res.json({ success: true, message: "Đã lưu hành vi" });
   } catch (err) {
@@ -174,10 +196,14 @@ const newTotal = +(allLog.recordset[0]?.total || 0).toFixed(3);
 
 
 
+
+
+
 // DELETE hành vi
 const deleteHabitLogEntry = async (req, res) => {
   const userId = req.user.id;
   const { date, timeSlot } = req.body;
+
 
   if (!date || typeof timeSlot !== "number") {
     return res.status(400).json({
@@ -186,6 +212,7 @@ const deleteHabitLogEntry = async (req, res) => {
     });
   }
 
+
   try {
     const pool = await sql.connect(dbConfig);
     await pool.request()
@@ -193,9 +220,10 @@ const deleteHabitLogEntry = async (req, res) => {
       .input("log_date", sql.Date, date)
       .input("time_slot", sql.Int, timeSlot)
       .query(`
-        DELETE FROM HABIT_LOG 
+        DELETE FROM HABIT_LOG
         WHERE user_id = @user_id AND log_date = @log_date AND time_slot = @time_slot
       `);
+
 
     res.json({ success: true, message: "Đã xóa hành vi khỏi log" });
   } catch (err) {
@@ -204,8 +232,12 @@ const deleteHabitLogEntry = async (req, res) => {
   }
 };
 
+
 module.exports = {
   getHabitLogByDate,
   submitSingleLog,
   deleteHabitLogEntry,
 };
+
+
+

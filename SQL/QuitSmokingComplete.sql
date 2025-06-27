@@ -460,7 +460,6 @@ GO
     CREATE TABLE HABIT_LOG (
         log_id INT IDENTITY(1,1) PRIMARY KEY,                  -- Khóa chính tự tăng
         user_id INT NOT NULL,                                 -- Người dùng thực hiện hành vi
-        plan_id INT NOT NULL,                                 -- Kế hoạch bỏ thuốc liên qua
         log_date DATE NOT NULL,                               -- Ngày ghi nhận
         time_slot INT NOT NULL CHECK (time_slot BETWEEN 0 AND 8), -- Mốc thời gian (0: 7h, ..., 8: 22h)
         completed BIT NOT NULL DEFAULT 0,                     -- Đã hoàn thành không hút tại slot đó hay chưa
@@ -468,7 +467,6 @@ GO
         created_at DATETIME DEFAULT GETDATE(),                -- Ngày tạo bản ghi
 
         CONSTRAINT fk_habitlog_user FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id) ON DELETE CASCADE,
-        CONSTRAINT fk_habitlog_plan FOREIGN KEY (plan_id) REFERENCES CESSATION_PLAN(plan_id),
         UNIQUE(user_id, log_date, time_slot)                  -- Một người chỉ có 1 bản ghi/slot/ngày
     );
 

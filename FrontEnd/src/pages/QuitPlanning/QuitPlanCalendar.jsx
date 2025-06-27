@@ -29,6 +29,8 @@ import {
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+dayjs.extend(utc);
 import "./QuitPlanCalendar.css";
 import PlanSetupModal from "./PlanSetupModal";
 import axios from "axios";
@@ -353,37 +355,44 @@ const QuitPlan = () => {
   useEffect(() => {
     if (!user?.id || !startDate || !months) return;
     const token = localStorage.getItem("token");
+
     const fetchLogs = async () => {
       const logs = {};
       for (let i = 0; i < months * 30; i++) {
-        const date = startDate.clone().add(i, "day").format("YYYY-MM-DD");
+        const dateObj = startDate.clone().add(i, "day");
+        const dateKey = dateObj.format("YYYY-MM-DD");
+
         const res = await fetch(
-          `http://localhost:5000/api/habit-log?date=${date}`,
+          `http://localhost:5000/api/habit-log?date=${dateKey}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         const data = await res.json();
-        // Nếu BE trả về completedCount, totalSlots
+
         if (
           typeof data.completedCount === "number" &&
           typeof data.totalSlots === "number"
         ) {
-          logs[date] = {
+          logs[dateKey] = {
             completedCount: data.completedCount,
             totalSlots: data.totalSlots,
           };
+          console.log("🎯 Log processed:", dateKey, logs[dateKey]); // ✅ ở đây
         } else if (Array.isArray(data.data)) {
-          // Nếu BE trả về mảng completed
-          logs[date] = {
-            completedCount: data.data.filter((x) => x === 1 || x === true)
-              .length,
+          const count = data.data.filter(Boolean).length; // ✅ tính số lượng true
+          logs[dateKey] = {
+            completedCount: count,
             totalSlots: data.data.length,
           };
+          console.log("🎯 Log processed:", dateKey, logs[dateKey]); // ✅ giữ lại dòng log này
         } else {
-          logs[date] = { completedCount: 0, totalSlots: 9 };
+          logs[dateKey] = { completedCount: 0, totalSlots: 9 };
         }
       }
-      setHabitLogByDate(logs);
+
+      setHabitLogByDate({ ...logs });
+      console.log("✅ FINAL logs set:", logs);
     };
+
     fetchLogs();
   }, [user?.id, startDate, months]);
 
@@ -398,7 +407,6 @@ const QuitPlan = () => {
     fetch(`http://localhost:5000/api/customer/ftnd-level/${user.id}`)
       .then((res) => res.json())
       .then((data) => {
-        console.log("ftnd_level từ DB:", data.ftnd_level);
         setFtndLevel(data.ftnd_level || "Không xác định");
       })
       .catch(() => setFtndLevel("Không xác định"));
@@ -535,7 +543,6 @@ const QuitPlan = () => {
         : [],
     [months, level, startDate, ftndLevel]
   );
-  console.log("weeklyQuota:", weeklyQuota);
   const getRemainingCigs = (
     dateStr,
     weeklyQuota,
@@ -586,7 +593,8 @@ const QuitPlan = () => {
           : `Tuần ${weekIndex + 1} – Ngày ${i - weekIndex * 7 + 1}`;
       data.push({
         key: i,
-        date: formattedDate,
+        date: formattedDate, // "DD/MM/YYYY" để hiển thị
+        dateKey: currentDate.format("YYYY-MM-DD"), // key chuẩn để lấy log
         rawDate: currentDate.toISOString(),
         progress: `${progress}%`,
         phase: `${phase.phase} – ${phase.goal}`,
@@ -621,11 +629,10 @@ const QuitPlan = () => {
     { title: "Ngày", dataIndex: "date", key: "date" },
     {
       title: "Tiến trình ngày",
-      dataIndex: "date",
+      dataIndex: "dateKey", // dùng dateKey
       key: "progress",
-      render: (date) => {
-        const log =
-          habitLogByDate[dayjs(date, "DD/MM/YYYY").format("YYYY-MM-DD")];
+      render: (dateKey) => {
+        const log = habitLogByDate[dateKey];
         const percent = log
           ? Math.round((log.completedCount / log.totalSlots) * 100)
           : 0;
