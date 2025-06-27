@@ -68,8 +68,12 @@ export default function Navbar() {
       { key: "/RankingBoard", icon: <TrophyOutlined />, label: "Xếp hạng", onClick: () => navigate("/RankingBoard") },
       { key: "/blog", icon: <BookOutlined />, label: "Blog", onClick: () => navigate("/blog") },
       { key: "/chat", icon: <MessageOutlined />, label: "Chat", onClick: () => navigate("/chat") },
-      { key: "/membership", icon: <TeamOutlined />, label: "Thành viên", onClick: () => navigate("/membership") },
     ];
+
+    // Chỉ hiển thị mục 'Thành viên' cho member
+    if (user && user.role === 'member') {
+      items.push({ key: "/membership", icon: <TeamOutlined />, label: "Thành viên", onClick: () => navigate("/membership") });
+    }
 
     if (!isCoach() && !isAdmin()) {
       items.push({
