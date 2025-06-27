@@ -21,12 +21,16 @@ import {
   BellOutlined,
   MenuOutlined,    // ← hamburger
   MoreOutlined,    // ← overflow indicator
+  ScheduleOutlined,
+  FileDoneOutlined,
+  MessageOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "../contexts/AuthContext";
 import axios from "axios";
 import "./Navbar.css";
 import { Dropdown } from "antd";
 import UserDropdownMenu from "../components/UserDropdownMenu";
+import { Link } from "react-router-dom";
 
 const { Header } = Layout;
 
@@ -59,25 +63,26 @@ export default function Navbar() {
   // Build menu items
   const getMenuItems = () => {
     const items = [
-      { key: "/", icon: <HomeOutlined />, label: "Home", onClick: () => navigate("/") },
-      { key: "/plan", icon: <CalendarOutlined />, label: "Planning", onClick: handlePlanClick },
-      { key: "/RankingBoard", icon: <TrophyOutlined />, label: "Ranking", onClick: () => navigate("/RankingBoard") },
+      { key: "/", icon: <HomeOutlined />, label: "Trang chủ", onClick: () => navigate("/") },
+      { key: "/plan", icon: <CalendarOutlined />, label: "Lập kế hoạch", onClick: handlePlanClick },
+      { key: "/RankingBoard", icon: <TrophyOutlined />, label: "Xếp hạng", onClick: () => navigate("/RankingBoard") },
       { key: "/blog", icon: <BookOutlined />, label: "Blog", onClick: () => navigate("/blog") },
-      { key: "/membership", icon: <TeamOutlined />, label: "Membership", onClick: () => navigate("/membership") },
+      { key: "/chat", icon: <MessageOutlined />, label: "Chat", onClick: () => navigate("/chat") },
+      { key: "/membership", icon: <TeamOutlined />, label: "Thành viên", onClick: () => navigate("/membership") },
     ];
 
     if (!isCoach() && !isAdmin()) {
       items.push({
         key: "/book-coach",
         icon: <ContactsOutlined />,
-        label: "Book Coach",
+        label: "Đặt huấn luyện viên",
         onClick: () => navigate("/book-coach"),
       });
       if (user?.role === "member") {
         items.push({
           key: "/my-bookings",
           icon: <CalendarOutlined />,
-          label: "My Bookings",
+          label: "Lịch đặt của tôi",
           onClick: () => navigate("/my-bookings"),
         });
       }
@@ -87,15 +92,27 @@ export default function Navbar() {
       items.push({
         key: "/admin-dashboard",
         icon: <UserOutlined />,
-        label: "Admin Dashboard",
+        label: "Bảng điều khiển Admin",
         onClick: () => navigate("/admin-dashboard"),
+      });
+      items.push({
+        key: "/schedule-management",
+        icon: <ScheduleOutlined />,
+        label: "Quản lý Lịch",
+        onClick: () => navigate("/schedule-management"),
+      });
+      items.push({
+        key: "/post-approval",
+        icon: <FileDoneOutlined />,
+        label: "Quản lý Bài Viết",
+        onClick: () => navigate("/post-approval"),
       });
     }
     if (isCoach()) {
       items.push({
         key: "/coach-dashboard",
         icon: <UserOutlined />,
-        label: "Coach Dashboard",
+        label: "Bảng điều khiển Huấn luyện viên",
         onClick: () => navigate("/coach-dashboard"),
       });
     }
@@ -139,10 +156,10 @@ export default function Navbar() {
           {!user ? (
             <Space>
               <Button type="link" onClick={() => navigate("/login")}>
-                Sign in
+                Đăng nhập
               </Button>
               <Button type="primary" onClick={() => navigate("/register")}>
-                Sign up
+                Đăng ký
               </Button>
             </Space>
           ) : (
@@ -158,10 +175,10 @@ export default function Navbar() {
               <Badge
                 count={
                   user.role === "admin"
-                    ? "Admin"
+                    ? "Quản trị viên"
                     : user.role === "coach"
-                      ? "Coach"
-                      : "Member"
+                      ? "Huấn luyện viên"
+                      : "Thành viên"
                 }
                 style={{
                   backgroundColor:
@@ -192,10 +209,8 @@ export default function Navbar() {
                 />
               </Dropdown>
               <span className="username-text">{user.name || user.email}</span>
-              
-              <span className="username-text">
-                {user.name || user.email}
-              </span>
+
+
               <Button
                 type="text"
                 icon={<LogoutOutlined />}

@@ -19,7 +19,6 @@ import { useAuth } from '../../contexts/AuthContext';
 import StatisticCard from '../../components/ui/StatisticCard';
 import FormModal from '../../components/ui/FormModal';
 import BookingManagement from '../BookingManagement/BookingManagement';
-import ScheduleManagement from './ScheduleManagement';
 import Navbar from '../../layouts/Navbar';
 
 const { Title, Text } = Typography;
@@ -158,7 +157,7 @@ const CoachDashboard = () => {
                 });
             }
         } catch (error) {
-            console.error('Error loading today stats:', error);
+            console.error('Lỗi tải thống kê hôm nay:', error);
             setTodayStats({
                 todaySessions: 0,
                 pendingRequests: 0,
@@ -170,7 +169,7 @@ const CoachDashboard = () => {
     const handleCopyMeetLink = () => {
         navigator.clipboard.writeText(meetLink);
         setCopied(true);
-        message.success('Meet link copied to clipboard!');
+        message.success('Liên kết Meet đã được sao chép vào clipboard!');
         setTimeout(() => setCopied(false), 2000);
     };
 
@@ -192,11 +191,11 @@ const CoachDashboard = () => {
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.message || 'Failed to update meet link');
+                throw new Error(data.message || 'Không thể cập nhật liên kết Meet');
             }
 
             setIsEditModalVisible(false);
-            message.success('Meet link updated successfully!');
+            message.success('Liên kết Meet đã được cập nhật thành công!');
             // Fetch lại link mới nhất từ backend
             fetchCoachInfo();
         } catch (error) {
@@ -213,9 +212,9 @@ const CoachDashboard = () => {
             <Card style={{ marginBottom: 24 }}>
                 <Row justify="space-between" align="middle">
                     <Col>
-                        <Title level={2}>Welcome back, {user?.name}! 👋</Title>
+                        <Title level={2}>Chào mừng trở lại, {user?.name}! 👋</Title>
                         <Text type="secondary">
-                            Here's what's happening with your coaching sessions today.
+                            Đây là những gì đang diễn ra với các buổi huấn luyện của bạn hôm nay.
                         </Text>
                     </Col>
                     <Col>
@@ -226,14 +225,14 @@ const CoachDashboard = () => {
                                     icon={<BellOutlined />}
                                     onClick={() => setActiveTab('bookings')}
                                 >
-                                    Review Requests
+                                    Xem lại yêu cầu
                                 </Button>
                             </Badge>
                             <Button
                                 icon={<CalendarOutlined />}
                                 onClick={() => setActiveTab('schedule')}
                             >
-                                Manage Schedule
+                                Quản lý lịch trình
                             </Button>
                         </Space>
                     </Col>
@@ -248,7 +247,7 @@ const CoachDashboard = () => {
                         <div style={{ fontSize: 24, fontWeight: 'bold', color: '#52c41a' }}>
                             {todayStats.todaySessions}
                         </div>
-                        <Text type="secondary">Today's Sessions</Text>
+                        <Text type="secondary">Buổi học hôm nay</Text>
                     </Card>
                 </Col>
                 <Col xs={24} sm={8}>
@@ -257,7 +256,7 @@ const CoachDashboard = () => {
                         <div style={{ fontSize: 24, fontWeight: 'bold', color: '#faad14' }}>
                             {todayStats.pendingRequests}
                         </div>
-                        <Text type="secondary">Pending Requests</Text>
+                        <Text type="secondary">Yêu cầu đang chờ</Text>
                     </Card>
                 </Col>
                 <Col xs={24} sm={8}>
@@ -266,7 +265,7 @@ const CoachDashboard = () => {
                         <div style={{ fontSize: 24, fontWeight: 'bold', color: '#1890ff' }}>
                             {todayStats.upcomingSessions}
                         </div>
-                        <Text type="secondary">Upcoming Sessions</Text>
+                        <Text type="secondary">Buổi học sắp tới</Text>
                     </Card>
                 </Col>
             </Row>
@@ -276,7 +275,7 @@ const CoachDashboard = () => {
                 title={
                     <Space>
                         <LinkOutlined style={{ color: '#52c41a' }} />
-                        <span>Your Google Meet Link</span>
+                        <span>Liên kết Google Meet của bạn</span>
                     </Space>
                 }
                 style={{ marginBottom: 24 }}
@@ -286,13 +285,13 @@ const CoachDashboard = () => {
                         icon={<EditOutlined />}
                         onClick={handleEditMeetLink}
                     >
-                        Update Link
+                        Cập nhật liên kết
                     </Button>
                 }
             >
                 <Alert
-                    message="Meet Link Management"
-                    description="This link is automatically shared with members when you confirm their booking requests."
+                    message="Quản lý liên kết Meet"
+                    description="Liên kết này sẽ tự động được chia sẻ với thành viên khi bạn xác nhận yêu cầu đặt lịch của họ."
                     type="info"
                     showIcon
                     style={{ marginBottom: 16 }}
@@ -319,19 +318,19 @@ const CoachDashboard = () => {
                         onClick={handleCopyMeetLink}
                         style={{ marginLeft: 16 }}
                     >
-                        {copied ? 'Copied!' : 'Copy Link'}
+                        {copied ? 'Đã sao chép!' : 'Sao chép liên kết'}
                     </Button>
                 </div>
 
                 <Divider />
 
                 <div style={{ color: '#666', fontSize: '14px' }}>
-                    <Text strong>How it works:</Text>
+                    <Text strong>Cách hoạt động:</Text>
                     <ul style={{ marginTop: 8, paddingLeft: 20 }}>
-                        <li>Members book sessions with you through the booking system</li>
-                        <li>When you confirm a booking, this Meet link is automatically sent to the member</li>
-                        <li>Members can join the meeting using this link at the scheduled time</li>
-                        <li>You can update this link anytime using the Update Link button</li>
+                        <li>Thành viên đặt lịch với bạn qua hệ thống đặt lịch</li>
+                        <li>Khi bạn xác nhận một lịch đặt, liên kết Meet này sẽ tự động được gửi cho thành viên</li>
+                        <li>Thành viên có thể tham gia cuộc họp bằng liên kết này vào thời gian đã định</li>
+                        <li>Bạn có thể cập nhật liên kết này bất cứ lúc nào bằng nút Cập nhật liên kết</li>
                     </ul>
                 </div>
             </Card>
@@ -340,7 +339,7 @@ const CoachDashboard = () => {
             <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
                 <Col xs={24} sm={12} lg={6}>
                     <StatisticCard
-                        title="Total Bookings"
+                        title="Tổng số lượt đặt"
                         value={stats.totalBookings}
                         prefix={<UserOutlined style={{ color: '#1890ff' }} />}
                         valueStyle={{ color: '#1890ff' }}
@@ -348,7 +347,7 @@ const CoachDashboard = () => {
                 </Col>
                 <Col xs={24} sm={12} lg={6}>
                     <StatisticCard
-                        title="Pending Requests"
+                        title="Yêu cầu đang chờ"
                         value={stats.pendingBookings}
                         prefix={<ClockCircleOutlined style={{ color: '#faad14' }} />}
                         valueStyle={{ color: '#faad14' }}
@@ -356,7 +355,7 @@ const CoachDashboard = () => {
                 </Col>
                 <Col xs={24} sm={12} lg={6}>
                     <StatisticCard
-                        title="Confirmed Sessions"
+                        title="Buổi học đã xác nhận"
                         value={stats.confirmedBookings}
                         prefix={<CheckCircleOutlined style={{ color: '#52c41a' }} />}
                         valueStyle={{ color: '#52c41a' }}
@@ -364,7 +363,7 @@ const CoachDashboard = () => {
                 </Col>
                 <Col xs={24} sm={12} lg={6}>
                     <StatisticCard
-                        title="Completed Sessions"
+                        title="Buổi học đã hoàn thành"
                         value={stats.completedSessions}
                         prefix={<TrophyOutlined style={{ color: '#722ed1' }} />}
                         valueStyle={{ color: '#722ed1' }}
@@ -375,7 +374,7 @@ const CoachDashboard = () => {
             <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
                 <Col xs={24} sm={12} lg={12}>
                     <StatisticCard
-                        title="Average Rating"
+                        title="Đánh giá trung bình"
                         value={stats.averageRating}
                         prefix={<RiseOutlined style={{ color: '#faad14' }} />}
                         valueStyle={{ color: '#faad14' }}
@@ -385,7 +384,7 @@ const CoachDashboard = () => {
                 </Col>
                 <Col xs={24} sm={12} lg={12}>
                     <StatisticCard
-                        title="Total Earnings"
+                        title="Tổng thu nhập"
                         value={stats.totalEarnings}
                         prefix={<TrophyOutlined style={{ color: '#52c41a' }} />}
                         valueStyle={{ color: '#52c41a' }}
@@ -407,7 +406,7 @@ const CoachDashboard = () => {
                                 tab={
                                     <span>
                                         <UserOutlined />
-                                        Overview
+                                        Tổng quan
                                     </span>
                                 }
                                 key="overview"
@@ -418,19 +417,19 @@ const CoachDashboard = () => {
                                 tab={
                                     <span>
                                         <CalendarOutlined />
-                                        Schedule Management
+                                        Quản lý lịch trình
                                     </span>
                                 }
                                 key="schedule"
                             >
-                                <ScheduleManagement />
+                                {/* <ScheduleManagement /> */}
                             </TabPane>
                             <TabPane
                                 tab={
                                     <Badge count={todayStats.pendingRequests} size="small">
                                         <span>
                                             <CheckCircleOutlined />
-                                            Booking Management
+                                            Quản lý đặt lịch
                                         </span>
                                     </Badge>
                                 }
@@ -445,37 +444,20 @@ const CoachDashboard = () => {
 
             {/* Edit Meet Link Modal */}
             <FormModal
-                title="Update Google Meet Link"
+                title="Cập nhật liên kết Google Meet"
                 visible={isEditModalVisible}
                 onCancel={() => setIsEditModalVisible(false)}
                 onSubmit={handleUpdateMeetLink}
                 form={editForm}
                 loading={loading}
-                width={600}
-                okText="Update Link"
             >
                 <Form.Item
                     name="meetLink"
                     label="Google Meet Link"
-                    rules={[
-                        { required: true, message: 'Please enter your Meet link' },
-                        { type: 'url', message: 'Please enter a valid URL' },
-                        { pattern: /^https:\/\/meet\.google\.com\//, message: 'Please enter a valid Google Meet link' }
-                    ]}
+                    rules={[{ required: true, message: 'Vui lòng nhập liên kết Google Meet!' }]}
                 >
-                    <Input
-                        placeholder="https://meet.google.com/your-meeting-id"
-                        size="large"
-                    />
+                    <Input prefix={<LinkOutlined />} placeholder="https://meet.google.com/xxx-xxxx-xxx" />
                 </Form.Item>
-
-                <Alert
-                    message="Important"
-                    description="This link will be automatically shared with members when you confirm their booking requests. Make sure it's always up to date."
-                    type="warning"
-                    showIcon
-                    style={{ marginBottom: 16 }}
-                />
             </FormModal>
         </div>
     );

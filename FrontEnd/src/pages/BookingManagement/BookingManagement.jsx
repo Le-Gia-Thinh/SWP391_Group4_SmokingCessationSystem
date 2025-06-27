@@ -45,15 +45,15 @@ const BookingManagement = () => {
             });
 
             if (!response.ok) {
-                throw new Error('Failed to load bookings');
+                throw new Error('Lỗi tải lịch đặt');
             }
 
             const data = await response.json();
             console.log('DEBUG: Raw data from API:', data.data);
             setBookings(data.data); // Assuming the backend now returns { success: true, data: [...] }
         } catch (error) {
-            console.error('Error loading bookings:', error);
-            message.error('Failed to load bookings');
+            console.error('Lỗi tải lịch đặt:', error);
+            message.error('Không thể tải lịch đặt');
             setBookings([]);
         } finally {
             setLoading(false);
@@ -75,14 +75,14 @@ const BookingManagement = () => {
             });
 
             if (!response.ok) {
-                throw new Error('Failed to accept appointment');
+                throw new Error('Không thể chấp nhận cuộc hẹn');
             }
 
-            message.success('Appointment accepted successfully!');
+            message.success('Chấp nhận cuộc hẹn thành công!');
             loadBookings(); // Reload to get updated data
         } catch (error) {
-            console.error('Error accepting appointment:', error);
-            message.error('Failed to accept appointment');
+            console.error('Lỗi chấp nhận cuộc hẹn:', error);
+            message.error('Không thể chấp nhận cuộc hẹn');
         } finally {
             setLoading(false);
         }
@@ -97,14 +97,14 @@ const BookingManagement = () => {
             });
 
             if (!response.ok) {
-                throw new Error('Failed to reject appointment');
+                throw new Error('Không thể từ chối cuộc hẹn');
             }
 
-            message.success('Appointment rejected successfully!');
+            message.success('Từ chối cuộc hẹn thành công!');
             loadBookings(); // Reload to get updated data
         } catch (error) {
-            console.error('Error rejecting appointment:', error);
-            message.error('Failed to reject appointment');
+            console.error('Lỗi từ chối cuộc hẹn:', error);
+            message.error('Không thể từ chối cuộc hẹn');
         } finally {
             setLoading(false);
         }
@@ -133,13 +133,13 @@ const BookingManagement = () => {
     const getStatusText = (status) => {
         switch (status) {
             case 'pending':
-                return 'Pending';
+                return 'Đang chờ';
             case 'accepted':
-                return 'Accepted';
+                return 'Đã chấp nhận';
             case 'rejected':
-                return 'Rejected';
+                return 'Đã từ chối';
             case 'canceled_by_member':
-                return 'Canceled';
+                return 'Đã hủy';
             default:
                 return status;
         }
@@ -155,20 +155,20 @@ const BookingManagement = () => {
 
     const columns = [
         {
-            title: 'Member',
+            title: 'Thành viên',
             key: 'member',
             render: (_, record) => (
                 <Space>
                     <Avatar icon={<UserOutlined />} />
                     <div>
                         <div style={{ fontWeight: 'bold' }}>{record.member_name}</div>
-                        <div style={{ fontSize: '12px', color: '#666' }}>Member ID: {record.member_user_id}</div>
+                        <div style={{ fontSize: '12px', color: '#666' }}>ID Thành viên: {record.member_user_id}</div>
                     </div>
                 </Space>
             ),
         },
         {
-            title: 'Time',
+            title: 'Thời gian',
             key: 'scheduled_time',
             render: (_, record) => {
                 const { date, time } = formatDateTime(record.scheduled_time);
@@ -181,7 +181,7 @@ const BookingManagement = () => {
             },
         },
         {
-            title: 'Status',
+            title: 'Trạng thái',
             key: 'session_status',
             render: (_, record) => (
                 <Tag color={getStatusColor(record.session_status)}>
@@ -190,26 +190,26 @@ const BookingManagement = () => {
             ),
         },
         {
-            title: 'Actions',
+            title: 'Hành động',
             key: 'actions',
             render: (_, record) => {
                 const actions = [
                     {
                         type: 'view',
-                        tooltip: 'View Details',
+                        tooltip: 'Xem chi tiết',
                         onClick: () => handleViewBooking(record),
                         icon: <EyeOutlined />
                     },
                     {
                         type: 'accept',
-                        tooltip: 'Accept Appointment',
+                        tooltip: 'Chấp nhận cuộc hẹn',
                         onClick: () => handleAcceptAppointment(record.session_id),
                         icon: <CheckOutlined />,
                         hidden: record.session_status !== 'pending'
                     },
                     {
                         type: 'reject',
-                        tooltip: 'Reject Appointment',
+                        tooltip: 'Từ chối cuộc hẹn',
                         onClick: () => handleRejectAppointment(record.session_id),
                         icon: <CloseOutlined />,
                         danger: true,
@@ -231,7 +231,7 @@ const BookingManagement = () => {
         return (
             <div style={{ textAlign: 'center', padding: '50px' }}>
                 <Spin size="large" />
-                <div style={{ marginTop: '16px' }}>Loading appointments...</div>
+                <div style={{ marginTop: '16px' }}>Đang tải lịch hẹn...</div>
             </div>
         );
     }
@@ -258,15 +258,15 @@ const BookingManagement = () => {
                 <Row justify="space-between" align="middle">
                     <Col>
                         <Title level={2}>
-                            <CheckCircleOutlined /> Appointment Management
+                            <CheckCircleOutlined /> Quản lý cuộc hẹn
                         </Title>
                         <Text type="secondary">
-                            View and manage appointment requests from members
+                            Xem và quản lý yêu cầu cuộc hẹn từ thành viên
                         </Text>
                     </Col>
                     <Col>
                         <Button type="primary" icon={<ReloadOutlined />} onClick={loadBookings}>
-                            Refresh
+                            Làm mới
                         </Button>
                     </Col>
                 </Row>
@@ -274,10 +274,10 @@ const BookingManagement = () => {
 
             <Card>
                 <Tabs defaultActiveKey="pending" activeKey={activeTab} onChange={onTabChange}>
-                    <TabPane tab={<span>Pending Appointments <Badge count={bookings.filter(b => b.session_status === 'pending').length} /></span>} key="pending" />
-                    <TabPane tab={<span>Accepted Appointments <Badge count={bookings.filter(b => b.session_status === 'accepted').length} /></span>} key="accepted" />
-                    <TabPane tab={<span>Completed Appointments <Badge count={bookings.filter(b => b.session_status === 'completed').length} /></span>} key="completed" />
-                    <TabPane tab={<span>Rejected/Cancelled Appointments <Badge count={bookings.filter(b => b.session_status === 'rejected' || b.session_status === 'canceled_by_member' || b.session_status === 'canceled_by_coach').length} /></span>} key="rejected_cancelled" />
+                    <TabPane tab={<span>Cuộc hẹn đang chờ <Badge count={bookings.filter(b => b.session_status === 'pending').length} /></span>} key="pending" />
+                    <TabPane tab={<span>Cuộc hẹn đã chấp nhận <Badge count={bookings.filter(b => b.session_status === 'accepted').length} /></span>} key="accepted" />
+                    <TabPane tab={<span>Cuộc hẹn đã hoàn thành <Badge count={bookings.filter(b => b.session_status === 'completed').length} /></span>} key="completed" />
+                    <TabPane tab={<span>Cuộc hẹn bị từ chối/hủy <Badge count={bookings.filter(b => b.session_status === 'rejected' || b.session_status === 'canceled_by_member' || b.session_status === 'canceled_by_coach').length} /></span>} key="rejected_cancelled" />
                 </Tabs>
 
                 <DataTable
@@ -285,22 +285,22 @@ const BookingManagement = () => {
                     dataSource={filteredBookings}
                     loading={loading}
                     rowKey="session_id"
-                    noDataContent={activeTab === 'pending' ? 'No pending appointments. All requests have been processed!' : `No ${activeTab} appointments.`}
+                    noDataContent={activeTab === 'pending' ? 'Không có cuộc hẹn nào đang chờ. Tất cả yêu cầu đã được xử lý!' : `Không có cuộc hẹn nào ${getStatusText(activeTab)}.`}
                 />
 
                 {selectedBooking && (
                     <Modal
-                        title="Booking Details"
+                        title="Chi tiết cuộc hẹn"
                         visible={isModalVisible}
                         onCancel={handleCancel}
                         footer={null}
                     >
-                        <p><strong>Member Name:</strong> {selectedBooking.member_name}</p>
-                        <p><strong>Member ID:</strong> {selectedBooking.member_user_id}</p>
-                        <p><strong>Scheduled Time:</strong> {formatDateTime(selectedBooking.scheduled_time).date} {formatDateTime(selectedBooking.scheduled_time).time}</p>
-                        <p><strong>Status:</strong> {getStatusText(selectedBooking.session_status)}</p>
+                        <p><strong>Tên thành viên:</strong> {selectedBooking.member_name}</p>
+                        <p><strong>ID Thành viên:</strong> {selectedBooking.member_user_id}</p>
+                        <p><strong>Thời gian dự kiến:</strong> {formatDateTime(selectedBooking.scheduled_time).date} {formatDateTime(selectedBooking.scheduled_time).time}</p>
+                        <p><strong>Trạng thái:</strong> {getStatusText(selectedBooking.session_status)}</p>
                         {selectedBooking.google_meet_link && (
-                            <p><strong>Google Meet Link:</strong> <a href={selectedBooking.google_meet_link} target="_blank" rel="noopener noreferrer">{selectedBooking.google_meet_link}</a></p>
+                            <p><strong>Liên kết Google Meet:</strong> <a href={selectedBooking.google_meet_link} target="_blank" rel="noopener noreferrer">{selectedBooking.google_meet_link}</a></p>
                         )}
                     </Modal>
                 )}

@@ -91,22 +91,22 @@ const Login = () => {
         </span>
 
         <div className="login-container">
-          <div className="login-title">🚭 Login</div>
+          <div className="login-title">🚭 Đăng nhập</div>
 
           <div className="form-content">
             <Form name="login" layout="vertical" onFinish={onFinish}>
               <Form.Item
                 name="email"
                 label="Email"
-                rules={[{ required: true, message: "Please enter your email!" }]}
+                rules={[{ required: true, message: "Vui lòng nhập email của bạn!" }]}
               >
                 <Input placeholder="abc@gmail.com" type="email" suffix={<MailOutlined />} />
               </Form.Item>
 
               <Form.Item
                 name="password"
-                label="Password"
-                rules={[{ required: true, message: "Please enter your password!" }]}
+                label="Mật khẩu"
+                rules={[{ required: true, message: "Vui lòng nhập mật khẩu của bạn!" }]}
               >
                 <Input.Password placeholder="•••••••" />
               </Form.Item>
@@ -118,7 +118,7 @@ const Login = () => {
               )}
 
               <div className="forgot-password">
-                <RouterLink to="/ForgetPassword">Forgot password?</RouterLink>
+                <RouterLink to="/ForgetPassword">Quên mật khẩu?</RouterLink>
               </div>
 
               <Form.Item>
@@ -129,11 +129,11 @@ const Login = () => {
                   className="login-button"
                   loading={loading}
                 >
-                  Login
+                  Đăng nhập
                 </Button>
               </Form.Item>
 
-              <Divider>or continue with</Divider>
+              <Divider>hoặc tiếp tục với</Divider>
 
               <Button
                 icon={
@@ -154,7 +154,7 @@ const Login = () => {
 
               <div className="signup-text">
                 <Text>
-                  Don't have an account? <RouterLink to="/register">Sign up</RouterLink>
+                  Chưa có tài khoản? <RouterLink to="/register">Đăng ký</RouterLink>
                 </Text>
               </div>
             </Form>

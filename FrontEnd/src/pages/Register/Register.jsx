@@ -93,24 +93,24 @@ const Register = () => {
         </span>
 
         <div className="register-container">
-          <div className="register-title">📝 Sign up 💪</div>
+          <div className="register-title">📝 Đăng ký 💪</div>
 
           <div className="register-form-content">
             <Form layout="vertical" onFinish={onFinish}>
               <Form.Item
-                label="Name"
+                label="Họ tên"
                 name="name"
-                rules={[{ required: true, message: "Please enter your name!" }]}
+                rules={[{ required: true, message: "Vui lòng nhập họ tên của bạn!" }]}
               >
-                <Input placeholder="Your full name" suffix={<UserOutlined />} />
+                <Input placeholder="Họ tên đầy đủ" suffix={<UserOutlined />} />
               </Form.Item>
 
               <Form.Item
-                label="Mobile no."
+                label="Số điện thoại"
                 name="phone_number"
                 rules={[
-                  { required: true, message: "Please enter your phone number!" },
-                  { pattern: /^\d{10}$/, message: "Phone number must be exactly 10 digits." },
+                  { required: true, message: "Vui lòng nhập số điện thoại của bạn!" },
+                  { pattern: /^\d{10}$/, message: "Số điện thoại phải có đúng 10 chữ số." },
                 ]}
               >
                 <Input placeholder="0123456789" maxLength={10} suffix={<PhoneOutlined />} />
@@ -120,19 +120,19 @@ const Register = () => {
                 label="Email"
                 name="email"
                 rules={[
-                  { required: true, message: "Please enter your email!" },
-                  { type: "email", message: "Invalid email address" },
+                  { required: true, message: "Vui lòng nhập email của bạn!" },
+                  { type: "email", message: "Địa chỉ email không hợp lệ" },
                 ]}
               >
                 <Input placeholder="abc@gmail.com" type="email" suffix={<MailOutlined />} />
               </Form.Item>
 
               <Form.Item
-                label="Password"
+                label="Mật khẩu"
                 name="password"
                 rules={[
-                  { required: true, message: "Please enter your password!" },
-                  { min: 6, message: "Password must be at least 6 characters." },
+                  { required: true, message: "Vui lòng nhập mật khẩu của bạn!" },
+                  { min: 6, message: "Mật khẩu phải có ít nhất 6 ký tự." },
                 ]}
               >
                 <Input.Password placeholder="********" suffix={<LockOutlined />} />
@@ -140,13 +140,13 @@ const Register = () => {
 
               <Form.Item>
                 <Button type="primary" htmlType="submit" block className="register-button">
-                  Get started
+                  Bắt đầu
                 </Button>
               </Form.Item>
 
               <div className="signup-text">
                 <Text>
-                  Already have an account? <RouterLink to="/login">Sign in</RouterLink>
+                  Đã có tài khoản? <RouterLink to="/login">Đăng nhập</RouterLink>
                 </Text>
               </div>
             </Form>
