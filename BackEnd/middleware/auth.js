@@ -27,8 +27,11 @@ const auth = async (req, res, next) => {
 
     // Kết nối DB và tìm user theo id trong payload token
     const pool = await sql.connect(dbConfig);
+    const userId = decoded.id || decoded.user_id;
     const result = await pool.request()
-      .input('id', sql.Int, decoded.id)
+
+    // cho e chinh ke mien decoded.user_id
+      .input('id', sql.Int, userId)
       .query('SELECT user_id AS id, email, full_name AS name, user_role AS role, NULL AS avatar FROM CUSTOMER WHERE user_id = @id');
 
     // Nếu user không tồn tại, từ chối truy cập
