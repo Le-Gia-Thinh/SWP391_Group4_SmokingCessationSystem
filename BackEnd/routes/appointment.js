@@ -35,4 +35,7 @@ router.post('/:id/report-missing-member', auth, authorize('coach'), appointmentC
 // Member tố cáo coach vắng mặt
 router.post('/report-missing-coach', auth, authorize('member'), appointmentController.reportMissingCoach);
 
+// Hiện thị danh sách tư vấn trong 1 giờ sắp tới
+router.get('/upcoming', auth, authorize('member'), appointmentController.getUpcomingAppointments);
+
 module.exports = router;

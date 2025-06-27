@@ -163,6 +163,7 @@ exports.rejectAppointment = async (req, res) => {
     const coachId = req.user.coach_id;
     const actualCoachId = (coachId === 0 || coachId === undefined) ? null : coachId;
     const sessionId = req.params.id;
+    
 
     console.log('DEBUG: In rejectAppointment');
     console.log('DEBUG: actualCoachId from token:', actualCoachId);
@@ -434,4 +435,34 @@ exports.reportMissingCoach = async (req, res) => {
     `);
 
   res.json({ success: true, message: 'Đã gửi phản hồi về việc coach vắng mặt' });
+};
+
+// Hiện thị danh sách cuộc hẹn trong 1h sắp tới
+exports.getUpcomingAppointments = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const now = new Date();
+    const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
+
+    const pool = await sql.connect(dbConfig);
+    const result = await pool.request()
+      .input('user_id', sql.Int, userId)
+      .input('now', sql.DateTime, now)
+      .input('next_hour', sql.DateTime, oneHourLater)
+      .query(`
+        SELECT cs.*, c.full_name AS coach_name
+        FROM COACHING_SESSION cs
+        JOIN COACH ch ON cs.coach_id = ch.coach_id
+        JOIN CUSTOMER c ON ch.user_id = c.user_id
+        WHERE cs.user_id = @user_id
+          AND cs.scheduled_time BETWEEN @now AND @next_hour
+          AND cs.session_status = 'accepted'
+        ORDER BY cs.scheduled_time ASC
+      `);
+
+    res.json({ success: true, data: result.recordset });
+  } catch (err) {
+    console.error('❌ Lỗi lấy phiên sắp diễn ra:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
 };
