@@ -21,12 +21,16 @@ import {
   BellOutlined,
   MenuOutlined,    // ← hamburger
   MoreOutlined,    // ← overflow indicator
+  ScheduleOutlined,
+  FileDoneOutlined,
+  MessageOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "../contexts/AuthContext";
 import axios from "axios";
 import "./Navbar.css";
 import { Dropdown } from "antd";
 import UserDropdownMenu from "../components/UserDropdownMenu";
+import { Link } from "react-router-dom";
 
 const { Header } = Layout;
 
@@ -63,6 +67,7 @@ export default function Navbar() {
       { key: "/plan", icon: <CalendarOutlined />, label: "Lập kế hoạch", onClick: handlePlanClick },
       { key: "/RankingBoard", icon: <TrophyOutlined />, label: "Xếp hạng", onClick: () => navigate("/RankingBoard") },
       { key: "/blog", icon: <BookOutlined />, label: "Blog", onClick: () => navigate("/blog") },
+      { key: "/chat", icon: <MessageOutlined />, label: "Chat", onClick: () => navigate("/chat") },
       { key: "/membership", icon: <TeamOutlined />, label: "Thành viên", onClick: () => navigate("/membership") },
     ];
 
@@ -89,6 +94,18 @@ export default function Navbar() {
         icon: <UserOutlined />,
         label: "Bảng điều khiển Admin",
         onClick: () => navigate("/admin-dashboard"),
+      });
+      items.push({
+        key: "/schedule-management",
+        icon: <ScheduleOutlined />,
+        label: "Quản lý Lịch",
+        onClick: () => navigate("/schedule-management"),
+      });
+      items.push({
+        key: "/post-approval",
+        icon: <FileDoneOutlined />,
+        label: "Quản lý Bài Viết",
+        onClick: () => navigate("/post-approval"),
       });
     }
     if (isCoach()) {

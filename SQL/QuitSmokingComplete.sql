@@ -7,8 +7,6 @@ USE SmokingSessation;
 GO
 
 -- 1. CUSTOMER: Bảng chính lưu thông tin người dùng (admin, member, coach)
-IF OBJECT_ID('CUSTOMER', 'U') IS NULL
-BEGIN
     CREATE TABLE CUSTOMER (
         user_id INT IDENTITY(1,1) PRIMARY KEY,                       -- Khóa chính tự động tăng
 
@@ -47,8 +45,7 @@ BEGIN
             (login_provider = 'google' AND google_id IS NOT NULL)
         )
     );
-END
-GO
+
 
 -- Unique constraint và chỉ mục (dùng sau CREATE TABLE)
         -- Dành cho tài khoản local (username phải unique)
@@ -59,11 +56,8 @@ GO
 
         -- Tăng tốc tìm kiếm login
         CREATE INDEX idx_login_email_provider ON CUSTOMER(email, login_provider);
-GO
 
--- 3. USER_PROFILE: Hồ sơ chi tiết thói quen hút thuốc của người dùng
-IF OBJECT_ID('USER_PROFILE', 'U') IS NULL
-BEGIN
+-- 2. USER_PROFILE: Hồ sơ chi tiết thói quen hút thuốc của người dùng
     CREATE TABLE USER_PROFILE (
         profile_id INT IDENTITY(1,1) PRIMARY KEY,                -- Khóa chính tự tăng
         user_id INT NULL,                                        -- Khóa ngoại liên kết với CUSTOMER
@@ -78,12 +72,8 @@ BEGIN
         CONSTRAINT fk_userprofile_customer FOREIGN KEY (user_id)
             REFERENCES CUSTOMER(user_id) ON DELETE SET NULL       -- Thành null nếu user bị xóa
     );
-END
-GO
 
--- 4. SUBSCRIPTION_PACKAGE: Các gói dịch vụ người dùng có thể đăng ký
-IF OBJECT_ID('SUBSCRIPTION_PACKAGE', 'U') IS NULL
-BEGIN
+-- 3. SUBSCRIPTION_PACKAGE: Các gói dịch vụ người dùng có thể đăng ký
     CREATE TABLE SUBSCRIPTION_PACKAGE (
         package_id INT IDENTITY(1,1) PRIMARY KEY,                 -- Khóa chính tự tăng
         package_name NVARCHAR(100) NOT NULL,                     -- Tên gói (ví dụ: Gói Cơ Bản, Gói Premium)
@@ -95,12 +85,8 @@ BEGIN
         premium_content BIT DEFAULT 0,                           -- Có quyền truy cập nội dung nâng cao không
         created_at DATE NOT NULL                                 -- Ngày tạo gói
     );
-END
-GO
 
--- 5. USER_SUBSCRIPTION: Lưu thông tin đăng ký gói của người dùng
-IF OBJECT_ID('USER_SUBSCRIPTION', 'U') IS NULL
-BEGIN
+-- 4. USER_SUBSCRIPTION: Lưu thông tin đăng ký gói của người dùng
     CREATE TABLE USER_SUBSCRIPTION (
         subscription_id INT IDENTITY(1,1) PRIMARY KEY,         -- Khóa chính tự tăng
         user_id INT NULL,                                      -- Cho phép NULL để tránh lỗi cascade
@@ -116,12 +102,8 @@ BEGIN
         CONSTRAINT fk_usersub_package FOREIGN KEY (package_id) REFERENCES SUBSCRIPTION_PACKAGE(package_id)
     );
     CREATE INDEX idx_usersub_user_status ON USER_SUBSCRIPTION(user_id, payment_status);
-END
-GO
 
--- 6. PAYMENT: Lưu thông tin thanh toán của người dùng
-IF OBJECT_ID('PAYMENT', 'U') IS NULL
-BEGIN
+-- 5. PAYMENT: Lưu thông tin thanh toán của người dùng
     CREATE TABLE PAYMENT (
         payment_id INT IDENTITY(1,1) PRIMARY KEY,              -- Khóa chính tự tăng       
         subscription_id INT NULL,                              -- Cho phép NULL nếu subscription bị xóa
@@ -141,12 +123,8 @@ BEGIN
 
     CREATE INDEX idx_payment_status ON PAYMENT(payment_status);
     CREATE INDEX idx_payment_transaction_id ON PAYMENT(transaction_id);
-END
-GO
 
--- 7. COACH: Thông tin của huấn luyện viên
-IF OBJECT_ID('COACH', 'U') IS NULL
-BEGIN
+-- 6. COACH: Thông tin của huấn luyện viên
     CREATE TABLE COACH (
         coach_id INT IDENTITY(1,1) PRIMARY KEY,                 -- Khóa chính
         user_id INT NULL UNIQUE,                           -- Mỗi coach tương ứng 1 user duy nhất
@@ -163,12 +141,8 @@ BEGIN
 
     -- Gợi ý: nếu thường lọc theo trạng thái
     CREATE INDEX idx_coach_status ON COACH(status);
-END
-GO
 
--- 8. PLAN_TEMPLATE: Mẫu kế hoạch cai thuốc dùng để tạo kế hoạch cho người dùng
-IF OBJECT_ID('PLAN_TEMPLATE', 'U') IS NULL
-BEGIN
+-- 7. PLAN_TEMPLATE: Mẫu kế hoạch cai thuốc dùng để tạo kế hoạch cho người dùng
     CREATE TABLE PLAN_TEMPLATE (
         template_id INT IDENTITY(1,1) PRIMARY KEY,         -- Khóa chính tự tăng
         name NVARCHAR(100) NOT NULL,                       -- Tên mẫu kế hoạch (VD: "30 ngày giảm dần")
@@ -179,12 +153,8 @@ BEGIN
     );
     -- Chỉ mục phụ để tìm kiếm theo tên mẫu
     CREATE INDEX idx_template_name ON PLAN_TEMPLATE(name);
-END
-GO
 
--- 9. CESSATION_PLAN: Lưu thông tin kế hoạch cai thuốc của người dùng
-IF OBJECT_ID('CESSATION_PLAN', 'U') IS NULL
-BEGIN
+-- 8. CESSATION_PLAN: Lưu thông tin kế hoạch cai thuốc của người dùng
     CREATE TABLE CESSATION_PLAN (
         plan_id INT IDENTITY(1,1) PRIMARY KEY,                     -- Khóa chính
         user_id INT NULL,                                          -- Cho phép null nếu CUSTOMER bị xóa
@@ -209,12 +179,8 @@ BEGIN
         CONSTRAINT chk_date_range CHECK (end_date >= start_date)
     );
     CREATE INDEX idx_plan_user_active ON CESSATION_PLAN(user_id, is_active);
-END
-GO
 
--- 10. WEEKLY_QUOTA: Quy định số thuốc tối đa mỗi tuần trong kế hoạch bỏ thuốc
-IF OBJECT_ID('WEEKLY_QUOTA', 'U') IS NULL
-BEGIN
+-- 9. WEEKLY_QUOTA: Quy định số thuốc tối đa mỗi tuần trong kế hoạch bỏ thuốc
     CREATE TABLE WEEKLY_QUOTA (
         quota_id INT IDENTITY(1,1) PRIMARY KEY,                       -- Khóa chính tự tăng
         plan_id INT NULL,                                            -- Cho phép null nếu kế hoạch bị xóa
@@ -225,12 +191,8 @@ BEGIN
         CONSTRAINT fk_weeklyquota_plan FOREIGN KEY (plan_id) REFERENCES CESSATION_PLAN(plan_id) ON DELETE SET NULL,
         CONSTRAINT uq_plan_week UNIQUE(plan_id, week_number)
     );
-END
-GO
 
--- 11. PLAN_MILESTONE: Lưu các mốc quan trọng trong quá trình thực hiện kế hoạch bỏ thuốc
-IF OBJECT_ID('PLAN_MILESTONE', 'U') IS NULL
-BEGIN
+-- 10. PLAN_MILESTONE: Lưu các mốc quan trọng trong quá trình thực hiện kế hoạch bỏ thuốc
     CREATE TABLE PLAN_MILESTONE (
         milestone_id INT IDENTITY(1,1) PRIMARY KEY,          -- Khóa chính tự tăng
         plan_id INT NULL,                                    -- Cho phép null để dùng SET NULL
@@ -243,12 +205,8 @@ BEGIN
 
         CONSTRAINT fk_milestone_plan FOREIGN KEY (plan_id) REFERENCES CESSATION_PLAN(plan_id) ON DELETE SET NULL
     );
-END
-GO
 
--- 12. PLAN_FEEDBACK: Lưu phản hồi của huấn luyện viên (Coach) về kế hoạch bỏ thuốc
-IF OBJECT_ID('PLAN_FEEDBACK', 'U') IS NULL
-BEGIN
+-- 11. PLAN_FEEDBACK: Lưu phản hồi của huấn luyện viên (Coach) về kế hoạch bỏ thuốc
     CREATE TABLE PLAN_FEEDBACK (
         feedback_id INT IDENTITY(1,1) PRIMARY KEY,         -- Khóa chính tự tăng
         plan_id INT NULL,                                  -- Cho phép null nếu kế hoạch bị xóa
@@ -260,12 +218,8 @@ BEGIN
         CONSTRAINT fk_feedback_plan FOREIGN KEY (plan_id) REFERENCES CESSATION_PLAN(plan_id) ON DELETE SET NULL,
         CONSTRAINT fk_feedback_coach FOREIGN KEY (coach_id) REFERENCES COACH(coach_id) ON DELETE SET NULL
     );
-END
-GO
 
--- 13. SMOKING_LOG: Ghi lại hành vi hút thuốc của người dùng theo thời gian
-IF OBJECT_ID('SMOKING_LOG', 'U') IS NULL
-BEGIN
+-- 13\2. SMOKING_LOG: Ghi lại hành vi hút thuốc của người dùng theo thời gian
     CREATE TABLE SMOKING_LOG (
         log_id INT IDENTITY(1,1) PRIMARY KEY,                  -- Mã log tự tăng
         user_id INT NULL,                                      -- Cho phép null nếu user bị xóa
@@ -277,12 +231,8 @@ BEGIN
 
         CONSTRAINT fk_smokinglog_customer FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id) ON DELETE SET NULL
     );
-END
-GO
 
--- 14. DAILY_SMOKING_SUMMARY: Tổng hợp số điếu thuốc mỗi ngày theo user và kế hoạch
-IF OBJECT_ID('DAILY_SMOKING_SUMMARY', 'U') IS NULL
-BEGIN
+-- 13. DAILY_SMOKING_SUMMARY: Tổng hợp số điếu thuốc mỗi ngày theo user và kế hoạch
     CREATE TABLE DAILY_SMOKING_SUMMARY (
         id INT IDENTITY(1,1) PRIMARY KEY,                      -- Khóa chính tự tăng
         user_id INT NULL,                                      -- Cho phép null nếu user bị xóa
@@ -294,12 +244,8 @@ BEGIN
         CONSTRAINT fk_dsm_summary_customer FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id) ON DELETE SET NULL,
         -- CONSTRAINT fk_dsm_summary_plan FOREIGN KEY (plan_id) REFERENCES CESSATION_PLAN(plan_id) ON DELETE SET NULL
     );
-END
-GO
 
--- 15. PROGRESS_TRACKER: Theo dõi tiến độ bỏ thuốc của người dùng
-IF OBJECT_ID('PROGRESS_TRACKER', 'U') IS NULL
-BEGIN
+-- 14. PROGRESS_TRACKER: Theo dõi tiến độ bỏ thuốc của người dùng
     CREATE TABLE PROGRESS_TRACKER (
         tracker_id INT IDENTITY(1,1) PRIMARY KEY,                  -- Khóa chính tự tăng
         user_id INT NULL,                                          -- Cho phép null nếu user bị xóa
@@ -311,12 +257,8 @@ BEGIN
 
         CONSTRAINT fk_progress_customer FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id) ON DELETE SET NULL
     );
-END
-GO
 
--- 16. FTND_RESULT: Lưu kết quả bài test FTND đánh giá mức độ nghiện
-IF OBJECT_ID('FTND_RESULT', 'U') IS NULL
-BEGIN
+-- 15. FTND_RESULT: Lưu kết quả bài test FTND đánh giá mức độ nghiện
     CREATE TABLE FTND_RESULT (
         result_id INT IDENTITY(1,1) PRIMARY KEY,                               -- Khóa chính tự tăng
         user_id INT NULL,                                                      -- Cho phép null nếu user bị xóa
@@ -325,12 +267,8 @@ BEGIN
 
         CONSTRAINT fk_ftnd_user FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id) ON DELETE SET NULL
     );
-END
-GO
 
--- 17. COACH_SCHEDULE: Lịch làm việc của huấn luyện viên
-IF OBJECT_ID('COACH_SCHEDULE', 'U') IS NULL
-BEGIN
+-- 16. COACH_SCHEDULE: Lịch làm việc của huấn luyện viên
     CREATE TABLE COACH_SCHEDULE (
         schedule_id INT IDENTITY(1,1) PRIMARY KEY,                   -- Khóa chính tự tăng
         coach_id INT NULL,                                           -- Cho phép null nếu coach bị xóa
@@ -345,12 +283,8 @@ BEGIN
         CONSTRAINT chk_schedule_time CHECK (end_time > start_time)
     );
     CREATE INDEX idx_schedule_coach_status ON COACH_SCHEDULE(coach_id, status);
-END
-GO
 
--- 18. COACHING_SESSION: Lưu thông tin các phiên làm việc giữa Coach và Member
-IF OBJECT_ID('COACHING_SESSION', 'U') IS NULL
-BEGIN
+-- 17. COACHING_SESSION: Lưu thông tin các phiên làm việc giữa Coach và Member
     CREATE TABLE COACHING_SESSION (
         session_id INT IDENTITY(1,1) PRIMARY KEY,                          -- Khóa chính tự tăng cho mỗi phiên
         user_id INT NULL,                                                 -- Người dùng tham gia (có thể null nếu user bị xóa)
@@ -382,12 +316,8 @@ BEGIN
     -- Chỉ mục phục vụ truy vấn nhanh theo trạng thái và thời gian
     CREATE INDEX idx_session_user_status ON COACHING_SESSION(user_id, session_status);
     CREATE INDEX idx_session_coach_time ON COACHING_SESSION(coach_id, scheduled_time);
-END
-GO
 
--- 19. COACHING_MESSAGE: Lưu tin nhắn giữa Member và Coach trong hoặc ngoài phiên làm việc
-IF OBJECT_ID('COACHING_MESSAGE', 'U') IS NULL
-BEGIN
+-- 18. COACHING_MESSAGE: Lưu tin nhắn giữa Member và Coach trong hoặc ngoài phiên làm việc
     CREATE TABLE COACHING_MESSAGE (
         message_id INT IDENTITY(1,1) PRIMARY KEY,                   -- Khóa chính tự tăng cho mỗi tin nhắn
         user_id INT NULL,                                          -- Người gửi (thành viên) – null nếu bị xóa
@@ -405,15 +335,11 @@ BEGIN
     CREATE INDEX idx_msg_user_read ON COACHING_MESSAGE(user_id, is_read);
     -- Chỉ mục lọc theo thời gian gửi và coach
     CREATE INDEX idx_msg_coach_time ON COACHING_MESSAGE(coach_id, sent_at);
-END
-GO
 
--- 20. ACHIEVEMENT: Lưu các loại huy hiệu / thành tích có thể nhận được
-IF OBJECT_ID('ACHIEVEMENT', 'U') IS NULL
-BEGIN
+-- 19. ACHIEVEMENT: Lưu các loại huy hiệu / thành tích có thể nhận được
     CREATE TABLE ACHIEVEMENT (
         achievement_id INT IDENTITY(1,1) PRIMARY KEY,      -- Khóa chính tự tăng
-        title VARCHAR(100) NOT NULL,                       -- Tiêu đề thành tích (ví dụ: '7 ngày không hút thuốc')
+        title NVARCHAR(100) NOT NULL,                       -- Tiêu đề thành tích (ví dụ: '7 ngày không hút thuốc')
         description TEXT,                                  -- Mô tả chi tiết về thành tích
         badge_image VARCHAR(255),                          -- Đường dẫn tới ảnh huy hiệu (biểu tượng thành tích)
         achievement_type VARCHAR(20),                      -- Loại thành tích: 'daily', 'milestone', 'event'...
@@ -422,12 +348,7 @@ BEGIN
     -- Chỉ mục gợi ý nếu thường lọc theo loại hoặc mức độ khó
     CREATE INDEX idx_achievement_type_level ON ACHIEVEMENT(achievement_type, difficulty_level);
 
-END
-GO
-
--- 21. USER_ACHIEVEMENT: Ghi nhận những thành tích mà người dùng đã đạt được
-IF OBJECT_ID('USER_ACHIEVEMENT', 'U') IS NULL
-BEGIN
+-- 20. USER_ACHIEVEMENT: Ghi nhận những thành tích mà người dùng đã đạt được
     CREATE TABLE USER_ACHIEVEMENT (
         user_achievement_id INT IDENTITY(1,1) PRIMARY KEY,        -- Khóa chính tự tăng
         user_id INT NOT NULL,                                     -- Người dùng đạt thành tích
@@ -438,12 +359,8 @@ BEGIN
         CONSTRAINT fk_userachievement_customer FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id) ON DELETE CASCADE,        -- Nếu xóa user → xóa ACHIEVEMENT này
         CONSTRAINT fk_userachievement_achievement FOREIGN KEY (achievement_id) REFERENCES ACHIEVEMENT(achievement_id) ON DELETE SET NULL  -- Nếu xóa huy hiệu → giữ ACHIEVEMENT
     );
-END
-GO
 
--- 22. NOTIFICATION: Lưu các thông báo gửi đến người dùng
-IF OBJECT_ID('NOTIFICATION', 'U') IS NULL
-BEGIN
+-- 21. NOTIFICATION: Lưu các thông báo gửi đến người dùng
     CREATE TABLE NOTIFICATION (
         notification_id INT IDENTITY(1,1) PRIMARY KEY,       -- Khóa chính tự tăng
         user_id INT NOT NULL,                                -- Mã người dùng nhận thông báo
@@ -456,12 +373,8 @@ BEGIN
         CONSTRAINT fk_notification_customer 
             FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id) ON DELETE CASCADE
     );
-END
-GO
 
--- 23. NOTIFICATION_PREFERENCE: Cài đặt tùy chọn nhận thông báo của người dùng
-IF OBJECT_ID('NOTIFICATION_PREFERENCE', 'U') IS NULL
-BEGIN
+-- 22. NOTIFICATION_PREFERENCE: Cài đặt tùy chọn nhận thông báo của người dùng
     CREATE TABLE NOTIFICATION_PREFERENCE (
         preference_id INT IDENTITY(1,1) PRIMARY KEY,           -- Khóa chính tự tăng
         user_id INT NOT NULL,                                  -- Mã người dùng (liên kết đến CUSTOMER)
@@ -474,12 +387,8 @@ BEGIN
         CONSTRAINT fk_notifpref_customer 
             FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id) ON DELETE CASCADE
     );
-END
-GO
 
--- 24. COMMUNITY_POST: Bảng lưu bài viết của người dùng trong cộng đồng
-IF OBJECT_ID('COMMUNITY_POST', 'U') IS NULL
-BEGIN
+-- 23. COMMUNITY_POST: Bảng lưu bài viết của người dùng trong cộng đồng
     CREATE TABLE COMMUNITY_POST (
         post_id INT IDENTITY(1,1) PRIMARY KEY,             -- Khóa chính tự tăng
         user_id INT NULL,                                  -- Tác giả bài viết, liên kết đến CUSTOMER
@@ -489,15 +398,12 @@ BEGIN
         last_updated DATETIME,                             -- Thời điểm chỉnh sửa gần nhất
         view_count INT DEFAULT 0,                          -- Lượt xem bài viết
         is_pinned BIT DEFAULT 0,                           -- Bài được ghim (1: có, 0: không)
+        is_approved BIT DEFAULT 0,                         -- 0: chưa duyệt, 1: đã duyệt
 
         CONSTRAINT fk_post_user FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id) ON DELETE SET NULL -- Xóa user sẽ xóa bài
     );
-END
-GO
 
--- 25. POST_COMMENT: Bảng lưu bình luận trong bài viết cộng đồng
-IF OBJECT_ID('POST_COMMENT', 'U') IS NULL
-BEGIN
+-- 24. POST_COMMENT: Bảng lưu bình luận trong bài viết cộng đồng
     CREATE TABLE POST_COMMENT (
         comment_id INT IDENTITY(1,1) PRIMARY KEY,                   -- Khóa chính tự tăng
         post_id INT NOT NULL,                                       -- Bình luận thuộc bài viết nào
@@ -510,12 +416,8 @@ BEGIN
         CONSTRAINT fk_comment_user FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id) ON DELETE SET NULL,
         CONSTRAINT fk_comment_parent FOREIGN KEY (parent_comment_id) REFERENCES POST_COMMENT(comment_id) ON DELETE NO ACTION
     );
-END
-GO
 
--- 26. RESOURCE: Lưu trữ tài liệu, bài viết hỗ trợ cho người dùng
-IF OBJECT_ID('RESOURCE', 'U') IS NULL
-BEGIN
+-- 25. RESOURCE: Lưu trữ tài liệu, bài viết hỗ trợ cho người dùng
     CREATE TABLE RESOURCE (
         resource_id INT IDENTITY(1,1) PRIMARY KEY,              -- Khóa chính tự tăng
         title VARCHAR(100) NOT NULL,                            -- Tiêu đề tài nguyên
@@ -528,12 +430,8 @@ BEGIN
 
         CONSTRAINT fk_resource_creator FOREIGN KEY (admin_id) REFERENCES CUSTOMER(user_id) ON DELETE CASCADE
     );
-END
-GO
 
--- 27. FEEDBACK: Thu thập đánh giá và phản hồi người dùng về hệ thống hoặc tính năng cụ thể
-IF OBJECT_ID('FEEDBACK', 'U') IS NULL
-BEGIN
+-- 26. FEEDBACK: Thu thập đánh giá và phản hồi người dùng về hệ thống hoặc tính năng cụ thể
     CREATE TABLE FEEDBACK (
         feedback_id INT IDENTITY(1,1) PRIMARY KEY,              -- Khóa chính tự tăng
         user_id INT NOT NULL,                                   -- Người gửi phản hồi (liên kết đến CUSTOMER)
@@ -545,12 +443,8 @@ BEGIN
         
         CONSTRAINT fk_feedback_user FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id) ON DELETE CASCADE
     );
-END
-GO
 
--- 28. RESET_TOKENS: Lưu mã đặt lại mật khẩu được gửi tới người dùng (qua email)
-IF OBJECT_ID('RESET_TOKENS', 'U') IS NULL
-BEGIN
+-- 27. RESET_TOKENS: Lưu mã đặt lại mật khẩu được gửi tới người dùng (qua email)
     CREATE TABLE RESET_TOKENS (
         id INT IDENTITY(1,1) PRIMARY KEY,                   -- Khóa chính tự tăng
         user_id INT NOT NULL,                               -- Người yêu cầu đặt lại mật khẩu
@@ -561,12 +455,8 @@ BEGIN
 
         FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id) ON DELETE CASCADE
     );
-END
-GO
 
--- 29. HABIT_LOG: Ghi nhận hành vi không hút thuốc theo từng mốc giờ trong ngày
-IF OBJECT_ID('HABIT_LOG', 'U') IS NULL
-BEGIN
+-- 28. HABIT_LOG: Ghi nhận hành vi không hút thuốc theo từng mốc giờ trong ngày
     CREATE TABLE HABIT_LOG (
         log_id INT IDENTITY(1,1) PRIMARY KEY,                  -- Khóa chính tự tăng
         user_id INT NOT NULL,                                 -- Người dùng thực hiện hành vi
@@ -574,19 +464,15 @@ BEGIN
         log_date DATE NOT NULL,                               -- Ngày ghi nhận
         time_slot INT NOT NULL CHECK (time_slot BETWEEN 0 AND 8), -- Mốc thời gian (0: 7h, ..., 8: 22h)
         completed BIT NOT NULL DEFAULT 0,                     -- Đã hoàn thành không hút tại slot đó hay chưa
-        points_awarded FlOAT DEFAULT 0,                         -- Điểm thưởng cho hành vi này
+        points_awarded FLOAT DEFAULT 0,                         -- Điểm thưởng cho hành vi này
         created_at DATETIME DEFAULT GETDATE(),                -- Ngày tạo bản ghi
 
         CONSTRAINT fk_habitlog_user FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id) ON DELETE CASCADE,
         CONSTRAINT fk_habitlog_plan FOREIGN KEY (plan_id) REFERENCES CESSATION_PLAN(plan_id),
         UNIQUE(user_id, log_date, time_slot)                  -- Một người chỉ có 1 bản ghi/slot/ngày
     );
-END
-GO
 
--- 30. USER_SCORE: Tổng điểm và cấp bậc hiện tại của người dùng trong hệ thống
-IF OBJECT_ID('USER_SCORE', 'U') IS NULL
-BEGIN
+-- 29. USER_SCORE: Tổng điểm và cấp bậc hiện tại của người dùng trong hệ thống
     CREATE TABLE USER_SCORE (
         user_id INT PRIMARY KEY,                              -- Mỗi user có 1 dòng duy nhất
         total_points FlOAT NOT NULL DEFAULT 0,                  -- Tổng điểm tích lũy
@@ -595,12 +481,8 @@ BEGIN
 
         CONSTRAINT fk_score_user FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id) ON DELETE CASCADE
     );
-END
-GO
 
--- 31. USER_SCORE_LOG: Lưu chi tiết điểm được cộng theo từng mốc giờ
-IF OBJECT_ID('USER_SCORE_LOG', 'U') IS NULL
-BEGIN
+-- 30. USER_SCORE_LOG: Lưu chi tiết điểm được cộng theo từng mốc giờ
     CREATE TABLE USER_SCORE_LOG (
         id INT IDENTITY(1,1) PRIMARY KEY,                     -- Khóa chính tự tăng
         user_id INT NOT NULL,                                 -- Người dùng nhận điểm
@@ -612,5 +494,37 @@ BEGIN
         CONSTRAINT fk_scorelog_user FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id),
         UNIQUE(user_id, log_date, time_slot)                  -- Một người chỉ có 1 lần cộng điểm/slot/ngày
     );
-END
-GO
+
+
+ -- 31. COMMUNITY_CHAT: Lưu tin nhắn trong phòng trò chuyện chung của cộng đồng
+CREATE TABLE COMMUNITY_CHAT (
+    message_id INT IDENTITY PRIMARY KEY,                       -- Khóa chính tự tăng cho mỗi tin nhắn
+    user_id INT,                                               -- Người gửi tin nhắn (liên kết đến CUSTOMER)
+    content NVARCHAR(MAX),                                     -- Nội dung tin nhắn
+    sent_at DATETIME DEFAULT GETDATE(),                        -- Thời điểm gửi tin nhắn
+
+    CONSTRAINT fk_communitychat_user FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id) -- Khóa ngoại đến bảng CUSTOMER
+);
+
+-- 32. CHAT_TOPIC: Chủ đề thảo luận do người dùng tạo trong cộng đồng
+CREATE TABLE CHAT_TOPIC (
+    topic_id INT IDENTITY PRIMARY KEY,                         -- Khóa chính tự tăng cho mỗi chủ đề
+    creator_id INT,                                            -- Người tạo chủ đề (liên kết đến CUSTOMER)
+    title NVARCHAR(200),                                       -- Tiêu đề chủ đề
+    description NVARCHAR(MAX),                                 -- Mô tả nội dung của chủ đề
+    created_at DATETIME DEFAULT GETDATE(),                     -- Ngày tạo chủ đề
+
+    CONSTRAINT fk_chattopic_creator FOREIGN KEY (creator_id) REFERENCES CUSTOMER(user_id) -- Khóa ngoại đến bảng CUSTOMER
+);
+
+-- 33. TOPIC_MESSAGE: Tin nhắn trong từng chủ đề cụ thể
+CREATE TABLE TOPIC_MESSAGE (
+    message_id INT IDENTITY PRIMARY KEY,                       -- Khóa chính tự tăng cho mỗi tin nhắn
+    topic_id INT,                                              -- Chủ đề mà tin nhắn thuộc về (liên kết đến CHAT_TOPIC)
+    user_id INT,                                               -- Người gửi tin nhắn (liên kết đến CUSTOMER)
+    content NVARCHAR(MAX),                                     -- Nội dung tin nhắn
+    sent_at DATETIME DEFAULT GETDATE(),                        -- Thời điểm gửi tin nhắn
+
+    CONSTRAINT fk_topicmsg_topic FOREIGN KEY (topic_id) REFERENCES CHAT_TOPIC(topic_id), -- Khóa ngoại đến CHAT_TOPIC
+    CONSTRAINT fk_topicmsg_user FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id)       -- Khóa ngoại đến CUSTOMER
+);

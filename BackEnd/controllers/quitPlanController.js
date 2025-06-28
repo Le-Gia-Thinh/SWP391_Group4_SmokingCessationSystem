@@ -11,7 +11,7 @@ exports.checkPlanExists = async (req, res) => {
       .request()
       .input("userId", sql.Int, req.params.userId)
       .query(`
-        SELECT TOP 1 start_date, plan_type
+        SELECT TOP 1 start_date, plan_type, month_quit
         FROM CESSATION_PLAN
         WHERE user_id = @userId AND is_active = 1
       `);
@@ -20,7 +20,7 @@ exports.checkPlanExists = async (req, res) => {
       res.json({
         hasPlan: true,
         start_date: result.recordset[0].start_date,
-        quit_months: 7, // có thể thay thế bằng giá trị động sau này
+        quit_months: result.recordset[0].month_quit, // lấy đúng từ DB
       });
     } else {
       res.json({ hasPlan: false });

@@ -11,17 +11,6 @@ BEGIN
 END
 GO
 
--- Xóa database Quit_Smoking nếu tồn tại
-IF DB_ID('Quit_Smoking') IS NOT NULL
-BEGIN
-    ALTER DATABASE Quit_Smoking SET MULTI_USER WITH ROLLBACK IMMEDIATE;
-    ALTER DATABASE Quit_Smoking SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
-    DROP DATABASE Quit_Smoking;
-END
-GO
-
-
-
 -- XÓA DỮ LIỆU TOÀN BỘ CÁC BẢNG PHỤ THUỘC (theo đúng thứ tự khóa ngoại)
 DELETE FROM HABIT_LOG;
 DELETE FROM USER_SCORE;

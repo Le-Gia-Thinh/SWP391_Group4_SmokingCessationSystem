@@ -162,8 +162,13 @@ WHEN NOT MATCHED THEN
   INSERT (user_id, total_points, current_level, last_updated)
   VALUES (source.user_id, 50, 'Beginner', GETDATE());
 
+-- 9. ACHIEVEMENT mẫu
+INSERT INTO ACHIEVEMENT (title, description, badge_image, achievement_type, difficulty_level)
+VALUES 
+(N'7 ngày không hút thuốc', N'Chúc mừng bạn đã không hút thuốc trong 7 ngày liên tiếp!', NULL, 'daily', 1),
+(N'30 ngày không hút thuốc', N'Bạn đã vượt qua cơn thèm thuốc suốt 1 tháng. Rất tuyệt!', NULL, 'milestone', 2);
 
--- 9. USER_ACHIEVEMENT
+-- 10. USER_ACHIEVEMENT
 INSERT INTO USER_ACHIEVEMENT (user_id, achievement_id, earned_date, is_shared)
 SELECT user_id, 1, GETDATE(), 1
 FROM CUSTOMER WHERE username = 'member2';
@@ -172,7 +177,7 @@ INSERT INTO USER_ACHIEVEMENT (user_id, achievement_id, earned_date, is_shared)
 SELECT user_id, 2, GETDATE(), 1
 FROM CUSTOMER WHERE username = 'member3';
 
--- 10. HABIT_LOG – dùng truy vấn lấy plan_id
+-- 11. HABIT_LOG – dùng truy vấn lấy plan_id
 -- member2
 INSERT INTO HABIT_LOG (user_id, plan_id, log_date, time_slot, completed, points_awarded)
 SELECT c.user_id, p.plan_id, '2025-06-20', 2, 1, 5
@@ -194,3 +199,39 @@ FROM CUSTOMER c
 JOIN CESSATION_PLAN p ON p.user_id = c.user_id
 WHERE c.username = 'member4';
 
+-- 12. COMMUNITY_CHAT – Group chat cộng đồng
+INSERT INTO COMMUNITY_CHAT (user_id, content)
+SELECT user_id, N'Chào mọi người, mình vừa bắt đầu hành trình cai thuốc hôm nay!'
+FROM CUSTOMER WHERE username = 'member1';
+
+INSERT INTO COMMUNITY_CHAT (user_id, content)
+SELECT user_id, N'Chúc mừng bạn nhé! Cố lên 💪'
+FROM CUSTOMER WHERE username = 'coach1';
+
+INSERT INTO COMMUNITY_CHAT (user_id, content)
+SELECT user_id, N'Mọi người có mẹo nào giúp vượt qua cơn thèm thuốc không?'
+FROM CUSTOMER WHERE username = 'member3';
+
+-- 13. CHAT_TOPIC – Topic Member tạo
+INSERT INTO CHAT_TOPIC (creator_id, title, description)
+SELECT user_id, N'Giảm căng thẳng khi bỏ thuốc', N'Chia sẻ cách bạn thư giãn, thiền, vận động giúp vượt qua cảm giác thèm thuốc.'
+FROM CUSTOMER WHERE username = 'member2';
+
+INSERT INTO CHAT_TOPIC (creator_id, title, description)
+SELECT user_id, N'Bí quyết giữ vững tinh thần mỗi sáng', N'Hãy chia sẻ thói quen buổi sáng lành mạnh giúp bạn không nghĩ đến thuốc lá.'
+FROM CUSTOMER WHERE username = 'coach2';
+
+-- 14. TOPIC_MESSAGE – Nhắn tin trong từng Topic
+-- Chủ đề 1
+INSERT INTO TOPIC_MESSAGE (topic_id, user_id, content)
+SELECT 1, user_id, N'Tôi thường nghe nhạc nhẹ và đi dạo khi cảm thấy thèm thuốc.'
+FROM CUSTOMER WHERE username = 'member3';
+
+INSERT INTO TOPIC_MESSAGE (topic_id, user_id, content)
+SELECT 1, user_id, N'Thiền 10 phút mỗi sáng giúp mình rất nhiều. Mọi người nên thử!'
+FROM CUSTOMER WHERE username = 'coach1';
+
+-- Chủ đề 2
+INSERT INTO TOPIC_MESSAGE (topic_id, user_id, content)
+SELECT 2, user_id, N'Mỗi sáng mình uống nước chanh ấm và đọc 10 phút sách.'
+FROM CUSTOMER WHERE username = 'member4';

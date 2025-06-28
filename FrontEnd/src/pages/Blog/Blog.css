@@ -1,0 +1,126 @@
+.blog-page {
+    width: 100%;
+    min-height: 100vh;
+    background: linear-gradient(180deg, #eaffd0 0%, #d2f7c5 60%, #eaffd0 100%);
+    display: flex;
+    justify-content: center;
+    padding: 60px 0;
+}
+
+.blog-content-container {
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    padding: 40px;
+    width: 100%;
+    max-width: 960px;
+}
+
+.blog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.featured-blogs {
+    margin-bottom: 48px;
+}
+
+.normal-blogs {
+    margin-bottom: 32px;
+}
+
+.blog-meta {
+    margin-top: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ✅ Card riêng cho blog nổi bật */
+.blog-feature-card {
+    border: 1px solid #52c41a !important;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 1;
+    background: #fff;
+}
+
+.blog-feature-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+    border: 1px solid #52c41a !important;
+    z-index: 2;
+}
+
+/* ✅ Cho phép badge nổi bật không bị cắt khi hover */
+.ant-badge-ribbon-wrapper {
+    overflow: visible !important;
+    display: block;
+    position: relative;
+}
+
+/* Carousel item padding */
+.ant-carousel .slick-slide>div {
+    padding: 0 12px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .blog-page {
+        padding: 24px 0;
+    }
+
+    .blog-content-container {
+        padding: 24px 16px;
+    }
+
+    .blog-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+}
+
+/* Form Modal Styles */
+.ant-modal-content {
+    border-radius: 12px;
+}
+
+.ant-form-item-label>label {
+    font-weight: 600;
+    color: #333;
+}
+
+.ant-input,
+.ant-input-textarea {
+    border-radius: 8px;
+    border: 1px solid #d9d9d9;
+    transition: all 0.3s ease;
+}
+
+.ant-input:focus,
+.ant-input-textarea:focus {
+    border-color: #52c41a;
+    box-shadow: 0 0 0 2px rgba(82, 196, 26, 0.2);
+}
+
+.ant-input-textarea textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+/* Ensure form is properly styled */
+.ant-form-vertical .ant-form-item {
+    margin-bottom: 24px;
+}
+
+.ant-form-item-explain-error {
+    color: #ff4d4f;
+    font-size: 12px;
+    margin-top: 4px;
+}
