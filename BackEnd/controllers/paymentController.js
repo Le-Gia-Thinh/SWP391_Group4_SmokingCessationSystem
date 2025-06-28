@@ -1,115 +1,182 @@
-// src/controllers/paymentController.js
-const crypto = require('crypto');
-const qs = require('qs');
-const dayjs = require('dayjs');
-const axios = require('axios');
-const Stripe = require('stripe');
+// controllers/paymentController.js
+require('dotenv').config();
+const { v4: uuidv4 } = require('uuid');
+const { sql, dbConfig } = require('../config/database');
+const { bin, accountNo, accountName } = require('../config/vietQR.config');
 
-const { vnpay, momo, creditcard } = require('../config');
-const stripe = Stripe(creditcard.stripeSecretKey);
+exports.createPayment = async (req, res) => {
+    const { packageId, amount, description } = req.body;
+    const userId = req.user?.id;
 
-exports.createPayment = async (req, res, next) => {
+    // 1) Kiểm tra xác thực và input
+    if (!userId) {
+        return res.status(401).json({ error: 'Chưa đăng nhập' });
+    }
+    if (!packageId || isNaN(amount) || amount < 0) {
+        return res.status(400).json({ error: 'PackageId hoặc amount không hợp lệ' });
+    }
+    if (!bin || !accountNo || !accountName) {
+        return res.status(500).json({ error: 'Cấu hình VietQR không đầy đủ' });
+    }
+
+    let pool;
     try {
-        const { method, amount, bankCode } = req.body;
+        pool = await sql.connect(dbConfig);
 
-        switch (method) {
-            case 'vnpay': {
-                // --- VNPay ---
-                const tmnCode = vnpay.tmnCode;
-                const secretKey = vnpay.hashSecret;
-                const vnpUrl = vnpay.url;
-                const returnUrl = vnpay.returnUrl;
-                const createDate = dayjs().format('YYYYMMDDHHmmss');
-                const orderId = dayjs().valueOf().toString();
-                const vnpAmount = (amount || 0) * 100;
-
-                let params = {
-                    vnp_Version: '2.1.0',
-                    vnp_Command: 'pay',
-                    vnp_TmnCode: tmnCode,
-                    vnp_Locale: 'vn',
-                    vnp_CurrCode: 'VND',
-                    vnp_TxnRef: orderId,
-                    vnp_OrderInfo: `Thanh toan don ${orderId}`,
-                    vnp_Amount: vnpAmount.toString(),
-                    vnp_ReturnUrl: returnUrl,
-                    vnp_IpAddr: req.ip,
-                    vnp_CreateDate: createDate,
-                };
-                if (bankCode) params.vnp_BankCode = bankCode;
-
-                // sort & sign
-                const sorted = Object.keys(params).sort()
-                    .reduce((a, k) => { a[k] = params[k]; return a; }, {});
-                const signData = qs.stringify(sorted, { encode: false });
-                const signature = crypto.createHmac('sha512', secretKey)
-                    .update(signData)
-                    .digest('hex');
-                params.vnp_SecureHash = signature;
-
-                const paymentUrl = `${vnpUrl}?${qs.stringify(params, { encode: true })}`;
-                return res.json({ provider: 'vnpay', paymentUrl });
-            }
-
-            case 'momo': {
-                // --- MoMo ---
-                const {
-                    endpoint, partnerCode, accessKey,
-                    secretKey, returnUrl, notifyUrl
-                } = momo;
-                const requestId = partnerCode + Date.now();
-                const orderId = requestId;
-                const orderInfo = 'Thanh toan Premium';
-                const extraData = '';
-                const amt = (amount || 0).toString();
-
-                // raw signature
-                const rawSig =
-                    `accessKey=${accessKey}` +
-                    `&amount=${amt}` +
-                    `&extraData=${extraData}` +
-                    `&ipnUrl=${notifyUrl}` +
-                    `&orderId=${orderId}` +
-                    `&orderInfo=${orderInfo}` +
-                    `&partnerCode=${partnerCode}` +
-                    `&redirectUrl=${returnUrl}` +
-                    `&requestId=${requestId}` +
-                    `&requestType=captureWallet`;
-                const signature = crypto.createHmac('sha256', secretKey)
-                    .update(rawSig)
-                    .digest('hex');
-
-                const body = {
-                    partnerCode, accessKey, requestId, amount: amt,
-                    orderId, orderInfo, redirectUrl: returnUrl,
-                    ipnUrl: notifyUrl, extraData,
-                    requestType: 'captureWallet',
-                    signature, lang: 'vi'
-                };
-                const { data } = await axios.post(endpoint, body, {
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                return res.json({ provider: 'momo', paymentUrl: data.payUrl });
-            }
-
-            case 'creditcard': {
-                // --- Credit Card (Stripe) ---
-                const amt = Math.round(amount || 0); // số nguyên
-                const paymentIntent = await stripe.paymentIntents.create({
-                    amount: amt,
-                    currency: 'vnd',
-                    payment_method_types: ['card'],
-                });
-                return res.json({
-                    provider: 'creditcard',
-                    clientSecret: paymentIntent.client_secret
-                });
-            }
-
-            default:
-                return res.status(400).json({ message: 'Phương thức thanh toán không hợp lệ' });
+        // 2) Lấy thông tin gói
+        const pkgRes = await pool.request()
+            .input('pid', sql.Int, packageId)
+            .query(`
+        SELECT package_name, duration_days
+        FROM SUBSCRIPTION_PACKAGE
+        WHERE package_id = @pid
+      `);
+        if (!pkgRes.recordset.length) {
+            return res.status(404).json({ error: 'Gói dịch vụ không tồn tại' });
         }
+        const { package_name, duration_days } = pkgRes.recordset[0];
+
+        let subscriptionId;
+
+        // 3) Kiểm tra subscription active để gia hạn
+        const activeSub = await pool.request()
+            .input('uid', sql.Int, userId)
+            .input('pid', sql.Int, packageId)
+            .query(`
+        SELECT subscription_id
+        FROM USER_SUBSCRIPTION
+        WHERE user_id = @uid
+          AND package_id = @pid
+          AND payment_status = 'active'
+          AND end_date > GETDATE()
+      `);
+
+        if (activeSub.recordset.length) {
+            // Gia hạn trên subscription hiện có
+            subscriptionId = activeSub.recordset[0].subscription_id;
+            await pool.request()
+                .input('sid', sql.Int, subscriptionId)
+                .input('dura', sql.Int, duration_days)
+                .query(`
+          UPDATE USER_SUBSCRIPTION
+          SET end_date = DATEADD(day, @dura, end_date)
+          WHERE subscription_id = @sid
+        `);
+        } else {
+            // Tạo mới subscription (pending)
+            const now = new Date();
+            const end = new Date(now);
+            end.setDate(end.getDate() + duration_days);
+
+            const subRes = await pool.request()
+                .input('uid', sql.Int, userId)
+                .input('pid', sql.Int, packageId)
+                .input('sd', sql.DateTime, now)
+                .input('ed', sql.DateTime, end)
+                .input('auto', sql.Bit, false)
+                .input('ps', sql.VarChar, 'pending')
+                .query(`
+          INSERT INTO USER_SUBSCRIPTION
+            (user_id, package_id, start_date, end_date, auto_renew, payment_status)
+          OUTPUT INSERTED.subscription_id
+          VALUES
+            (@uid, @pid, @sd, @ed, @auto, @ps)
+        `);
+            subscriptionId = subRes.recordset[0].subscription_id;
+        }
+
+        // 4) Tạo QR code URL
+        const info = encodeURIComponent(description || `Thanh toán gói ${package_name}`);
+        const { bin, accountNo, accountName, templateId } = require('../config/vietQR.config');
+
+        const qrImage =
+            `https://api.vietqr.io/image/${bin}-${accountNo}-${templateId}.jpg` +
+            `?accountName=${encodeURIComponent(accountName)}` +
+            `&amount=${amount}` +
+            `&addInfo=${info}`;
+        // 5) Chèn PAYMENT mới với transaction_id = uuid
+        const now2 = new Date();
+        const transactionId = uuidv4();
+        const payRes = await pool.request()
+            .input('subscription_id', sql.Int, subscriptionId)
+            .input('amount', sql.Decimal(18, 2), amount)
+            .input('payment_date', sql.DateTime, now2)
+            .input('transaction_id', sql.VarChar, transactionId)
+            .input('payment_method', sql.VarChar, 'vietqr')
+            .input('payment_status', sql.VarChar, 'pending')
+            .input('qr_code_url', sql.VarChar, qrImage)
+            .input('note', sql.VarChar, description || '')
+            .query(`
+        INSERT INTO PAYMENT
+          (subscription_id, amount, payment_date, transaction_id,
+           payment_method, payment_status, qr_code_url, note)
+        OUTPUT INSERTED.payment_id
+        VALUES
+          (@subscription_id, @amount, @payment_date, @transaction_id,
+           @payment_method, @payment_status, @qr_code_url, @note)
+      `);
+
+        const paymentId = payRes.recordset[0].payment_id;
+
+        // 6) Trả về client
+        return res.json({
+            paymentId,
+            subscriptionId,
+            qrImage,
+            accountNo,
+            accountName,
+            amount,
+            description: description || `Thanh toán gói ${package_name}`,
+            packageName: package_name,
+        });
+
     } catch (err) {
-        next(err);
+        console.error('Payment creation error:', err);
+        return res.status(500).json({ error: 'Không tạo được payment record' });
+    } finally {
+        if (pool) await pool.close();
+    }
+};
+
+exports.getPaymentInfo = async (req, res) => {
+    const { paymentId } = req.params;
+    const userId = req.user?.id;
+    if (!userId) {
+        return res.status(401).json({ error: 'Chưa đăng nhập' });
+    }
+
+    let pool;
+    try {
+        pool = await sql.connect(dbConfig);
+        const result = await pool.request()
+            .input('payment_id', sql.Int, paymentId)
+            .input('user_id', sql.Int, userId)
+            .query(`
+        SELECT
+          p.payment_id,
+          p.amount,
+          p.payment_status,
+          p.qr_code_url,
+          p.note,
+          sp.package_name,
+          us.subscription_id,
+          us.payment_status AS subscription_status
+        FROM PAYMENT p
+        JOIN USER_SUBSCRIPTION us ON p.subscription_id = us.subscription_id
+        JOIN SUBSCRIPTION_PACKAGE sp ON us.package_id = sp.package_id
+        WHERE p.payment_id = @payment_id
+          AND us.user_id = @user_id
+      `);
+
+        if (!result.recordset.length) {
+            return res.status(404).json({ error: 'Không tìm thấy thông tin thanh toán' });
+        }
+
+        res.json(result.recordset[0]);
+    } catch (err) {
+        console.error('Get payment info error:', err);
+        res.status(500).json({ error: 'Không lấy được thông tin thanh toán' });
+    } finally {
+        if (pool) await pool.close();
     }
 };

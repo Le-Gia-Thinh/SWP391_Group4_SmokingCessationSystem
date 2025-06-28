@@ -6,6 +6,7 @@ npm run dev (để deloy web)
 npm i 
 npm server.js (để deloy api)
 
+npm install morgan cookie-parser body-parser express-session cors config moment request
 
 
 Front-End 
@@ -13,7 +14,9 @@ Chạy npm install react-icons để cài bộ icon đã
 npm install bootstrap 
 npm install react-slick slick-carousel
 npm install moment
+npm install uuid
 
 chạy cả hai front and end
 npm install react-credit-cards-2 --legacy-peer-deps
 npm install prop-types --save --legacy-peer-deps
+npm install uuid --legacy-peer-deps

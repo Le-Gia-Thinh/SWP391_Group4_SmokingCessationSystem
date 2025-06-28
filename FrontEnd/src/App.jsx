@@ -25,8 +25,10 @@ import "./App.css";
 import CheckoutPage from "./pages/Payment/CheckoutPage";
 import BlogList from "./pages/Blog/BlogList";
 import PostApproval from './pages/PostApproval/PostApproval';
+import VietqrPayment from './pages/Payment/VietqrPayment';
 const { Title, Paragraph } = Typography;
-
+import SubscriptionStatus from './components/SubscriptionStatus';
+import SubscriptionHistory from './components/SubscriptionHistory';
 function App() {
   return (
     <AuthProvider>
@@ -67,6 +69,7 @@ function App() {
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/blog" element={<BlogList />} />
           <Route path="/chat" element={<ChatPage />} />
+          <Route path="/payment/vietqr" element={<VietqrPayment />} />
           {/* Protected routes - Member Bookings */}
           <Route
             path="/my-bookings"
@@ -113,6 +116,22 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <PostApproval />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/subscription/current"
+            element={
+              <ProtectedRoute>
+                <SubscriptionStatus />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/subscription/history"
+            element={
+              <ProtectedRoute>
+                <SubscriptionHistory />
               </ProtectedRoute>
             }
           />
