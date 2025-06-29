@@ -188,19 +188,23 @@ export default function CoachChat() {
 
     // Check if session is currently active (within chat time window)
     const isSessionActive = (session) => {
-        const now = new Date();
-        const start = new Date(session.scheduled_time);
-        const end = new Date(start.getTime() + session.duration_minutes * 60000);
-        const allowedStart = new Date(start.getTime() - 15 * 60000);
-        const allowedEnd = new Date(end.getTime() + 15 * 60000);
-
-        return now >= allowedStart && now <= allowedEnd;
+        const now = moment();
+        const start = moment.parseZone(session.scheduled_time);
+        const end = moment(start).add(session.duration_minutes, 'minutes');
+        const allowedStart = moment(start).subtract(15, 'minutes');
+        const allowedEnd = moment(end).add(15, 'minutes');
+        return now.isBetween(allowedStart, allowedEnd, null, '[]');
     };
 
     // Format session time
     const formatSessionTime = (dateTimeString) => {
-        const date = new Date(dateTimeString);
-        return date.toLocaleString("vi-VN");
+        return moment.parseZone(dateTimeString).format('HH:mm DD/MM/YYYY');
+    };
+
+    // Format date
+    const formatTime = (dateString) => {
+        if (!dateString) return '';
+        return moment.parseZone(dateString).format('HH:mm:ss DD/MM/YYYY');
     };
 
     // Load initial data
@@ -216,12 +220,6 @@ export default function CoachChat() {
             e.preventDefault();
             sendCoachMessage();
         }
-    };
-
-    // Format date
-    const formatDate = (dateString) => {
-        const date = new Date(dateString);
-        return date.toLocaleString("vi-VN");
     };
 
     return (
@@ -378,7 +376,7 @@ export default function CoachChat() {
                                                                     fontSize: '10px',
                                                                     opacity: 0.7
                                                                 }}>
-                                                                    {formatDate(msg.sent_at)}
+                                                                    {formatTime(msg.sent_at)}
                                                                 </Text>
                                                             </div>
                                                         </div>

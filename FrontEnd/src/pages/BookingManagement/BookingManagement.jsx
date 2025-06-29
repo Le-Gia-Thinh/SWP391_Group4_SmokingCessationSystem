@@ -6,6 +6,7 @@ import ActionButtonGroup from '../../components/ui/ActionButtonGroup';
 import DataTable from '../../components/ui/DataTable';
 import Navbar from '../../layouts/Navbar';
 import './BookingManagement.css';
+import moment from 'moment-timezone';
 
 const { Text, Title } = Typography;
 const { TabPane } = Tabs;
@@ -161,10 +162,11 @@ const BookingManagement = () => {
     };
 
     const formatDateTime = (dateTimeString) => {
-        const date = new Date(dateTimeString);
+        if (!dateTimeString) return { date: '', time: '' };
+        const local = moment.parseZone(dateTimeString);
         return {
-            date: date.toLocaleDateString('en-US'),
-            time: date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+            date: local.format('DD/MM/YYYY'),
+            time: local.format('HH:mm')
         };
     };
 
@@ -225,23 +227,23 @@ const BookingManagement = () => {
     };
 
     const canReportMissingMember = (scheduledTime) => {
-        const now = new Date();
-        const scheduledDateTime = new Date(scheduledTime);
-        const minReportTime = new Date(scheduledDateTime.getTime() + 15 * 60000); // Sau 15 phút
-        return now >= scheduledDateTime && now >= minReportTime;
+        const now = moment();
+        const scheduledDateTime = moment(scheduledTime);
+        const minReportTime = moment(scheduledDateTime).add(15, 'minutes'); // Sau 15 phút
+        return now.isSameOrAfter(scheduledDateTime) && now.isSameOrAfter(minReportTime);
     };
 
     const getReportButtonTooltip = (scheduledTime) => {
-        const now = new Date();
-        const scheduledDateTime = new Date(scheduledTime);
+        const now = moment();
+        const scheduledDateTime = moment(scheduledTime);
 
-        if (now < scheduledDateTime) {
+        if (now.isBefore(scheduledDateTime)) {
             return 'Chỉ được báo cáo sau giờ hẹn';
         }
 
-        const minReportTime = new Date(scheduledDateTime.getTime() + 15 * 60000);
-        if (now < minReportTime) {
-            const remainingMinutes = Math.ceil((minReportTime.getTime() - now.getTime()) / (1000 * 60));
+        const minReportTime = moment(scheduledDateTime).add(15, 'minutes');
+        if (now.isBefore(minReportTime)) {
+            const remainingMinutes = Math.ceil(minReportTime.diff(now, 'minutes'));
             return `Chỉ được báo cáo sau 15 phút kể từ giờ hẹn. Còn ${remainingMinutes} phút`;
         }
 

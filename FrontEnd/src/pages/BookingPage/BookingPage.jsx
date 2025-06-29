@@ -45,7 +45,7 @@ const BookingPage = () => {
                     const weekAgo = moment().subtract(7, 'days');
 
                     const weeklyBookings = data.data.filter(booking => {
-                        const bookingTime = moment(booking.scheduled_time);
+                        const bookingTime = moment.parseZone(booking.scheduled_time);
                         return bookingTime.isBetween(weekAgo, now) &&
                             ['pending', 'accepted', 'completed'].includes(booking.session_status);
                     });
@@ -124,8 +124,8 @@ const BookingPage = () => {
                     // Filter schedules for selected date and check time constraints
                     const now = moment();
                     const daySchedules = schedules.filter(schedule => {
-                        const scheduleDate = moment(schedule.start_time).format('YYYY-MM-DD');
-                        const scheduleTime = moment(schedule.start_time);
+                        const scheduleDate = moment.parseZone(schedule.start_time).format('YYYY-MM-DD');
+                        const scheduleTime = moment.parseZone(schedule.start_time);
                         const diffInMinutes = scheduleTime.diff(now, 'minutes');
 
                         return scheduleDate === dateStr &&
@@ -156,8 +156,8 @@ const BookingPage = () => {
     };
 
     const formatTimeSlot = (schedule) => {
-        const startTime = moment(schedule.start_time);
-        const endTime = moment(schedule.end_time);
+        const startTime = moment.parseZone(schedule.start_time);
+        const endTime = moment.parseZone(schedule.end_time);
         const duration = endTime.diff(startTime, 'minutes');
 
         return {

@@ -45,6 +45,7 @@ import DataTable from '../../components/ui/DataTable';
 import FormModal from '../../components/ui/FormModal';
 import ActionButtonGroup from '../../components/ui/ActionButtonGroup';
 import './AdminDashboard.css';
+import moment from 'moment-timezone';
 
 const { Header, Content } = Layout;
 const { Title, Text } = Typography;
@@ -658,7 +659,7 @@ const AdminDashboard = () => {
                                     { title: 'Thành viên', dataIndex: 'member_name', key: 'member_name' },
                                     { title: 'HLV', dataIndex: 'coach_name', key: 'coach_name' },
                                     { title: 'Lý do', dataIndex: 'session_notes', key: 'session_notes', ellipsis: true },
-                                    { title: 'Thời gian', dataIndex: 'scheduled_time', key: 'scheduled_time', render: v => v ? new Date(v).toLocaleString() : '' },
+                                    { title: 'Thời gian', dataIndex: 'scheduled_time', key: 'scheduled_time', render: v => v ? moment.parseZone(v).format('HH:mm DD/MM/YYYY') : '' },
                                 ]}
                                 pagination={{ pageSize: 10 }}
                             />

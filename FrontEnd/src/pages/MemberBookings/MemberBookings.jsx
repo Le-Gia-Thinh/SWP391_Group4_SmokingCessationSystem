@@ -10,6 +10,7 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import Navbar from '../../layouts/Navbar';
 import './MemberBookings.css';
+import moment from 'moment-timezone';
 
 const { Title, Text } = Typography;
 
@@ -91,20 +92,17 @@ const MemberBookings = () => {
     };
 
     const canCancelAppointment = (scheduledTime) => {
-        const now = new Date();
-        const scheduledDateTime = new Date(scheduledTime);
-        const timeDifference = scheduledDateTime.getTime() - now.getTime();
-        const hoursDifference = timeDifference / (1000 * 60 * 60);
+        const now = moment();
+        const scheduledDateTime = moment.parseZone(scheduledTime);
+        const hoursDifference = scheduledDateTime.diff(now, 'hours', true);
         return hoursDifference >= 2;
     };
 
     const getCancelButtonTooltip = (scheduledTime) => {
         if (!canCancelAppointment(scheduledTime)) {
-            const now = new Date();
-            const scheduledDateTime = new Date(scheduledTime);
-            const timeDifference = scheduledDateTime.getTime() - now.getTime();
-            const hoursDifference = timeDifference / (1000 * 60 * 60);
-
+            const now = moment();
+            const scheduledDateTime = moment.parseZone(scheduledTime);
+            const hoursDifference = scheduledDateTime.diff(now, 'hours', true);
             if (hoursDifference < 0) {
                 return 'Không thể hủy lịch hẹn đã qua';
             } else {
@@ -146,19 +144,17 @@ const MemberBookings = () => {
     };
 
     const canReportMissingCoach = (scheduledTime) => {
-        const now = new Date();
-        const scheduledDateTime = new Date(scheduledTime);
-        return now >= scheduledDateTime; // Chỉ được báo cáo sau giờ hẹn
+        const now = moment();
+        const scheduledDateTime = moment.parseZone(scheduledTime);
+        return now.isSameOrAfter(scheduledDateTime);
     };
 
     const getReportCoachButtonTooltip = (scheduledTime) => {
-        const now = new Date();
-        const scheduledDateTime = new Date(scheduledTime);
-
-        if (now < scheduledDateTime) {
+        const now = moment();
+        const scheduledDateTime = moment.parseZone(scheduledTime);
+        if (now.isBefore(scheduledDateTime)) {
             return 'Chỉ được báo cáo sau giờ hẹn';
         }
-
         return 'Báo cáo huấn luyện viên vắng mặt';
     };
 
@@ -197,10 +193,11 @@ const MemberBookings = () => {
     };
 
     const formatDateTime = (dateTimeString) => {
-        const date = new Date(dateTimeString);
+        if (!dateTimeString) return { date: '', time: '' };
+        const local = moment.parseZone(dateTimeString);
         return {
-            date: date.toLocaleDateString('en-US'),
-            time: date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+            date: local.format('DD/MM/YYYY'),
+            time: local.format('HH:mm')
         };
     };
 

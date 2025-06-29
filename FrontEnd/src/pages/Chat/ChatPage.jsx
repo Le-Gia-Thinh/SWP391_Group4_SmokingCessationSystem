@@ -30,6 +30,7 @@ import axios from "axios";
 import Navbar from "../../layouts/Navbar";
 import { useSocket } from "../../contexts/SocketContext";
 import "./ChatPage.css";
+import moment from 'moment-timezone';
 
 const { Content } = Layout;
 const { Text, Title, Paragraph } = Typography;
@@ -216,21 +217,31 @@ export default function ChatPage() {
         fetchCoachMessages(session.session_id);
     };
 
-    // Check if session is currently active (within chat time window)
-    const isSessionActive = (session) => {
-        const now = new Date();
-        const start = new Date(session.scheduled_time);
-        const end = new Date(start.getTime() + session.duration_minutes * 60000);
-        const allowedStart = new Date(start.getTime() - 15 * 60000);
-        const allowedEnd = new Date(end.getTime() + 15 * 60000);
+    // Format date
+    const formatDate = (dateString) => {
+        if (!dateString) return '';
+        return moment.parseZone(dateString).format('HH:mm:ss DD/MM/YYYY');
+    };
 
-        return now >= allowedStart && now <= allowedEnd;
+    const formatTime = (dateString) => {
+        if (!dateString) return '';
+        return moment.parseZone(dateString).format('HH:mm:ss DD/MM/YYYY');
     };
 
     // Format session time
     const formatSessionTime = (dateTimeString) => {
-        const date = new Date(dateTimeString);
-        return date.toLocaleString("vi-VN");
+        if (!dateTimeString) return '';
+        return moment.parseZone(dateTimeString).format('HH:mm:ss DD/MM/YYYY');
+    };
+
+    // Check if session is currently active (within chat time window)
+    const isSessionActive = (session) => {
+        const now = moment();
+        const start = moment.parseZone(session.scheduled_time);
+        const end = moment(start).add(session.duration_minutes, 'minutes');
+        const allowedStart = moment(start).subtract(15, 'minutes');
+        const allowedEnd = moment(end).add(15, 'minutes');
+        return now.isBetween(allowedStart, allowedEnd, null, '[]');
     };
 
     // Fetch topics
@@ -403,12 +414,6 @@ export default function ChatPage() {
                 sendCoachMessage();
             }
         }
-    };
-
-    // Format date
-    const formatDate = (dateString) => {
-        const date = new Date(dateString);
-        return date.toLocaleString("vi-VN");
     };
 
     return (

@@ -9,7 +9,12 @@ const DEFAULT_TIMEZONE = process.env.TIMEZONE || 'Asia/Ho_Chi_Minh';
 exports.createSchedule = async (req, res) => {
   try {
     const coachId = req.user.coach_id;
-    const { start_time, end_time } = req.body;
+    let { start_time, end_time } = req.body;
+
+    // Vì SQL Server đã là UTC+7, không cần convert sang UTC
+    // Chỉ cần đảm bảo thời gian được parse đúng từ local time
+    start_time = moment.tz(start_time, DEFAULT_TIMEZONE).toDate();
+    end_time = moment.tz(end_time, DEFAULT_TIMEZONE).toDate();
 
     const pool = await sql.connect(dbConfig);
     await pool.request()
@@ -115,11 +120,11 @@ exports.createBulkSchedules = async (req, res) => {
           const [startHour, startMinute] = startTime.split(':').map(Number);
           const [endHour, endMinute] = endTime.split(':').map(Number);
 
-          // Sử dụng moment-timezone để xử lý thời gian linh hoạt
-          // Convert về UTC trước khi lưu vào database (best practice)
+          // Vì SQL Server đã là UTC+7, không cần convert sang UTC
+          // Chỉ cần đảm bảo thời gian được parse đúng từ local time
           const currentDate = date.toISOString().split('T')[0];
-          const slotStart = moment.tz(`${currentDate} ${startTime}:00`, DEFAULT_TIMEZONE).utc().toDate();
-          const slotEnd = moment.tz(`${currentDate} ${endTime}:00`, DEFAULT_TIMEZONE).utc().toDate();
+          const slotStart = moment.tz(`${currentDate} ${startTime}:00`, DEFAULT_TIMEZONE).toDate();
+          const slotEnd = moment.tz(`${currentDate} ${endTime}:00`, DEFAULT_TIMEZONE).toDate();
 
           // DEBUG: Log slot creation chi tiết hơn
           console.log(`Creating slots for ${date.toDateString()}: ${startHour}:${startMinute} to ${endHour}:${endMinute}`);
@@ -127,9 +132,8 @@ exports.createBulkSchedules = async (req, res) => {
           console.log(`Current date: ${currentDate}`);
           console.log(`Input string: ${currentDate} ${startTime}:00`);
           console.log(`Local time: ${moment.tz(`${currentDate} ${startTime}:00`, DEFAULT_TIMEZONE).format()}`);
-          console.log(`UTC time: ${moment.tz(`${currentDate} ${startTime}:00`, DEFAULT_TIMEZONE).utc().format()}`);
-          console.log(`SlotStart ISO (UTC): ${slotStart.toISOString()}`);
-          console.log(`SlotEnd ISO (UTC): ${slotEnd.toISOString()}`);
+          console.log(`SlotStart ISO: ${slotStart.toISOString()}`);
+          console.log(`SlotEnd ISO: ${slotEnd.toISOString()}`);
 
           for (let currentStart = new Date(slotStart); currentStart < slotEnd;) {
             const currentEnd = new Date(currentStart.getTime() + duration * 60000);
@@ -280,11 +284,11 @@ exports.createSchedulesForMultipleCoaches = async (req, res) => {
             const [startHour, startMinute] = startTime.split(':').map(Number);
             const [endHour, endMinute] = endTime.split(':').map(Number);
 
-            // Sử dụng moment-timezone để xử lý thời gian linh hoạt
-            // Convert về UTC trước khi lưu vào database (best practice)
+            // Vì SQL Server đã là UTC+7, không cần convert sang UTC
+            // Chỉ cần đảm bảo thời gian được parse đúng từ local time
             const currentDate = date.toISOString().split('T')[0];
-            const slotStart = moment.tz(`${currentDate} ${startTime}:00`, DEFAULT_TIMEZONE).utc().toDate();
-            const slotEnd = moment.tz(`${currentDate} ${endTime}:00`, DEFAULT_TIMEZONE).utc().toDate();
+            const slotStart = moment.tz(`${currentDate} ${startTime}:00`, DEFAULT_TIMEZONE).toDate();
+            const slotEnd = moment.tz(`${currentDate} ${endTime}:00`, DEFAULT_TIMEZONE).toDate();
 
             // DEBUG: Log slot creation chi tiết hơn
             console.log(`Creating slots for ${date.toDateString()}: ${startHour}:${startMinute} to ${endHour}:${endMinute}`);
@@ -292,9 +296,8 @@ exports.createSchedulesForMultipleCoaches = async (req, res) => {
             console.log(`Current date: ${currentDate}`);
             console.log(`Input string: ${currentDate} ${startTime}:00`);
             console.log(`Local time: ${moment.tz(`${currentDate} ${startTime}:00`, DEFAULT_TIMEZONE).format()}`);
-            console.log(`UTC time: ${moment.tz(`${currentDate} ${startTime}:00`, DEFAULT_TIMEZONE).utc().format()}`);
-            console.log(`SlotStart ISO (UTC): ${slotStart.toISOString()}`);
-            console.log(`SlotEnd ISO (UTC): ${slotEnd.toISOString()}`);
+            console.log(`SlotStart ISO: ${slotStart.toISOString()}`);
+            console.log(`SlotEnd ISO: ${slotEnd.toISOString()}`);
 
             for (let currentStart = new Date(slotStart); currentStart < slotEnd;) {
               const currentEnd = new Date(currentStart.getTime() + duration * 60000);
