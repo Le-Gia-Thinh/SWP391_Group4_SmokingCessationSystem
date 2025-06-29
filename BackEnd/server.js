@@ -46,9 +46,6 @@ app.use("/api/quitplan", quitPlanRoutes);
 const customerRoutes = require("./routes/customer");
 app.use("/api/customer", customerRoutes);
 
-// ranking
-app.use("/api/user-score", require("./routes/userScore"));
-
 // Update user score
 const { auth } = require("./middleware/auth");
 app.use("/api/user-score", userScoreRoutes);
