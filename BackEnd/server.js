@@ -19,6 +19,7 @@ const coachRoutes = require('./routes/coach');
 const memberRoutes = require('./routes/member');
 const userRoutes = require("./routes/user");
 const userScoreRoutes = require("./routes/userScore");
+const achievementRoutes = require("./routes/achievementRoutes");
 const app = express();
 
 // 1) CORS: bắt buộc phải cho phép credentials (cookie) và origin chạy React (5173 / 3000)
@@ -100,6 +101,9 @@ app.use('/api/smoking-summary', smokingSummaryRoutes);
 
 // 15) Xử lí profile of member
 app.use('/api/user', userRoutes);
+
+// 15.1) Xử lí thành tựu
+app.use('/api/achievement', achievementRoutes);
 
 // 16) Middleware log request
 app.use((req, res, next) => {

@@ -33,11 +33,23 @@ function getUserLevel(points) {
   });
   const completedCount = completedArray.filter(Boolean).length;
 
+// Lấy số nhiệm vụ đã làm trong USER_BEHAVIOR_TASK_LOG
+const taskResult = await pool.request()
+  .input("user_id", sql.Int, userId)
+  .input("log_date", sql.Date, date)
+  .query(`
+    SELECT COUNT(*) AS completedTasks
+    FROM USER_BEHAVIOR_TASK_LOG
+    WHERE user_id = @user_id AND log_date = @log_date AND is_completed = 1
+  `);
+
+const completedTasks = taskResult.recordset[0]?.completedTasks || 0;
 
   res.json({
     success: true,
     data: completedArray,
     completedCount, // số tích
+    completedTasks,       // số tick "đã làm nhiệm vụ"
     totalSlots: 9
   });
     } catch (err) {

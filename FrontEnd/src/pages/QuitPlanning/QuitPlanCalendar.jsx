@@ -762,6 +762,7 @@ const QuitPlan = () => {
         ) {
           logs[dateKey] = {
             completedCount: data.completedCount,
+            completedTasks: data.completedTasks || 0,
             totalSlots: data.totalSlots,
           };
         } else if (Array.isArray(data.data)) {
@@ -1017,22 +1018,34 @@ const QuitPlan = () => {
       title: "Tiến trình ngày",
       dataIndex: "dateKey", // dùng dateKey
       key: "progress",
-      render: (dateKey) => {
-        const log = habitLogByDate[dateKey];
-        const percent = log
+      render: (rawDate) => {
+        const key = dayjs(rawDate).format("YYYY-MM-DD");
+        const log = habitLogByDate[key];
+
+        const noSmokePercent = log
           ? Math.round((log.completedCount / log.totalSlots) * 100)
           : 0;
+        const taskPercent = log
+          ? Math.round((log.completedTasks / log.totalSlots) * 100)
+          : 0;
+
         return (
-          <div style={{ width: 100, minWidth: 80 }}>
+          <div style={{ minWidth: 100 }}>
+            <div style={{ fontSize: 12, marginBottom: 4 }}>
+              🚭 Không hút thuốc
+            </div>
             <Progress
-              percent={percent}
+              percent={noSmokePercent}
               size="small"
-              strokeColor={{
-                "0%": "#108ee9",
-                "100%": "#87d068",
-              }}
-              showInfo
-              style={{ width: "100%" }}
+              strokeColor={{ "0%": "#108ee9", "100%": "#87d068" }}
+              showInfo={false}
+            />
+            <div style={{ fontSize: 12, margin: "8px 0 4px" }}>🎯 Nhiệm vụ</div>
+            <Progress
+              percent={taskPercent}
+              size="small"
+              strokeColor={{ "0%": "#fa8c16", "100%": "#52c41a" }}
+              showInfo={false}
             />
           </div>
         );

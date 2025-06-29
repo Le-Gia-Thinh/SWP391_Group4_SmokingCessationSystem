@@ -434,11 +434,24 @@ const QuitPlanDetail = () => {
               <Tag color="purple">{info.phase}</Tag>
               <Tag color="cyan">Tuần {weekNumber}</Tag>
             </div>
-            <div style={{ width: "100%", marginTop: 8 }}>
+            <div style={{ marginTop: 8 }}>
+              <div style={{ fontWeight: 500, marginBottom: 4 }}>
+                🚭 Tiến trình không hút thuốc:
+              </div>
               <Progress
                 percent={Math.min(Math.round((completedCount / 9) * 100), 100)}
                 status="active"
                 strokeColor={{ "0%": "#108ee9", "100%": "#87d068" }}
+                showInfo
+              />
+
+              <div style={{ fontWeight: 500, marginTop: 16, marginBottom: 4 }}>
+                🎯 Tiến trình hoàn thành nhiệm vụ:
+              </div>
+              <Progress
+                percent={Math.min(Math.round((totalTasks / 9) * 100), 100)}
+                status="active"
+                strokeColor={{ "0%": "#fa8c16", "100%": "#52c41a" }}
                 showInfo
               />
             </div>

@@ -138,12 +138,7 @@ const RankingBoard = () => {
           >
             🏆 Xếp Hạng
           </Button>
-          <Button
-            type={activeTab === "tasks" ? "primary" : "default"}
-            onClick={() => setActiveTab("tasks")}
-          >
-            🎯 Nhiệm Vụ
-          </Button>
+
           <Button
             type={activeTab === "achievements" ? "primary" : "default"}
             onClick={() => setActiveTab("achievements")}
@@ -176,12 +171,6 @@ const RankingBoard = () => {
             }
             style={{ marginTop: 24 }}
           />
-        )}
-
-        {activeTab === "tasks" && (
-          <div style={{ textAlign: "center", padding: 40 }}>
-            <Title level={4}>🎯 Danh sách nhiệm vụ đang phát triển...</Title>
-          </div>
         )}
 
         {activeTab === "achievements" && (
