@@ -23,6 +23,7 @@ import {
   MoreOutlined,    // ← overflow indicator
   ScheduleOutlined,
   FileDoneOutlined,
+  MessageOutlined,
   BarChartOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "../contexts/AuthContext";
@@ -67,6 +68,7 @@ export default function Navbar() {
       { key: "/plan", icon: <CalendarOutlined />, label: "Lập kế hoạch", onClick: handlePlanClick },
       { key: "/RankingBoard", icon: <TrophyOutlined />, label: "Xếp hạng", onClick: () => navigate("/RankingBoard") },
       { key: "/blog", icon: <BookOutlined />, label: "Blog", onClick: () => navigate("/blog") },
+      { key: "/chat", icon: <MessageOutlined />, label: "Chat", onClick: () => navigate("/chat") },
       { key: "/membership", icon: <TeamOutlined />, label: "Thành viên", onClick: () => navigate("/membership") },
       { key: "/user/stats", icon: <BarChartOutlined />, label: "Thống kê", onClick: () => navigate("/user/stats") },
     ];
