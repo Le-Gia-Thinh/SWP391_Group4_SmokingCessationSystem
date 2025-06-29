@@ -40,11 +40,30 @@ exports.sendTopicMessage = async (req, res) => {
     const userId = req.user.id;
 
     const pool = await sql.connect(dbConfig);
+
+    // Lấy thông tin user để emit
+    const userQuery = await pool.request()
+      .input('user_id', sql.Int, userId)
+      .query('SELECT full_name FROM CUSTOMER WHERE user_id = @user_id');
+
+    const userName = userQuery.recordset[0]?.full_name || 'Ẩn danh';
+
     await pool.request()
       .input('topic_id', sql.Int, topic_id)
       .input('user_id', sql.Int, userId)
       .input('content', sql.NVarChar, content)
       .query(`INSERT INTO TOPIC_MESSAGE (topic_id, user_id, content) VALUES (@topic_id, @user_id, @content)`);
+
+    // Emit real-time message
+    if (req.io) {
+      req.io.emit('topicMessage', {
+        topic_id: topic_id,
+        user_id: userId,
+        full_name: userName,
+        content: content,
+        sent_at: new Date().toISOString()
+      });
+    }
 
     res.status(201).json({ message: 'Gửi tin nhắn thành công' });
   } catch (err) {
