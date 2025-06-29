@@ -154,17 +154,18 @@ await pool.request()
     const currentPoints = scoreRes.recordset[0]?.total_points || 0;
 
 
-    // ⚠️ Để tránh cộng dồn sai → điểm hôm đó được cập nhật lại, không cộng thêm
-    // Tính lại toàn bộ tổng điểm từ tất cả HABIT_LOG (đã có points_awarded đúng)
-const allLog = await pool.request()
-  .input("user_id", sql.Int, userId)
-  .query(`
-    SELECT SUM(points_awarded) AS total FROM HABIT_LOG
-    WHERE user_id = @user_id AND completed = 1
-  `);
+// ✅ Tính tổng điểm từ cả 2 bảng
+const [habitRes, behaviorRes] = await Promise.all([
+  pool.request().input("user_id", sql.Int, userId)
+    .query(`SELECT SUM(points_awarded) AS total FROM HABIT_LOG WHERE user_id = @user_id AND completed = 1`),
+  pool.request().input("user_id", sql.Int, userId)
+    .query(`SELECT SUM(points_awarded) AS total FROM USER_BEHAVIOR_TASK_LOG WHERE user_id = @user_id AND is_completed = 1`)
+]);
 
+const habitPoints = +(habitRes.recordset[0]?.total || 0);
+const behaviorPoints = +(behaviorRes.recordset[0]?.total || 0);
+const newTotal = +(habitPoints + behaviorPoints).toFixed(3);
 
-const newTotal = +(allLog.recordset[0]?.total || 0).toFixed(3);
 
 
     const newLevel = getUserLevel(newTotal);
@@ -186,7 +187,6 @@ const newTotal = +(allLog.recordset[0]?.total || 0).toFixed(3);
       `);
 
 
-    console.log(`✅ Ngày ${date} đạt ${completedCount}/9 slot → +${totalPointToday} điểm (x${multiplier})`);
     res.json({ success: true, message: "Đã lưu hành vi" });
   } catch (err) {
     console.error("❌ Lỗi ghi hành vi đơn:", err);
@@ -199,11 +199,10 @@ const newTotal = +(allLog.recordset[0]?.total || 0).toFixed(3);
 
 
 
-// DELETE hành vi
+// DELETE cot da ko hut thuoc
 const deleteHabitLogEntry = async (req, res) => {
   const userId = req.user.id;
   const { date, timeSlot } = req.body;
-
 
   if (!date || typeof timeSlot !== "number") {
     return res.status(400).json({
@@ -212,31 +211,376 @@ const deleteHabitLogEntry = async (req, res) => {
     });
   }
 
-
   try {
     const pool = await sql.connect(dbConfig);
+
+    // Cập nhật completed = 0, điểm = 0
     await pool.request()
       .input("user_id", sql.Int, userId)
       .input("log_date", sql.Date, date)
       .input("time_slot", sql.Int, timeSlot)
       .query(`
-        DELETE FROM HABIT_LOG
+        UPDATE HABIT_LOG
+        SET completed = 0, points_awarded = 0
         WHERE user_id = @user_id AND log_date = @log_date AND time_slot = @time_slot
       `);
 
+    // Tính lại điểm tổng từ HABIT_LOG + USER_BEHAVIOR_TASK_LOG
+    const [habitRes, behaviorRes] = await Promise.all([
+      pool.request().input("user_id", sql.Int, userId)
+        .query(`SELECT SUM(points_awarded) AS total FROM HABIT_LOG WHERE user_id = @user_id AND completed = 1`),
+      pool.request().input("user_id", sql.Int, userId)
+        .query(`SELECT SUM(points_awarded) AS total FROM USER_BEHAVIOR_TASK_LOG WHERE user_id = @user_id AND is_completed = 1`)
+    ]);
 
-    res.json({ success: true, message: "Đã xóa hành vi khỏi log" });
+    const habitPoints = +(habitRes.recordset[0]?.total || 0);
+    const behaviorPoints = +(behaviorRes.recordset[0]?.total || 0);
+    const newTotal = +(habitPoints + behaviorPoints).toFixed(3);
+    const newLevel = getUserLevel(newTotal);
+
+    await pool.request()
+      .input("user_id", sql.Int, userId)
+      .input("total_points", sql.Float, newTotal)
+      .input("current_level", sql.VarChar, newLevel)
+      .query(`
+        MERGE USER_SCORE AS target
+        USING (SELECT @user_id AS user_id) AS source
+        ON target.user_id = source.user_id
+        WHEN MATCHED THEN
+          UPDATE SET total_points = @total_points, current_level = @current_level, last_updated = GETDATE()
+        WHEN NOT MATCHED THEN
+          INSERT (user_id, total_points, current_level, last_updated)
+          VALUES (@user_id, @total_points, @current_level, GETDATE());
+      `);
+
+    res.json({ success: true, message: "Đã bỏ tích hành vi và cập nhật điểm" });
   } catch (err) {
-    console.error("❌ Lỗi khi xóa habit log:", err);
-    res.status(500).json({ success: false, message: "Lỗi server khi xóa" });
+    console.error("❌ Lỗi khi bỏ tích habit log:", err);
+    res.status(500).json({ success: false, message: "Lỗi server khi bỏ tích" });
   }
 };
+
+// delete cot da lam nhiem vu
+const deleteBehaviorTaskLogEntry = async (req, res) => {
+  const userId = req.user.id;
+  const { date, timeSlot } = req.body;
+
+  if (!date || typeof timeSlot !== "number") {
+    return res.status(400).json({
+      success: false,
+      message: "Thiếu ngày hoặc timeSlot không hợp lệ",
+    });
+  }
+
+  try {
+    const pool = await sql.connect(dbConfig);
+
+    // 1. Gỡ ô đã làm
+    await pool.request()
+      .input("user_id", sql.Int, userId)
+      .input("log_date", sql.Date, date)
+      .input("time_slot", sql.Int, timeSlot)
+      .query(`
+        UPDATE USER_BEHAVIOR_TASK_LOG
+        SET is_completed = 0, points_awarded = 0
+        WHERE user_id = @user_id AND log_date = @log_date AND time_slot = @time_slot
+      `);
+
+    // 2. Đếm lại số nhiệm vụ còn lại trong ngày
+    const taskRes = await pool.request()
+      .input("user_id", sql.Int, userId)
+      .input("log_date", sql.Date, date)
+      .query(`
+        SELECT * FROM USER_BEHAVIOR_TASK_LOG
+        WHERE user_id = @user_id AND log_date = @log_date AND is_completed = 1
+      `);
+    const completedCount = taskRes.recordset.length;
+
+    // 3. Lấy plan để biết month_quit
+    const planRes = await pool.request()
+      .input("user_id", sql.Int, userId)
+      .query(`
+        SELECT TOP 1 month_quit
+        FROM CESSATION_PLAN
+        WHERE user_id = @user_id AND is_active = 1
+      `);
+    const months = planRes.recordset[0]?.month_quit || 1;
+    const totalSlots = months * 30 * 9;
+    const pointPerSlot = +(100 / totalSlots).toFixed(3);
+
+    // 4. Tính multiplier
+    let multiplier = 1.0;
+    if (completedCount >= 9) multiplier = 1.5;
+    else if (completedCount >= 7) multiplier = 1.3;
+    else if (completedCount >= 5) multiplier = 1.2;
+    else if (completedCount >= 3) multiplier = 1.1;
+
+    const totalPointToday = +(completedCount * pointPerSlot * multiplier).toFixed(3);
+    const pointEach = +(totalPointToday / completedCount || 0).toFixed(3); // tránh chia 0
+
+    // 5. Reset toàn bộ điểm
+    await pool.request()
+      .input("user_id", sql.Int, userId)
+      .input("log_date", sql.Date, date)
+      .query(`
+        UPDATE USER_BEHAVIOR_TASK_LOG
+        SET points_awarded = 0
+        WHERE user_id = @user_id AND log_date = @log_date
+      `);
+
+    // 6. Gán lại điểm mới
+    if (completedCount > 0) {
+      await pool.request()
+        .input("user_id", sql.Int, userId)
+        .input("log_date", sql.Date, date)
+        .input("point", sql.Float, pointEach)
+        .query(`
+          UPDATE USER_BEHAVIOR_TASK_LOG
+          SET points_awarded = @point
+          WHERE user_id = @user_id AND log_date = @log_date AND is_completed = 1
+        `);
+    }
+
+    // 7. Tính lại tổng điểm (HABIT_LOG + BEHAVIOR_TASK_LOG)
+    const [habitRes, behaviorRes] = await Promise.all([
+      pool.request().input("user_id", sql.Int, userId)
+        .query(`SELECT SUM(points_awarded) AS total FROM HABIT_LOG WHERE user_id = @user_id AND completed = 1`),
+      pool.request().input("user_id", sql.Int, userId)
+        .query(`SELECT SUM(points_awarded) AS total FROM USER_BEHAVIOR_TASK_LOG WHERE user_id = @user_id AND is_completed = 1`)
+    ]);
+
+    const habitPoints = +(habitRes.recordset[0]?.total || 0);
+    const behaviorPoints = +(behaviorRes.recordset[0]?.total || 0);
+    const newTotal = +(habitPoints + behaviorPoints).toFixed(3);
+    const newLevel = getUserLevel(newTotal);
+
+    // 8. Cập nhật USER_SCORE
+    await pool.request()
+      .input("user_id", sql.Int, userId)
+      .input("total_points", sql.Float, newTotal)
+      .input("current_level", sql.VarChar, newLevel)
+      .query(`
+        MERGE USER_SCORE AS target
+        USING (SELECT @user_id AS user_id) AS source
+        ON target.user_id = source.user_id
+        WHEN MATCHED THEN
+          UPDATE SET total_points = @total_points, current_level = @current_level, last_updated = GETDATE()
+        WHEN NOT MATCHED THEN
+          INSERT (user_id, total_points, current_level, last_updated)
+          VALUES (@user_id, @total_points, @current_level, GETDATE());
+      `);
+
+    res.json({ success: true, message: "Đã bỏ tích nhiệm vụ và cập nhật điểm" });
+  } catch (err) {
+    console.error("❌ Lỗi khi bỏ tích task:", err);
+    res.status(500).json({ success: false, message: "Lỗi server khi bỏ tích nhiệm vụ" });
+  }
+};
+
+
+
+// de tam
+const chooseBehaviorTask = async (req, res) => {
+  const userId = req.user.id;
+  const { date, timeSlot, taskId } = req.body;
+
+  if (!date || typeof timeSlot !== "number" || !taskId) {
+    return res.status(400).json({ success: false, message: "Thiếu dữ liệu chọn task" });
+  }
+
+  try {
+    const pool = await sql.connect(dbConfig);
+
+    await pool.request()
+      .input("user_id", sql.Int, userId)
+      .input("log_date", sql.Date, date)
+      .input("time_slot", sql.Int, timeSlot)
+      .input("task_id", sql.NVarChar, taskId)
+      .query(`
+        MERGE USER_BEHAVIOR_TASK_LOG AS target
+        USING (SELECT @user_id AS user_id, @log_date AS log_date, @time_slot AS time_slot) AS source
+        ON (target.user_id = source.user_id AND target.log_date = source.log_date AND target.time_slot = source.time_slot)
+        WHEN MATCHED THEN
+          UPDATE SET task_id = @task_id, is_completed = 1
+        WHEN NOT MATCHED THEN
+          INSERT (user_id, log_date, time_slot, task_id)
+          VALUES (@user_id, @log_date, @time_slot, @task_id);
+      `);
+
+    res.json({ success: true, message: "Đã lưu lựa chọn nhiệm vụ" });
+  } catch (err) {
+    console.error("❌ Lỗi ghi task hành vi:", err);
+    res.status(500).json({ success: false, message: "Lỗi server" });
+  }
+};
+
+const getSelectedTasksByDate = async (req, res) => {
+  const userId = req.user.id;
+  const { date } = req.query;
+
+  if (!date) {
+    return res.status(400).json({ success: false, message: "Thiếu ngày" });
+  }
+
+  try {
+    const pool = await sql.connect(dbConfig);
+    const result = await pool.request()
+      .input("user_id", sql.Int, userId)
+      .input("log_date", sql.Date, date)
+      .query(`
+        SELECT time_slot, task_id
+        FROM USER_BEHAVIOR_TASK_LOG
+        WHERE user_id = @user_id AND log_date = @log_date
+        ORDER BY time_slot
+      `);
+
+    res.json({ success: true, data: result.recordset });
+  } catch (err) {
+    console.error("❌ Lỗi get selected-tasks:", err);
+    res.status(500).json({ success: false, message: "Lỗi server" });
+  }
+};
+
+// ✅ GET các task đã làm (is_completed = 1)
+const getCompletedTasksByDate = async (req, res) => {
+  const userId = req.user.id;
+  const { date } = req.query;
+
+  if (!date) {
+    return res.status(400).json({ success: false, message: "Thiếu ngày" });
+  }
+
+  try {
+    const pool = await sql.connect(dbConfig);
+    const result = await pool.request()
+      .input("user_id", sql.Int, userId)
+      .input("log_date", sql.Date, date)
+      .query(`
+        SELECT time_slot, is_completed
+        FROM USER_BEHAVIOR_TASK_LOG
+        WHERE user_id = @user_id AND log_date = @log_date AND is_completed = 1
+        ORDER BY time_slot
+      `);
+
+    res.json({ success: true, data: result.recordset });
+  } catch (err) {
+    console.error("❌ Lỗi get completed-tasks:", err);
+    res.status(500).json({ success: false, message: "Lỗi server" });
+  }
+};
+
+
+const submitBehaviorTaskPoint = async (req, res) => {
+  const userId = req.user.id;
+  const { date } = req.body;
+
+  if (!date) {
+    return res.status(400).json({ success: false, message: "Thiếu ngày" });
+  }
+
+  try {
+    const pool = await sql.connect(dbConfig);
+
+    // Lấy thông tin kế hoạch để tính điểm
+    const planRes = await pool.request()
+      .input("user_id", sql.Int, userId)
+      .query(`
+        SELECT TOP 1 month_quit
+        FROM CESSATION_PLAN
+        WHERE user_id = @user_id AND is_active = 1
+      `);
+    const months = planRes.recordset[0]?.month_quit || 1;
+    const totalSlots = months * 30 * 9;
+    const pointPerSlot = +(100 / totalSlots).toFixed(3);
+
+    // Lấy số nhiệm vụ hoàn thành trong ngày
+    const taskRes = await pool.request()
+      .input("user_id", sql.Int, userId)
+      .input("log_date", sql.Date, date)
+      .query(`
+        SELECT * FROM USER_BEHAVIOR_TASK_LOG
+        WHERE user_id = @user_id AND log_date = @log_date AND is_completed = 1
+      `);
+    const completedCount = taskRes.recordset.length;
+
+    // Tính multiplier
+    let multiplier = 1.0;
+    if (completedCount >= 9) multiplier = 1.5;
+    else if (completedCount >= 7) multiplier = 1.3;
+    else if (completedCount >= 5) multiplier = 1.2;
+    else if (completedCount >= 3) multiplier = 1.1;
+
+    const totalPointToday = +(completedCount * pointPerSlot * multiplier).toFixed(3);
+
+    // Reset điểm trước đó
+    await pool.request()
+      .input("user_id", sql.Int, userId)
+      .input("log_date", sql.Date, date)
+      .query(`
+        UPDATE USER_BEHAVIOR_TASK_LOG
+        SET points_awarded = 0
+        WHERE user_id = @user_id AND log_date = @log_date
+      `);
+
+    // Cập nhật lại điểm cho từng task hoàn thành
+    const pointEach = +(totalPointToday / completedCount).toFixed(3);
+    await pool.request()
+      .input("user_id", sql.Int, userId)
+      .input("log_date", sql.Date, date)
+      .input("point", sql.Float, pointEach)
+      .query(`
+        UPDATE USER_BEHAVIOR_TASK_LOG
+        SET points_awarded = @point
+        WHERE user_id = @user_id AND log_date = @log_date AND is_completed = 1
+      `);
+
+    // Tính lại tổng điểm
+    const [habitRes, behaviorRes] = await Promise.all([
+      pool.request().input("user_id", sql.Int, userId)
+        .query(`SELECT SUM(points_awarded) AS total FROM HABIT_LOG WHERE user_id = @user_id AND completed = 1`),
+      pool.request().input("user_id", sql.Int, userId)
+        .query(`SELECT SUM(points_awarded) AS total FROM USER_BEHAVIOR_TASK_LOG WHERE user_id = @user_id AND is_completed = 1`)
+    ]);
+
+    const habitPoints = +(habitRes.recordset[0]?.total || 0);
+    const behaviorPoints = +(behaviorRes.recordset[0]?.total || 0);
+    const newTotal = +(habitPoints + behaviorPoints).toFixed(3);
+    const newLevel = getUserLevel(newTotal);
+
+    await pool.request()
+      .input("user_id", sql.Int, userId)
+      .input("total_points", sql.Float, newTotal)
+      .input("current_level", sql.VarChar, newLevel)
+      .query(`
+        MERGE USER_SCORE AS target
+        USING (SELECT @user_id AS user_id) AS source
+        ON target.user_id = source.user_id
+        WHEN MATCHED THEN
+          UPDATE SET total_points = @total_points, current_level = @current_level, last_updated = GETDATE()
+        WHEN NOT MATCHED THEN
+          INSERT (user_id, total_points, current_level, last_updated)
+          VALUES (@user_id, @total_points, @current_level, GETDATE());
+      `);
+
+    res.json({ success: true, message: "Đã cập nhật điểm cho nhiệm vụ hành vi" });
+  } catch (err) {
+    console.error("❌ Lỗi tính điểm task hành vi:", err);
+    res.status(500).json({ success: false, message: "Lỗi server" });
+  }
+};
+
+
 
 
 module.exports = {
   getHabitLogByDate,
   submitSingleLog,
   deleteHabitLogEntry,
+  chooseBehaviorTask, 
+  getSelectedTasksByDate, 
+  getCompletedTasksByDate, 
+  submitBehaviorTaskPoint,
+  deleteBehaviorTaskLogEntry,
 };
 
 

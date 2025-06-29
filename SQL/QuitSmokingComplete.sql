@@ -526,3 +526,20 @@ CREATE TABLE TOPIC_MESSAGE (
     CONSTRAINT fk_topicmsg_topic FOREIGN KEY (topic_id) REFERENCES CHAT_TOPIC(topic_id), -- Khóa ngoại đến CHAT_TOPIC
     CONSTRAINT fk_topicmsg_user FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id)       -- Khóa ngoại đến CUSTOMER
 );
+
+-- 34. USER_BEHAVIOR_TASK_LOG: Lưu nhật ký các nhiệm vụ hành vi của người dùng
+CREATE TABLE USER_BEHAVIOR_TASK_LOG (
+    log_id INT IDENTITY(1,1) PRIMARY KEY,
+    user_id INT NOT NULL,
+    log_date DATE NOT NULL,
+    time_slot INT NOT NULL CHECK (time_slot BETWEEN 0 AND 8),
+    task_id NVARCHAR(20) NOT NULL,       -- Ví dụ: 'P3_10_2'
+    is_completed BIT DEFAULT 1,          -- Mặc định là đã chọn xong (chỉ chọn 1)
+    points_awarded FLOAT DEFAULT 0,      -- ⚠️ Luôn có điểm mặc định là 0
+    created_at DATETIME DEFAULT GETDATE(),
+
+    CONSTRAINT fk_behavior_user FOREIGN KEY (user_id)
+        REFERENCES CUSTOMER(user_id) ON DELETE CASCADE,
+
+    UNIQUE(user_id, log_date, time_slot) -- Mỗi user chỉ chọn 1 task/slot/ngày
+);

@@ -1,5 +1,17 @@
+// QuitPlanDetail.jsx (RankingBoard with tabs and improved style)
 import React, { useEffect, useState } from "react";
-import { Table, Tag, Typography, Card, Progress, Avatar, Tooltip } from "antd";
+import {
+  Table,
+  Tag,
+  Typography,
+  Card,
+  Progress,
+  Avatar,
+  Tooltip,
+  Button,
+  Space,
+  Badge,
+} from "antd";
 import { CrownTwoTone, StarTwoTone, UserOutlined } from "@ant-design/icons";
 import Navbar from "../../layouts/Navbar";
 import "./RankingBoard.css";
@@ -26,6 +38,7 @@ if (token) {
 
 const RankingBoard = () => {
   const [data, setData] = useState([]);
+  const [activeTab, setActiveTab] = useState("ranking");
 
   useEffect(() => {
     fetch("http://localhost:5000/api/user-score/ranking")
@@ -41,12 +54,25 @@ const RankingBoard = () => {
       title: "#",
       dataIndex: "rank",
       key: "rank",
-      render: (rank) =>
-        rank === 1 ? (
-          <CrownTwoTone twoToneColor="#faad14" style={{ fontSize: 24 }} />
-        ) : (
-          <Tag color="volcano">{rank}</Tag>
-        ),
+      render: (rank) => (
+        <Tag
+          color={
+            rank === 1
+              ? "gold"
+              : rank === 2
+              ? "blue"
+              : rank === 3
+              ? "green"
+              : "volcano"
+          }
+        >
+          {rank === 1 ? (
+            <CrownTwoTone twoToneColor="#faad14" style={{ fontSize: 20 }} />
+          ) : (
+            rank
+          )}
+        </Tag>
+      ),
     },
     {
       title: "Người dùng",
@@ -97,35 +123,72 @@ const RankingBoard = () => {
       <Navbar />
       <Card
         style={{
-          maxWidth: 900,
+          maxWidth: 1000,
           margin: "40px auto",
-          border: "2px solid #bae7ff",
-          borderRadius: 16,
-          boxShadow: "0 4px 12px rgba(24, 144, 255, 0.1)",
+          border: "1px solid #91d5ff",
+          borderRadius: 20,
+          background: "#ffffff",
+          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.05)",
         }}
       >
+        <Space style={{ marginBottom: 16 }}>
+          <Button
+            type={activeTab === "ranking" ? "primary" : "default"}
+            onClick={() => setActiveTab("ranking")}
+          >
+            🏆 Xếp Hạng
+          </Button>
+          <Button
+            type={activeTab === "tasks" ? "primary" : "default"}
+            onClick={() => setActiveTab("tasks")}
+          >
+            🎯 Nhiệm Vụ
+          </Button>
+          <Button
+            type={activeTab === "achievements" ? "primary" : "default"}
+            onClick={() => setActiveTab("achievements")}
+          >
+            🥇 Thành Tựu
+          </Button>
+        </Space>
+
         <Title
           level={3}
           style={{
             textAlign: "center",
-            background: "linear-gradient(to right, #1890ff, #73d13d)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            fontWeight: 700,
+            color: "#1890ff",
+            fontWeight: 800,
+            marginBottom: 12,
+            letterSpacing: 1,
           }}
         >
           🏆 Bảng Xếp Hạng Người Dùng
         </Title>
-        <Table
-          columns={columns}
-          dataSource={data}
-          pagination={false}
-          rowKey="user_id"
-          rowClassName={(record) =>
-            record.user_id === currentUserId ? "highlight-row" : ""
-          }
-          style={{ marginTop: 24 }}
-        />
+
+        {activeTab === "ranking" && (
+          <Table
+            columns={columns}
+            dataSource={data}
+            pagination={false}
+            rowKey="user_id"
+            rowClassName={(record) =>
+              record.user_id === currentUserId ? "highlight-row" : ""
+            }
+            style={{ marginTop: 24 }}
+          />
+        )}
+
+        {activeTab === "tasks" && (
+          <div style={{ textAlign: "center", padding: 40 }}>
+            <Title level={4}>🎯 Danh sách nhiệm vụ đang phát triển...</Title>
+          </div>
+        )}
+
+        {activeTab === "achievements" && (
+          <div style={{ textAlign: "center", padding: 40 }}>
+            <Title level={4}>🥇 Thành tựu sẽ được cập nhật sớm!</Title>
+          </div>
+        )}
       </Card>
     </div>
   );

@@ -1,4 +1,192 @@
-.ant-table-row-success {
-  background: #e6fffb !important;
-  transition: background 0.3s;
+/* ====== Các hàng trạng thái ====== */
+.row-both {
+  background: linear-gradient(to right, #d4edda, #cce5ff) !important;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.row-nosmoke {
+  background-color: #e6fffb !important;
+  transition: all 0.3s ease;
+}
+
+.row-taskdone {
+  background-color: #f0f5ff !important;
+  transition: all 0.3s ease;
+}
+
+.ant-table-row.row-both:hover {
+  background: linear-gradient(90deg, #dfffe0, #f0f5ff);
+  animation: rowPulse 2s infinite;
+}
+
+@keyframes rowPulse {
+  0% { box-shadow: 0 0 0 rgba(0, 0, 0, 0); }
+  50% { box-shadow: 0 0 12px rgba(82, 196, 26, 0.2); }
+  100% { box-shadow: 0 0 0 rgba(0, 0, 0, 0); }
+}
+
+/* ====== Header bảng ====== */
+.ant-table-thead > tr > th {
+  background: linear-gradient(90deg, #e6f7ff, #f0fff0) !important;
+  color: #003a8c !important; /* Đậm, dễ đọc */
+  text-align: center !important;
+  vertical-align: middle !important;
+  font-weight: 700;
+  font-size: 16px;
+  padding: 12px 8px;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #91d5ff;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6); /* sáng nhẹ */
+}
+
+
+.ant-table-thead > tr {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+/* ====== Hover hàng bảng ====== */
+.ant-table-tbody > tr:hover {
+  background: linear-gradient(90deg, #e0f7fa 0%, #f1f8e9 100%);
+  transform: scale(1.01);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  z-index: 2;
+}
+
+/* ====== Hiệu ứng checkbox ====== */
+.ant-checkbox-checked .ant-checkbox-inner {
+  background-color: #52c41a !important;
+  border-color: #52c41a !important;
+  transition: all 0.3s ease;
+}
+
+.ant-checkbox-wrapper:hover .ant-checkbox-inner {
+  border-color: #40a9ff;
+  box-shadow: 0 0 0 3px rgba(24, 144, 255, 0.2);
+}
+
+.ant-checkbox-wrapper-checked {
+  animation: tada 0.5s;
+}
+
+@keyframes tada {
+  0% { transform: scale(1); }
+  10%, 20% { transform: scale(0.9) rotate(-3deg); }
+  30%, 50%, 70%, 90% { transform: scale(1.1) rotate(3deg); }
+  40%, 60%, 80% { transform: scale(1.1) rotate(-3deg); }
+  100% { transform: scale(1); }
+}
+
+/* ====== Dropdown nhiệm vụ ====== */
+.ant-select-selector {
+  white-space: normal !important;
+  line-height: 1.6 !important;
+  min-height: 48px;
+  border-radius: 12px !important;
+  box-shadow: 0 0 0px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.3s ease;
+}
+
+.ant-select-focused .ant-select-selector {
+  box-shadow: 0 0 10px rgba(24, 144, 255, 0.3) !important;
+  border-color: #1890ff !important;
+}
+
+.ant-select-dropdown .ant-select-item-option {
+  transition: all 0.25s ease-in-out;
+}
+
+.ant-select-item-option-active {
+  background-color: #e6f7ff !important;
+  font-weight: 600;
+  color: #1890ff;
+  transform: scale(1.01);
+}
+
+.ant-select-dropdown .ant-select-item-option:hover {
+  transform: scale(1.03);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+/* ====== Mốc nhiệm vụ milestone ====== */
+.milestone-container {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  overflow-x: auto;
+  margin-top: 8px;
+}
+
+.milestone-card {
+  width: 100px;
+  min-height: 90px;
+  text-align: center;
+  padding: 8px 4px;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.milestone-card:hover {
+  transform: rotateY(2deg) scale(1.03);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.4s ease-in-out;
+}
+
+.milestone-reached {
+  background-color: #f6ffed !important;
+  box-shadow: 0 0 6px #b7eb8f;
+  animation: glowPulse 2s infinite ease-in-out;
+}
+
+@keyframes glowPulse {
+  0% { box-shadow: 0 0 0px rgba(82, 196, 26, 0.6); }
+  50% { box-shadow: 0 0 12px rgba(82, 196, 26, 0.9); }
+  100% { box-shadow: 0 0 0px rgba(82, 196, 26, 0.6); }
+}
+
+.milestone-status {
+  font-size: 13px;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+/* ====== Progress bar hiệu ứng mượt ====== */
+.ant-progress-bg {
+  transition: width 0.6s ease-in-out !important;
+}
+
+/* ====== Overlay chúc mừng đạt milestone ====== */
+.celebration-overlay {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 24px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 16px;
+  border-radius: 12px;
+  box-shadow: 0 0 8px #ccc;
+  overflow: hidden;
+}
+
+.celebration-text {
+  font-size: 36px;
+  font-weight: 800;
+  color: #52c41a;
+  text-shadow: 2px 2px 8px #00000066;
+  animation: popScale 0.8s ease-in-out;
+  white-space: nowrap;
+}
+
+@keyframes popScale {
+  0% { transform: scale(0.8); opacity: 0; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); }
 }
