@@ -1,4 +1,5 @@
 import React from "react";
+import UserProgressStats from "./pages/QuitPlanStats/UserProgressStats";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Card, Typography, Space } from "antd";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -65,6 +66,7 @@ function App() {
             <Route path="/quit-plan-detail/:date" element={<QuitPlanDetail />} />
             <Route path="/RankingBoard" element={<RankingBoard />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/user/stats" element={<UserProgressStats />} />
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/blog" element={<BlogList />} />

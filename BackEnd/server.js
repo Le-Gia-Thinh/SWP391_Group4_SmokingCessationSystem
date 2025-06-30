@@ -2,7 +2,7 @@ require('dotenv').config();   // Load biến môi trường trước hết
 require('./config/passport'); // Chạy file config/passport ngay sau, để passport được khởi tạo
 const http = require('http');
 const { Server } = require('socket.io');
-
+require("./cron/notificationJob");
 const express = require('express');
 const session = require('express-session');
 const cors = require('cors');
@@ -21,6 +21,7 @@ const coachRoutes = require('./routes/coach');
 const memberRoutes = require('./routes/member');
 const userRoutes = require("./routes/user");
 const userScoreRoutes = require("./routes/userScore");
+const notificationRoutes = require("./routes/notification");
 const app = express();
 const server = http.createServer(app);
 const chatRoutes = require('./routes/chat');
@@ -137,6 +138,9 @@ app.use('/api/smoking-summary', smokingSummaryRoutes);
 
 // 15) Xử lí profile of member
 app.use('/api/user', userRoutes);
+
+// Xử lí thông báo
+app.use("/api/notification", notificationRoutes);
 
 // 16) Middleware log request
 app.use((req, res, next) => {

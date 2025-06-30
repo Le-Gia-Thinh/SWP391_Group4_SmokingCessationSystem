@@ -24,6 +24,7 @@ import {
   ScheduleOutlined,
   FileDoneOutlined,
   MessageOutlined,
+  BarChartOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "../contexts/AuthContext";
 import axios from "axios";
@@ -68,6 +69,8 @@ export default function Navbar() {
       { key: "/RankingBoard", icon: <TrophyOutlined />, label: "Xếp hạng", onClick: () => navigate("/RankingBoard") },
       { key: "/blog", icon: <BookOutlined />, label: "Blog", onClick: () => navigate("/blog") },
       { key: "/chat", icon: <MessageOutlined />, label: "Chat", onClick: () => navigate("/chat") },
+      { key: "/membership", icon: <TeamOutlined />, label: "Thành viên", onClick: () => navigate("/membership") },
+      { key: "/user/stats", icon: <BarChartOutlined />, label: "Thống kê", onClick: () => navigate("/user/stats") },
     ];
 
     // Chỉ hiển thị mục 'Thành viên' cho member
@@ -189,22 +192,14 @@ export default function Navbar() {
                     user.role === "admin" ? "#ff4d4f" : "#52c41a",
                 }}
               />
-              {/* <Avatar
-                icon={<UserOutlined />}
-                style={{
-                  backgroundColor:
-                    user.role === "admin" ? "#ff4d4f" : "#52c41a",
-                  cursor: "pointer",
-                }}
-                onClick={() => navigate("/profile")}
-              /> */}
               <Dropdown
                 popupRender={() => <UserDropdownMenu />}
                 placement="bottomRight"
                 trigger={["click"]}
               >
                 <Avatar
-                  icon={<UserOutlined />}
+                  src={user.avatar_url} // ✅ truyền link avatar
+                  icon={!user.avatar_url && <UserOutlined />} // fallback nếu không có ảnh
                   style={{
                     backgroundColor:
                       user.role === "admin" ? "#ff4d4f" : "#52c41a",
