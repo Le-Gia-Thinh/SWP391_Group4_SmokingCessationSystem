@@ -119,6 +119,15 @@ const ScheduleManagement = () => {
                     schedules: values.usePattern ? null : values.specificSchedules
                 };
 
+                // DEBUG: Log dữ liệu gửi lên backend
+                console.log("=== DEBUG TẠO LỊCH ===");
+                console.log("Form values:", values);
+                console.log("Request data (single):", JSON.stringify(requestData, null, 2));
+                console.log("Time range raw:", values.timeRange);
+                console.log("Start time format:", values.timeRange[0].format('HH:mm'));
+                console.log("End time format:", values.timeRange[1].format('HH:mm'));
+                console.log("========================");
+
                 const response = await fetch(`${API_BASE_URL}/schedule/bulk`, {
                     method: 'POST',
                     headers: getAuthHeaders(),
@@ -141,6 +150,15 @@ const ScheduleManagement = () => {
                     } : null,
                     schedules: values.usePattern ? null : values.specificSchedules
                 };
+
+                // DEBUG: Log dữ liệu gửi lên backend
+                console.log("=== DEBUG TẠO LỊCH (MULTIPLE) ===");
+                console.log("Form values:", values);
+                console.log("Request data (multiple):", JSON.stringify(requestData, null, 2));
+                console.log("Time range raw:", values.timeRange);
+                console.log("Start time format:", values.timeRange[0].format('HH:mm'));
+                console.log("End time format:", values.timeRange[1].format('HH:mm'));
+                console.log("================================");
 
                 const response = await fetch(`${API_BASE_URL}/schedule/bulk-multiple`, {
                     method: 'POST',

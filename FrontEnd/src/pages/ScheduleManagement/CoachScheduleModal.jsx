@@ -49,19 +49,19 @@ const CoachScheduleModal = ({ open, onClose, coach, token }) => {
             title: 'Ngày',
             dataIndex: 'start_time',
             key: 'date',
-            render: (val) => dayjs(val).format('YYYY-MM-DD'),
+            render: (val) => dayjs.parseZone(val).format('YYYY-MM-DD'),
         },
         {
             title: 'Bắt đầu',
             dataIndex: 'start_time',
             key: 'start',
-            render: (val) => dayjs(val).format('HH:mm'),
+            render: (val) => dayjs.parseZone(val).format('HH:mm'),
         },
         {
             title: 'Kết thúc',
             dataIndex: 'end_time',
             key: 'end',
-            render: (val) => dayjs(val).format('HH:mm'),
+            render: (val) => dayjs.parseZone(val).format('HH:mm'),
         },
         {
             title: 'Trạng thái',
