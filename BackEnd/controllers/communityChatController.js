@@ -7,10 +7,30 @@ exports.sendMessage = async (req, res) => {
     const { content } = req.body;
 
     const pool = await sql.connect(dbConfig);
-    await pool.request()
+
+    // Lấy thông tin user để emit
+    const userQuery = await pool.request()
+      .input('user_id', sql.Int, userId)
+      .query('SELECT full_name FROM CUSTOMER WHERE user_id = @user_id');
+
+    const userName = userQuery.recordset[0]?.full_name || 'Ẩn danh';
+
+    // Sử dụng OUTPUT INSERTED để lấy bản ghi vừa lưu
+    const result = await pool.request()
       .input('user_id', sql.Int, userId)
       .input('content', sql.NVarChar, content)
-      .query(`INSERT INTO COMMUNITY_CHAT (user_id, content) VALUES (@user_id, @content)`);
+      .query(`INSERT INTO COMMUNITY_CHAT (user_id, content) OUTPUT INSERTED.* VALUES (@user_id, @content)`);
+    const inserted = result.recordset[0];
+
+    // Emit real-time message với sent_at từ DB
+    if (req.io) {
+      req.io.emit('communityMessage', {
+        user_id: userId,
+        full_name: userName,
+        content: inserted.content,
+        sent_at: inserted.sent_at // Lấy từ DB
+      });
+    }
 
     res.status(201).json({ success: true, message: 'Đã gửi tin nhắn' });
   } catch (err) {

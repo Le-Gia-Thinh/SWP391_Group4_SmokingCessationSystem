@@ -44,7 +44,8 @@ exports.sendMessage = (req, res) => {
         return res.status(403).json({ message: 'Chỉ được chat trong khung giờ tư vấn' });
       }
 
-      await pool.request()
+      // Lưu tin nhắn và lấy lại bản ghi vừa lưu (bao gồm sent_at)
+      const result = await pool.request()
         .input('session_id', sql.Int, sessionId)
         .input('sender_id', sql.Int, senderId)
         .input('sender_role', sql.VarChar, req.user.role)
@@ -52,18 +53,21 @@ exports.sendMessage = (req, res) => {
         .input('file_url', sql.NVarChar, fileUrl)
         .input('is_read', sql.Bit, 0)
         .query(`
-          INSERT INTO DIRECT_MESSAGE (session_id, sender_id, sender_role, message, file_url, is_read)
-          VALUES (@session_id, @sender_id, @sender_role, @message, @file_url, @is_read)
+          INSERT INTO DIRECT_MESSAGE (session_id, sender_id, sender_role, message, file_url, is_read, sent_at)
+          OUTPUT INSERTED.*
+          VALUES (@session_id, @sender_id, @sender_role, @message, @file_url, @is_read, GETUTCDATE())
         `);
+      const inserted = result.recordset[0];
 
       // Nếu dùng socket.io:
       if (req.io) {
         req.io.to(sessionId).emit('receiveMessage', {
           session_id: sessionId,
           sender_id: senderId,
-          message,
-          file_url: fileUrl,
-          sent_at: new Date().toISOString()
+          sender_role: req.user.role,
+          message: inserted.message,
+          file_url: inserted.file_url,
+          sent_at: inserted.sent_at // Lấy từ DB, chuẩn UTC
         });
       }
 

@@ -44,7 +44,7 @@ exports.bookAppointment = async (req, res) => {
     }
 
     const coachId = slot.recordset[0].coach_id;
-    
+
     const scheduledTime = slot.recordset[0].start_time;
     // Chặn đặt nếu thời gian lịch cách thời điểm hiện tại < 60 phút
     const nowWithBuffer = new Date();
@@ -59,11 +59,15 @@ exports.bookAppointment = async (req, res) => {
     }
     const endTime = slot.recordset[0].end_time;
 
+    // Calculate duration in minutes
+    const durationMinutes = (new Date(endTime).getTime() - new Date(scheduledTime).getTime()) / (1000 * 60);
+
     // Kiểm tra Member đã có phiên trùng giờ chưa
     const overlapCheck = await pool.request()
       .input('user_id', sql.Int, userId)
       .input('new_start', sql.DateTime, scheduledTime)
       .input('new_end', sql.DateTime, endTime)
+      .input('duration_minutes', sql.Int, durationMinutes)
       .query(`
         SELECT 1 FROM COACHING_SESSION
         WHERE user_id = @user_id
@@ -71,16 +75,13 @@ exports.bookAppointment = async (req, res) => {
           AND ((@new_start < DATEADD(minute, duration_minutes, scheduled_time))
               AND (@new_end > scheduled_time))
       `);
-      
-        if (overlapCheck.recordset.length > 0) {
-          return res.status(400).json({
-            success: false,
-            message: 'Bạn đã có lịch hẹn khác trùng giờ. Vui lòng chọn thời gian khác.'
-          });
-        }
 
-    // Calculate duration in minutes
-    const durationMinutes = (new Date(endTime).getTime() - new Date(scheduledTime).getTime()) / (1000 * 60);
+    if (overlapCheck.recordset.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Bạn đã có lịch hẹn khác trùng giờ. Vui lòng chọn thời gian khác.'
+      });
+    }
 
     await pool.request()
       .input('user_id', sql.Int, userId)
@@ -235,16 +236,26 @@ exports.cancelAppointment = async (req, res) => {
       return res.status(403).json({ message: 'Không có quyền huỷ phiên này' });
     }
 
-    // 2. Cập nhật trạng thái coaching session
+    // 2. Kiểm tra thời gian hủy lịch (chỉ cho phép hủy trước 2 giờ)
+    const now = new Date();
+    const scheduledTime = new Date(session.scheduled_time);
+    const timeDifference = scheduledTime.getTime() - now.getTime();
+    const hoursDifference = timeDifference / (1000 * 60 * 60);
+
+    if (hoursDifference < 2) {
+      return res.status(400).json({
+        message: 'Không thể hủy lịch hẹn. Chỉ có thể hủy trước 2 giờ so với giờ hẹn.'
+      });
+    }
+
+    // 3. Cập nhật trạng thái coaching session
     await pool.request()
       .input('id', sql.Int, sessionId)
       .query(`UPDATE COACHING_SESSION SET session_status = 'canceled_by_member' WHERE session_id = @id`);
 
-    // 3. Nếu có schedule_id thì cập nhật lịch
+    // 4. Nếu có schedule_id thì cập nhật lịch
     if (session.schedule_id) {
-      const now = new Date();
-      const scheduledTime = new Date(session.scheduled_time);
-      const isEarlyCancel = now < new Date(scheduledTime.getTime() - 2 * 60 * 60 * 1000); // Trước 2 tiếng
+      const isEarlyCancel = hoursDifference >= 2; // Trước 2 tiếng
 
       await pool.request()
         .input('id', sql.Int, session.schedule_id)
@@ -255,7 +266,7 @@ exports.cancelAppointment = async (req, res) => {
         `);
     }
 
-    // 4. Gửi tin nhắn thông báo
+    // 5. Gửi tin nhắn thông báo
     await pool.request()
       .input('session_id', sql.Int, sessionId)
       .input('content', sql.NVarChar, 'Thành viên đã huỷ lịch hẹn.')
@@ -282,7 +293,7 @@ exports.getMyAppointments = async (req, res) => {
       .input('user_id', sql.Int, userId)
       .query(`
         SELECT 
-          cs.session_id, cs.scheduled_time, cs.session_status, cs.google_meet_link,
+          cs.session_id, cs.scheduled_time, cs.session_status, cs.google_meet_link, cs.duration_minutes,
           c.full_name AS coach_name, c.email AS coach_email
         FROM COACHING_SESSION cs
         JOIN COACH ch ON cs.coach_id = ch.coach_id
@@ -328,7 +339,7 @@ exports.getCoachAllAppointments = async (req, res) => {
       .input('coach_id', sql.Int, coachId)
       .query(`
         SELECT 
-          cs.session_id, cs.scheduled_time, cs.session_status, cs.google_meet_link,
+          cs.session_id, cs.scheduled_time, cs.session_status, cs.google_meet_link, cs.duration_minutes,
           c.full_name AS member_name, c.email AS member_email, c.user_id as member_user_id
         FROM COACHING_SESSION cs
         LEFT JOIN CUSTOMER c ON cs.user_id = c.user_id
@@ -399,6 +410,11 @@ exports.reportMissingMember = async (req, res) => {
     return res.status(403).json({ message: 'Không có quyền' });
   }
 
+  // Kiểm tra thời gian báo cáo: chỉ cho phép báo cáo sau giờ hẹn
+  if (now < session.scheduled_time) {
+    return res.status(400).json({ message: 'Chỉ được báo cáo sau giờ hẹn' });
+  }
+
   const minAllowedReportTime = new Date(session.scheduled_time.getTime() + 15 * 60000);
   if (now < minAllowedReportTime) {
     return res.status(400).json({ message: 'Chỉ được báo cáo sau 15 phút kể từ giờ hẹn' });
@@ -422,6 +438,24 @@ exports.reportMissingCoach = async (req, res) => {
   const { session_id, reason } = req.body;
 
   const pool = await sql.connect(dbConfig);
+
+  // Kiểm tra quyền sở hữu session
+  const sessionCheck = await pool.request()
+    .input('session_id', sql.Int, session_id)
+    .input('user_id', sql.Int, userId)
+    .query('SELECT scheduled_time FROM COACHING_SESSION WHERE session_id = @session_id AND user_id = @user_id');
+
+  if (!sessionCheck.recordset.length) {
+    return res.status(403).json({ message: 'Không có quyền báo cáo phiên này' });
+  }
+
+  const session = sessionCheck.recordset[0];
+  const now = new Date();
+
+  // Kiểm tra thời gian báo cáo: chỉ cho phép báo cáo sau giờ hẹn
+  if (now < session.scheduled_time) {
+    return res.status(400).json({ message: 'Chỉ được báo cáo sau giờ hẹn' });
+  }
 
   await pool.request()
     .input('user_id', sql.Int, userId)

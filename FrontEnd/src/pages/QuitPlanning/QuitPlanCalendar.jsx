@@ -20,11 +20,13 @@ import {
   Col,
   message,
   Spin,
+  Popconfirm,
 } from "antd";
 import {
   CalendarOutlined,
   CheckCircleTwoTone,
   InfoCircleOutlined,
+  ReloadOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
@@ -807,20 +809,27 @@ const QuitPlan = () => {
                   background: "#fff",
                 }}
               />
-              <Button
-                danger
-                onClick={handleResetPlan}
-                style={{
-                  height: 48,
-                  fontWeight: 600,
-                  fontSize: 16,
-                  borderRadius: 8,
-                  marginLeft: 8,
-                }}
-                size="large"
+              <Popconfirm
+                title="Xác nhận đặt lại kế hoạch?"
+                description="Thao tác này sẽ xóa kế hoạch cũ và tạo kế hoạch mới. Bạn chắc chắn chứ?"
+                okText="Đồng ý"
+                cancelText="Hủy"
+                onConfirm={handleResetPlan}
               >
-                Đặt lại kế hoạch
-              </Button>
+                <Button
+                  danger
+                  style={{
+                    height: 48,
+                    fontWeight: 600,
+                    fontSize: 16,
+                    borderRadius: 8,
+                    marginLeft: 8,
+                  }}
+                  size="large"
+                >
+                  Đặt lại kế hoạch
+                </Button>
+              </Popconfirm>
             </div>
           </Card>
 
