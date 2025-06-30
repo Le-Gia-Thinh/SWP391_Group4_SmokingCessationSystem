@@ -129,20 +129,13 @@ const ProfilePage = () => {
                     🔒 Đổi mật khẩu
                   </Button>
                 </Form.Item>
-                <Form.Item name="ftnd_level" label="Mức độ nghiện (FTND)">
-                  <Select placeholder="Chọn mức độ">
-                    <Option value="Low">Nhẹ</Option>
-                    <Option value="Medium">Trung bình</Option>
-                    <Option value="High">Nặng</Option>
-                  </Select>
-                </Form.Item>
                 <Form.Item>
                   <Button type="primary" htmlType="submit" loading={loading}>Cập nhật</Button>
                   <Button onClick={() => form.resetFields()} style={{ marginLeft: 12 }}>Hủy</Button>
                 </Form.Item>
               </Form>
             </Card>
-          </Col>
+          </Col>s
         </Row>
       </div>
     </>

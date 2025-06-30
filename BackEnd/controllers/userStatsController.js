@@ -18,15 +18,19 @@ exports.getUserSavings = async (req, res) => {
     const { start_date: startDate, frequency_per_day: freqPerDay } = plan.recordset[0];
 
     const logs = await pool.request()
-      .input('user_id', sql.Int, userId)
-      .query(`SELECT total_cigarettes FROM DAILY_SMOKING_SUMMARY WHERE user_id = @user_id;`);
+    .input('user_id', sql.Int, userId)
+    .input('start_date', sql.Date, startDate)
+    .query(`
+      SELECT total_cigarettes
+      FROM DAILY_SMOKING_SUMMARY
+      WHERE user_id = @user_id AND date >= @start_date;
+    `);
 
     let totalSaved = 0;
     logs.recordset.forEach(entry => {
       const reduced = Math.max(0, freqPerDay - entry.total_cigarettes);
       totalSaved += reduced * pricePerCig;
     });
-
     res.json({ amount: totalSaved, startDate });
   } catch (err) {
     console.error(err);
@@ -34,7 +38,7 @@ exports.getUserSavings = async (req, res) => {
   }
 };
 
-// API 2: Lấy tần suất hút thuốc
+// API 2: Lấy tần suất hút thuốc 
 exports.getUserFrequency = async (req, res) => {
   const userId = req.user.id;
 

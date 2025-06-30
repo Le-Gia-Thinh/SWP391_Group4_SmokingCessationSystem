@@ -4,6 +4,7 @@ import { UserOutlined } from "@ant-design/icons";
 import { useAuth } from "../contexts/AuthContext";
 import { Menu, Button } from "antd";
 import { Link, useNavigate } from "react-router-dom";
+import dayjs from "dayjs";
 
 const { Title, Text } = Typography;
 
@@ -49,15 +50,13 @@ const UserDropdownMenu = () => {
                 <div>🎯 <strong>Mức độ FTND:</strong> {user.ftnd_level ?? "Chưa có"}</div>
                 <div>📅 <strong>Ngày đăng ký:</strong> {user.registration_date?.substring(0, 10)}</div>
                 <div>🏆 <strong>Điểm số:</strong> {user.total_points ?? 0} – <strong>Cấp độ:</strong> {user.current_level ?? "Mới"}</div>
+                <div>📅 <strong>Ngày sinh:</strong> {user.date_of_birth ? dayjs(user.date_of_birth).format("DD/MM/YYYY") : "Chưa cập nhật"}</div>
             </Space>
 
             <Divider style={{ margin: '12px 0' }} />
 
             <Space direction="vertical" style={{ width: "100%" }}>
                 <Button block onClick={() => navigate('/profile')}>
-                    🧾 Hồ sơ cá nhân
-                </Button>
-                <Button block onClick={() => navigate('/update-profile')}>
                     ✏️ Chỉnh sửa thông tin
                 </Button>
                 <Button block danger onClick={logout}>

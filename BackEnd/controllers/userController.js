@@ -12,7 +12,7 @@ async function getMe(req, res) {
       .query(`
         SELECT c.user_id AS id, c.full_name AS name, c.email, c.phone_number,
                c.ftnd_level, c.avatar_url, c.user_role, c.account_status,
-               c.registration_date,
+               c.registration_date,c.date_of_birth,
                s.total_points, s.current_level, s.last_updated
         FROM CUSTOMER c 
         LEFT JOIN USER_SCORE s ON c.user_id = s.user_id
