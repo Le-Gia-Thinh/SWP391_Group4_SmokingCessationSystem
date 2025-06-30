@@ -542,4 +542,19 @@ CREATE TABLE USER_BEHAVIOR_TASK_LOG (
         REFERENCES CUSTOMER(user_id) ON DELETE CASCADE,
 
     UNIQUE(user_id, log_date, time_slot) -- Mỗi user chỉ chọn 1 task/slot/ngày
+-- 35. DIRECT_MESSAGE: Tin nhắn trao đổi trực tiếp giữa Coach và Member
+CREATE TABLE DIRECT_MESSAGE (
+    message_id INT IDENTITY PRIMARY KEY,         -- Khóa chính tự tăng
+    session_id INT NOT NULL,                     -- Liên kết đến phiên tư vấn
+    sender_id INT NOT NULL,                      -- ID của người gửi (Coach hoặc Member)
+    sender_role VARCHAR(20) NOT NULL CHECK (
+        sender_role IN ('member', 'coach')       -- Phân biệt vai trò người gửi
+    ),
+    message NVARCHAR(MAX) NOT NULL,              -- Nội dung tin nhắn
+    file_url NVARCHAR(MAX) NULL,                 -- Ảnh/tệp đính kèm
+    sent_at DATETIME DEFAULT GETDATE(),          -- Thời điểm gửi tin nhắn
+    is_read BIT DEFAULT 0,                       -- Đánh dấu đã đọc tin nhắn. 0: chưa đọc 1: đã đọc
+
+    CONSTRAINT fk_directmsg_session FOREIGN KEY (session_id) REFERENCES COACHING_SESSION(session_id),
+    CONSTRAINT fk_directmsg_sender FOREIGN KEY (sender_id) REFERENCES CUSTOMER(user_id)
 );

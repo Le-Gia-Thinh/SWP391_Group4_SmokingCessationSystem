@@ -82,6 +82,7 @@ const PlanSetupModal = ({ userId, onPlanReady }) => {
           onChange={setStartDate}
           style={{ width: "100%" }}
           size="large"
+          disabledDate={(current) => current && current < new Date().setHours(0, 0, 0, 0)}
         />
       </div>
       <div style={{ marginBottom: 18 }}>

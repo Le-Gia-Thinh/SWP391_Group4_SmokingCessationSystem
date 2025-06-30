@@ -1,6 +1,11 @@
 // middleware/auth.js
 const jwt = require('jsonwebtoken');
 const { sql, dbConfig } = require('../config/database');
+const dayjs = require('dayjs');
+const utc = require('dayjs/plugin/utc');
+const timezone = require('dayjs/plugin/timezone');
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 // Middleware xác thực JWT và kiểm tra user tồn tại trong DB
 const auth = async (req, res, next) => {
@@ -72,15 +77,6 @@ const authorize = (allowedRoles) => {
       return res.status(403).json({ message: 'Bạn không có quyền truy cập chức năng này' });
     }
 
-    next();
-  };
-};
-
-exports.authorize = (role) => {
-  return (req, res, next) => {
-    if (req.user.role !== role) {
-      return res.status(403).json({ message: 'Không có quyền truy cập' });
-    }
     next();
   };
 };

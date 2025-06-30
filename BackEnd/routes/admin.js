@@ -19,4 +19,10 @@ router.delete('/delete-coach/:coach_id', auth, authorize('admin'), adminControll
 // Khôi phục Coach
 router.put('/restore-coach/:coach_id', auth, authorize('admin'), adminController.restoreCoach);
 
+// Admin xem tất cả feedback Member report Coach
+router.get('/feedbacks/coach-violations', auth, authorize('admin'), adminController.getCoachViolations);
+
+// Admin xem tất cả feedback Coach báo cáo Member vắng mặt
+router.get('/reports/member-no-shows', auth, authorize('admin'), adminController.getMemberNoShowReports);
+
 module.exports = router;

@@ -1,6 +1,8 @@
 require('dotenv').config();   // Load biến môi trường trước hết
 require('./config/passport'); // Chạy file config/passport ngay sau, để passport được khởi tạo
-
+const http = require('http');
+const { Server } = require('socket.io');
+require("./cron/notificationJob");
 const express = require('express');
 const session = require('express-session');
 const cors = require('cors');
@@ -20,7 +22,10 @@ const memberRoutes = require('./routes/member');
 const userRoutes = require("./routes/user");
 const userScoreRoutes = require("./routes/userScore");
 const achievementRoutes = require("./routes/achievementRoutes");
+const notificationRoutes = require("./routes/notification");
 const app = express();
+const server = http.createServer(app);
+const chatRoutes = require('./routes/chat');
 
 // 1) CORS: bắt buộc phải cho phép credentials (cookie) và origin chạy React (5173 / 3000)
 app.use(
@@ -34,6 +39,39 @@ app.use(
 // 2) Middleware parse body JSON / URL-encoded
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+
+const io = new Server(server, {
+  cors: {
+    origin: ['http://localhost:5173', 'http://localhost:3000'],
+    methods: ['GET', 'POST'],
+    credentials: true,
+  }
+});
+
+// Gắn io vào req để sử dụng trong controller
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
+
+// Socket.IO lắng nghe kết nối
+io.on('connection', (socket) => {
+  console.log('📡 Client connected:', socket.id);
+
+  socket.on('joinSession', (sessionId) => {
+    socket.join(sessionId);
+    console.log(`👥 Joined room session ${sessionId}`);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('❌ Client disconnected:', socket.id);
+  });
+});
+
+// 2.1) Serve file chat uploads
+const path = require('path');
+app.use('/uploads/chat', express.static(path.join(__dirname, 'uploads/chat')));
 
 // 3) Check FTND: Mức độ nghiện
 const ftndRoutes = require('./routes/ftnd');
@@ -104,6 +142,8 @@ app.use('/api/user', userRoutes);
 
 // 15.1) Xử lí thành tựu
 app.use('/api/achievement', achievementRoutes);
+// Xử lí thông báo
+app.use("/api/notification", notificationRoutes);
 
 // 16) Middleware log request
 app.use((req, res, next) => {
@@ -122,14 +162,17 @@ app.use((err, req, res, next) => {
   res.status(500).json({ success: false, message: 'Lỗi server không xác định' });
 })
 
+// 19. Chat coach.member
+app.use('/api/chat', chatRoutes);
+
 // 19) 404 handler
 app.use('*', (req, res) => {
   res.status(404).json({ success: false, message: 'Endpoint không tồn tại' });
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`✅ Server đang chạy trên port ${PORT}`);
+server.listen(PORT, () => {
+  console.log(`✅ Server + Socket.IO chạy tại port ${PORT}`);
   console.log(`🔗 Google URL: http://localhost:${PORT}/api/auth/google`);
 });
 

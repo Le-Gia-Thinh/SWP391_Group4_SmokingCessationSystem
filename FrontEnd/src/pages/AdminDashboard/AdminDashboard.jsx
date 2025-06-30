@@ -19,7 +19,9 @@ import {
     Popconfirm,
     Tooltip,
     Divider,
-    DatePicker
+    DatePicker,
+    Tabs,
+    Badge
 } from 'antd';
 import {
     UserOutlined,
@@ -43,6 +45,7 @@ import DataTable from '../../components/ui/DataTable';
 import FormModal from '../../components/ui/FormModal';
 import ActionButtonGroup from '../../components/ui/ActionButtonGroup';
 import './AdminDashboard.css';
+import moment from 'moment-timezone';
 
 const { Header, Content } = Layout;
 const { Title, Text } = Typography;
@@ -62,6 +65,12 @@ const AdminDashboard = () => {
     const [credentialsModal, setCredentialsModal] = useState(false);
     const [newCoachCredentials, setNewCoachCredentials] = useState(null);
     const [copiedField, setCopiedField] = useState('');
+    const [coachViolations, setCoachViolations] = useState([]);
+    const [memberNoShows, setMemberNoShows] = useState([]);
+    const [reportLoading, setReportLoading] = useState(false);
+    const [coachBadgeCount, setCoachBadgeCount] = useState(0);
+    const [memberBadgeCount, setMemberBadgeCount] = useState(0);
+    const [activeTab, setActiveTab] = useState('coaches');
 
     // Search and filter states
     const [searchText, setSearchText] = useState('');
@@ -95,12 +104,22 @@ const AdminDashboard = () => {
     // Load coaches on component mount
     useEffect(() => {
         loadCoaches();
+        loadCoachViolations();
+        loadMemberNoShows();
     }, []);
 
     // Filter coaches based on search and filters
     useEffect(() => {
         filterCoaches();
     }, [coaches, searchText, statusFilter]);
+
+    useEffect(() => {
+        setCoachBadgeCount(coachViolations.length);
+    }, [coachViolations]);
+
+    useEffect(() => {
+        setMemberBadgeCount(memberNoShows.length);
+    }, [memberNoShows]);
 
     const filterCoaches = () => {
         let filtered = [...coaches];
@@ -143,6 +162,36 @@ const AdminDashboard = () => {
             message.error('Không thể tải danh sách huấn luyện viên');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const loadCoachViolations = async () => {
+        setReportLoading(true);
+        try {
+            const response = await fetch(`${API_BASE_URL}/admin/feedbacks/coach-violations`, {
+                headers: getAuthHeaders()
+            });
+            const data = await response.json();
+            setCoachViolations(data.data || []);
+        } catch (error) {
+            setCoachViolations([]);
+        } finally {
+            setReportLoading(false);
+        }
+    };
+
+    const loadMemberNoShows = async () => {
+        setReportLoading(true);
+        try {
+            const response = await fetch(`${API_BASE_URL}/admin/reports/member-no-shows`, {
+                headers: getAuthHeaders()
+            });
+            const data = await response.json();
+            setMemberNoShows(data.data || []);
+        } catch (error) {
+            setMemberNoShows([]);
+        } finally {
+            setReportLoading(false);
         }
     };
 
@@ -525,34 +574,98 @@ const AdminDashboard = () => {
                     </Row>
                 </div>
 
-                <DataTable
-                    title="Danh sách huấn luyện viên"
-                    columns={columns}
-                    dataSource={filteredCoaches}
-                    loading={loading}
-                    rowKey="coach_id"
-                    extra={
-                        <Space>
-                            <Button
-                                icon={<ReloadOutlined />}
-                                onClick={loadCoaches}
-                                loading={loading}
-                            >
-                                Làm mới
-                            </Button>
-                            <Button
-                                type="primary"
-                                icon={<PlusOutlined />}
-                                onClick={() => {
-                                    setCreateCoachModal(true);
-                                    coachForm.setFieldsValue({ password: 'Coach@123' });
-                                }}
-                            >
-                                Tạo huấn luyện viên
-                            </Button>
-                        </Space>
-                    }
-                />
+                <Tabs
+                    activeKey={activeTab}
+                    onChange={key => {
+                        setActiveTab(key);
+                        if (key === 'coach-violations') setCoachBadgeCount(0);
+                        if (key === 'member-no-shows') setMemberBadgeCount(0);
+                    }}
+                >
+                    <Tabs.TabPane tab={<span>Quản lý HLV</span>} key="coaches">
+                        <DataTable
+                            title="Danh sách huấn luyện viên"
+                            columns={columns}
+                            dataSource={filteredCoaches}
+                            loading={loading}
+                            rowKey="coach_id"
+                            extra={
+                                <Space>
+                                    <Button
+                                        icon={<ReloadOutlined />}
+                                        onClick={loadCoaches}
+                                        loading={loading}
+                                    >
+                                        Làm mới
+                                    </Button>
+                                    <Button
+                                        type="primary"
+                                        icon={<PlusOutlined />}
+                                        onClick={() => {
+                                            setCreateCoachModal(true);
+                                            coachForm.setFieldsValue({ password: 'Coach@123' });
+                                        }}
+                                    >
+                                        Tạo huấn luyện viên
+                                    </Button>
+                                </Space>
+                            }
+                        />
+                    </Tabs.TabPane>
+                    <Tabs.TabPane tab={<span>Báo cáo HLV vắng mặt <Badge count={coachBadgeCount} /></span>} key="coach-violations">
+                        <Card title="Báo cáo HLV vắng mặt" style={{ marginTop: 24 }}>
+                            <div style={{ marginBottom: 16, textAlign: 'right' }}>
+                                <Button
+                                    type="primary"
+                                    icon={<ReloadOutlined />}
+                                    onClick={loadCoachViolations}
+                                    loading={reportLoading}
+                                >
+                                    Làm mới
+                                </Button>
+                            </div>
+                            <Table
+                                dataSource={coachViolations}
+                                rowKey="feedback_id"
+                                loading={reportLoading}
+                                columns={[
+                                    { title: 'ID', dataIndex: 'feedback_id', key: 'id', width: 80 },
+                                    { title: 'Người báo cáo', dataIndex: 'reporter_name', key: 'reporter_name' },
+                                    { title: 'Nội dung', dataIndex: 'content', key: 'content', ellipsis: true },
+                                    { title: 'Ngày gửi', dataIndex: 'submitted_at', key: 'submitted_at', render: v => v ? new Date(v).toLocaleString() : '' },
+                                ]}
+                                pagination={{ pageSize: 10 }}
+                            />
+                        </Card>
+                    </Tabs.TabPane>
+                    <Tabs.TabPane tab={<span>Báo cáo thành viên vắng mặt <Badge count={memberBadgeCount} /></span>} key="member-no-shows">
+                        <Card title="Báo cáo thành viên vắng mặt" style={{ marginTop: 24 }}>
+                            <div style={{ marginBottom: 16, textAlign: 'right' }}>
+                                <Button
+                                    type="primary"
+                                    icon={<ReloadOutlined />}
+                                    onClick={loadMemberNoShows}
+                                    loading={reportLoading}
+                                >
+                                    Làm mới
+                                </Button>
+                            </div>
+                            <Table
+                                dataSource={memberNoShows}
+                                rowKey="session_id"
+                                loading={reportLoading}
+                                columns={[
+                                    { title: 'ID phiên', dataIndex: 'session_id', key: 'session_id', width: 100 },
+                                    { title: 'Thành viên', dataIndex: 'member_name', key: 'member_name' },
+                                    { title: 'HLV', dataIndex: 'coach_name', key: 'coach_name' },
+                                    { title: 'Lý do', dataIndex: 'session_notes', key: 'session_notes', ellipsis: true },
+                                    { title: 'Thời gian', dataIndex: 'scheduled_time', key: 'scheduled_time', render: v => v ? moment.parseZone(v).format('HH:mm DD/MM/YYYY') : '' },
+                                ]}
+                                pagination={{ pageSize: 10 }}
+                            />
+                        </Card>
+                    </Tabs.TabPane>
+                </Tabs>
             </Content>
 
             {/* Create Coach Modal */}

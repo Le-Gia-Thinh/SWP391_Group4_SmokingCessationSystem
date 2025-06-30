@@ -32,6 +32,7 @@ import { useScrollReveal } from "../../hooks/useScrollReveal";
 import meditationImg from "../../assets/meditation.jpg";
 import healthyEatingImg from "../../assets/healthy-eating.jpg";
 import fitnessImg from "../../assets/fitness.jpg";
+import { useAuth } from '../../contexts/AuthContext';
 
 import "./HomePage.css";
 
@@ -126,6 +127,7 @@ const legalLinks = [
 
 /* ===== TRANG CHÍNH ===== */
 const HomePage = () => {
+  const { user } = useAuth();
   const [showUpgrade, setShowUpgrade] = useState(false);
   const timerRef = useRef(null);
   const homepageRef = useRef(null);
@@ -135,10 +137,11 @@ const HomePage = () => {
     return () => clearTimeout(timerRef.current);
   }, []);
   useScrollReveal();
+  const isMember = user && user.role === 'member';
   return (
     <Layout className="homepage" ref={homepageRef}>
       <Navbar />
-      {showUpgrade && (
+      {showUpgrade && isMember && (
         <PlanUpgradeModal
           open={showUpgrade}
           onClose={() => setShowUpgrade(false)}
