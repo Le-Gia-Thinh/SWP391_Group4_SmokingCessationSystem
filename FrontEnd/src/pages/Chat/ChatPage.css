@@ -189,6 +189,8 @@
 .topic-chat>.messages-container {
     max-height: none;
     margin-bottom: 0;
+    flex: 1;
+    overflow-y: auto;
 }
 
 .topic-header {

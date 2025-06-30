@@ -13,19 +13,15 @@ import {
     Spin,
     Empty,
     Tag,
-    Row,
-    Col
 } from "antd";
 import {
     SendOutlined,
-    MessageOutlined,
-    UserOutlined,
     ClockCircleOutlined,
-    TeamOutlined
+    UserOutlined
 } from "@ant-design/icons";
 import axios from "axios";
 import { useSocket } from "../../contexts/SocketContext";
-import "./CoachChat.css";
+import "../Chat/ChatPage.css";
 import moment from 'moment-timezone';
 
 const { Content } = Layout;
@@ -58,11 +54,9 @@ export default function CoachChat() {
     useEffect(() => {
         if (!socket) return;
 
-        // Listen for new messages in coach chat
         socket.on('receiveMessage', (messageData) => {
             console.log('📨 Coach received real-time message:', messageData);
 
-            // Add new message to coach messages if it's for current session
             if (selectedSession && messageData.session_id === selectedSession.session_id) {
                 setCoachMessages(prev => [...prev, {
                     message_id: Date.now(), // Temporary ID
@@ -85,11 +79,9 @@ export default function CoachChat() {
     // Join session room when session changes
     useEffect(() => {
         if (selectedSession && isConnected) {
-            // Leave previous session room
             if (selectedSession.session_id) {
                 leaveSession(selectedSession.session_id);
             }
-            // Join new session room
             joinSession(selectedSession.session_id);
         }
     }, [selectedSession, isConnected, joinSession, leaveSession]);
@@ -104,7 +96,6 @@ export default function CoachChat() {
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             if (response.data.success) {
-                // Chỉ lấy các session đã được accept
                 const acceptedSessions = response.data.data.filter(
                     session => session.session_status === 'accepted'
                 );
@@ -127,7 +118,7 @@ export default function CoachChat() {
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             if (response.data.success) {
-                setCoachMessages(response.data.data.reverse()); // Đảo ngược để hiển thị tin nhắn cũ trước
+                setCoachMessages(response.data.data.reverse());
             }
         } catch (err) {
             message.error("Lỗi khi tải tin nhắn");
@@ -138,16 +129,8 @@ export default function CoachChat() {
 
     // Send coach message
     const sendCoachMessage = async () => {
-        if (!token) {
-            message.error("Bạn cần đăng nhập để gửi tin nhắn!");
-            return;
-        }
-        if (!newMessage.trim()) {
-            message.error("Vui lòng nhập nội dung tin nhắn!");
-            return;
-        }
-        if (!selectedSession) {
-            message.error("Vui lòng chọn phiên tư vấn!");
+        if (!token || !newMessage.trim() || !selectedSession) {
+            message.error("Vui lòng nhập nội dung và chọn phiên tư vấn!");
             return;
         }
 
@@ -168,8 +151,6 @@ export default function CoachChat() {
 
             if (response.data.success) {
                 setNewMessage("");
-                // Không cần fetch lại vì Socket.IO sẽ tự động update
-                // fetchCoachMessages(selectedSession.session_id);
             }
         } catch (err) {
             if (err.response?.status === 403) {
@@ -186,8 +167,9 @@ export default function CoachChat() {
         fetchCoachMessages(session.session_id);
     };
 
-    // Check if session is currently active (within chat time window)
+    // Check if session is currently active
     const isSessionActive = (session) => {
+        if (!session) return false;
         const now = moment();
         const start = moment.parseZone(session.scheduled_time);
         const end = moment(start).add(session.duration_minutes, 'minutes');
@@ -201,7 +183,7 @@ export default function CoachChat() {
         return moment.parseZone(dateTimeString).format('HH:mm DD/MM/YYYY');
     };
 
-    // Format date
+    // Format message time
     const formatTime = (dateString) => {
         if (!dateString) return '';
         return moment.parseZone(dateString).format('HH:mm:ss DD/MM/YYYY');
@@ -223,207 +205,129 @@ export default function CoachChat() {
     };
 
     return (
-        <div className="coach-chat-container">
-            {/* Socket.IO Connection Status */}
-            <div style={{
-                position: 'absolute',
-                top: 10,
-                right: 10,
-                zIndex: 1000
-            }}>
-                <Tag color={isConnected ? 'green' : 'red'}>
-                    {isConnected ? '🟢 Online' : '🔴 Offline'}
-                </Tag>
-            </div>
+        <Content className="chat-content" style={{ height: 'calc(100vh - 64px)', padding: '20px' }}>
+            <div className="chat-container">
+                <Card className="chat-card" style={{ height: '100%' }}>
+                    <div style={{ position: 'absolute', top: 10, right: 10, zIndex: 1000 }}>
+                        <Tag color={isConnected ? 'green' : 'red'}>
+                            {isConnected ? '🟢 Online' : '🔴 Offline'}
+                        </Tag>
+                    </div>
 
-            <Row gutter={16} style={{ height: 'calc(100vh - 200px)' }}>
-                {/* Sessions Sidebar */}
-                <Col xs={24} md={8} lg={6}>
-                    <Card
-                        title={
-                            <Space>
-                                <TeamOutlined />
-                                <span>Phiên Tư Vấn</span>
-                            </Space>
-                        }
-                        className="sessions-sidebar"
-                        bodyStyle={{ padding: 0, height: '100%' }}
-                    >
-                        {sessionsLoading ? (
-                            <div style={{ textAlign: 'center', padding: '20px' }}>
-                                <Spin />
+                    <div className="topics-section" style={{ height: '100%' }}>
+                        <div className="sessions-sidebar">
+                            <div className="sessions-header">
+                                <Title level={5}>Phiên Tư Vấn</Title>
                             </div>
-                        ) : coachingSessions.length === 0 ? (
-                            <Empty description="Chưa có phiên tư vấn nào" />
-                        ) : (
-                            <List
-                                dataSource={coachingSessions}
-                                renderItem={(session) => (
-                                    <List.Item
-                                        className={`session-item ${selectedSession?.session_id === session.session_id ? 'selected' : ''}`}
-                                        onClick={() => handleSessionSelect(session)}
-                                        style={{
-                                            padding: '12px 16px',
-                                            cursor: 'pointer',
-                                            borderBottom: '1px solid #f0f0f0'
-                                        }}
-                                    >
-                                        <div style={{ width: '100%' }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                                                <Text strong>
-                                                    {session.member_name || `Member ${session.user_id}`}
-                                                </Text>
-                                                <Tag color={isSessionActive(session) ? 'green' : 'default'} size="small">
-                                                    {isSessionActive(session) ? '🟢 Active' : '⚪ Inactive'}
-                                                </Tag>
-                                            </div>
-                                            <Text type="secondary" style={{ fontSize: '12px', display: 'block' }}>
-                                                <ClockCircleOutlined /> {formatSessionTime(session.scheduled_time)}
-                                            </Text>
-                                            <Text type="secondary" style={{ fontSize: '12px', display: 'block' }}>
-                                                Thời lượng: {session.duration_minutes} phút
-                                            </Text>
-                                        </div>
-                                    </List.Item>
+                            <div className="sessions-list">
+                                {sessionsLoading ? (
+                                    <div style={{ textAlign: 'center', padding: '20px' }}><Spin /></div>
+                                ) : coachingSessions.length === 0 ? (
+                                    <Empty description="Chưa có phiên tư vấn nào" />
+                                ) : (
+                                    <List
+                                        dataSource={coachingSessions}
+                                        renderItem={(session) => (
+                                            <List.Item
+                                                className={`session-item ${selectedSession?.session_id === session.session_id ? 'selected' : ''}`}
+                                                onClick={() => handleSessionSelect(session)}
+                                            >
+                                                <div>
+                                                    <Text strong>
+                                                        {session.member_name || `Member ${session.user_id}`}
+                                                    </Text>
+                                                    <br />
+                                                    <Text type="secondary" style={{ fontSize: '12px' }}>
+                                                        <ClockCircleOutlined /> {formatSessionTime(session.scheduled_time)}
+                                                    </Text>
+                                                    <br />
+                                                    <Tag color={isSessionActive(session) ? 'green' : 'default'}>
+                                                        {isSessionActive(session) ? 'Đang hoạt động' : 'Không hoạt động'}
+                                                    </Tag>
+                                                </div>
+                                            </List.Item>
+                                        )}
+                                    />
                                 )}
-                            />
-                        )}
-                    </Card>
-                </Col>
+                            </div>
+                        </div>
 
-                {/* Chat Area */}
-                <Col xs={24} md={16} lg={18}>
-                    <Card
-                        title={
-                            selectedSession ? (
-                                <div>
-                                    <Title level={4} style={{ margin: 0 }}>
-                                        Chat với {selectedSession.member_name || `Member ${selectedSession.user_id}`}
-                                    </Title>
-                                    <Text type="secondary">
-                                        {formatSessionTime(selectedSession.scheduled_time)} - {selectedSession.duration_minutes} phút
-                                    </Text>
-                                    <br />
-                                    <Tag color={isSessionActive(selectedSession) ? 'green' : 'red'}>
-                                        {isSessionActive(selectedSession) ? '🟢 Có thể chat' : '🔴 Không thể chat'}
-                                    </Tag>
-                                </div>
-                            ) : (
-                                <span>Chọn phiên tư vấn để bắt đầu chat</span>
-                            )
-                        }
-                        className="chat-area"
-                        bodyStyle={{
-                            padding: 0,
-                            height: '100%',
-                            display: 'flex',
-                            flexDirection: 'column'
-                        }}
-                    >
-                        {selectedSession ? (
-                            <>
-                                {/* Messages Container */}
-                                <div style={{
-                                    flex: 1,
-                                    overflowY: 'auto',
-                                    padding: '16px',
-                                    maxHeight: 'calc(100vh - 350px)'
-                                }}>
-                                    {coachLoading ? (
-                                        <div style={{ textAlign: 'center', padding: '20px' }}>
-                                            <Spin size="large" />
-                                        </div>
-                                    ) : coachMessages.length === 0 ? (
-                                        <Empty description="Chưa có tin nhắn nào" />
-                                    ) : (
-                                        <List
-                                            dataSource={coachMessages}
-                                            renderItem={(msg) => (
-                                                <List.Item style={{ border: 'none', padding: '8px 0' }}>
-                                                    <div style={{
-                                                        width: '100%',
-                                                        display: 'flex',
-                                                        justifyContent: msg.sender_role === 'coach' ? 'flex-end' : 'flex-start'
-                                                    }}>
-                                                        <div style={{
-                                                            maxWidth: '70%',
-                                                            padding: '8px 12px',
-                                                            borderRadius: '8px',
-                                                            backgroundColor: msg.sender_role === 'coach' ? '#1890ff' : '#f0f0f0',
-                                                            color: msg.sender_role === 'coach' ? 'white' : 'black'
-                                                        }}>
-                                                            <div style={{ marginBottom: 4 }}>
-                                                                <Text style={{
-                                                                    color: msg.sender_role === 'coach' ? 'white' : 'black',
-                                                                    fontSize: '12px',
-                                                                    opacity: 0.8
-                                                                }}>
-                                                                    {msg.sender_role === 'coach' ? 'Bạn' : selectedSession.member_name || `Member ${selectedSession.user_id}`}
+                        <div className="topic-chat">
+                            {selectedSession ? (
+                                <>
+                                    <div className="session-header">
+                                        <Title level={4} style={{ margin: 0 }}>
+                                            Chat với {selectedSession.member_name || `Member ${selectedSession.user_id}`}
+                                        </Title>
+                                        <Text type="secondary">
+                                            {formatSessionTime(selectedSession.scheduled_time)} - {selectedSession.duration_minutes} phút
+                                        </Text>
+                                        <br />
+                                        <Tag color={isSessionActive(selectedSession) ? 'green' : 'red'} style={{ marginTop: '8px' }}>
+                                            {isSessionActive(selectedSession) ? '🟢 Có thể chat' : '🔴 Không thể chat'}
+                                        </Tag>
+                                    </div>
+
+                                    <div className="messages-container">
+                                        {coachLoading ? (
+                                            <div className="loading-container"><Spin size="large" /></div>
+                                        ) : coachMessages.length === 0 ? (
+                                            <Empty description="Chưa có tin nhắn nào" />
+                                        ) : (
+                                            <List
+                                                dataSource={coachMessages}
+                                                renderItem={(msg) => (
+                                                    <List.Item className="message-item">
+                                                        <div className="message-content">
+                                                            <div className="message-header">
+                                                                <Avatar icon={<UserOutlined />} />
+                                                                <Text strong>
+                                                                    {msg.sender_role === 'coach' ? 'Bạn' : selectedSession.member_name}
+                                                                </Text>
+                                                                <Text type="secondary">
+                                                                    <ClockCircleOutlined /> {formatTime(msg.sent_at)}
                                                                 </Text>
                                                             </div>
-                                                            <Paragraph style={{
-                                                                margin: 0,
-                                                                color: msg.sender_role === 'coach' ? 'white' : 'black'
-                                                            }}>
+                                                            <Paragraph className="message-text">
                                                                 {msg.message}
                                                             </Paragraph>
-                                                            <div style={{
-                                                                marginTop: 4,
-                                                                textAlign: 'right'
-                                                            }}>
-                                                                <Text style={{
-                                                                    color: msg.sender_role === 'coach' ? 'white' : 'black',
-                                                                    fontSize: '10px',
-                                                                    opacity: 0.7
-                                                                }}>
-                                                                    {formatTime(msg.sent_at)}
-                                                                </Text>
-                                                            </div>
                                                         </div>
-                                                    </div>
-                                                </List.Item>
-                                            )}
-                                        />
-                                    )}
-                                    <div ref={messagesEndRef} />
-                                </div>
+                                                    </List.Item>
+                                                )}
+                                            />
+                                        )}
+                                        <div ref={messagesEndRef} />
+                                    </div>
 
-                                {/* Message Input */}
-                                <Divider style={{ margin: 0 }} />
-                                <div style={{ padding: '16px' }}>
-                                    <TextArea
-                                        value={newMessage}
-                                        onChange={(e) => setNewMessage(e.target.value)}
-                                        onKeyPress={handleKeyPress}
-                                        placeholder="Nhập tin nhắn..."
-                                        autoSize={{ minRows: 2, maxRows: 4 }}
-                                        disabled={!isSessionActive(selectedSession) || !isConnected}
-                                        style={{ marginBottom: 8 }}
-                                    />
-                                    <Button
-                                        type="primary"
-                                        icon={<SendOutlined />}
-                                        onClick={sendCoachMessage}
-                                        disabled={!newMessage.trim() || !isSessionActive(selectedSession) || !isConnected}
-                                        block
-                                    >
-                                        Gửi tin nhắn
-                                    </Button>
+                                    <Divider style={{ margin: 0 }} />
+                                    <div className="message-input" style={{ padding: '16px' }}>
+                                        <TextArea
+                                            value={newMessage}
+                                            onChange={(e) => setNewMessage(e.target.value)}
+                                            onKeyPress={handleKeyPress}
+                                            placeholder="Nhập tin nhắn..."
+                                            autoSize={{ minRows: 2, maxRows: 4 }}
+                                            disabled={!isSessionActive(selectedSession) || !isConnected}
+                                        />
+                                        <Button
+                                            type="primary"
+                                            icon={<SendOutlined />}
+                                            onClick={sendCoachMessage}
+                                            disabled={!newMessage.trim() || !isSessionActive(selectedSession) || !isConnected}
+                                        >
+                                            Gửi
+                                        </Button>
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="no-topic-selected">
+                                    <Empty description="Chọn phiên tư vấn để bắt đầu chat" />
                                 </div>
-                            </>
-                        ) : (
-                            <div style={{
-                                display: 'flex',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                height: '100%'
-                            }}>
-                                <Empty description="Chọn phiên tư vấn để bắt đầu chat" />
-                            </div>
-                        )}
-                    </Card>
-                </Col>
-            </Row>
-        </div>
+                            )}
+                        </div>
+                    </div>
+                </Card>
+            </div>
+        </Content>
     );
 } 

@@ -547,41 +547,43 @@ export default function ChatPage() {
                                                     )}
                                                 </div>
                                             </div>
-                                            <div className="messages-container">
+                                            <div className="topic-chat">
                                                 {selectedTopic ? (
                                                     <>
                                                         <div className="topic-header">
                                                             <Title level={4}>{selectedTopic.title}</Title>
                                                             <Text type="secondary">{selectedTopic.description}</Text>
                                                         </div>
-                                                        {loading ? (
-                                                            <div className="loading-container">
-                                                                <Spin size="large" />
-                                                            </div>
-                                                        ) : topicMessages.length === 0 ? (
-                                                            <Empty description="Chưa có tin nhắn nào" />
-                                                        ) : (
-                                                            <List
-                                                                dataSource={topicMessages}
-                                                                renderItem={(msg) => (
-                                                                    <List.Item className="message-item">
-                                                                        <div className="message-content">
-                                                                            <div className="message-header">
-                                                                                <Avatar icon={<UserOutlined />} />
-                                                                                <Text strong>{msg.full_name || "Ẩn danh"}</Text>
-                                                                                <Text type="secondary">
-                                                                                    <ClockCircleOutlined /> {formatDate(msg.sent_at)}
-                                                                                </Text>
+                                                        <div className="messages-container">
+                                                            {loading ? (
+                                                                <div className="loading-container">
+                                                                    <Spin size="large" />
+                                                                </div>
+                                                            ) : topicMessages.length === 0 ? (
+                                                                <Empty description="Chưa có tin nhắn nào" />
+                                                            ) : (
+                                                                <List
+                                                                    dataSource={topicMessages}
+                                                                    renderItem={(msg) => (
+                                                                        <List.Item className="message-item">
+                                                                            <div className="message-content">
+                                                                                <div className="message-header">
+                                                                                    <Avatar icon={<UserOutlined />} />
+                                                                                    <Text strong>{msg.full_name || "Ẩn danh"}</Text>
+                                                                                    <Text type="secondary">
+                                                                                        <ClockCircleOutlined /> {formatDate(msg.sent_at)}
+                                                                                    </Text>
+                                                                                </div>
+                                                                                <Paragraph className="message-text">
+                                                                                    {msg.content}
+                                                                                </Paragraph>
                                                                             </div>
-                                                                            <Paragraph className="message-text">
-                                                                                {msg.content}
-                                                                            </Paragraph>
-                                                                        </div>
-                                                                    </List.Item>
-                                                                )}
-                                                            />
-                                                        )}
-                                                        <div ref={messagesEndRef} />
+                                                                        </List.Item>
+                                                                    )}
+                                                                />
+                                                            )}
+                                                            <div ref={messagesEndRef} />
+                                                        </div>
                                                         <Divider />
                                                         <div className="message-input">
                                                             <TextArea
@@ -604,7 +606,9 @@ export default function ChatPage() {
                                                         </div>
                                                     </>
                                                 ) : (
-                                                    <Empty description="Chọn chủ đề để bắt đầu chat" />
+                                                    <div className="no-topic-selected">
+                                                        <Empty description="Chọn chủ đề để bắt đầu chat" />
+                                                    </div>
                                                 )}
                                             </div>
                                         </div>
@@ -656,7 +660,7 @@ export default function ChatPage() {
                                                     )}
                                                 </div>
                                             </div>
-                                            <div className="messages-container">
+                                            <div className="topic-chat">
                                                 {selectedSession ? (
                                                     <>
                                                         <div className="session-header">
@@ -670,36 +674,38 @@ export default function ChatPage() {
                                                                 {isSessionActive(selectedSession) ? '🟢 Có thể chat' : '🔴 Không thể chat'}
                                                             </Tag>
                                                         </div>
-                                                        {coachLoading ? (
-                                                            <div className="loading-container">
-                                                                <Spin size="large" />
-                                                            </div>
-                                                        ) : coachMessages.length === 0 ? (
-                                                            <Empty description="Chưa có tin nhắn nào" />
-                                                        ) : (
-                                                            <List
-                                                                dataSource={coachMessages}
-                                                                renderItem={(msg) => (
-                                                                    <List.Item className="message-item">
-                                                                        <div className="message-content">
-                                                                            <div className="message-header">
-                                                                                <Avatar icon={<UserOutlined />} />
-                                                                                <Text strong>
-                                                                                    {msg.sender_role === 'coach' ? 'Coach' : 'Bạn'}
-                                                                                </Text>
-                                                                                <Text type="secondary">
-                                                                                    <ClockCircleOutlined /> {formatDate(msg.sent_at)}
-                                                                                </Text>
+                                                        <div className="messages-container">
+                                                            {coachLoading ? (
+                                                                <div className="loading-container">
+                                                                    <Spin size="large" />
+                                                                </div>
+                                                            ) : coachMessages.length === 0 ? (
+                                                                <Empty description="Chưa có tin nhắn nào" />
+                                                            ) : (
+                                                                <List
+                                                                    dataSource={coachMessages}
+                                                                    renderItem={(msg) => (
+                                                                        <List.Item className="message-item">
+                                                                            <div className="message-content">
+                                                                                <div className="message-header">
+                                                                                    <Avatar icon={<UserOutlined />} />
+                                                                                    <Text strong>
+                                                                                        {msg.sender_role === 'coach' ? 'Coach' : 'Bạn'}
+                                                                                    </Text>
+                                                                                    <Text type="secondary">
+                                                                                        <ClockCircleOutlined /> {formatDate(msg.sent_at)}
+                                                                                    </Text>
+                                                                                </div>
+                                                                                <Paragraph className="message-text">
+                                                                                    {msg.message}
+                                                                                </Paragraph>
                                                                             </div>
-                                                                            <Paragraph className="message-text">
-                                                                                {msg.message}
-                                                                            </Paragraph>
-                                                                        </div>
-                                                                    </List.Item>
-                                                                )}
-                                                            />
-                                                        )}
-                                                        <div ref={messagesEndRef} />
+                                                                        </List.Item>
+                                                                    )}
+                                                                />
+                                                            )}
+                                                            <div ref={messagesEndRef} />
+                                                        </div>
                                                         <Divider />
                                                         <div className="message-input">
                                                             <TextArea
@@ -722,7 +728,9 @@ export default function ChatPage() {
                                                         </div>
                                                     </>
                                                 ) : (
-                                                    <Empty description="Chọn phiên tư vấn để bắt đầu chat" />
+                                                    <div className="no-topic-selected">
+                                                        <Empty description="Chọn phiên tư vấn để bắt đầu chat" />
+                                                    </div>
                                                 )}
                                             </div>
                                         </div>
