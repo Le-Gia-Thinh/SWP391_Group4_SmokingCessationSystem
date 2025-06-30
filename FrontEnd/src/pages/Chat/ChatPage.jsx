@@ -510,7 +510,7 @@ export default function ChatPage() {
                                         </span>
                                     ),
                                     children: (
-                                        <div className="chat-section">
+                                        <div className="topics-section">
                                             <div className="topics-sidebar">
                                                 <div className="topics-header">
                                                     <Space>
@@ -619,7 +619,7 @@ export default function ChatPage() {
                                         </span>
                                     ),
                                     children: (
-                                        <div className="chat-section">
+                                        <div className="topics-section">
                                             <div className="sessions-sidebar">
                                                 <div className="sessions-header">
                                                     <Title level={5}>Phiên Tư Vấn</Title>
