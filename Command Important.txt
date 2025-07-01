@@ -10,6 +10,8 @@ npm server.js (để deloy api)
 npm install socket.io  (giao tiếp hai chiều liên tục)
 npm install multer
 
+npm install canvas-confetti
+npm install howler
 
 Front-End 
 Chạy npm install react-icons để cài bộ icon đã

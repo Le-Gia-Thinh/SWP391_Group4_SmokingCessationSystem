@@ -171,35 +171,24 @@ WHEN NOT MATCHED THEN
 
 
 
--- 10. USER_ACHIEVEMENT
-INSERT INTO USER_ACHIEVEMENT (user_id, achievement_id, earned_date, is_shared)
-SELECT user_id, 1, GETDATE(), 1
-FROM CUSTOMER WHERE username = 'member2';
+-- 11. HABIT_LOG – dùng truy vấn lấy user_id (không dùng plan_id nữa)
 
-INSERT INTO USER_ACHIEVEMENT (user_id, achievement_id, earned_date, is_shared)
-SELECT user_id, 2, GETDATE(), 1
-FROM CUSTOMER WHERE username = 'member3';
-
--- 11. HABIT_LOG – dùng truy vấn lấy plan_id
 -- member2
-INSERT INTO HABIT_LOG (user_id, plan_id, log_date, time_slot, completed, points_awarded)
-SELECT c.user_id, p.plan_id, '2025-06-20', 2, 1, 5
+INSERT INTO HABIT_LOG (user_id, log_date, time_slot, completed, points_awarded)
+SELECT c.user_id, '2025-06-20', 2, 1, 5
 FROM CUSTOMER c
-JOIN CESSATION_PLAN p ON p.user_id = c.user_id
 WHERE c.username = 'member2';
 
 -- member3
-INSERT INTO HABIT_LOG (user_id, plan_id, log_date, time_slot, completed, points_awarded)
-SELECT c.user_id, p.plan_id, '2025-06-20', 3, 1, 5
+INSERT INTO HABIT_LOG (user_id, log_date, time_slot, completed, points_awarded)
+SELECT c.user_id, '2025-06-20', 3, 1, 5
 FROM CUSTOMER c
-JOIN CESSATION_PLAN p ON p.user_id = c.user_id
 WHERE c.username = 'member3';
 
 -- member4
-INSERT INTO HABIT_LOG (user_id, plan_id, log_date, time_slot, completed, points_awarded)
-SELECT c.user_id, p.plan_id, '2025-06-20', 4, 1, 5
+INSERT INTO HABIT_LOG (user_id, log_date, time_slot, completed, points_awarded)
+SELECT c.user_id, '2025-06-20', 4, 1, 5
 FROM CUSTOMER c
-JOIN CESSATION_PLAN p ON p.user_id = c.user_id
 WHERE c.username = 'member4';
 
 -- 12. COMMUNITY_CHAT – Group chat cộng đồng
@@ -311,28 +300,43 @@ WHERE u.username = 'member2';
 
 
 -- ACHIEVEMENT
-INSERT INTO ACHIEVEMENT (title, description, badge_image, achievement_type, difficulty_level, phase)
+INSERT INTO ACHIEVEMENT (title, description, badge_image, achievement_type, difficulty_level, phase, check_code)
 VALUES
-(N'Hoàn thành FTND', N'“Biết mình biết ta, trăm trận trăm thắng.”', NULL, 'milestone', 1, 1),
-(N'Tạo kế hoạch đầu tiên', N'“Bạn đã bắt đầu hành trình.”', NULL, 'milestone', 1, 1),
-(N'Ngày đầu không thuốc', N'“Một ngày sạch thuốc đầu tiên!”', NULL, 'daily', 1, 1),
-(N'Thành thật với bản thân', N'“Ghi nhận cơn thèm đầu tiên.”', NULL, 'blog', 1, 1),
-(N'Bắt đầu thay đổi', N'“Bạn đã thử hành vi thay thế đầu tiên.”', NULL, 'daily', 1, 1),
+(N'Hoàn thành FTND', N'“Biết mình biết ta, trăm trận trăm thắng.”', NULL, 'milestone', 1, 1, 'ftnd_submitted'),
+(N'Tạo kế hoạch đầu tiên', N'“Bạn đã bắt đầu hành trình.”', NULL, 'milestone', 1, 1, 'plan_created'),
+(N'Ngày đầu không thuốc', N'“Một ngày sạch thuốc đầu tiên!”', NULL, 'daily', 1, 1, 'first_day_clean'),
+(N'Thành thật với bản thân', N'“Ghi nhận cơn thèm đầu tiên.”', NULL, 'blog', 1, 1, 'blog_first_post'),
+(N'Bắt đầu thay đổi', N'“Bạn đã thử hành vi thay thế đầu tiên.”', NULL, 'daily', 1, 1, 'task_first'),
 
-(N'Chiến binh một ngày', N'“Hoàn thành tất cả hành vi thay thế trong một ngày!”', NULL, 'daily', 2, 2),
-(N'Liên tục 3 ngày sạch thuốc', N'“Bạn đang tạo nền móng vững chắc.”', NULL, 'milestone', 2, 2),
-(N'Hoàn thành 10 nhiệm vụ hành vi', N'“10 bước nhỏ, 1 bước lớn cho sức khỏe.”', NULL, 'daily', 2, 2),
-(N'5 ngày viết blog liên tiếp', N'“Mỗi ngày một bước tiến.”', NULL, 'blog', 2, 2),
-(N'Chiến binh tuần đầu', N'“Bạn đã không hút thuốc 7 ngày liên tiếp.”', NULL, 'milestone', 2, 2),
+-- GIAI ĐOẠN 2
+(N'Chiến binh một ngày', N'“Hoàn thành tất cả hành vi thay thế trong một ngày!”', NULL, 'daily', 2, 2, 'task_full_day'),
+(N'Liên tục 3 ngày sạch thuốc', N'“Bạn đang tạo nền móng vững chắc.”', NULL, 'milestone', 2, 2, 'clean_3_days'),
+(N'Hoàn thành 10 nhiệm vụ hành vi', N'“10 bước nhỏ, 1 bước lớn cho sức khỏe.”', NULL, 'daily', 2, 2, 'task_10_total'),
+(N'5 ngày viết blog liên tiếp', N'“Mỗi ngày một bước tiến.”', NULL, 'blog', 2, 2, 'blog_5_in_7days'),
+(N'Chiến binh tuần đầu', N'“Bạn đã không hút thuốc 7 ngày liên tiếp.”', NULL, 'milestone', 2, 2, 'clean_7_days'),
 
-(N'Thành tựu 15 ngày', N'“Một nửa tháng đầy ý chí.”', NULL, 'milestone', 3, 3),
-(N'Đồng hành cùng Coach', N'“Bạn đã tham gia buổi tư vấn đầu tiên.”', NULL, 'coach', 2, 3),
-(N'Hoàn thành 20 nhiệm vụ hành vi', N'“Thói quen mới đang hình thành.”', NULL, 'daily', 3, 3),
-(N'7 ngày liên tiếp hoàn thành tối thiểu 5 nhiệm vụ mỗi ngày', N'“Bạn đã giữ vững nhịp độ thay đổi trong cả tuần.”', NULL, 'daily', 3, 3),
-(N'Chiến binh 30 ngày', N'“Một tháng – một đời khác biệt.”', NULL, 'milestone', 3, 3),
+-- GIAI ĐOẠN 3
+(N'Thành tựu 15 ngày', N'“Một nửa tháng đầy ý chí.”', NULL, 'milestone', 3, 3, 'clean_15_days'),
+(N'Đồng hành cùng Coach', N'“Bạn đã tham gia buổi tư vấn đầu tiên.”', NULL, 'coach', 2, 3, 'coach_session_done'),
+(N'Hoàn thành 20 nhiệm vụ hành vi', N'“Thói quen mới đang hình thành.”', NULL, 'daily', 3, 3, 'task_20_total'),
+(N'7 ngày liên tiếp hoàn thành tối thiểu 5 nhiệm vụ mỗi ngày', N'“Bạn đã giữ vững nhịp độ thay đổi trong cả tuần.”', NULL, 'daily', 3, 3, 'task_7days_consistent'),
+(N'Chiến binh 30 ngày', N'“Một tháng – một đời khác biệt.”', NULL, 'milestone', 3, 3, 'clean_30_days'),
 
-(N'Hoàn thành 40 nhiệm vụ hành vi', N'“Bạn đang xây dựng lại chính mình từng chút một.”', NULL, 'daily', 4, 4),
-(N'Chiến binh 60 ngày', N'“Hai tháng kiên cường – sức khỏe bền vững.”', NULL, 'milestone', 4, 4),
-(N'Người truyền cảm hứng', N'“Bài viết của bạn đã chạm đến nhiều người.”', NULL, 'community', 4, 4),
-(N'Chiến thắng bản thân', N'“Bạn đã vượt mốc 90 ngày không thuốc!”', NULL, 'milestone', 5, 4),
-(N'Mỗi mốc giờ một lựa chọn', N'“Bạn đã thử đủ mọi cách phù hợp với bản thân.”', NULL, 'daily', 4, 4);
+-- GIAI ĐOẠN 4–5
+(N'Hoàn thành 40 nhiệm vụ hành vi', N'“Bạn đang xây dựng lại chính mình từng chút một.”', NULL, 'daily', 4, 4, 'task_40_total'),
+(N'Chiến binh 60 ngày', N'“Hai tháng kiên cường – sức khỏe bền vững.”', NULL, 'milestone', 4, 4, 'clean_60_days'),
+(N'Người truyền cảm hứng', N'“Bài viết của bạn đã chạm đến nhiều người.”', NULL, 'community', 4, 4, 'inspiring_post'),
+(N'Chiến thắng bản thân', N'“Bạn đã vượt mốc 90 ngày không thuốc!”', NULL, 'milestone', 5, 4, 'clean_90_days'),
+(N'Mỗi mốc giờ một lựa chọn', N'“Bạn đã thử đủ mọi cách phù hợp với bản thân.”', NULL, 'daily', 4, 4, 'tried_all_slots');
+
+
+--  USER_ACHIEVEMENT
+-- Gán thành tựu ID 1 cho member2
+INSERT INTO USER_ACHIEVEMENT (user_id, achievement_id, earned_date, is_shared)
+SELECT user_id, 1, GETDATE(), 1
+FROM CUSTOMER WHERE username = 'member2';
+
+-- Gán thành tựu ID 2 cho member3
+INSERT INTO USER_ACHIEVEMENT (user_id, achievement_id, earned_date, is_shared)
+SELECT user_id, 2, GETDATE(), 1
+FROM CUSTOMER WHERE username = 'member3';
