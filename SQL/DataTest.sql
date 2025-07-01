@@ -168,11 +168,8 @@ WHEN NOT MATCHED THEN
   INSERT (user_id, total_points, current_level, last_updated)
   VALUES (source.user_id, 50, 'Beginner', GETDATE());
 
--- 9. ACHIEVEMENT mẫu
-INSERT INTO ACHIEVEMENT (title, description, badge_image, achievement_type, difficulty_level)
-VALUES 
-(N'7 ngày không hút thuốc', N'Chúc mừng bạn đã không hút thuốc trong 7 ngày liên tiếp!', NULL, 'daily', 1),
-(N'30 ngày không hút thuốc', N'Bạn đã vượt qua cơn thèm thuốc suốt 1 tháng. Rất tuyệt!', NULL, 'milestone', 2);
+
+
 
 -- 10. USER_ACHIEVEMENT
 INSERT INTO USER_ACHIEVEMENT (user_id, achievement_id, earned_date, is_shared)
@@ -311,3 +308,31 @@ SELECT @session_id1, u.user_id, c.coach_id,
 FROM CUSTOMER u
 JOIN COACH c ON c.user_id = (SELECT user_id FROM CUSTOMER WHERE username = 'coach1')
 WHERE u.username = 'member2';
+
+
+-- ACHIEVEMENT
+INSERT INTO ACHIEVEMENT (title, description, badge_image, achievement_type, difficulty_level, phase)
+VALUES
+(N'Hoàn thành FTND', N'“Biết mình biết ta, trăm trận trăm thắng.”', NULL, 'milestone', 1, 1),
+(N'Tạo kế hoạch đầu tiên', N'“Bạn đã bắt đầu hành trình.”', NULL, 'milestone', 1, 1),
+(N'Ngày đầu không thuốc', N'“Một ngày sạch thuốc đầu tiên!”', NULL, 'daily', 1, 1),
+(N'Thành thật với bản thân', N'“Ghi nhận cơn thèm đầu tiên.”', NULL, 'blog', 1, 1),
+(N'Bắt đầu thay đổi', N'“Bạn đã thử hành vi thay thế đầu tiên.”', NULL, 'daily', 1, 1),
+
+(N'Chiến binh một ngày', N'“Hoàn thành tất cả hành vi thay thế trong một ngày!”', NULL, 'daily', 2, 2),
+(N'Liên tục 3 ngày sạch thuốc', N'“Bạn đang tạo nền móng vững chắc.”', NULL, 'milestone', 2, 2),
+(N'Hoàn thành 10 nhiệm vụ hành vi', N'“10 bước nhỏ, 1 bước lớn cho sức khỏe.”', NULL, 'daily', 2, 2),
+(N'5 ngày viết blog liên tiếp', N'“Mỗi ngày một bước tiến.”', NULL, 'blog', 2, 2),
+(N'Chiến binh tuần đầu', N'“Bạn đã không hút thuốc 7 ngày liên tiếp.”', NULL, 'milestone', 2, 2),
+
+(N'Thành tựu 15 ngày', N'“Một nửa tháng đầy ý chí.”', NULL, 'milestone', 3, 3),
+(N'Đồng hành cùng Coach', N'“Bạn đã tham gia buổi tư vấn đầu tiên.”', NULL, 'coach', 2, 3),
+(N'Hoàn thành 20 nhiệm vụ hành vi', N'“Thói quen mới đang hình thành.”', NULL, 'daily', 3, 3),
+(N'7 ngày liên tiếp hoàn thành tối thiểu 5 nhiệm vụ mỗi ngày', N'“Bạn đã giữ vững nhịp độ thay đổi trong cả tuần.”', NULL, 'daily', 3, 3),
+(N'Chiến binh 30 ngày', N'“Một tháng – một đời khác biệt.”', NULL, 'milestone', 3, 3),
+
+(N'Hoàn thành 40 nhiệm vụ hành vi', N'“Bạn đang xây dựng lại chính mình từng chút một.”', NULL, 'daily', 4, 4),
+(N'Chiến binh 60 ngày', N'“Hai tháng kiên cường – sức khỏe bền vững.”', NULL, 'milestone', 4, 4),
+(N'Người truyền cảm hứng', N'“Bài viết của bạn đã chạm đến nhiều người.”', NULL, 'community', 4, 4),
+(N'Chiến thắng bản thân', N'“Bạn đã vượt mốc 90 ngày không thuốc!”', NULL, 'milestone', 5, 4),
+(N'Mỗi mốc giờ một lựa chọn', N'“Bạn đã thử đủ mọi cách phù hợp với bản thân.”', NULL, 'daily', 4, 4);

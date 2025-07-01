@@ -1,4 +1,3 @@
-// QuitPlanDetail.jsx (RankingBoard with tabs and improved style)
 import React, { useEffect, useState } from "react";
 import {
   Table,
@@ -12,9 +11,15 @@ import {
   Space,
   Badge,
 } from "antd";
-import { CrownTwoTone, StarTwoTone, UserOutlined } from "@ant-design/icons";
+import {
+  CrownTwoTone,
+  StarTwoTone,
+  UserOutlined,
+  TrophyOutlined,
+} from "@ant-design/icons";
 import Navbar from "../../layouts/Navbar";
 import "./RankingBoard.css";
+
 const { Title } = Typography;
 
 const levelColors = {
@@ -38,15 +43,23 @@ if (token) {
 
 const RankingBoard = () => {
   const [data, setData] = useState([]);
+  const [achievements, setAchievements] = useState([]);
   const [activeTab, setActiveTab] = useState("ranking");
 
   useEffect(() => {
+    // Lấy bảng xếp hạng
     fetch("http://localhost:5000/api/user-score/ranking")
       .then((res) => res.json())
       .then((res) => {
         if (res.success) setData(res.data);
       })
       .catch((err) => console.error("Lỗi lấy bảng xếp hạng:", err));
+
+    // Lấy danh sách thành tựu
+    fetch("http://localhost:5000/api/achievement")
+      .then((res) => res.json())
+      .then((data) => setAchievements(data))
+      .catch((err) => console.error("Lỗi lấy thành tựu:", err));
   }, []);
 
   const columns = [
@@ -157,7 +170,9 @@ const RankingBoard = () => {
             letterSpacing: 1,
           }}
         >
-          🏆 Bảng Xếp Hạng Người Dùng
+          {activeTab === "ranking"
+            ? "🏆 Bảng Xếp Hạng Người Dùng"
+            : "🥇 Danh Sách Thành Tựu"}
         </Title>
 
         {activeTab === "ranking" && (
@@ -174,8 +189,33 @@ const RankingBoard = () => {
         )}
 
         {activeTab === "achievements" && (
-          <div style={{ textAlign: "center", padding: 40 }}>
-            <Title level={4}>🥇 Thành tựu sẽ được cập nhật sớm!</Title>
+          <div style={{ padding: 16 }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+                gap: 16,
+                marginTop: 24,
+              }}
+            >
+              {achievements.map((ach) => (
+                <Card
+                  key={ach.achievement_id}
+                  title={
+                    <span style={{ fontWeight: 600 }}>
+                      <TrophyOutlined /> {ach.title}
+                    </span>
+                  }
+                  bordered
+                  style={{ borderRadius: 12 }}
+                >
+                  <p style={{ marginBottom: 12 }}>{ach.description}</p>
+                  <Tag color="purple">Giai đoạn {ach.phase}</Tag>
+                  <Tag color="blue">{ach.achievement_type}</Tag>
+                  <Tag color="green">Độ khó: {ach.difficulty_level}</Tag>
+                </Card>
+              ))}
+            </div>
           </div>
         )}
       </Card>

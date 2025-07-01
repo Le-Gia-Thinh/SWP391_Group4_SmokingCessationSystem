@@ -347,6 +347,9 @@ GO
     );
     -- Chỉ mục gợi ý nếu thường lọc theo loại hoặc mức độ khó
     CREATE INDEX idx_achievement_type_level ON ACHIEVEMENT(achievement_type, difficulty_level);
+    
+    ALTER TABLE ACHIEVEMENT
+    ADD phase TINYINT; -- Giá trị từ 1 đến 4
 
 -- 20. USER_ACHIEVEMENT: Ghi nhận những thành tích mà người dùng đã đạt được
     CREATE TABLE USER_ACHIEVEMENT (

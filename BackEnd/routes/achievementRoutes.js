@@ -1,8 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const { checkDailyNoSmoking } = require("../controllers/achievementController");
-const { auth } = require("../middleware/auth");
+const achievementController = require("../controllers/achievementController");
 
-router.post("/check-daily", auth, checkDailyNoSmoking);
+router.get("/", achievementController.getAllAchievements);
 
 module.exports = router;
