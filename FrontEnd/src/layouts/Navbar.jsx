@@ -1,14 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import {
-  Layout,
-  Menu,
-  Button,
-  Avatar,
-  Space,
-  Badge,
-  Drawer,
-} from "antd";
+import { Layout, Menu, Button, Avatar, Space, Badge, Drawer } from "antd";
 import {
   UserOutlined,
   LogoutOutlined,
@@ -19,8 +11,8 @@ import {
   ContactsOutlined,
   CalendarOutlined,
   BellOutlined,
-  MenuOutlined,    // ← hamburger
-  MoreOutlined,    // ← overflow indicator
+  MenuOutlined, // ← hamburger
+  MoreOutlined, // ← overflow indicator
   ScheduleOutlined,
   FileDoneOutlined,
   MessageOutlined,
@@ -93,7 +85,6 @@ export default function Navbar() {
           onClick: () => navigate("/my-bookings"),
         });
       }
-      console.log("Navbar user:", user);
     }
     if (isAdmin()) {
       items.push({
@@ -147,14 +138,14 @@ export default function Navbar() {
           selectedKeys={[selectedKey]}
           items={getMenuItems()}
           className="navbar-menu"
-          overflowedIndicator={<MoreOutlined />}  // ← 3 chấm ngang
+          overflowedIndicator={<MoreOutlined />} // ← 3 chấm ngang
         />
 
         {/* Hamburger (mobile only) */}
         <Button
           className="mobile-menu-button"
           type="text"
-          icon={<MenuOutlined />}            // ← hamburger icon
+          icon={<MenuOutlined />} // ← hamburger icon
           onClick={() => setDrawerOpen(true)}
         />
 
@@ -184,8 +175,8 @@ export default function Navbar() {
                   user.role === "admin"
                     ? "Quản trị viên"
                     : user.role === "coach"
-                      ? "Huấn luyện viên"
-                      : "Thành viên"
+                    ? "Huấn luyện viên"
+                    : "Thành viên"
                 }
                 style={{
                   backgroundColor:
@@ -208,7 +199,6 @@ export default function Navbar() {
                 />
               </Dropdown>
               <span className="username-text">{user.name || user.email}</span>
-
 
               <Button
                 type="text"

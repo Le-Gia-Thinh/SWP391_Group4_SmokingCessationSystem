@@ -1,4 +1,23 @@
 .highlight-row {
   background-color: #f6ffed !important;
   font-weight: bold;
+}/* Tô nền cho user hiện tại */
+.highlight-row {
+  background-color: #f6ffed !important;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+/* Làm nút hiện đại hơn */
+.ant-btn {
+  font-weight: 600;
+  padding: 6px 18px;
+  border-radius: 10px;
+}
+
+.ant-btn-primary {
+  background: linear-gradient(to right, #1890ff, #73d13d);
+  border: none;
+  color: white;
+  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.2);
 }

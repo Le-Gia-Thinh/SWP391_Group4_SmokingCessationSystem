@@ -347,6 +347,9 @@ GO
     );
     -- Chỉ mục gợi ý nếu thường lọc theo loại hoặc mức độ khó
     CREATE INDEX idx_achievement_type_level ON ACHIEVEMENT(achievement_type, difficulty_level);
+    
+    ALTER TABLE ACHIEVEMENT
+    ADD phase TINYINT; -- Giá trị từ 1 đến 4
 
 -- 20. USER_ACHIEVEMENT: Ghi nhận những thành tích mà người dùng đã đạt được
     CREATE TABLE USER_ACHIEVEMENT (
@@ -460,7 +463,6 @@ GO
     CREATE TABLE HABIT_LOG (
         log_id INT IDENTITY(1,1) PRIMARY KEY,                  -- Khóa chính tự tăng
         user_id INT NOT NULL,                                 -- Người dùng thực hiện hành vi
-        plan_id INT NOT NULL,                                 -- Kế hoạch bỏ thuốc liên qua
         log_date DATE NOT NULL,                               -- Ngày ghi nhận
         time_slot INT NOT NULL CHECK (time_slot BETWEEN 0 AND 8), -- Mốc thời gian (0: 7h, ..., 8: 22h)
         completed BIT NOT NULL DEFAULT 0,                     -- Đã hoàn thành không hút tại slot đó hay chưa
@@ -468,7 +470,6 @@ GO
         created_at DATETIME DEFAULT GETDATE(),                -- Ngày tạo bản ghi
 
         CONSTRAINT fk_habitlog_user FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id) ON DELETE CASCADE,
-        CONSTRAINT fk_habitlog_plan FOREIGN KEY (plan_id) REFERENCES CESSATION_PLAN(plan_id),
         UNIQUE(user_id, log_date, time_slot)                  -- Một người chỉ có 1 bản ghi/slot/ngày
     );
 
@@ -529,7 +530,22 @@ CREATE TABLE TOPIC_MESSAGE (
     CONSTRAINT fk_topicmsg_user FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id)       -- Khóa ngoại đến CUSTOMER
 );
 
--- 34. DIRECT_MESSAGE: Tin nhắn trao đổi trực tiếp giữa Coach và Member
+-- 34. USER_BEHAVIOR_TASK_LOG: Lưu nhật ký các nhiệm vụ hành vi của người dùng
+CREATE TABLE USER_BEHAVIOR_TASK_LOG (
+    log_id INT IDENTITY(1,1) PRIMARY KEY,
+    user_id INT NOT NULL,
+    log_date DATE NOT NULL,
+    time_slot INT NOT NULL CHECK (time_slot BETWEEN 0 AND 8),
+    task_id NVARCHAR(20) NOT NULL,       -- Ví dụ: 'P3_10_2'
+    is_completed BIT DEFAULT 1,          -- Mặc định là đã chọn xong (chỉ chọn 1)
+    points_awarded FLOAT DEFAULT 0,      -- ⚠️ Luôn có điểm mặc định là 0
+    created_at DATETIME DEFAULT GETDATE(),
+
+    CONSTRAINT fk_behavior_user FOREIGN KEY (user_id)
+        REFERENCES CUSTOMER(user_id) ON DELETE CASCADE,
+
+    UNIQUE(user_id, log_date, time_slot) -- Mỗi user chỉ chọn 1 task/slot/ngày
+-- 35. DIRECT_MESSAGE: Tin nhắn trao đổi trực tiếp giữa Coach và Member
 CREATE TABLE DIRECT_MESSAGE (
     message_id INT IDENTITY PRIMARY KEY,         -- Khóa chính tự tăng
     session_id INT NOT NULL,                     -- Liên kết đến phiên tư vấn

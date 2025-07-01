@@ -21,6 +21,7 @@ const coachRoutes = require('./routes/coach');
 const memberRoutes = require('./routes/member');
 const userRoutes = require("./routes/user");
 const userScoreRoutes = require("./routes/userScore");
+const achievementRoutes = require("./routes/achievementRoutes");
 const notificationRoutes = require("./routes/notification");
 const app = express();
 const server = http.createServer(app);
@@ -139,6 +140,8 @@ app.use('/api/smoking-summary', smokingSummaryRoutes);
 // 15) Xử lí profile of member
 app.use('/api/user', userRoutes);
 
+// 15.1) Xử lí thành tựu
+app.use('/api/achievement', achievementRoutes);
 // Xử lí thông báo
 app.use("/api/notification", notificationRoutes);
 
