@@ -1,8 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const achievementController = require("../controllers/achievementController");
+const middleware = require("../middleware/auth");
+const authMiddleware = middleware.auth;
 
 router.get("/", achievementController.getAllAchievements);
-// Tự động mở khóa các thành tựu
-router.get("/unlocked", auth, achievementController.getUnlockedAchievements);
+router.get("/unlocked", authMiddleware, achievementController.getUnlockedAchievements);
 module.exports = router;
