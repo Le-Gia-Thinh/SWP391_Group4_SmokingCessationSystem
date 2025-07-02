@@ -81,6 +81,8 @@ INSERT INTO FTND_RESULT (user_id, level, submitted_at)
 SELECT user_id, N'High', GETDATE() FROM CUSTOMER WHERE username = 'member3';
 INSERT INTO FTND_RESULT (user_id, level, submitted_at)
 SELECT user_id, N'Low', GETDATE() FROM CUSTOMER WHERE username = 'member4';
+INSERT INTO FTND_RESULT (user_id, level, submitted_at)
+SELECT user_id, N'Low', GETDATE() FROM CUSTOMER WHERE username = 'member5';
 
 -- 7. CESSATION_PLAN
 INSERT INTO CESSATION_PLAN (
@@ -118,6 +120,18 @@ SELECT user_id, N'Tập trung vào thể dục thay thế', '2025-06-20', '2025-
        N'Tập luyện mỗi sáng để thay thế cảm giác thèm hút.', 1, GETDATE(), GETDATE(), NULL, 
        N'Tôi đang cải thiện thể lực'
 FROM CUSTOMER WHERE username = 'member4';
+
+INSERT INTO CESSATION_PLAN (
+    user_id, plan_name, start_date, end_date, month_quit,
+    target_quit_date, frequency_per_day, plan_type, plan_source,
+    current_stage, strategy, is_active, created_at, last_updated, template_id,
+    quit_reason_summary
+)
+SELECT user_id, N'Kế hoạch test', '2025-06-20', '2025-07-10', 1, '2025-07-10', 10,
+       'template', 'user', 'Phase 1', 
+       N'Test kế hoạch để kiểm tra thành tựu.', 1, GETDATE(), GETDATE(), NULL, 
+       N'Test mục tiêu'
+FROM CUSTOMER WHERE username = 'member5';
 
 -- 8. USER_SCORE
 -- USER_SCORE cho member1
@@ -340,3 +354,19 @@ FROM CUSTOMER WHERE username = 'member2';
 INSERT INTO USER_ACHIEVEMENT (user_id, achievement_id, earned_date, is_shared)
 SELECT user_id, 2, GETDATE(), 1
 FROM CUSTOMER WHERE username = 'member3';
+
+-- ============= Test đạt thành tựu ======================
+-- Thêm ít nhất 1 hành vi để đạt task_first
+INSERT INTO USER_BEHAVIOR_TASK_LOG (user_id, log_date, time_slot, task_id, is_completed, points_awarded)
+SELECT user_id, CAST(GETDATE() AS DATE), 0, 'P1_test', 1, 5
+FROM CUSTOMER WHERE username = 'member5';
+
+-- Đăng 1 bài viết để đạt blog_first_post
+INSERT INTO COMMUNITY_POST (user_id, title, content, created_at)
+SELECT user_id, N'Bài viết test thành tựu', N'Mình đang test hệ thống đạt thành tựu', GETDATE()
+FROM CUSTOMER WHERE username = 'member5';
+
+-- Ghi nhận ngày đầu không hút thuốc để đạt first_day_clean
+INSERT INTO DAILY_SMOKING_SUMMARY (user_id, date, total_cigarettes, relapsed)
+SELECT user_id, CAST(GETDATE() AS DATE), 0, 0
+FROM CUSTOMER WHERE username = 'member5';

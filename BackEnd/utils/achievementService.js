@@ -96,9 +96,9 @@ const checkFunctions = {
   clean_3_days: async (pool, userId) => {
     const result = await pool.request().input("user_id", sql.Int, userId)
       .query(`
-        SELECT COUNT(DISTINCT log_date) AS days
+        SELECT COUNT(DISTINCT date) AS days
         FROM DAILY_SMOKING_SUMMARY
-        WHERE user_id = @user_id AND cigarettes_smoked = 0
+        WHERE user_id = @user_id AND total_cigarettes = 0
       `);
     return result.recordset[0].days >= 3;
   },
@@ -106,16 +106,21 @@ const checkFunctions = {
   clean_7_days: async (pool, userId) => {
     const result = await pool.request().input("user_id", sql.Int, userId)
       .query(`
+        WITH Streaks AS (
+          SELECT 
+            date,
+            ROW_NUMBER() OVER (ORDER BY date) -
+            ROW_NUMBER() OVER (PARTITION BY total_cigarettes ORDER BY date) AS grp
+          FROM DAILY_SMOKING_SUMMARY
+          WHERE user_id = @user_id AND total_cigarettes = 0
+        )
         SELECT COUNT(*) AS streak
         FROM (
-          SELECT log_date,
-                 ROW_NUMBER() OVER (ORDER BY log_date) -
-                 ROW_NUMBER() OVER (PARTITION BY cigarettes_smoked ORDER BY log_date) AS grp
-          FROM DAILY_SMOKING_SUMMARY
-          WHERE user_id = @user_id AND cigarettes_smoked = 0
-        ) AS T
-        GROUP BY grp
-        HAVING COUNT(*) >= 7
+          SELECT COUNT(*) AS streak_length
+          FROM Streaks
+          GROUP BY grp
+          HAVING COUNT(*) >= 7
+        ) AS ValidStreaks
       `);
     return result.recordset.length > 0;
   },
@@ -123,9 +128,9 @@ const checkFunctions = {
   clean_15_days: async (pool, userId) => {
     const result = await pool.request().input("user_id", sql.Int, userId)
       .query(`
-        SELECT COUNT(DISTINCT log_date) AS days
+        SELECT COUNT(DISTINCT date) AS days
         FROM DAILY_SMOKING_SUMMARY
-        WHERE user_id = @user_id AND cigarettes_smoked = 0
+        WHERE user_id = @user_id AND total_cigarettes = 0
       `);
     return result.recordset[0].days >= 15;
   },
@@ -133,9 +138,9 @@ const checkFunctions = {
   clean_30_days: async (pool, userId) => {
     const result = await pool.request().input("user_id", sql.Int, userId)
       .query(`
-        SELECT COUNT(DISTINCT log_date) AS days
+        SELECT COUNT(DISTINCT date) AS days
         FROM DAILY_SMOKING_SUMMARY
-        WHERE user_id = @user_id AND cigarettes_smoked = 0
+        WHERE user_id = @user_id AND total_cigarettes = 0
       `);
     return result.recordset[0].days >= 30;
   },
@@ -143,9 +148,9 @@ const checkFunctions = {
   clean_60_days: async (pool, userId) => {
     const result = await pool.request().input("user_id", sql.Int, userId)
       .query(`
-        SELECT COUNT(DISTINCT log_date) AS days
+        SELECT COUNT(DISTINCT date) AS days
         FROM DAILY_SMOKING_SUMMARY
-        WHERE user_id = @user_id AND cigarettes_smoked = 0
+        WHERE user_id = @user_id AND total_cigarettes = 0
       `);
     return result.recordset[0].days >= 60;
   },
@@ -153,9 +158,9 @@ const checkFunctions = {
   clean_90_days: async (pool, userId) => {
     const result = await pool.request().input("user_id", sql.Int, userId)
       .query(`
-        SELECT COUNT(DISTINCT log_date) AS days
+        SELECT COUNT(DISTINCT date) AS days
         FROM DAILY_SMOKING_SUMMARY
-        WHERE user_id = @user_id AND cigarettes_smoked = 0
+        WHERE user_id = @user_id AND total_cigarettes = 0
       `);
     return result.recordset[0].days >= 90;
   },
@@ -163,12 +168,12 @@ const checkFunctions = {
   first_day_clean: async (pool, userId) => {
     const result = await pool.request().input("user_id", sql.Int, userId)
       .query(`
-        SELECT TOP 1 cigarettes_smoked
+        SELECT TOP 1 total_cigarettes
         FROM DAILY_SMOKING_SUMMARY
         WHERE user_id = @user_id
-        ORDER BY log_date ASC
+        ORDER BY date ASC
       `);
-    return result.recordset.length > 0 && result.recordset[0].cigarettes_smoked === 0;
+    return result.recordset.length > 0 && result.recordset[0].total_cigarettes === 0;
   },
 
   // Coach
@@ -192,13 +197,10 @@ const checkFunctions = {
   },
 };
 
-
 exports.evaluateAndUnlockAchievements = async (userId) => {
   const pool = await sql.connect(dbConfig);
-
   const achievements = await pool.request()
     .query(`SELECT achievement_id, check_code FROM ACHIEVEMENT WHERE check_code IS NOT NULL`);
-
   for (const { achievement_id, check_code } of achievements.recordset) {
     const fn = checkFunctions[check_code];
     if (fn && await fn(pool, userId)) {
@@ -212,7 +214,6 @@ async function grantIfNotExist(pool, userId, achievementId) {
     .input("user_id", sql.Int, userId)
     .input("achievement_id", sql.Int, achievementId)
     .query(`SELECT 1 FROM USER_ACHIEVEMENT WHERE user_id = @user_id AND achievement_id = @achievement_id`);
-
   if (exist.recordset.length === 0) {
     await pool.request()
       .input("user_id", sql.Int, userId)

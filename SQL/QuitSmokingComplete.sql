@@ -396,6 +396,7 @@ GO
         user_id INT NULL,                                  -- Tác giả bài viết, liên kết đến CUSTOMER
         title NVARCHAR(100),                               -- Tiêu đề bài viết
         content NVARCHAR(MAX),                             -- Nội dung chi tiết
+        like_count INT DEFAULT 0,
         created_at DATETIME NOT NULL,                      -- Thời điểm đăng bài
         last_updated DATETIME,                             -- Thời điểm chỉnh sửa gần nhất
         view_count INT DEFAULT 0,                          -- Lượt xem bài viết
