@@ -111,12 +111,18 @@ const ScheduleManagement = () => {
                     pattern: values.usePattern ? {
                         startDate: values.dateRange[0].format('YYYY-MM-DD'),
                         endDate: values.dateRange[1].format('YYYY-MM-DD'),
-                        startTime: values.timeRange[0].format('HH:mm'),
-                        endTime: values.timeRange[1].format('HH:mm'),
+                        startTime: values.timeRange[0].format('HH:mm') + ':00',
+                        endTime: values.timeRange[1].format('HH:mm') + ':00',
                         daysOfWeek: values.daysOfWeek,
                         duration: values.duration
                     } : null,
-                    schedules: values.usePattern ? null : values.specificSchedules
+                    schedules: values.usePattern ? null : (values.specificSchedules ? values.specificSchedules.split('\n').map(line => {
+                        const [start, end] = line.split(',');
+                        return {
+                            start_time: start.trim(),
+                            end_time: end.trim()
+                        };
+                    }) : null)
                 };
 
                 // DEBUG: Log dữ liệu gửi lên backend
@@ -143,12 +149,18 @@ const ScheduleManagement = () => {
                     pattern: values.usePattern ? {
                         startDate: values.dateRange[0].format('YYYY-MM-DD'),
                         endDate: values.dateRange[1].format('YYYY-MM-DD'),
-                        startTime: values.timeRange[0].format('HH:mm'),
-                        endTime: values.timeRange[1].format('HH:mm'),
+                        startTime: values.timeRange[0].format('HH:mm') + ':00',
+                        endTime: values.timeRange[1].format('HH:mm') + ':00',
                         daysOfWeek: values.daysOfWeek,
                         duration: values.duration
                     } : null,
-                    schedules: values.usePattern ? null : values.specificSchedules
+                    schedules: values.usePattern ? null : (values.specificSchedules ? values.specificSchedules.split('\n').map(line => {
+                        const [start, end] = line.split(',');
+                        return {
+                            start_time: start.trim(),
+                            end_time: end.trim()
+                        };
+                    }) : null)
                 };
 
                 // DEBUG: Log dữ liệu gửi lên backend
