@@ -55,10 +55,21 @@ const RankingBoard = () => {
       })
       .catch((err) => console.error("Lỗi lấy bảng xếp hạng:", err));
 
-    // Lấy danh sách thành tựu
-    fetch("http://localhost:5000/api/achievement")
+    // Lấy danh sách thành tựu có xác thực
+    fetch("http://localhost:5000/api/achievement", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
       .then((res) => res.json())
-      .then((data) => setAchievements(data))
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setAchievements(data);
+        } else {
+          console.error("Dữ liệu thành tựu không hợp lệ:", data);
+          setAchievements([]);
+        }
+      })
       .catch((err) => console.error("Lỗi lấy thành tựu:", err));
   }, []);
 
@@ -202,12 +213,23 @@ const RankingBoard = () => {
                 <Card
                   key={ach.achievement_id}
                   title={
-                    <span style={{ fontWeight: 600 }}>
-                      <TrophyOutlined /> {ach.title}
-                    </span>
+                    <div style={{ wordBreak: "break-word" }}>
+                      <div style={{ fontWeight: 600 }}>
+                        <TrophyOutlined /> {ach.title}
+                      </div>
+                      {ach.unlocked && (
+                        <div style={{ marginTop: 4 }}>
+                          <Tag color="green">✅ Đã đạt</Tag>
+                        </div>
+                      )}
+                    </div>
                   }
                   bordered
-                  style={{ borderRadius: 12 }}
+                  style={{
+                    borderRadius: 12,
+                    backgroundColor: ach.unlocked ? "#f6ffed" : "#ffffff",
+                    borderColor: ach.unlocked ? "#b7eb8f" : undefined,
+                  }}
                 >
                   <p style={{ marginBottom: 12 }}>{ach.description}</p>
                   <Tag color="purple">Giai đoạn {ach.phase}</Tag>

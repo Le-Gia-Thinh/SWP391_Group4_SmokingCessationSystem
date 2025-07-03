@@ -77,6 +77,39 @@ exports.savePlan = async (req, res) => {
     )
   `);
 
+  // 3. Gắn thành tựu "Tạo kế hoạch đầu tiên"
+const achResult = await pool
+  .request()
+  .input("title", sql.NVarChar, "Tạo kế hoạch đầu tiên")
+  .query("SELECT achievement_id FROM ACHIEVEMENT WHERE title = @title");
+
+const achievement_id = achResult.recordset[0]?.achievement_id;
+
+if (achievement_id) {
+  // Kiểm tra nếu user chưa có thành tựu này thì thêm vào
+  const existCheck = await pool
+    .request()
+    .input("user_id", sql.Int, user_id)
+    .input("achievement_id", sql.Int, achievement_id)
+    .query(`
+      SELECT 1 FROM USER_ACHIEVEMENT
+      WHERE user_id = @user_id AND achievement_id = @achievement_id
+    `);
+
+  if (existCheck.recordset.length === 0) {
+    await pool
+      .request()
+      .input("user_id", sql.Int, user_id)
+      .input("achievement_id", sql.Int, achievement_id)
+      .input("earned_date", sql.Date, new Date())
+      .query(`
+        INSERT INTO USER_ACHIEVEMENT (user_id, achievement_id, earned_date)
+        VALUES (@user_id, @achievement_id, @earned_date)
+      `);
+  }
+}
+
+
     res.json({ success: true, message: "Plan saved successfully" });
   } catch (err) {
     console.error("❌ Error saving plan:", err);

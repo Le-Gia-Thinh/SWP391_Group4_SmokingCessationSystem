@@ -340,7 +340,7 @@ GO
     CREATE TABLE ACHIEVEMENT (
         achievement_id INT IDENTITY(1,1) PRIMARY KEY,      -- Khóa chính tự tăng
         title NVARCHAR(100) NOT NULL,                       -- Tiêu đề thành tích (ví dụ: '7 ngày không hút thuốc')
-        description TEXT,                                  -- Mô tả chi tiết về thành tích
+        description NVARCHAR(MAX),                                  -- Mô tả chi tiết về thành tích
         badge_image VARCHAR(255),                          -- Đường dẫn tới ảnh huy hiệu (biểu tượng thành tích)
         achievement_type VARCHAR(20),                      -- Loại thành tích: 'daily', 'milestone', 'event'...
         difficulty_level INT                               -- Mức độ khó (1: dễ, 5: rất khó), dùng cho phân loại hoặc game hóa
@@ -350,6 +350,8 @@ GO
     
     ALTER TABLE ACHIEVEMENT
     ADD phase TINYINT; -- Giá trị từ 1 đến 4
+
+
 
 -- 20. USER_ACHIEVEMENT: Ghi nhận những thành tích mà người dùng đã đạt được
     CREATE TABLE USER_ACHIEVEMENT (
