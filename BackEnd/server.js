@@ -161,10 +161,7 @@ app.use((err, req, res, next) => {
   console.error('Unhandled error:', err);
   res.status(500).json({ success: false, message: 'Lỗi server không xác định' });
 })
-
-// 19. Chat coach.member
-app.use('/api/chat', chatRoutes);
-
+ 
 // 19) 404 handler
 app.use('*', (req, res) => {
   res.status(404).json({ success: false, message: 'Endpoint không tồn tại' });
