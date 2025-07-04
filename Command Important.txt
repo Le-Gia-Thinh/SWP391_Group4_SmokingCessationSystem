@@ -5,6 +5,7 @@ npm run dev (để deloy web)
 		BE:
 npm i 
 npm server.js (để deloy api)
+npm install node-cron
 
 -- 27/6/2025
 npm install socket.io  (giao tiếp hai chiều liên tục)
@@ -16,3 +17,6 @@ Chạy npm install react-icons để cài bộ icon đã
 npm install bootstrap 
 npm install react-slick slick-carousel
 npm install moment
+npm install canvas-confetti
+
+npm install howler

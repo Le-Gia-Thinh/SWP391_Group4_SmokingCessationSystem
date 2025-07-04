@@ -168,11 +168,8 @@ WHEN NOT MATCHED THEN
   INSERT (user_id, total_points, current_level, last_updated)
   VALUES (source.user_id, 50, 'Beginner', GETDATE());
 
--- 9. ACHIEVEMENT mẫu
-INSERT INTO ACHIEVEMENT (title, description, badge_image, achievement_type, difficulty_level)
-VALUES 
-(N'7 ngày không hút thuốc', N'Chúc mừng bạn đã không hút thuốc trong 7 ngày liên tiếp!', NULL, 'daily', 1),
-(N'30 ngày không hút thuốc', N'Bạn đã vượt qua cơn thèm thuốc suốt 1 tháng. Rất tuyệt!', NULL, 'milestone', 2);
+
+
 
 -- 10. USER_ACHIEVEMENT
 INSERT INTO USER_ACHIEVEMENT (user_id, achievement_id, earned_date, is_shared)
@@ -311,3 +308,33 @@ SELECT @session_id1, u.user_id, c.coach_id,
 FROM CUSTOMER u
 JOIN COACH c ON c.user_id = (SELECT user_id FROM CUSTOMER WHERE username = 'coach1')
 WHERE u.username = 'member2';
+
+
+-- ACHIEVEMENT
+-- ACHIEVEMENT (với mô tả hướng dẫn cụ thể)
+INSERT INTO ACHIEVEMENT (title, description, badge_image, achievement_type, difficulty_level, phase)
+VALUES
+(N'Hoàn thành FTND', N'Hoàn thành bài đánh giá mức độ nghiện thuốc lá FTND.', NULL, 'milestone', 1, 1),
+(N'Tạo kế hoạch đầu tiên', N'Tạo kế hoạch cai thuốc cá nhân đầu tiên của bạn.', NULL, 'milestone', 1, 1),
+(N'Ngày đầu không thuốc', N'Không hút bất kỳ điếu thuốc nào trong ngày đầu tiên.', NULL, 'daily', 1, 1),
+(N'Thành thật với bản thân', N'Ghi lại ít nhất 1 cơn thèm thuốc đầu tiên trong nhật ký hoặc hệ thống.', NULL, 'blog', 1, 1),
+(N'Bắt đầu thay đổi', N'Thực hiện 1 hành vi thay thế đầu tiên để vượt qua cơn thèm.', NULL, 'daily', 1, 1),
+
+(N'Chiến binh một ngày', N'Hoàn thành tất cả hành vi thay thế trong mọi mốc thời gian trong 1 ngày.', NULL, 'daily', 2, 2),
+(N'Liên tục 3 ngày sạch thuốc', N'Không hút thuốc liên tiếp trong 3 ngày.', NULL, 'milestone', 2, 2),
+(N'Hoàn thành 10 nhiệm vụ hành vi', N'Thực hiện tổng cộng 10 hành vi thay thế khác nhau.', NULL, 'daily', 2, 2),
+(N'5 ngày viết blog liên tiếp', N'Viết bài chia sẻ liên tục trong 5 ngày.', NULL, 'blog', 2, 2),
+(N'Chiến binh tuần đầu', N'Không hút thuốc liên tục trong 7 ngày đầu.', NULL, 'milestone', 2, 2),
+
+(N'Thành tựu 15 ngày', N'Không hút thuốc trong 15 ngày liên tục.', NULL, 'milestone', 3, 3),
+(N'Đồng hành cùng Coach', N'Tham gia ít nhất 1 buổi tư vấn trực tuyến cùng huấn luyện viên.', NULL, 'coach', 2, 3),
+(N'Hoàn thành 20 nhiệm vụ hành vi', N'Thực hiện 20 hành vi thay thế bất kỳ.', NULL, 'daily', 3, 3),
+(N'7 ngày liên tiếp hoàn thành tối thiểu 5 nhiệm vụ mỗi ngày', N'Mỗi ngày hoàn thành ít nhất 5 hành vi thay thế trong 7 ngày liên tục.', NULL, 'daily', 3, 3),
+(N'Chiến binh 30 ngày', N'Không hút thuốc trong 30 ngày liên tiếp.', NULL, 'milestone', 3, 3),
+
+(N'Hoàn thành 40 nhiệm vụ hành vi', N'Thực hiện tổng cộng 40 hành vi thay thế.', NULL, 'daily', 4, 4),
+(N'Chiến binh 60 ngày', N'Không hút thuốc trong 60 ngày liên tục.', NULL, 'milestone', 4, 4),
+(N'Người truyền cảm hứng', N'Có bài viết nhận được tối thiểu 10 lượt thích hoặc bình luận.', NULL, 'community', 4, 4),
+(N'Chiến thắng bản thân', N'Không hút thuốc trong 90 ngày liên tiếp.', NULL, 'milestone', 5, 4),
+(N'Mỗi mốc giờ một lựa chọn', N'Thử ít nhất 1 hành vi thay thế ở tất cả các mốc giờ trong ngày.', NULL, 'daily', 4, 4);
+

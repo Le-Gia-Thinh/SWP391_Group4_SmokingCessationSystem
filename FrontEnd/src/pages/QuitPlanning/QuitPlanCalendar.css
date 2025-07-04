@@ -35,6 +35,11 @@
 .week-row-2 td { border-left: 4px solid #90EE90; }
 .week-row-3 td { border-left: 4px solid #DDA0DD; }
 .week-row-4 td { border-left: 4px solid #FFD700; }
+.week-row-0 td:last-child { border-right: 4px solid #FFA07A; }
+.week-row-1 td:last-child { border-right: 4px solid #87CEFA; }
+.week-row-2 td:last-child { border-right: 4px solid #90EE90; }
+.week-row-3 td:last-child { border-right: 4px solid #DDA0DD; }
+.week-row-4 td:last-child { border-right: 4px solid #FFD700; }
 
 /* ✅ Hover nhẹ */
 tr:hover {
@@ -129,5 +134,11 @@ tr.highlighted td {
   100% {
     transform: scale(1);
     box-shadow: none;
+  }
+}
+@media (max-width: 900px) {
+  .quit-plan-progress-row {
+    flex-direction: column !important;
+    gap: 16px !important;
   }
 }

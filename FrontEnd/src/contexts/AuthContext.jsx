@@ -148,6 +148,5 @@ export const AuthProvider = ({ children }) => {
     loading,
   };
 
-  console.log("👤 user in Profile.jsx:", user);
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
