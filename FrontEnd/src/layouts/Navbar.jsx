@@ -227,8 +227,8 @@ export default function Navbar() {
         title="Menu"
         placement="left"
         onClose={() => setDrawerOpen(false)}
-        visible={drawerOpen}
-        bodyStyle={{ padding: 0 }}
+        open={drawerOpen}
+        styles={{ padding: 0 }}
       >
         <Menu
           mode="inline"
