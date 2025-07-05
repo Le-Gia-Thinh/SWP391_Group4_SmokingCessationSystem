@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+// src/components/Navbar.jsx
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   Layout,
@@ -19,34 +20,51 @@ import {
   ContactsOutlined,
   CalendarOutlined,
   BellOutlined,
-  MenuOutlined,    // ← hamburger
-  MoreOutlined,    // ← overflow indicator
+  MenuOutlined,
+  MoreOutlined,
   ScheduleOutlined,
   FileDoneOutlined,
   MessageOutlined,
+  BarChartOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "../contexts/AuthContext";
 import axios from "axios";
 import "./Navbar.css";
 import { Dropdown } from "antd";
 import UserDropdownMenu from "../components/UserDropdownMenu";
-import { Link } from "react-router-dom";
 
 const { Header } = Layout;
 
 export default function Navbar() {
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false); // trạng thái mở Drawer (menu mobile)
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout, isCoach, isAdmin } = useAuth();
+  const [membership, setMembership] = useState(null); // lưu subscription hiện tại
 
-  // Logout
+  // Hàm logout
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
 
-  // Planning click
+  // Khi user thay đổi, gọi API lấy subscription active
+  useEffect(() => {
+    if (!user) {
+      setMembership(null);
+      return;
+    }
+    const token = localStorage.getItem("token");
+    const baseURL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+    axios
+      .get(`${baseURL}/api/subscriptions/current`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then(({ data }) => setMembership(data.subscription))
+      .catch(() => setMembership(null));
+  }, [user]);
+
+  // Hàm xử lý khi click “Lập kế hoạch”
   const handlePlanClick = async () => {
     if (!user) return navigate("/login");
     try {
@@ -60,7 +78,7 @@ export default function Navbar() {
     }
   };
 
-  // Build menu items
+  // Tạo danh sách các mục menu
   const getMenuItems = () => {
     const items = [
       { key: "/", icon: <HomeOutlined />, label: "Trang chủ", onClick: () => navigate("/") },
@@ -68,9 +86,20 @@ export default function Navbar() {
       { key: "/RankingBoard", icon: <TrophyOutlined />, label: "Xếp hạng", onClick: () => navigate("/RankingBoard") },
       { key: "/blog", icon: <BookOutlined />, label: "Blog", onClick: () => navigate("/blog") },
       { key: "/chat", icon: <MessageOutlined />, label: "Chat", onClick: () => navigate("/chat") },
-      { key: "/membership", icon: <TeamOutlined />, label: "Thành viên", onClick: () => navigate("/membership") },
+      { key: "/user/stats", icon: <BarChartOutlined />, label: "Thống kê", onClick: () => navigate("/user/stats") },
     ];
 
+    // Nếu user là member thì thêm mục “Thành viên”
+    if (user && user.role === 'member') {
+      items.push({
+        key: "/membership",
+        icon: <TeamOutlined />,
+        label: "Thành viên",
+        onClick: () => navigate("/membership"),
+      });
+    }
+
+    // Các menu chung cho tất cả user (ngoại trừ coach/admin)
     if (!isCoach() && !isAdmin()) {
       items.push({
         key: "/book-coach",
@@ -86,8 +115,9 @@ export default function Navbar() {
           onClick: () => navigate("/my-bookings"),
         });
       }
-      console.log("Navbar user:", user);
     }
+
+    // Menu riêng cho admin
     if (isAdmin()) {
       items.push({
         key: "/admin-dashboard",
@@ -108,6 +138,8 @@ export default function Navbar() {
         onClick: () => navigate("/post-approval"),
       });
     }
+
+    // Menu riêng cho coach
     if (isCoach()) {
       items.push({
         key: "/coach-dashboard",
@@ -116,10 +148,11 @@ export default function Navbar() {
         onClick: () => navigate("/coach-dashboard"),
       });
     }
+
     return items;
   };
 
-  // Active key
+  // Xác định mục đang active dựa trên URL
   const selectedKey = /^\/(QuitPlanCalendar|FtndTest|quit-plan-detail)/.test(
     location.pathname
   )
@@ -134,89 +167,84 @@ export default function Navbar() {
           <span className="logo-text">QuitSmoking</span>
         </div>
 
-        {/* Desktop Menu */}
+        {/* Menu chính (desktop) */}
         <Menu
           mode="horizontal"
           selectedKeys={[selectedKey]}
           items={getMenuItems()}
           className="navbar-menu"
-          overflowedIndicator={<MoreOutlined />}  // ← 3 chấm ngang
+          overflowedIndicator={<MoreOutlined />}
         />
 
-        {/* Hamburger (mobile only) */}
+        {/* Nút hamburger (mobile) */}
         <Button
           className="mobile-menu-button"
           type="text"
-          icon={<MenuOutlined />}            // ← hamburger icon
+          icon={<MenuOutlined />}
           onClick={() => setDrawerOpen(true)}
         />
 
-        {/* Actions */}
+        {/* Khu vực user actions */}
         <div className="navbar-actions">
           {!user ? (
+            // Nếu chưa đăng nhập
             <Space>
-              <Button type="link" onClick={() => navigate("/login")}>
-                Đăng nhập
-              </Button>
-              <Button type="primary" onClick={() => navigate("/register")}>
-                Đăng ký
-              </Button>
+              <Button type="link" onClick={() => navigate("/login")}>Đăng nhập</Button>
+              <Button type="primary" onClick={() => navigate("/register")}>Đăng ký</Button>
             </Space>
           ) : (
+            // Nếu đã đăng nhập
             <Space wrap={false}>
+              {/* Thông báo */}
               <Button
                 type="text"
-                icon={
-                  <BellOutlined style={{ fontSize: 20, color: "#52c41a" }} />
-                }
+                icon={<BellOutlined style={{ fontSize: 20, color: "#52c41a" }} />}
                 onClick={() => navigate("/notifications")}
                 style={{ marginRight: 4 }}
               />
+
+              {/* Hiển thị badge gói thành viên */}
               <Badge
                 count={
-                  user.role === "admin"
-                    ? "Quản trị viên"
-                    : user.role === "coach"
-                      ? "Huấn luyện viên"
-                      : "Thành viên"
+                  membership
+                    // Nếu có gói active, show “Premium X tháng”
+                    ? `Premium ${Math.ceil(
+                      (new Date(membership.end_date) - new Date()) /
+                      (1000 * 60 * 60 * 24 * 30)
+                    )} tháng`
+                    // Ngược lại show role mặc định
+                    : user.role === "admin"
+                      ? "Quản trị viên"
+                      : user.role === "coach"
+                        ? "Huấn luyện viên"
+                        : "Thành viên"
                 }
                 style={{
-                  backgroundColor:
-                    user.role === "admin" ? "#ff4d4f" : "#52c41a",
+                  backgroundColor: membership
+                    ? "#52c41a"
+                    : user.role === "admin"
+                      ? "#ff4d4f"
+                      : "#52c41a",
                 }}
               />
-              {/* <Avatar
-                icon={<UserOutlined />}
-                style={{
-                  backgroundColor:
-                    user.role === "admin" ? "#ff4d4f" : "#52c41a",
-                  cursor: "pointer",
-                }}
-                onClick={() => navigate("/profile")}
-              /> */}
-              <Dropdown
-                popupRender={() => <UserDropdownMenu />}
-                placement="bottomRight"
-                trigger={["click"]}
-              >
+
+              {/* Avatar + dropdown */}
+              <Dropdown popupRender={() => <UserDropdownMenu />} placement="bottomRight" trigger={["click"]}>
                 <Avatar
-                  icon={<UserOutlined />}
+                  src={user.avatar_url}
+                  icon={!user.avatar_url && <UserOutlined />}
                   style={{
-                    backgroundColor:
-                      user.role === "admin" ? "#ff4d4f" : "#52c41a",
+                    backgroundColor: user.role === "admin" ? "#ff4d4f" : "#52c41a",
                     cursor: "pointer",
                   }}
                 />
               </Dropdown>
+
+              {/* Tên người dùng */}
               <span className="username-text">{user.name || user.email}</span>
 
-
-              <Button
-                type="text"
-                icon={<LogoutOutlined />}
-                onClick={handleLogout}
-                danger
-              >
+              {/* Nút Logout */}
+              <Button type="text" icon={<LogoutOutlined />} onClick={handleLogout} danger>
                 Logout
               </Button>
             </Space>
@@ -224,12 +252,12 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Drawer cho mobile */}
+      {/* Drawer (menu mobile) */}
       <Drawer
         title="Menu"
         placement="left"
         onClose={() => setDrawerOpen(false)}
-        visible={drawerOpen}
+        open={drawerOpen}
         bodyStyle={{ padding: 0 }}
       >
         <Menu

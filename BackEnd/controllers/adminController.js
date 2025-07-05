@@ -190,3 +190,51 @@ exports.restoreCoach = async (req, res) => {
     res.status(500).json({ success: false, message: 'Khôi phục coach thất bại' });
   }
 };
+
+// Admin xem tất cả feedback Member report Coach 
+exports.getCoachViolations = async (req, res) => {
+  try {
+    const pool = await sql.connect(dbConfig);
+
+    const result = await pool.request().query(`
+      SELECT f.feedback_id, f.user_id, c.full_name AS reporter_name, f.content, f.submitted_at
+      FROM FEEDBACK f
+      JOIN CUSTOMER c ON f.user_id = c.user_id
+      WHERE f.feedback_type = 'coach'
+      ORDER BY f.submitted_at DESC
+    `);
+
+    res.json({ success: true, data: result.recordset });
+  } catch (err) {
+    console.error('Lỗi khi lấy danh sách tố cáo coach:', err);
+    res.status(500).json({ message: 'Lỗi khi lấy dữ liệu' });
+  }
+};
+
+// Admin xem tất cả feedback Coach báo cáo Member vắng mặt
+exports.getMemberNoShowReports = async (req, res) => {
+  try {
+    const pool = await sql.connect(dbConfig);
+
+    const result = await pool.request().query(`
+      SELECT cs.session_id, cs.user_id, cu.full_name AS member_name, cs.coach_id,
+             coach.full_name AS coach_name, cs.session_notes, cs.scheduled_time
+      FROM COACHING_SESSION cs
+      JOIN CUSTOMER cu ON cs.user_id = cu.user_id
+      JOIN COACH ch ON cs.coach_id = ch.coach_id
+      JOIN CUSTOMER coach ON ch.user_id = coach.user_id
+      WHERE cs.session_notes IS NOT NULL
+        AND cs.session_status = 'completed'
+        AND cs.session_notes LIKE N'%vắng%' -- có thể kiểm tra keyword
+      ORDER BY cs.scheduled_time DESC
+    `);
+
+    res.json({ success: true, data: result.recordset });
+  } catch (err) {
+    console.error('Lỗi khi lấy báo cáo member vắng mặt:', err);
+    res.status(500).json({ message: 'Lỗi khi truy vấn dữ liệu' });
+  }
+};
+
+// 6. Thống kê danh thi từ gói member
+// 7. Thống kê Member: (số lượng member đang thực hiện kế hoạch, số member hoàn thành cai nghiện, số )

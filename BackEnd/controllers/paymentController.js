@@ -90,7 +90,8 @@ exports.createPayment = async (req, res) => {
         const { bin, accountNo, accountName, templateId } = require('../config/vietQR.config');
 
         const qrImage =
-            `https://api.vietqr.io/image/${bin}-${accountNo}-${templateId}.jpg` +
+            `https://api.vietqr.io/image/` +
+            `${bin}-${accountNo}-${templateId}.jpg` +
             `?accountName=${encodeURIComponent(accountName)}` +
             `&amount=${amount}` +
             `&addInfo=${info}`;

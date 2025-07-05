@@ -1,11 +1,27 @@
 // controllers/scheduleController.js
 const { sql, dbConfig } = require('../config/database');
+const moment = require('moment-timezone');
+
+// Cấu hình timezone mặc định (có thể thay đổi theo môi trường)
+const DEFAULT_TIMEZONE = process.env.TIMEZONE || 'Asia/Ho_Chi_Minh';
+
+// Helper: Parse string 'YYYY-MM-DDTHH:mm:ss' thành Date object với giờ local (UTC+7)
+function parseVietnamTime(str) {
+  const [date, time] = str.split('T');
+  const [year, month, day] = date.split('-').map(Number);
+  const [hour, minute, second] = time.split(':').map(Number);
+  return new Date(year, month - 1, day, hour, minute, second);
+}
 
 // 1. Coach tạo lịch rảnh
 exports.createSchedule = async (req, res) => {
   try {
     const coachId = req.user.coach_id;
-    const { start_time, end_time } = req.body;
+    let { start_time, end_time } = req.body;
+
+    // Bỏ moment.tz, chỉ parse thẳng giờ local
+    start_time = parseVietnamTime(start_time);
+    end_time = parseVietnamTime(end_time);
 
     const pool = await sql.connect(dbConfig);
     await pool.request()
@@ -28,6 +44,14 @@ exports.createSchedule = async (req, res) => {
 exports.createBulkSchedules = async (req, res) => {
   try {
     const { coach_id, schedules, pattern } = req.body;
+
+    // DEBUG: Log dữ liệu nhận được từ frontend
+    console.log("=== DEBUG BACKEND NHẬN DỮ LIỆU ===");
+    console.log("Request body:", JSON.stringify(req.body, null, 2));
+    console.log("Pattern:", pattern);
+    console.log("Schedules:", schedules);
+    console.log("Coach ID:", coach_id);
+    console.log("==================================");
 
     // Validate input
     if (!coach_id || (!schedules && !pattern)) {
@@ -79,6 +103,16 @@ exports.createBulkSchedules = async (req, res) => {
         duration = 60 // minutes
       } = pattern;
 
+      // DEBUG: Log pattern details
+      console.log("=== DEBUG PATTERN DETAILS ===");
+      console.log("Start Date:", startDate);
+      console.log("End Date:", endDate);
+      console.log("Start Time:", startTime);
+      console.log("End Time:", endTime);
+      console.log("Days of Week:", daysOfWeek);
+      console.log("Duration:", duration);
+      console.log("=============================");
+
       if (duration < 15 || duration > 300) {
         return res.status(400).json({ success: false, message: 'Thời lượng mỗi slot phải từ 15 đến 300 phút.' });
       }
@@ -93,11 +127,20 @@ exports.createBulkSchedules = async (req, res) => {
           const [startHour, startMinute] = startTime.split(':').map(Number);
           const [endHour, endMinute] = endTime.split(':').map(Number);
 
-          const slotStart = new Date(date.getTime());
-          slotStart.setHours(startHour, startMinute, 0, 0);
+          // Vì SQL Server đã là UTC+7, không cần convert sang UTC
+          // Chỉ cần đảm bảo thời gian được parse đúng từ local time
+          const currentDate = date.toISOString().split('T')[0];
+          const slotStart = moment.tz(`${currentDate} ${startTime}:00`, DEFAULT_TIMEZONE).toDate();
+          const slotEnd = moment.tz(`${currentDate} ${endTime}:00`, DEFAULT_TIMEZONE).toDate();
 
-          const slotEnd = new Date(date.getTime());
-          slotEnd.setHours(endHour, endMinute, 0, 0);
+          // DEBUG: Log slot creation chi tiết hơn
+          console.log(`Creating slots for ${date.toDateString()}: ${startHour}:${startMinute} to ${endHour}:${endMinute}`);
+          console.log(`Using timezone: ${DEFAULT_TIMEZONE}`);
+          console.log(`Current date: ${currentDate}`);
+          console.log(`Input string: ${currentDate} ${startTime}:00`);
+          console.log(`Local time: ${moment.tz(`${currentDate} ${startTime}:00`, DEFAULT_TIMEZONE).format()}`);
+          console.log(`SlotStart ISO: ${slotStart.toISOString()}`);
+          console.log(`SlotEnd ISO: ${slotEnd.toISOString()}`);
 
           for (let currentStart = new Date(slotStart); currentStart < slotEnd;) {
             const currentEnd = new Date(currentStart.getTime() + duration * 60000);
@@ -106,6 +149,10 @@ exports.createBulkSchedules = async (req, res) => {
             if (slotCount > MAX_SLOTS) {
               return res.status(400).json({ success: false, message: `Vượt quá số slot tối đa (${MAX_SLOTS}) trong 1 lần tạo.` });
             }
+
+            // DEBUG: Log each slot
+            console.log(`Slot ${slotCount}: ${currentStart.toISOString()} to ${currentEnd.toISOString()}`);
+
             // Check overlap
             if (await isOverlap(coach_id, currentStart, currentEnd)) {
               slotConflicts.push({ start_time: currentStart, end_time: currentEnd });
@@ -143,6 +190,17 @@ exports.createBulkSchedules = async (req, res) => {
 
     // Insert valid slots
     for (const slot of slotInserts) {
+      // DEBUG: Log trước khi lưu vào database
+      console.log(`=== LƯU VÀO DATABASE ===`);
+      console.log(`Slot start_time: ${slot.start_time}`);
+      console.log(`Slot end_time: ${slot.end_time}`);
+      console.log(`Slot start_time ISO: ${slot.start_time.toISOString()}`);
+      console.log(`Slot end_time ISO: ${slot.end_time.toISOString()}`);
+      console.log(`========================`);
+
+      // Sử dụng DateTime để lưu UTC (best practice)
+      // Nếu không hoạt động, có thể dùng:
+      // .input('start_time', sql.DateTime2, slot.start_time.toISOString())
       await pool.request()
         .input('coach_id', sql.Int, coach_id)
         .input('start_time', sql.DateTime, slot.start_time)
@@ -233,11 +291,20 @@ exports.createSchedulesForMultipleCoaches = async (req, res) => {
             const [startHour, startMinute] = startTime.split(':').map(Number);
             const [endHour, endMinute] = endTime.split(':').map(Number);
 
-            const slotStart = new Date(date.getTime());
-            slotStart.setHours(startHour, startMinute, 0, 0);
+            // Vì SQL Server đã là UTC+7, không cần convert sang UTC
+            // Chỉ cần đảm bảo thời gian được parse đúng từ local time
+            const currentDate = date.toISOString().split('T')[0];
+            const slotStart = moment.tz(`${currentDate} ${startTime}:00`, DEFAULT_TIMEZONE).toDate();
+            const slotEnd = moment.tz(`${currentDate} ${endTime}:00`, DEFAULT_TIMEZONE).toDate();
 
-            const slotEnd = new Date(date.getTime());
-            slotEnd.setHours(endHour, endMinute, 0, 0);
+            // DEBUG: Log slot creation chi tiết hơn
+            console.log(`Creating slots for ${date.toDateString()}: ${startHour}:${startMinute} to ${endHour}:${endMinute}`);
+            console.log(`Using timezone: ${DEFAULT_TIMEZONE}`);
+            console.log(`Current date: ${currentDate}`);
+            console.log(`Input string: ${currentDate} ${startTime}:00`);
+            console.log(`Local time: ${moment.tz(`${currentDate} ${startTime}:00`, DEFAULT_TIMEZONE).format()}`);
+            console.log(`SlotStart ISO: ${slotStart.toISOString()}`);
+            console.log(`SlotEnd ISO: ${slotEnd.toISOString()}`);
 
             for (let currentStart = new Date(slotStart); currentStart < slotEnd;) {
               const currentEnd = new Date(currentStart.getTime() + duration * 60000);

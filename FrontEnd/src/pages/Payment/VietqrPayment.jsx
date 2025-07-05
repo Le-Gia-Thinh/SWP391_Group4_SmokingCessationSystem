@@ -1,4 +1,4 @@
-// src/Payment/VietqrPayment.jsx
+// src/pages/Payment/VietqrPayment.jsx
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Card, Typography, Button, Spin, message, Result, Steps } from 'antd';
@@ -12,7 +12,7 @@ const VietqrPayment = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const { packageId, amount, packageName, description } = location.state || {};
-    
+
     const [qrData, setQrData] = useState(null);
     const [loading, setLoading] = useState(false);
     const [paymentStatus, setPaymentStatus] = useState('pending'); // pending, checking, success, failed
@@ -32,30 +32,23 @@ const VietqrPayment = () => {
         try {
             const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
             const token = localStorage.getItem('token');
-            
+
             if (!token) {
                 message.error('Vui lòng đăng nhập để thanh toán');
                 navigate('/login');
                 return;
             }
 
-            const response = await axios.post(`${baseURL}/api/payment`, {
-                packageId,
-                amount,
-                description
-            }, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
+            const response = await axios.post(
+                `${baseURL}/api/payment`,
+                { packageId, amount, description },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
 
             setQrData(response.data);
             setPaymentStatus('checking');
             message.success('Mã QR đã được tạo thành công!');
-            
-            // Bắt đầu polling để kiểm tra trạng thái thanh toán
             startPaymentPolling(response.data.paymentId);
-            
         } catch (error) {
             console.error('Create payment error:', error);
             if (error.response?.status === 401) {
@@ -75,15 +68,14 @@ const VietqrPayment = () => {
             try {
                 const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
                 const token = localStorage.getItem('token');
-                
-                const response = await axios.get(`${baseURL}/api/payment/${paymentId}/status`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
+
+                const response = await axios.get(
+                    `${baseURL}/api/payment/${paymentId}/status`,
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
 
                 const { payment_status, subscription_status } = response.data;
-                
+
                 if (payment_status === 'success' && subscription_status === 'active') {
                     setPaymentStatus('success');
                     clearInterval(interval);
@@ -95,9 +87,8 @@ const VietqrPayment = () => {
                 }
             } catch (error) {
                 console.error('Payment status check error:', error);
-                // Không hiển thị lỗi cho polling để tránh spam
             }
-        }, 3000); // Kiểm tra mỗi 3 giây
+        }, 3000);
 
         setPollingInterval(interval);
 
@@ -105,22 +96,20 @@ const VietqrPayment = () => {
         setTimeout(() => {
             clearInterval(interval);
             if (paymentStatus === 'checking') {
-                setPaymentStatus('timeout');
+                setPaymentStatus('failed');
                 message.warning('Quá thời gian chờ. Vui lòng kiểm tra lại trạng thái thanh toán.');
             }
-        }, 600000); // 10 phút
+        }, 600000);
     };
 
     // Cleanup polling khi component unmount
     useEffect(() => {
         return () => {
-            if (pollingInterval) {
-                clearInterval(pollingInterval);
-            }
+            if (pollingInterval) clearInterval(pollingInterval);
         };
     }, [pollingInterval]);
 
-    // Render kết quả thanh toán
+    // Hiển thị kết quả thanh toán
     const renderPaymentResult = () => {
         if (paymentStatus === 'success') {
             return (
@@ -129,12 +118,12 @@ const VietqrPayment = () => {
                     title="Thanh toán thành công!"
                     subTitle={`Bạn đã đăng ký thành công gói ${packageName}`}
                     extra={[
-                        <Button type="primary" key="dashboard" onClick={() => navigate('/dashboard')}>
+                        <Button key="home" type="primary" onClick={() => navigate('/')}>
                             Về trang chủ
                         </Button>,
-                        <Button key="subscription" onClick={() => navigate('/subscription/history')}>
+                        <Button key="history" onClick={() => navigate('/subscription/history')}>
                             Xem lịch sử
-                        </Button>
+                        </Button>,
                     ]}
                 />
             );
@@ -147,15 +136,19 @@ const VietqrPayment = () => {
                     title="Thanh toán thất bại"
                     subTitle="Vui lòng thử lại hoặc chọn phương thức thanh toán khác"
                     extra={[
-                        <Button type="primary" key="retry" onClick={() => {
-                            setQrData(null);
-                            setPaymentStatus('pending');
-                        }}>
+                        <Button
+                            key="retry"
+                            type="primary"
+                            onClick={() => {
+                                setQrData(null);
+                                setPaymentStatus('pending');
+                            }}
+                        >
                             Thử lại
                         </Button>,
                         <Button key="back" onClick={() => navigate('/checkout')}>
                             Chọn gói khác
-                        </Button>
+                        </Button>,
                     ]}
                 />
             );
@@ -164,23 +157,24 @@ const VietqrPayment = () => {
         return null;
     };
 
-    // Nếu đã có kết quả thanh toán
+    // Nếu đã có trạng thái success/failed thì render kết quả
     if (paymentStatus === 'success' || paymentStatus === 'failed') {
         return renderPaymentResult();
     }
 
+    // Form tạo QR và hiển thị QR
     return (
         <div style={{ maxWidth: 500, margin: '40px auto', padding: '0 16px' }}>
             <Card style={{ textAlign: 'center', borderRadius: 12 }}>
                 <Title level={3}>
                     <QrcodeOutlined /> Thanh toán qua VietQR
                 </Title>
-                
+
                 <div style={{ marginBottom: 24 }}>
                     <Text strong>Gói dịch vụ: </Text>
                     <Text>{packageName}</Text>
                 </div>
-                
+
                 <div style={{ marginBottom: 24 }}>
                     <Text strong>Số tiền: </Text>
                     <Text style={{ fontSize: 18, color: '#52c41a', fontWeight: 'bold' }}>
@@ -188,9 +182,8 @@ const VietqrPayment = () => {
                     </Text>
                 </div>
 
-                {/* Steps */}
-                <Steps 
-                    current={qrData ? (paymentStatus === 'checking' ? 1 : 0) : 0} 
+                <Steps
+                    current={qrData ? 1 : 0}
                     size="small"
                     style={{ marginBottom: 32 }}
                 >
@@ -200,42 +193,43 @@ const VietqrPayment = () => {
                 </Steps>
 
                 {!qrData ? (
-                    <Button 
-                        type="primary" 
+                    <Button
+                        type="primary"
                         size="large"
-                        onClick={handleCreatePayment} 
+                        onClick={handleCreatePayment}
                         loading={loading}
                         style={{ minWidth: 160 }}
                     >
                         Tạo mã QR thanh toán
                     </Button>
                 ) : (
-                    <div>
+                    <>
                         <div style={{ marginBottom: 16 }}>
-                            <img 
-                                src={qrData.qrImage} 
-                                alt="QR VietQR" 
-                                style={{ 
-                                    width: 280, 
+                            <img
+                                src={qrData.qrImage}
+                                alt="QR VietQR"
+                                style={{
+                                    width: 280,
                                     height: 280,
                                     border: '1px solid #d9d9d9',
-                                    borderRadius: 8
-                                }} 
+                                    borderRadius: 8,
+                                }}
                             />
                         </div>
-                        
+
                         <div style={{ marginBottom: 16 }}>
-                            <Text strong>{qrData.accountName}</Text><br />
+                            <Text strong>{qrData.accountName}</Text>
+                            <br />
                             <Text>STK: {qrData.accountNo}</Text>
                         </div>
-                        
-                        <Paragraph 
+
+                        <Paragraph
                             copyable={{ text: qrData.description }}
-                            style={{ 
-                                background: '#f5f5f5', 
-                                padding: 8, 
+                            style={{
+                                background: '#f5f5f5',
+                                padding: 8,
                                 borderRadius: 4,
-                                fontSize: 12
+                                fontSize: 12,
                             }}
                         >
                             {qrData.description}
@@ -252,13 +246,11 @@ const VietqrPayment = () => {
                                 </div>
                             </div>
                         )}
-                    </div>
+                    </>
                 )}
 
                 <div style={{ marginTop: 24 }}>
-                    <Button onClick={() => navigate('/checkout')}>
-                        Quay lại
-                    </Button>
+                    <Button onClick={() => navigate('/checkout')}>Quay lại</Button>
                 </div>
             </Card>
         </div>
