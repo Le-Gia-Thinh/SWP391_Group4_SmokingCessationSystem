@@ -5,7 +5,7 @@ const moment = require('moment-timezone');
 // Cấu hình timezone mặc định (có thể thay đổi theo môi trường)
 const DEFAULT_TIMEZONE = process.env.TIMEZONE || 'Asia/Ho_Chi_Minh';
 
-// Helper: Parse string 'YYYY-MM-DDTHH:mm:ss' thành Date object với giờ local (UTC+7)
+//Helper: Parse string 'YYYY-MM-DDTHH:mm:ss' thành Date object với giờ local (UTC+7)
 function parseVietnamTime(str) {
   const [date, time] = str.split('T');
   const [year, month, day] = date.split('-').map(Number);
