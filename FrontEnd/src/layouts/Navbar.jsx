@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Layout, Menu, Button, Avatar, Space, Badge, Drawer } from "antd";
 import {
@@ -11,8 +11,8 @@ import {
   ContactsOutlined,
   CalendarOutlined,
   BellOutlined,
-  MenuOutlined, // ← hamburger
-  MoreOutlined, // ← overflow indicator
+  MenuOutlined,
+  MoreOutlined,
   ScheduleOutlined,
   FileDoneOutlined,
   MessageOutlined,
@@ -23,23 +23,29 @@ import axios from "axios";
 import "./Navbar.css";
 import { Dropdown } from "antd";
 import UserDropdownMenu from "../components/UserDropdownMenu";
-import { Link } from "react-router-dom";
 
 const { Header } = Layout;
 
 export default function Navbar() {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [resizeKey, setResizeKey] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout, isCoach, isAdmin } = useAuth();
 
-  // Logout
+  useEffect(() => {
+    const handleResize = () => {
+      setResizeKey((prev) => prev + 1);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
 
-  // Planning click
   const handlePlanClick = async () => {
     if (!user) return navigate("/login");
     try {
@@ -53,7 +59,6 @@ export default function Navbar() {
     }
   };
 
-  // Build menu items
   const getMenuItems = () => {
     const items = [
       {
@@ -100,7 +105,6 @@ export default function Navbar() {
       },
     ];
 
-
     if (!isCoach() && !isAdmin()) {
       items.push({
         key: "/book-coach",
@@ -118,25 +122,28 @@ export default function Navbar() {
       }
     }
     if (isAdmin()) {
-      items.push({
-        key: "/admin-dashboard",
-        icon: <UserOutlined />,
-        label: "Bảng điều khiển Admin",
-        onClick: () => navigate("/admin-dashboard"),
-      });
-      items.push({
-        key: "/schedule-management",
-        icon: <ScheduleOutlined />,
-        label: "Quản lý Lịch",
-        onClick: () => navigate("/schedule-management"),
-      });
-      items.push({
-        key: "/post-approval",
-        icon: <FileDoneOutlined />,
-        label: "Quản lý Bài Viết",
-        onClick: () => navigate("/post-approval"),
-      });
+      items.push(
+        {
+          key: "/admin-dashboard",
+          icon: <UserOutlined />,
+          label: "Bảng điều khiển Admin",
+          onClick: () => navigate("/admin-dashboard"),
+        },
+        {
+          key: "/schedule-management",
+          icon: <ScheduleOutlined />,
+          label: "Quản lý Lịch",
+          onClick: () => navigate("/schedule-management"),
+        },
+        {
+          key: "/post-approval",
+          icon: <FileDoneOutlined />,
+          label: "Quản lý Bài Viết",
+          onClick: () => navigate("/post-approval"),
+        }
+      );
     }
+
     if (isCoach()) {
       items.push({
         key: "/coach-dashboard",
@@ -145,10 +152,10 @@ export default function Navbar() {
         onClick: () => navigate("/coach-dashboard"),
       });
     }
+
     return items;
   };
 
-  // Active key
   const selectedKey = /^\/(QuitPlanCalendar|FtndTest|quit-plan-detail)/.test(
     location.pathname
   )
@@ -158,29 +165,20 @@ export default function Navbar() {
   return (
     <Header className="navbar">
       <div className="navbar-content">
-        {/* Logo */}
-        <div className="navbar-logo" onClick={() => navigate("/")}>
-          <span className="logo-text">QuitSmoking</span>
+        <div className="navbar-left">
+          <div className="navbar-logo" onClick={() => navigate("/")}>
+            <span className="logo-text">QuitSmoking</span>
+          </div>
+          <Menu
+            key={resizeKey}
+            mode="horizontal"
+            selectedKeys={[selectedKey]}
+            items={getMenuItems()}
+            className="navbar-menu"
+            overflowedIndicator={<MoreOutlined />}
+          />
         </div>
 
-        {/* Desktop Menu */}
-        <Menu
-          mode="horizontal"
-          selectedKeys={[selectedKey]}
-          items={getMenuItems()}
-          className="navbar-menu"
-          overflowedIndicator={<MoreOutlined />} // ← 3 chấm ngang
-        />
-
-        {/* Hamburger (mobile only) */}
-        <Button
-          className="mobile-menu-button"
-          type="text"
-          icon={<MenuOutlined />} // ← hamburger icon
-          onClick={() => setDrawerOpen(true)}
-        />
-
-        {/* Actions */}
         <div className="navbar-actions">
           {!user ? (
             <Space>
@@ -199,7 +197,6 @@ export default function Navbar() {
                   <BellOutlined style={{ fontSize: 20, color: "#52c41a" }} />
                 }
                 onClick={() => navigate("/notifications")}
-                style={{ marginRight: 4 }}
               />
               <Badge
                 count={
@@ -220,8 +217,8 @@ export default function Navbar() {
                 trigger={["click"]}
               >
                 <Avatar
-                  src={user.avatar_url} // ✅ truyền link avatar
-                  icon={!user.avatar_url && <UserOutlined />} // fallback nếu không có ảnh
+                  src={user.avatar_url}
+                  icon={!user.avatar_url && <UserOutlined />}
                   style={{
                     backgroundColor:
                       user.role === "admin" ? "#ff4d4f" : "#52c41a",
@@ -230,7 +227,6 @@ export default function Navbar() {
                 />
               </Dropdown>
               <span className="username-text">{user.name || user.email}</span>
-
               <Button
                 type="text"
                 icon={<LogoutOutlined />}
@@ -242,23 +238,29 @@ export default function Navbar() {
             </Space>
           )}
         </div>
-      </div>
 
-      {/* Drawer cho mobile */}
-      <Drawer
-        title="Menu"
-        placement="left"
-        onClose={() => setDrawerOpen(false)}
-        open={drawerOpen} // ✅ Thay visible bằng open
-        styles={{ body: { padding: 0 } }} // ✅ Thay bodyStyle bằng styles.body
-      >
-        <Menu
-          mode="inline"
-          selectedKeys={[selectedKey]}
-          items={getMenuItems()}
-          style={{ borderRight: 0 }}
+        <Button
+          className="mobile-menu-button"
+          type="text"
+          icon={<MenuOutlined />}
+          onClick={() => setDrawerOpen(true)}
         />
-      </Drawer>
+
+        <Drawer
+          title="Menu"
+          placement="left"
+          onClose={() => setDrawerOpen(false)}
+          open={drawerOpen}
+          styles={{ body: { padding: 0 } }}
+        >
+          <Menu
+            mode="inline"
+            selectedKeys={[selectedKey]}
+            items={getMenuItems()}
+            style={{ borderRight: 0 }}
+          />
+        </Drawer>
+      </div>
     </Header>
   );
 }
