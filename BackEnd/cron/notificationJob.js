@@ -3,7 +3,7 @@ const { sql, dbConfig } = require("../config/database");
 const dayjs = require("dayjs");
 const utc = require("dayjs/plugin/utc");
 const timezone = require("dayjs/plugin/timezone");
-
+const { evaluateAndUnlockAchievements } = require("../utils/achievementService");
 dayjs.extend(utc);
 dayjs.extend(timezone);
 // ==== 1. Behavior Plan Mapping (phase|time => behavior & replacement) ====
@@ -261,7 +261,7 @@ BEHAVIOR_PLAN_PHASES.forEach((phase, phaseIndex) => {
 cron.schedule("* * * * *", async () => {
   try {
     const pool = await sql.connect(dbConfig);
-    const now = dayjs();
+    const now = dayjs().tz("Asia/Ho_Chi_Minh");
     //test thong bao
     //const now = dayjs().hour(7).minute(50).second(0);
     const nowDate = now.format("YYYY-MM-DD");
@@ -323,6 +323,8 @@ cron.schedule("* * * * *", async () => {
       const userId = row.user_id;
       const stage = row.current_stage;
 
+       await evaluateAndUnlockAchievements(userId);
+
       for (const targetTime of validTimes) {
         const key = `${stage}|${targetTime}`;
         const plan = behaviorPlanMap[key];
@@ -349,10 +351,10 @@ cron.schedule("* * * * *", async () => {
     `);
 
     sessionRes.recordset.forEach((session) => {
-      const scheduled = dayjs(session.scheduled_time).tz("Asia/Ho_Chi_Minh");
-      const nowVN = now.tz("Asia/Ho_Chi_Minh");
-      const diffSec = scheduled.diff(nowVN, "second");
+      const scheduled = dayjs(session.scheduled_time.toString()); // giữ nguyên giờ VN
+      const nowVN = dayjs(); // thời gian hiện tại (giờ máy chủ VN)
 
+      const diffSec = scheduled.diff(nowVN, "second");
       // Gửi nếu còn khoảng từ 14:30 – 15:30 phút
       if (diffSec >= 870 && diffSec < 930) {
         const content = `📅 Bạn có cuộc hẹn với Coach ${
