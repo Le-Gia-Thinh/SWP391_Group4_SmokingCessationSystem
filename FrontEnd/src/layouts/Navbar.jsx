@@ -56,13 +56,48 @@ export default function Navbar() {
   // Build menu items
   const getMenuItems = () => {
     const items = [
-      { key: "/", icon: <HomeOutlined />, label: "Trang chủ", onClick: () => navigate("/") },
-      { key: "/plan", icon: <CalendarOutlined />, label: "Lập kế hoạch", onClick: handlePlanClick },
-      { key: "/RankingBoard", icon: <TrophyOutlined />, label: "Xếp hạng", onClick: () => navigate("/RankingBoard") },
-      { key: "/blog", icon: <BookOutlined />, label: "Blog", onClick: () => navigate("/blog") },
-      { key: "/chat", icon: <MessageOutlined />, label: "Chat", onClick: () => navigate("/chat") },
-      { key: "/membership", icon: <TeamOutlined />, label: "Thành viên", onClick: () => navigate("/membership") },
-      { key: "/user/stats", icon: <BarChartOutlined />, label: "Thống kê", onClick: () => navigate("/user/stats") },
+      {
+        key: "/",
+        icon: <HomeOutlined />,
+        label: "Trang chủ",
+        onClick: () => navigate("/"),
+      },
+      {
+        key: "/plan",
+        icon: <CalendarOutlined />,
+        label: "Lập kế hoạch",
+        onClick: handlePlanClick,
+      },
+      {
+        key: "/RankingBoard",
+        icon: <TrophyOutlined />,
+        label: "Xếp hạng",
+        onClick: () => navigate("/RankingBoard"),
+      },
+      {
+        key: "/blog",
+        icon: <BookOutlined />,
+        label: "Blog",
+        onClick: () => navigate("/blog"),
+      },
+      {
+        key: "/chat",
+        icon: <MessageOutlined />,
+        label: "Chat",
+        onClick: () => navigate("/chat"),
+      },
+      {
+        key: "/membership",
+        icon: <TeamOutlined />,
+        label: "Thành viên",
+        onClick: () => navigate("/membership"),
+      },
+      {
+        key: "/user/stats",
+        icon: <BarChartOutlined />,
+        label: "Thống kê",
+        onClick: () => navigate("/user/stats"),
+      },
     ];
 
     // // Chỉ hiển thị mục 'Thành viên' cho member
@@ -218,8 +253,8 @@ export default function Navbar() {
         title="Menu"
         placement="left"
         onClose={() => setDrawerOpen(false)}
-        visible={drawerOpen}
-        bodyStyle={{ padding: 0 }}
+        open={drawerOpen} // ✅ Thay visible bằng open
+        styles={{ body: { padding: 0 } }} // ✅ Thay bodyStyle bằng styles.body
       >
         <Menu
           mode="inline"
