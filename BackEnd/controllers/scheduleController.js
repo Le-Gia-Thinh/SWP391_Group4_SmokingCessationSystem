@@ -127,23 +127,23 @@ exports.createBulkSchedules = async (req, res) => {
           const [startHour, startMinute] = startTime.split(':').map(Number);
           const [endHour, endMinute] = endTime.split(':').map(Number);
 
-          // Lưu cứng ở UTC+7 (Asia/Ho_Chi_Minh)
+          // Tạo thời gian ở UTC+7 (Asia/Ho_Chi_Minh) và cộng thêm 7 tiếng để lưu đúng giờ Việt Nam vào SQL (UTC)
           const currentDate = date.toISOString().split('T')[0];
-          const slotStart = moment.tz(`${currentDate} ${startTime}:00`, DEFAULT_TIMEZONE);
-          const slotEnd = moment.tz(`${currentDate} ${endTime}:00`, DEFAULT_TIMEZONE);
+          const slotStart = moment.tz(`${currentDate} ${startTime}`, DEFAULT_TIMEZONE).add(7, 'hours').toDate();
+          const slotEnd = moment.tz(`${currentDate} ${endTime}`, DEFAULT_TIMEZONE).add(7, 'hours').toDate();
 
           // DEBUG: Log slot creation chi tiết hơn
           console.log(`Creating slots for ${date.toDateString()}: ${startHour}:${startMinute} to ${endHour}:${endMinute}`);
           console.log(`Using timezone: ${DEFAULT_TIMEZONE}`);
           console.log(`Current date: ${currentDate}`);
-          console.log(`Input string: ${currentDate} ${startTime}:00`);
-          console.log(`Local time: ${moment.tz(`${currentDate} ${startTime}:00`, DEFAULT_TIMEZONE).format()}`);
+          console.log(`Input string: ${currentDate} ${startTime}`);
+          console.log(`Local time: ${slotStart.toString()}`);
           console.log(`SlotStart ISO: ${slotStart.toISOString()}`);
           console.log(`SlotEnd ISO: ${slotEnd.toISOString()}`);
 
-          for (let currentStart = slotStart.clone(); currentStart.isBefore(slotEnd);) {
-            const currentEnd = currentStart.clone().add(duration, 'minutes');
-            if (currentEnd.isAfter(slotEnd)) break;
+          for (let currentStart = new Date(slotStart); currentStart < slotEnd;) {
+            const currentEnd = new Date(currentStart.getTime() + duration * 60000);
+            if (currentEnd > slotEnd) break;
             slotCount++;
             if (slotCount > MAX_SLOTS) {
               return res.status(400).json({ success: false, message: `Vượt quá số slot tối đa (${MAX_SLOTS}) trong 1 lần tạo.` });
@@ -153,12 +153,12 @@ exports.createBulkSchedules = async (req, res) => {
             console.log(`Slot ${slotCount}: ${currentStart.toISOString()} to ${currentEnd.toISOString()}`);
 
             // Check overlap
-            if (await isOverlap(coach_id, currentStart.toDate(), currentEnd.toDate())) {
-              slotConflicts.push({ start_time: currentStart.toDate(), end_time: currentEnd.toDate() });
+            if (await isOverlap(coach_id, currentStart, currentEnd)) {
+              slotConflicts.push({ start_time: currentStart, end_time: currentEnd });
             } else {
-              slotInserts.push({ start_time: currentStart.toDate(), end_time: currentEnd.toDate() });
+              slotInserts.push({ start_time: new Date(currentStart), end_time: new Date(currentEnd) });
             }
-            currentStart = currentEnd.clone();
+            currentStart = new Date(currentEnd);
           }
         }
       }
@@ -290,33 +290,33 @@ exports.createSchedulesForMultipleCoaches = async (req, res) => {
             const [startHour, startMinute] = startTime.split(':').map(Number);
             const [endHour, endMinute] = endTime.split(':').map(Number);
 
-            // Lưu cứng ở UTC+7 (Asia/Ho_Chi_Minh)
+            // Tạo thời gian ở UTC+7 (Asia/Ho_Chi_Minh) và cộng thêm 7 tiếng để lưu đúng giờ Việt Nam vào SQL (UTC)
             const currentDate = date.toISOString().split('T')[0];
-            const slotStart = moment.tz(`${currentDate} ${startTime}:00`, DEFAULT_TIMEZONE);
-            const slotEnd = moment.tz(`${currentDate} ${endTime}:00`, DEFAULT_TIMEZONE);
+            const slotStart = moment.tz(`${currentDate} ${startTime}`, DEFAULT_TIMEZONE).add(7, 'hours').toDate();
+            const slotEnd = moment.tz(`${currentDate} ${endTime}`, DEFAULT_TIMEZONE).add(7, 'hours').toDate();
 
             // DEBUG: Log slot creation chi tiết hơn
             console.log(`Creating slots for ${date.toDateString()}: ${startHour}:${startMinute} to ${endHour}:${endMinute}`);
             console.log(`Using timezone: ${DEFAULT_TIMEZONE}`);
             console.log(`Current date: ${currentDate}`);
-            console.log(`Input string: ${currentDate} ${startTime}:00`);
-            console.log(`Local time: ${moment.tz(`${currentDate} ${startTime}:00`, DEFAULT_TIMEZONE).format()}`);
+            console.log(`Input string: ${currentDate} ${startTime}`);
+            console.log(`Local time: ${slotStart.toString()}`);
             console.log(`SlotStart ISO: ${slotStart.toISOString()}`);
             console.log(`SlotEnd ISO: ${slotEnd.toISOString()}`);
 
-            for (let currentStart = slotStart.clone(); currentStart.isBefore(slotEnd);) {
-              const currentEnd = currentStart.clone().add(duration, 'minutes');
-              if (currentEnd.isAfter(slotEnd)) break;
+            for (let currentStart = new Date(slotStart); currentStart < slotEnd;) {
+              const currentEnd = new Date(currentStart.getTime() + duration * 60000);
+              if (currentEnd > slotEnd) break;
               slotCount++;
               if (slotCount > MAX_SLOTS) {
                 break;
               }
-              if (await isOverlap(coachId, currentStart.toDate(), currentEnd.toDate())) {
-                slotConflicts.push({ coachId, start_time: currentStart.toDate(), end_time: currentEnd.toDate() });
+              if (await isOverlap(coachId, currentStart, currentEnd)) {
+                slotConflicts.push({ coachId, start_time: currentStart, end_time: currentEnd });
               } else {
-                slotInserts.push({ start_time: currentStart.toDate(), end_time: currentEnd.toDate() });
+                slotInserts.push({ start_time: new Date(currentStart), end_time: new Date(currentEnd) });
               }
-              currentStart = currentEnd.clone();
+              currentStart = new Date(currentEnd);
             }
           }
         }
