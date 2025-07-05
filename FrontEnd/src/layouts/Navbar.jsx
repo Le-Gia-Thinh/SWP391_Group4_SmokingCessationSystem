@@ -100,10 +100,6 @@ export default function Navbar() {
       },
     ];
 
-    // // Chỉ hiển thị mục 'Thành viên' cho member
-    // if (user && user.role === 'member') {
-    //   items.push({ key: "/membership", icon: <TeamOutlined />, label: "Thành viên", onClick: () => navigate("/membership") });
-    // }
 
     if (!isCoach() && !isAdmin()) {
       items.push({

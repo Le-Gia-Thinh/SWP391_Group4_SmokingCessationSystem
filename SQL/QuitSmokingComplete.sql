@@ -338,20 +338,17 @@ GO
 
 -- 19. ACHIEVEMENT: Lưu các loại huy hiệu / thành tích có thể nhận được
     CREATE TABLE ACHIEVEMENT (
-        achievement_id INT IDENTITY(1,1) PRIMARY KEY,      -- Khóa chính tự tăng
-        title NVARCHAR(100) NOT NULL,                       -- Tiêu đề thành tích (ví dụ: '7 ngày không hút thuốc')
-        description NVARCHAR(MAX),                                  -- Mô tả chi tiết về thành tích
-        badge_image VARCHAR(255),                          -- Đường dẫn tới ảnh huy hiệu (biểu tượng thành tích)
-        achievement_type VARCHAR(20),                      -- Loại thành tích: 'daily', 'milestone', 'event'...
-        difficulty_level INT                               -- Mức độ khó (1: dễ, 5: rất khó), dùng cho phân loại hoặc game hóa
+        achievement_id INT IDENTITY(1,1) PRIMARY KEY,                       -- Khóa chính tự tăng
+        title NVARCHAR(100) NOT NULL,                                       -- Tiêu đề thành tích (ví dụ: '7 ngày không hút thuốc')
+        description NVARCHAR(MAX),                                          -- Mô tả chi tiết về ý nghĩa thành tựu
+        badge_image VARCHAR(255),                                           -- Đường dẫn tới ảnh huy hiệu (biểu tượng thành tích)
+        achievement_type NVARCHAR(20),                                      -- Loại thành tích: 'daily', 'milestone', 'event'...
+        difficulty_level INT CHECK (difficulty_level BETWEEN 1 AND 5),      -- Mức độ khó: 1 (dễ) → 5 (rất khó)
+        phase TINYINT CHECK (phase BETWEEN 1 AND 4),                        -- Giai đoạn (1 → 4) tương ứng với tiến trình cai thuốc
+        check_code VARCHAR(100)                                -- Mã kiểm tra điều kiện mở khóa (dùng trong backend)
     );
     -- Chỉ mục gợi ý nếu thường lọc theo loại hoặc mức độ khó
     CREATE INDEX idx_achievement_type_level ON ACHIEVEMENT(achievement_type, difficulty_level);
-    
-    ALTER TABLE ACHIEVEMENT
-    ADD phase TINYINT; -- Giá trị từ 1 đến 4
-
-
 
 -- 20. USER_ACHIEVEMENT: Ghi nhận những thành tích mà người dùng đã đạt được
     CREATE TABLE USER_ACHIEVEMENT (
@@ -399,6 +396,7 @@ GO
         user_id INT NULL,                                  -- Tác giả bài viết, liên kết đến CUSTOMER
         title NVARCHAR(100),                               -- Tiêu đề bài viết
         content NVARCHAR(MAX),                             -- Nội dung chi tiết
+        like_count INT DEFAULT 0,
         created_at DATETIME NOT NULL,                      -- Thời điểm đăng bài
         last_updated DATETIME,                             -- Thời điểm chỉnh sửa gần nhất
         view_count INT DEFAULT 0,                          -- Lượt xem bài viết
@@ -547,6 +545,8 @@ CREATE TABLE USER_BEHAVIOR_TASK_LOG (
         REFERENCES CUSTOMER(user_id) ON DELETE CASCADE,
 
     UNIQUE(user_id, log_date, time_slot) -- Mỗi user chỉ chọn 1 task/slot/ngày
+);
+	
 -- 35. DIRECT_MESSAGE: Tin nhắn trao đổi trực tiếp giữa Coach và Member
 CREATE TABLE DIRECT_MESSAGE (
     message_id INT IDENTITY PRIMARY KEY,         -- Khóa chính tự tăng

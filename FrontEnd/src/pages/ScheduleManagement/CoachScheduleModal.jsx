@@ -4,6 +4,28 @@ import dayjs from 'dayjs';
 
 const { Title } = Typography;
 
+const formatDate = (val) => {
+    if (!val) return '';
+    // Nếu là ISO string (có T và Z), dùng dayjs format lại
+    if (typeof val === 'string' && val.includes('T')) {
+        return dayjs(val).format('YYYY-MM-DD');
+    }
+    // Nếu là dạng cũ, lấy 10 ký tự đầu
+    return val.substring(0, 10);
+};
+
+const formatTime = (val) => {
+    if (typeof val !== 'string') return '';
+    if (val.includes('T')) {
+        // ISO: "2025-07-03T14:00:00.000Z"
+        return val.substring(11, 16);
+    }
+    // Dạng thường: "2025-07-03 14:00:00"
+    const parts = val.split(' ');
+    if (parts[1]) return parts[1].substring(0, 5);
+    return '';
+};
+
 const CoachScheduleModal = ({ open, onClose, coach, token }) => {
     const [loading, setLoading] = useState(false);
     const [schedules, setSchedules] = useState([]);
@@ -49,19 +71,19 @@ const CoachScheduleModal = ({ open, onClose, coach, token }) => {
             title: 'Ngày',
             dataIndex: 'start_time',
             key: 'date',
-            render: (val) => dayjs.parseZone(val).format('YYYY-MM-DD'),
+            render: formatDate,
         },
         {
             title: 'Bắt đầu',
             dataIndex: 'start_time',
             key: 'start',
-            render: (val) => dayjs.parseZone(val).format('HH:mm'),
+            render: formatTime,
         },
         {
             title: 'Kết thúc',
             dataIndex: 'end_time',
             key: 'end',
-            render: (val) => dayjs.parseZone(val).format('HH:mm'),
+            render: formatTime,
         },
         {
             title: 'Trạng thái',

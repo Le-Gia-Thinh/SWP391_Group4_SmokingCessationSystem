@@ -5,16 +5,23 @@ const moment = require('moment-timezone');
 // Cấu hình timezone mặc định (có thể thay đổi theo môi trường)
 const DEFAULT_TIMEZONE = process.env.TIMEZONE || 'Asia/Ho_Chi_Minh';
 
+// Helper: Parse string 'YYYY-MM-DDTHH:mm:ss' thành Date object với giờ local (UTC+7)
+function parseVietnamTime(str) {
+  const [date, time] = str.split('T');
+  const [year, month, day] = date.split('-').map(Number);
+  const [hour, minute, second] = time.split(':').map(Number);
+  return new Date(year, month - 1, day, hour, minute, second);
+}
+
 // 1. Coach tạo lịch rảnh
 exports.createSchedule = async (req, res) => {
   try {
     const coachId = req.user.coach_id;
     let { start_time, end_time } = req.body;
 
-    // Vì SQL Server đã là UTC+7, không cần convert sang UTC
-    // Chỉ cần đảm bảo thời gian được parse đúng từ local time
-    start_time = moment.tz(start_time, DEFAULT_TIMEZONE).toDate();
-    end_time = moment.tz(end_time, DEFAULT_TIMEZONE).toDate();
+    // Bỏ moment.tz, chỉ parse thẳng giờ local
+    start_time = parseVietnamTime(start_time);
+    end_time = parseVietnamTime(end_time);
 
     const pool = await sql.connect(dbConfig);
     await pool.request()
