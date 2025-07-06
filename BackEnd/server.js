@@ -24,8 +24,10 @@ const memberRoutes = require('./routes/member');
 const customerRoutes = require("./routes/customer");
 const userRoutes = require("./routes/user");
 const userScoreRoutes = require("./routes/userScore");
+
 const paymentRoutes = require('./routes/payment');
-const subscriptionRoutes = require('./routes/subscription');  // <-- Thêm route subscription
+const subscriptionRoutes = require('./routes/subscription');
+
 const ftndRoutes = require('./routes/ftnd');
 const quitPlanRoutes = require("./routes/quitPlan");
 const commentRoutes = require('./routes/comment');
@@ -132,7 +134,7 @@ app.use('/api/smoking-summary', smokingSummaryRoutes);
 // 12) User Profile
 app.use('/api/user', userRoutes);
 
-// 13) Payment & Subscription
+// 13) Payment 
 app.use('/api/payment', paymentRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 
@@ -170,4 +172,3 @@ server.listen(PORT, () => {
   console.log(`✅ Server + Socket.IO chạy tại port ${PORT}`);
   console.log(`🔗 Google URL: http://localhost:${PORT}/api/auth/google`);
 });
-  

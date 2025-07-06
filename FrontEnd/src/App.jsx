@@ -1,7 +1,7 @@
 import React from "react";
 import UserProgressStats from "./pages/QuitPlanStats/UserProgressStats";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { Card, Typography, Space } from "antd";
+import { Card, Typography, Space, Button } from "antd";
 import { AuthProvider } from "./contexts/AuthContext";
 import { SocketProvider } from "./contexts/SocketContext";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -23,14 +23,11 @@ import RankingBoard from "./pages/Ranking/RankingBoard";
 import Profile from './pages/Profile/Profile.jsx';
 import Notifications from './pages/Notifications/Notifications.jsx';
 import ChatPage from './pages/Chat/ChatPage.jsx';
-import "./App.css";
 import CheckoutPage from "./pages/Payment/CheckoutPage";
 import BlogList from "./pages/Blog/BlogList";
 import PostApproval from './pages/PostApproval/PostApproval';
-import VietqrPayment from './pages/Payment/VietqrPayment';
 const { Title, Paragraph } = Typography;
-import SubscriptionStatus from './components/SubscriptionStatus';
-import SubscriptionHistory from './components/SubscriptionHistory';
+import PaymentSuccess from "./pages/Payment/PaymentSuccess";
 function App() {
   return (
     <AuthProvider>
@@ -73,7 +70,7 @@ function App() {
             <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/blog" element={<BlogList />} />
             <Route path="/chat" element={<ChatPage />} />
-            <Route path="/payment/vietqr" element={<VietqrPayment />} />
+            <Route path="/payment-success" element={<PaymentSuccess />} />
             {/* Protected routes - Member Bookings */}
             <Route
               path="/my-bookings"
@@ -123,22 +120,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            <Route
-              path="/subscription/current"
-              element={
-                <ProtectedRoute>
-                  <SubscriptionStatus />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/subscription/history"
-              element={
-                <ProtectedRoute>
-                  <SubscriptionHistory />
-                </ProtectedRoute>
-              }
-            />
+
             {/* Fallback route */}
             <Route path="*" element={<HomePage />} />
           </Routes>

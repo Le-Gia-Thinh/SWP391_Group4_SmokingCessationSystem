@@ -63,3 +63,5 @@ ngrok start smokingsession
 
 
 // làm miễn phí
+npm install axios dayjs
+npm i @payos/node
