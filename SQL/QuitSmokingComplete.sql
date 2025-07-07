@@ -366,11 +366,11 @@ GO
     CREATE TABLE NOTIFICATION (
         notification_id INT IDENTITY(1,1) PRIMARY KEY,       -- Khóa chính tự tăng
         user_id INT NOT NULL,                                -- Mã người dùng nhận thông báo
-        title VARCHAR(100),                                  -- Tiêu đề thông báo
-        content TEXT,                                        -- Nội dung chi tiết
+        title NVARCHAR(100),                                 -- Tiêu đề thông báo
+        content NVARCHAR(MAX),                               -- Nội dung chi tiết
         created_at DATETIME NOT NULL,                        -- Ngày giờ tạo thông báo
         is_read BIT DEFAULT 0,                               -- Trạng thái đã đọc (0: chưa đọc, 1: đã đọc)
-        notification_type VARCHAR(20),                       -- Loại thông báo: 'system', 'reminder', 'coach_msg',...
+        notification_type NVARCHAR(20),                       -- Loại thông báo: 'system', 'reminder', 'coach_msg',...
 
         CONSTRAINT fk_notification_customer 
             FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id) ON DELETE CASCADE
