@@ -1,0 +1,168 @@
+/* Community Page Styles - Combined Blog and Chat */
+.community-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f4fff6 0%, #e8f5e8 100%);
+}
+
+.community-content {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    min-height: 0;
+}
+
+.community-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.community-card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    height: 100%;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1.5px solid #d9f7be;
+}
+
+/* Responsive Design, Tab Styles, Empty State Styles, Form Modal Styles, Scrollbar Styles, ... giữ lại nếu dùng chung */
+@media (max-width: 768px) {
+    .community-content {
+        padding: 16px;
+    }
+
+    .topics-section {
+        flex-direction: column;
+        height: auto;
+    }
+
+    .topics-sidebar,
+    .sessions-sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid #f0f0f0;
+        padding-right: 0;
+        padding-bottom: 16px;
+        margin-bottom: 16px;
+    }
+
+    .message-input {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .send-button {
+        width: 100%;
+    }
+
+    .blog-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+}
+
+.messages-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.messages-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.messages-container::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.messages-container::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+.message-item {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.ant-tabs-tab {
+    font-weight: 500;
+}
+
+.ant-tabs-tab-active {
+    font-weight: 600;
+}
+
+.ant-tabs-ink-bar {
+    background: #52c41a;
+}
+
+.ant-empty {
+    color: #999;
+}
+
+.ant-empty-description {
+    color: #666;
+}
+
+.ant-modal-content {
+    border-radius: 12px;
+}
+
+.ant-form-item-label>label {
+    font-weight: 600;
+    color: #333;
+}
+
+.ant-input,
+.ant-input-textarea {
+    border-radius: 8px;
+    border: 1px solid #d9d9d9;
+    transition: all 0.3s ease;
+}
+
+.ant-input:focus,
+.ant-input-textarea:focus {
+    border-color: #52c41a;
+    box-shadow: 0 0 0 2px rgba(82, 196, 26, 0.2);
+}
+
+.ant-input-textarea textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+.ant-form-vertical .ant-form-item {
+    margin-bottom: 24px;
+}
+
+.ant-form-item-explain-error {
+    color: #ff4d4f;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+.ant-tabs-content-holder {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    height: 100%;
+}

@@ -17,6 +17,7 @@ import {
   FileDoneOutlined,
   MessageOutlined,
   BarChartOutlined,
+  UsergroupAddOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "../contexts/AuthContext";
 import axios from "axios";
@@ -80,20 +81,14 @@ export default function Navbar() {
         onClick: () => navigate("/RankingBoard"),
       },
       {
-        key: "/blog",
-        icon: <BookOutlined />,
-        label: "Blog",
-        onClick: () => navigate("/blog"),
-      },
-      {
-        key: "/chat",
-        icon: <MessageOutlined />,
-        label: "Chat",
-        onClick: () => navigate("/chat"),
+        key: "/community",
+        icon: <TeamOutlined />,
+        label: "Cộng đồng",
+        onClick: () => navigate("/community"),
       },
       {
         key: "/membership",
-        icon: <TeamOutlined />,
+        icon: <UsergroupAddOutlined />,
         label: "Thành viên",
         onClick: () => navigate("/membership"),
       },
@@ -203,8 +198,8 @@ export default function Navbar() {
                   user.role === "admin"
                     ? "Quản trị viên"
                     : user.role === "coach"
-                    ? "Huấn luyện viên"
-                    : "Thành viên"
+                      ? "Huấn luyện viên"
+                      : "Thành viên"
                 }
                 style={{
                   backgroundColor:
