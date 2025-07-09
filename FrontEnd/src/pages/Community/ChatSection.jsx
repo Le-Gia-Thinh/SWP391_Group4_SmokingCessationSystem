@@ -209,6 +209,7 @@ export default function ChatSection({ token, socket, isConnected }) {
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             setNewMessage("");
+            // fetchCommunityMessages(); // ĐÃ BỎ, rely vào socket realtime
         } catch (err) {
             message.error("Lỗi khi gửi tin nhắn");
         }
