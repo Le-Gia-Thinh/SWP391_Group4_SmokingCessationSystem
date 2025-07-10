@@ -351,11 +351,11 @@ cron.schedule("* * * * *", async () => {
     `);
 
     sessionRes.recordset.forEach((session) => {
-      const scheduled = dayjs(session.scheduled_time.toString()); // giữ nguyên giờ VN
-      const nowVN = dayjs(); // thời gian hiện tại (giờ máy chủ VN)
+      const scheduled = dayjs(session.scheduled_time).subtract(7, 'hour');
+      const nowVN = dayjs().tz('Asia/Ho_Chi_Minh').second(0).millisecond(0);
 
       const diffSec = scheduled.diff(nowVN, "second");
-      // Gửi nếu còn khoảng từ 14:30 – 15:30 phút
+      
       if (diffSec >= 870 && diffSec < 930) {
         const content = `📅 Bạn có cuộc hẹn với Coach ${
           session.coach_name
