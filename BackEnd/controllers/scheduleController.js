@@ -5,7 +5,7 @@ const moment = require('moment-timezone');
 // Cấu hình timezone mặc định (có thể thay đổi theo môi trường)
 const DEFAULT_TIMEZONE = process.env.TIMEZONE || 'Asia/Ho_Chi_Minh';
 
-// Helper: Parse string 'YYYY-MM-DDTHH:mm:ss' thành Date object với giờ local (UTC+7)
+//Helper: Parse string 'YYYY-MM-DDTHH:mm:ss' thành Date object với giờ local (UTC+7)
 function parseVietnamTime(str) {
   const [date, time] = str.split('T');
   const [year, month, day] = date.split('-').map(Number);
@@ -127,18 +127,17 @@ exports.createBulkSchedules = async (req, res) => {
           const [startHour, startMinute] = startTime.split(':').map(Number);
           const [endHour, endMinute] = endTime.split(':').map(Number);
 
-          // Vì SQL Server đã là UTC+7, không cần convert sang UTC
-          // Chỉ cần đảm bảo thời gian được parse đúng từ local time
+          // Tạo thời gian ở UTC+7 (Asia/Ho_Chi_Minh) và cộng thêm 7 tiếng để lưu đúng giờ Việt Nam vào SQL (UTC)
           const currentDate = date.toISOString().split('T')[0];
-          const slotStart = moment.tz(`${currentDate} ${startTime}:00`, DEFAULT_TIMEZONE).toDate();
-          const slotEnd = moment.tz(`${currentDate} ${endTime}:00`, DEFAULT_TIMEZONE).toDate();
+          const slotStart = moment.tz(`${currentDate} ${startTime}`, DEFAULT_TIMEZONE).add(7, 'hours').toDate();
+          const slotEnd = moment.tz(`${currentDate} ${endTime}`, DEFAULT_TIMEZONE).add(7, 'hours').toDate();
 
           // DEBUG: Log slot creation chi tiết hơn
           console.log(`Creating slots for ${date.toDateString()}: ${startHour}:${startMinute} to ${endHour}:${endMinute}`);
           console.log(`Using timezone: ${DEFAULT_TIMEZONE}`);
           console.log(`Current date: ${currentDate}`);
-          console.log(`Input string: ${currentDate} ${startTime}:00`);
-          console.log(`Local time: ${moment.tz(`${currentDate} ${startTime}:00`, DEFAULT_TIMEZONE).format()}`);
+          console.log(`Input string: ${currentDate} ${startTime}`);
+          console.log(`Local time: ${slotStart.toString()}`);
           console.log(`SlotStart ISO: ${slotStart.toISOString()}`);
           console.log(`SlotEnd ISO: ${slotEnd.toISOString()}`);
 
@@ -291,18 +290,17 @@ exports.createSchedulesForMultipleCoaches = async (req, res) => {
             const [startHour, startMinute] = startTime.split(':').map(Number);
             const [endHour, endMinute] = endTime.split(':').map(Number);
 
-            // Vì SQL Server đã là UTC+7, không cần convert sang UTC
-            // Chỉ cần đảm bảo thời gian được parse đúng từ local time
+            // Tạo thời gian ở UTC+7 (Asia/Ho_Chi_Minh) và cộng thêm 7 tiếng để lưu đúng giờ Việt Nam vào SQL (UTC)
             const currentDate = date.toISOString().split('T')[0];
-            const slotStart = moment.tz(`${currentDate} ${startTime}:00`, DEFAULT_TIMEZONE).toDate();
-            const slotEnd = moment.tz(`${currentDate} ${endTime}:00`, DEFAULT_TIMEZONE).toDate();
+            const slotStart = moment.tz(`${currentDate} ${startTime}`, DEFAULT_TIMEZONE).add(7, 'hours').toDate();
+            const slotEnd = moment.tz(`${currentDate} ${endTime}`, DEFAULT_TIMEZONE).add(7, 'hours').toDate();
 
             // DEBUG: Log slot creation chi tiết hơn
             console.log(`Creating slots for ${date.toDateString()}: ${startHour}:${startMinute} to ${endHour}:${endMinute}`);
             console.log(`Using timezone: ${DEFAULT_TIMEZONE}`);
             console.log(`Current date: ${currentDate}`);
-            console.log(`Input string: ${currentDate} ${startTime}:00`);
-            console.log(`Local time: ${moment.tz(`${currentDate} ${startTime}:00`, DEFAULT_TIMEZONE).format()}`);
+            console.log(`Input string: ${currentDate} ${startTime}`);
+            console.log(`Local time: ${slotStart.toString()}`);
             console.log(`SlotStart ISO: ${slotStart.toISOString()}`);
             console.log(`SlotEnd ISO: ${slotEnd.toISOString()}`);
 

@@ -5,36 +5,70 @@ exports.getUserSavings = async (req, res) => {
   const userId = req.user.id;
   const pricePerCig = 3000;
 
+  // Bản đồ quy đổi q4_value → số điếu trung bình
+  const q4Map = {
+    0: 5,   // ≤10
+    1: 15,  // 11–20
+    2: 25,  // 21–30
+    3: 35   // ≥31
+  };
+
   try {
     const pool = await sql.connect(dbConfig);
 
-    const plan = await pool.request()
-      .input('user_id', sql.Int, userId)
-      .query(`SELECT start_date, frequency_per_day FROM CESSATION_PLAN WHERE user_id = @user_id AND is_active = 1;`);
+  // 1. Lấy FTND q4_value gần nhất
+const ftnd = await pool.request()
+  .input("user_id", sql.Int, userId)
+  .query(`
+    SELECT TOP 1 q4_value
+    FROM FTND_RESULT
+    WHERE user_id = @user_id AND q4_value IS NOT NULL
+    ORDER BY submitted_at DESC
+  `);
 
-    if (!plan.recordset.length)
-      return res.status(400).json({ message: 'Chưa có kế hoạch cai thuốc đang hoạt động.' });
+if (!ftnd.recordset.length) {
+  return res.status(400).json({ message: "Chưa có dữ liệu FTND." });
+}
 
-    const { start_date: startDate, frequency_per_day: freqPerDay } = plan.recordset[0];
+const q4_value = ftnd.recordset[0].q4_value;
+const estimatedPerDay = q4Map[q4_value] || 15;
 
-    const logs = await pool.request()
-    .input('user_id', sql.Int, userId)
-    .input('start_date', sql.Date, startDate)
-    .query(`
-      SELECT total_cigarettes
-      FROM DAILY_SMOKING_SUMMARY
-      WHERE user_id = @user_id AND date >= @start_date;
-    `);
+// 2. Lấy ngày bắt đầu kế hoạch cai thuốc
+const plan = await pool.request()
+  .input("user_id", sql.Int, userId)
+  .query(`
+    SELECT TOP 1 start_date
+    FROM CESSATION_PLAN
+    WHERE user_id = @user_id AND is_active = 1
+  `);
 
-    let totalSaved = 0;
-    logs.recordset.forEach(entry => {
-      const reduced = Math.max(0, freqPerDay - entry.total_cigarettes);
-      totalSaved += reduced * pricePerCig;
+if (!plan.recordset.length) {
+  return res.status(400).json({ message: "Chưa có kế hoạch cai thuốc." });
+}
+
+const startDate = plan.recordset[0].start_date;
+
+// 3. Lấy log từ ngày bắt đầu kế hoạch
+const logs = await pool.request()
+  .input("user_id", sql.Int, userId)
+  .input("start_date", sql.Date, startDate)
+  .input("today", sql.Date, new Date())
+  .query(`
+    SELECT total_cigarettes
+    FROM DAILY_SMOKING_SUMMARY
+    WHERE user_id = @user_id AND date BETWEEN @start_date AND @today;
+  `);
+
+  let totalSaved = 0;
+  logs.recordset.forEach(entry => {
+    const reduced = Math.max(0, estimatedPerDay - entry.total_cigarettes);
+    totalSaved += reduced * pricePerCig;
     });
-    res.json({ amount: totalSaved, startDate });
+
+    res.json({ amount: totalSaved, startDate: startDate  });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Lỗi tính số tiền tiết kiệm' });
+    res.status(500).json({ message: "Lỗi tính số tiền tiết kiệm" });
   }
 };
 

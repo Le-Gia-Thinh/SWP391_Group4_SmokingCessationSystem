@@ -5,12 +5,15 @@ npm run dev (để deloy web)
 		BE:
 npm i 
 npm server.js (để deloy api)
+npm install node-cron
 
 npm install morgan cookie-parser body-parser express-session cors config moment request
 -- 27/6/2025
 npm install socket.io  (giao tiếp hai chiều liên tục)
 npm install multer
 
+npm install canvas-confetti
+npm install howler
 
 Front-End 
 Chạy npm install react-icons để cài bộ icon đã
@@ -65,3 +68,7 @@ ngrok start smokingsession
 // làm miễn phí
 npm install axios dayjs
 npm i @payos/node
+npm install moment
+npm install canvas-confetti
+
+npm install howler

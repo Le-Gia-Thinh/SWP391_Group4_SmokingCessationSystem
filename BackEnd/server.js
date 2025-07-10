@@ -32,6 +32,7 @@ const ftndRoutes = require('./routes/ftnd');
 const quitPlanRoutes = require("./routes/quitPlan");
 const commentRoutes = require('./routes/comment');
 
+const achievementRoutes = require("./routes/achievementRoutes");
 const notificationRoutes = require("./routes/notification");
 const app = express();
 const server = http.createServer(app);
@@ -144,6 +145,8 @@ app.get('/', (req, res) => {
 });
 
 // 15) Middleware log request (debug)
+// 15.1) Xử lí thành tựu
+app.use('/api/achievement', achievementRoutes);
 // Xử lí thông báo
 app.use("/api/notification", notificationRoutes);
 
@@ -161,8 +164,8 @@ app.use((err, req, res, next) => {
 
 // 19. Chat coach.member
 app.use('/api/chat', chatRoutes);
-
-// 19) 404 handler
+ 
+// 20) 404 handler
 app.use('*', (req, res) => {
   res.status(404).json({ success: false, message: 'Endpoint không tồn tại' });
 });
