@@ -1,43 +1,23 @@
-.chat-page {
-    min-height: 100vh;
-    background: linear-gradient(135deg, #f4fff6 0%, #e8f5e8 100%);
-}
-
-.chat-content {
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    min-height: calc(100vh - 64px);
-}
-
-.chat-container {
-    width: 100%;
-    max-width: none;
-}
-
-.chat-card {
-    border-radius: 16px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    border: 1.5px solid #d9f7be;
-}
-
+/* Chat Section Styles */
 .chat-section {
-    height: 70vh;
     display: flex;
     flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .messages-container {
     flex: 1;
+    min-height: 0;
+    max-height: none;
     overflow-y: auto;
-    padding: 16px;
+    margin-bottom: 0;
     background: #f6ffed;
     border-radius: 8px;
-    margin-bottom: 16px;
-    max-height: 50vh;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .loading-container {
@@ -51,6 +31,7 @@
 .message-item {
     padding: 12px 0;
     border-bottom: 1px solid #f0f0f0;
+    animation: fadeIn 0.3s ease-in;
 }
 
 .message-item:last-child {
@@ -80,30 +61,18 @@
     display: flex;
     gap: 12px;
     align-items: flex-end;
+    margin-top: 8px;
+    padding-bottom: 8px;
+    width: 100%;
+    background: transparent;
 }
 
-.message-input .ant-input {
-    flex: 1;
-    border-radius: 8px;
-}
-
-.send-button {
-    height: 40px;
-    border-radius: 8px;
-    background: linear-gradient(90deg, #52c41a 0%, #73d13d 100%);
-    border-color: #52c41a;
-}
-
-.send-button:hover {
-    background: #73d13d;
-    border-color: #73d13d;
-}
-
-/* Topics Section */
 .topics-section {
+    flex: 1;
     display: flex;
-    flex-direction: row;
-    height: 70vh;
+    flex-direction: column;
+    min-height: 0;
+    height: 100%;
     gap: 20px;
 }
 
@@ -152,22 +121,6 @@
     border: 1.5px solid #52c41a;
 }
 
-.topic-content {
-    width: 100%;
-    font-size: 13px;
-    color: #666;
-}
-
-.topic-creator {
-    font-size: 12px;
-    margin-top: 4px;
-    display: block;
-}
-
-.topic-description {
-    margin: 8px 0 0 0;
-}
-
 .session-item {
     padding: 12px;
     border-radius: 8px;
@@ -184,6 +137,9 @@
     flex: 1;
     display: flex;
     flex-direction: column;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
 }
 
 .topic-chat>.messages-container {
@@ -201,7 +157,7 @@
 }
 
 .topic-header h4 {
-    margin: 0 0 8px 0;
+    margin: 0;
 }
 
 .session-header {
@@ -216,61 +172,7 @@
     justify-content: center;
     align-items: center;
     height: 100%;
-    color: #999;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    .chat-content {
-        padding: 10px;
-    }
-
-    .topics-section {
-        flex-direction: column;
-        height: auto;
-    }
-
-    .topics-sidebar {
-        width: 100%;
-        border-right: none;
-        border-bottom: 1px solid #f0f0f0;
-        padding-right: 0;
-        padding-bottom: 16px;
-        margin-bottom: 16px;
-    }
-
-    .message-input {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .send-button {
-        width: 100%;
-    }
-}
-
-/* Custom scrollbar */
-.messages-container::-webkit-scrollbar {
-    width: 6px;
-}
-
-.messages-container::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 3px;
-}
-
-.messages-container::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-    border-radius: 3px;
-}
-
-.messages-container::-webkit-scrollbar-thumb:hover {
-    background: #a8a8a8;
-}
-
-/* Animation */
-.message-item {
-    animation: fadeIn 0.3s ease-in;
+    flex-direction: column;
 }
 
 @keyframes fadeIn {
@@ -283,26 +185,4 @@
         opacity: 1;
         transform: translateY(0);
     }
-}
-
-/* Tab styling */
-.ant-tabs-tab {
-    font-weight: 600;
-}
-
-.ant-tabs-tab-active {
-    color: #52c41a !important;
-}
-
-.ant-tabs-ink-bar {
-    background: #52c41a !important;
-}
-
-/* Empty state styling */
-.ant-empty {
-    padding: 40px 0;
-}
-
-.ant-empty-description {
-    color: #999;
 }

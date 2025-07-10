@@ -22,10 +22,10 @@ import QuitPlanDetail from "./pages/QuitPlanning/QuitPlanDetail";
 import RankingBoard from "./pages/Ranking/RankingBoard";
 import Profile from './pages/Profile/Profile.jsx';
 import Notifications from './pages/Notifications/Notifications.jsx';
-import ChatPage from './pages/Chat/ChatPage.jsx';
+import "./App.css";
 import CheckoutPage from "./pages/Payment/CheckoutPage";
-import BlogList from "./pages/Blog/BlogList";
 import PostApproval from './pages/PostApproval/PostApproval';
+import CommunityPage from './pages/Community/CommunityPage';
 const { Title, Paragraph } = Typography;
 import PaymentSuccess from "./pages/Payment/PaymentSuccess";
 function App() {
@@ -68,9 +68,10 @@ function App() {
             <Route path="/user/stats" element={<UserProgressStats />} />
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/checkout" element={<CheckoutPage />} />
-            <Route path="/blog" element={<BlogList />} />
-            <Route path="/chat" element={<ChatPage />} />
+            {/* <Route path="/blog" element={<BlogList />} />
+            <Route path="/chat" element={<ChatPage />} /> */}
             <Route path="/payment-success" element={<PaymentSuccess />} />
+            <Route path="/community" element={<CommunityPage />} />
             {/* Protected routes - Member Bookings */}
             <Route
               path="/my-bookings"
