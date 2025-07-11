@@ -72,3 +72,4 @@ npm install moment
 npm install canvas-confetti
 
 npm install howler
+npm install bootstrap
