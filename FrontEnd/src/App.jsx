@@ -1,7 +1,7 @@
 import React from "react";
 import UserProgressStats from "./pages/QuitPlanStats/UserProgressStats";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { Card, Typography, Space } from "antd";
+import { Card, Typography, Space, Button } from "antd";
 import { AuthProvider } from "./contexts/AuthContext";
 import { SocketProvider } from "./contexts/SocketContext";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -27,7 +27,7 @@ import CheckoutPage from "./pages/Payment/CheckoutPage";
 import PostApproval from './pages/PostApproval/PostApproval';
 import CommunityPage from './pages/Community/CommunityPage';
 const { Title, Paragraph } = Typography;
-
+import PaymentSuccess from "./pages/Payment/PaymentSuccess";
 function App() {
   return (
     <AuthProvider>
@@ -68,6 +68,9 @@ function App() {
             <Route path="/user/stats" element={<UserProgressStats />} />
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/checkout" element={<CheckoutPage />} />
+            {/* <Route path="/blog" element={<BlogList />} />
+            <Route path="/chat" element={<ChatPage />} /> */}
+            <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/community" element={<CommunityPage />} />
             {/* Protected routes - Member Bookings */}
             <Route
