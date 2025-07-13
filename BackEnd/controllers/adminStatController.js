@@ -86,9 +86,47 @@ const getAverageMonthsByAddictionLevel = async (req, res) => {
   }
 };
 
+const getRevenueStats = async (req, res) => {
+  try {
+    const pool = await sql.connect(dbConfig);
+    const result = await pool.request().query(`
+      SELECT
+        (SELECT SUM(amount) FROM PAYMENT
+         WHERE payment_status = 'paid'
+           AND CAST(payment_date AS DATE) = CAST(GETDATE() AS DATE)) AS total_today,
+
+        (SELECT SUM(amount) FROM PAYMENT
+         WHERE payment_status = 'paid'
+           AND DATEPART(ISO_WEEK, payment_date) = DATEPART(ISO_WEEK, GETDATE())
+           AND YEAR(payment_date) = YEAR(GETDATE())) AS total_week,
+
+        (SELECT SUM(amount) FROM PAYMENT
+         WHERE payment_status = 'paid'
+           AND MONTH(payment_date) = MONTH(GETDATE())
+           AND YEAR(payment_date) = YEAR(GETDATE())) AS total_month,
+
+        (SELECT SUM(amount) FROM PAYMENT
+         WHERE payment_status = 'paid'
+           AND YEAR(payment_date) = YEAR(GETDATE())) AS total_year
+    `);
+
+    const stats = result.recordset[0];
+    res.json({
+      total_today: stats.total_today || 0,
+      total_week: stats.total_week || 0,
+      total_month: stats.total_month || 0,
+      total_year: stats.total_year || 0
+    });
+  } catch (err) {
+    console.error('getRevenueStats error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
 module.exports = {
   getUsersSummary,
   getMonthlyRevenue,
   getActiveCoachCount,
-  getAverageMonthsByAddictionLevel
+  getAverageMonthsByAddictionLevel,
+  getRevenueStats
 };

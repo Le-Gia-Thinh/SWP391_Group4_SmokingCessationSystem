@@ -38,4 +38,7 @@ router.get('/active-coach-count', statController.getActiveCoachCount);
 
 // Thống kê số tháng trung bình theo từng mức độ nghiện
 router.get('/avg-months-by-addiction', getAverageMonthsByAddictionLevel);
+
+router.get('/revenue-stats', statController.getRevenueStats);
+
 module.exports = router;
