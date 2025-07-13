@@ -13,12 +13,14 @@ import {
     ClockCircleOutlined,
     TeamOutlined,
     SettingOutlined,
-    BellOutlined
+    BellOutlined,
+    MessageOutlined
 } from '@ant-design/icons';
 import { useAuth } from '../../contexts/AuthContext';
 import StatisticCard from '../../components/ui/StatisticCard';
 import FormModal from '../../components/ui/FormModal';
 import BookingManagement from '../BookingManagement/BookingManagement';
+import CoachChat from '../CoachChat/CoachChat';
 import Navbar from '../../layouts/Navbar';
 
 const { Title, Text } = Typography;
@@ -436,6 +438,17 @@ const CoachDashboard = () => {
                                 key="bookings"
                             >
                                 <BookingManagement />
+                            </TabPane>
+                            <TabPane
+                                tab={
+                                    <span>
+                                        <MessageOutlined />
+                                        Chat với Member
+                                    </span>
+                                }
+                                key="chat"
+                            >
+                                <CoachChat />
                             </TabPane>
                         </Tabs>
                     </Card>

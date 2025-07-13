@@ -1,87 +1,184 @@
-/* ==== Global Setup ==== */
-body {
-  background: radial-gradient(rgba(220, 208, 208, 0.941), rgba(172, 232, 171, 0.832));
-  backdrop-filter: blur(5px);
-  margin: 0;
-  font-family: 'Segoe UI', sans-serif;
+/* =====================================================
+   LOGIN PAGE STYLESHEET  –  clean & organised 2025‑07‑11
+   -----------------------------------------------------
+   Sections
+   0. CSS Variables (theme)
+   1. Global reset & background
+   2. Card layout (glass, panels, responsive)
+   3. Neon outer‑box + animations
+   4. Form container & Ant‑Design overrides
+   5. Slide / Scene banner (images, text, FX)
+   6. Generic keyframes
+   =====================================================*/
+
+/* -----------------------------------------------------
+   0.  THEME VARIABLES
+   ----------------------------------------------------- */
+:root {
+  /* geometry */
+  --diag: 30px;
+  /* diagonal cut width  */
+  /* colours */
+  --panel-bg: radial-gradient(#fefefd, rgba(193, 247, 192, .9));
+  --outer-bg: #b9f6ae;
+  /* neon box background */
+  --neon-grad: #b9ffcb, #70f3c7, #2fd3a6;
+  /* conic neon edge   */
+  --btn-grad: linear-gradient(90deg, #9ed1fb 0%, #8ff792 100%);
+  /* fallback hero gradient (overwritten runtime) */
+  --hero-grad: linear-gradient(135deg, #1b2735, #090a0f);
 }
 
-/* ==== Centering ==== */
-.login-wrapper {
-  height: 100vh;
+/* -----------------------------------------------------
+   1.  GLOBAL RESET & PAGE BACKGROUND
+   ----------------------------------------------------- */
+body {
+  margin: 0;
+  font-family: "Inter", "Segoe UI", sans-serif;
+}
+
+.login-page {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: transparent;
+  min-height: 100vh;
+  overflow: hidden;
+  background: var(--hero-grad);
 }
 
-/* ==== Outer Box ==== */
+/* blurred decorative texture */
+.login-page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("https://i.imgur.com/8K5VvQf.png") center/cover no-repeat;
+  opacity: .25;
+  filter: blur(60px);
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+/* -----------------------------------------------------
+   2.  CARD LAYOUT (glassmorphism) & PANELS
+   ----------------------------------------------------- */
+.login-card {
+  position: relative;
+  width: min(92vw, 1100px);
+  height: min(90vh, 640px);
+  display: grid;
+  grid-template-columns: 48% 52%;
+  border-radius: 32px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, .12);
+  border: 1px solid rgba(255, 255, 255, .18);
+  backdrop-filter: blur(28px) saturate(160%);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, .45);
+}
+
+.card-panel {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.card-panel.hero {
+  clip-path: polygon(0 0, 100% 0, calc(100% - var(--diag)) 100%, 0 100%);
+}
+
+.card-panel.form-side {
+  clip-path: polygon(var(--diag) 0, 100% 0, 100% 100%, 0 100%);
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-left: 15px;
+  background: var(--panel-bg);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .04);
+}
+
+/* responsive single column */
+@media(max-width:768px) {
+  .login-card {
+    grid-template-columns: 1fr;
+    height: auto;
+    width: 96vw;
+  }
+
+  .card-panel.hero,
+  .card-panel.form-side {
+    clip-path: none;
+  }
+
+  .card-panel.hero {
+    height: 280px;
+  }
+
+  .card-panel.form-side {
+    justify-content: center;
+    padding: 0 32px;
+    gap: 32px;
+  }
+}
+
+/* -----------------------------------------------------
+   3.  OUTER‑BOX  (neon hover expandable)
+   ----------------------------------------------------- */
 .outer-box {
+  margin: 0 auto;
   position: relative;
   width: 260px;
   height: 100px;
+  max-width: 100%;
   padding: 15px;
-  box-sizing: border-box;
   border-radius: 20px;
-  background: #b9f6ae;
+  background: var(--outer-bg);
   overflow: hidden;
-  transition: all 0.5s ease-in-out;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow:
-    0 0 25px rgba(178, 236, 180, 0.2),
-    inset 0 0 12px rgba(123, 165, 80, 0.136);
   cursor: pointer;
+  transition: .5s;
+  box-shadow: 0 0 25px rgba(255, 255, 255, .15), inset 0 0 12px rgba(255, 255, 255, .25);
 }
 
-/* Neon rotating border */
 .outer-box::before {
   content: "";
   position: absolute;
-  top: -2px;
-  left: -2px;
-  right: -2px;
-  bottom: -2px;
+  inset: -2px;
   border-radius: 20px;
-  background: conic-gradient(#a5d6a7 0deg 120deg,
-      #7bfb82 120deg 240deg,
-      #4caf50 240deg 360deg);
+  background: conic-gradient(var(--neon-grad));
   animation: rotateBorder 6s linear infinite;
   z-index: -1;
 }
 
-/* Inner cover layer */
 .outer-box::after {
   content: "";
   position: absolute;
-  top: 3px;
-  left: 3px;
-  right: 3px;
-  bottom: 3px;
-  background: #b8eabf;
+  inset: 3px;
   border-radius: 16px;
+  background: var(--outer-bg);
   z-index: -1;
 }
 
-/* 4 animated lines */
+/* moving neon edges */
 .outer-box .line {
   position: absolute;
-  opacity: 1;
-  filter: blur(0.5px);
-  animation-timing-function: linear;
+  filter: blur(.5px);
 }
 
 .outer-box .line.top,
 .outer-box .line.bottom {
   width: 100%;
   height: 4px;
-  background: linear-gradient(to right,
-      transparent,
-      #baf4bd,
-      #4ae752,
-      #0bdd07ed,
-      transparent);
+  background: linear-gradient(to right, transparent, #baf4bd, #4ae752, #0bdd07ed, transparent);
+}
+
+.outer-box .line.left,
+.outer-box .line.right {
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(to bottom, transparent, #a8f9aa, #07f516, #16be19, transparent);
 }
 
 .outer-box .line.top {
@@ -93,53 +190,22 @@ body {
 .outer-box .line.bottom {
   bottom: 0;
   left: 100%;
-  animation: moveBottom 2s linear infinite 0.6s;
-}
-
-.outer-box .line.left,
-.outer-box .line.right {
-  width: 4px;
-  height: 100%;
-  background: linear-gradient(to bottom,
-      transparent,
-      #a8f9aa,
-      #07f516,
-      #16be19,
-      transparent);
+  animation: moveBottom 2s linear infinite .6s;
 }
 
 .outer-box .line.right {
   top: -100%;
   right: 0;
-  animation: moveRight 2s linear infinite 0.3s;
+  animation: moveRight 2s linear infinite .3s;
 }
 
 .outer-box .line.left {
-  left: 0;
   bottom: -100%;
-  animation: moveLeft 2s linear infinite 0.9s;
+  left: 0;
+  animation: moveLeft 2s linear infinite .9s;
 }
 
-/* ==== Inner Login Container ==== */
-.login-container {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  height: 100%;
-  background: #ffffff;
-  border-radius: 16px;
-  box-sizing: border-box;
-  overflow: hidden;
-  transition: all 0.5s ease-in-out;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  cursor: pointer;
-}
-
-/* ==== Hover / Open Effect ==== */
+/* expand on hover / pinned */
 .outer-box:hover,
 .outer-box.open {
   width: 380px;
@@ -149,28 +215,21 @@ body {
   cursor: default;
 }
 
-.outer-box:hover .login-container,
-.outer-box.open .login-container {
+/* -----------------------------------------------------
+   4.  FORM CONTAINER  &  ANT‑DESIGN OVERRIDES
+   ----------------------------------------------------- */
+.login-container {
+  position: relative;
+  z-index: 1;
   width: 100%;
-  height: auto;
-  padding: 0;
+  height: 100%;
+  background: #fff;
   border-radius: 16px;
-}
-
-.form-content {
-  opacity: 0;
-  pointer-events: none;
-  transform: scale(0.95) translateY(20px);
-  transition: all 0.5s ease;
-  padding: 15px;
-}
-
-.outer-box:hover .form-content,
-.outer-box.open .form-content {
-  opacity: 1;
-  pointer-events: all;
-  transform: scale(1) translateY(0);
-  transition-delay: 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: .5s;
 }
 
 .login-title {
@@ -178,14 +237,13 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  white-space: nowrap;
   color: #2e7d32;
   font-size: 24px;
   font-weight: bold;
   text-shadow: 0 0 4px #a5d6a7;
   display: flex;
-  align-items: center;
   gap: 8px;
-  padding-top: 15px;
 }
 
 .outer-box:hover .login-title,
@@ -196,7 +254,40 @@ body {
   justify-content: center;
 }
 
-/* ==== Ant Design Overrides ==== */
+.form-content {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(.95) translateY(20px);
+  transition: .5s;
+  padding: 15px;
+}
+
+.outer-box:hover .form-content,
+.outer-box.open .form-content {
+  opacity: 1;
+  pointer-events: all;
+  transform: scale(1) translateY(0);
+  transition-delay: .2s;
+}
+
+/* pin icon */
+.pin-icon {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 20px;
+  color: #2e7d32;
+  user-select: none;
+  opacity: 0;
+  transition: opacity .3s;
+}
+
+.outer-box.open .pin-icon,
+.outer-box:hover .pin-icon {
+  opacity: 1;
+}
+
+/* --- Ant Design inputs/buttons --- */
 .ant-form-item-label>label {
   color: #2e7d32 !important;
   font-weight: 600;
@@ -205,14 +296,13 @@ body {
 .ant-input,
 .ant-input-password,
 .ant-input-affix-wrapper {
-  background-color: #ffffff !important;
+  background: #fff !important;
   color: #333 !important;
   border: 1px solid #ccc;
   border-radius: 20px !important;
   padding: 10px 15px;
-  transition: 0.3s;
+  transition: .3s;
 }
-
 
 .ant-input:focus,
 .ant-input-password:focus,
@@ -222,50 +312,28 @@ body {
 }
 
 .login-button {
-  background: #4caf50;
+  background: var(--btn-grad);
   border: none;
   color: #fff;
   font-weight: bold;
   border-radius: 25px;
   height: 45px;
-  transition: all 0.3s ease-in-out;
+  transition: .3s;
 }
 
 .login-button:hover {
-  background: #43a047;
-  box-shadow: 0 0 8px #4caf50;
-}
-
-.forgot-password {
-  text-align: right;
-  margin-bottom: 16px;
-}
-
-.forgot-password a {
-  color: #2e7d32;
-  font-weight: 500;
-  text-decoration: none;
-  transition: 0.3s;
-}
-
-.forgot-password a:hover {
-  color: #43a047;
-  text-shadow: 0 0 3px #a5d6a7;
-}
-
-.ant-divider-inner-text {
-  color: #888;
+  filter: brightness(1.05);
 }
 
 .google-button {
-  background-color: #fff;
+  background: #fff;
   border: 1px solid #1976d2;
   color: #1976d2;
   border-radius: 25px;
   height: 45px;
   margin-top: 10px;
   font-weight: bold;
-  transition: 0.3s;
+  transition: .3s;
 }
 
 .google-button:hover {
@@ -279,6 +347,25 @@ body {
   filter: drop-shadow(0 0 3px #1976d2);
 }
 
+.forgot-password {
+  text-align: right;
+  margin-bottom: 16px;
+}
+
+.forgot-password a,
+.signup-text a {
+  color: #2e7d32;
+  font-weight: 500;
+  text-decoration: none;
+  transition: .3s;
+}
+
+.forgot-password a:hover,
+.signup-text a:hover {
+  color: #43a047;
+  text-shadow: 0 0 3px #a5d6a7;
+}
+
 .signup-text {
   margin-top: 24px;
   text-align: center;
@@ -288,103 +375,260 @@ body {
   color: #444 !important;
 }
 
-.signup-text a {
-  color: #2e7d32;
-  font-weight: 500;
-  text-decoration: none;
-  transition: 0.3s;
+/* -----------------------------------------------------
+   5.  SLIDE / SCENE BANNER (images, text, fx)
+   ----------------------------------------------------- */
+.video-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
 }
 
-.signup-text a:hover {
-  color: #43a047;
-  text-shadow: 0 0 4px #a5d6a7;
+.progress-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 4px;
+  background: #00ff88;
 }
 
-/* ==== Keyframes ==== */
-@keyframes rotateBorder {
-  to {
-    transform: rotate(360deg);
+/* scene states */
+.scene {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  color: #fff;
+  opacity: 0;
+  will-change: opacity, transform;
+  transform: scale(1.04);
+  transition: opacity .8s ease, transform .8s ease;
+}
+
+.scene.active {
+  z-index: 2;
+  opacity: 1;
+  transform: scale(1);
+}
+
+.scene.prev {
+  z-index: 1;
+  opacity: 0;
+  transform: scale(1.02);
+}
+
+/* individual scene backgrounds */
+.scene1 {
+  background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+}
+
+.scene2 {
+  background: linear-gradient(45deg, #feca57, #ff9ff3);
+}
+
+.scene3 {
+  background: linear-gradient(45deg, #48cae4, #023e8a);
+}
+
+.scene4 {
+  background: linear-gradient(45deg, #06ffa5, #00d4aa);
+}
+
+.scene5 {
+  background: linear-gradient(45deg, #667eea, #764ba2);
+}
+
+/* overlay & image */
+.scene::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, .45);
+  z-index: -1;
+}
+
+.scene-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: .7;
+  z-index: -2;
+}
+
+/* text & icon styling */
+.scene-icon {
+  font-size: clamp(50px, 8vw, 50px);
+  margin-bottom: 20px;
+}
+
+.scene h1 {
+  font-size: clamp(36px, 4vw, 48px);
+  font-weight: 900;
+  letter-spacing: .5px;
+  text-shadow: 0 0 8px rgba(0, 0, 0, .9);
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, .7));
+}
+
+.scene p {
+  font-size: clamp(16px, 1.4vw, 20px);
+  max-width: 90%;
+  line-height: 1.4;
+  text-shadow: 0 0 8px rgba(0, 0, 0, .9);
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, .7));
+}
+
+/* icon animations (optional) */
+@keyframes shake {
+
+  0%,
+  100% {
+    transform: translateX(0)
+  }
+
+  25% {
+    transform: translateX(-5px)
+  }
+
+  75% {
+    transform: translateX(5px)
   }
 }
 
+@keyframes pulse {
+
+  0%,
+  100% {
+    transform: scale(1)
+  }
+
+  50% {
+    transform: scale(1.1)
+  }
+}
+
+@keyframes bounce {
+
+  0%,
+  100% {
+    transform: translateY(0)
+  }
+
+  50% {
+    transform: translateY(-14px)
+  }
+}
+
+@keyframes cele {
+
+  0%,
+  100% {
+    transform: rotate(0) scale(1)
+  }
+
+  25% {
+    transform: rotate(-5deg) scale(1.05)
+  }
+
+  75% {
+    transform: rotate(5deg) scale(1.05)
+  }
+}
+
+.cigarette {
+  animation: shake .5s infinite;
+}
+
+.decision {
+  animation: pulse 1s infinite;
+}
+
+.action {
+  animation: bounce .8s infinite;
+}
+
+.success {
+  animation: cele 1s infinite;
+}
+
+/* -----------------------------------------------------
+   6.  GENERIC KEYFRAMES (neon border moves)
+   ----------------------------------------------------- */
 @keyframes moveTop {
   0% {
     left: -100%;
-    opacity: 0;
+    opacity: 0
   }
 
   50% {
     left: 0;
-    opacity: 1;
+    opacity: 1
   }
 
   100% {
     left: 100%;
-    opacity: 0;
-  }
-}
-
-@keyframes moveRight {
-  0% {
-    top: -100%;
-    opacity: 0;
-  }
-
-  50% {
-    top: 0;
-    opacity: 1;
-  }
-
-  100% {
-    top: 100%;
-    opacity: 0;
+    opacity: 0
   }
 }
 
 @keyframes moveBottom {
   0% {
     left: 100%;
-    opacity: 0;
+    opacity: 0
   }
 
   50% {
     left: 0;
-    opacity: 1;
+    opacity: 1
   }
 
   100% {
     left: -100%;
-    opacity: 0;
+    opacity: 0
+  }
+}
+
+@keyframes moveRight {
+  0% {
+    top: -100%;
+    opacity: 0
+  }
+
+  50% {
+    top: 0;
+    opacity: 1
+  }
+
+  100% {
+    top: 100%;
+    opacity: 0
   }
 }
 
 @keyframes moveLeft {
   0% {
     bottom: -100%;
-    opacity: 0;
+    opacity: 0
   }
 
   50% {
     bottom: 0;
-    opacity: 1;
+    opacity: 1
   }
 
   100% {
     bottom: 100%;
-    opacity: 0;
+    opacity: 0
   }
 }
 
-/* Ẩn pin khi collapsed, chỉ hiện khi hover hoặc pinned */
-.pin-icon {
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  color: #2e7d32;
-  /* màu xanh đậm cho icon */
-}
-
-/* Khi outer-box mở (hover hoặc pinned) mới show */
-.outer-box.open .pin-icon,
-.outer-box:hover .pin-icon {
-  opacity: 1;
+@keyframes rotateBorder {
+  to {
+    transform: rotate(360deg);
+  }
 }

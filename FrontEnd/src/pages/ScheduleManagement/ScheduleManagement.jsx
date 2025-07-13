@@ -111,13 +111,28 @@ const ScheduleManagement = () => {
                     pattern: values.usePattern ? {
                         startDate: values.dateRange[0].format('YYYY-MM-DD'),
                         endDate: values.dateRange[1].format('YYYY-MM-DD'),
-                        startTime: values.timeRange[0].format('HH:mm'),
-                        endTime: values.timeRange[1].format('HH:mm'),
+                        startTime: values.timeRange[0].format('HH:mm') + ':00',
+                        endTime: values.timeRange[1].format('HH:mm') + ':00',
                         daysOfWeek: values.daysOfWeek,
                         duration: values.duration
                     } : null,
-                    schedules: values.usePattern ? null : values.specificSchedules
+                    schedules: values.usePattern ? null : (values.specificSchedules ? values.specificSchedules.split('\n').map(line => {
+                        const [start, end] = line.split(',');
+                        return {
+                            start_time: start.trim(),
+                            end_time: end.trim()
+                        };
+                    }) : null)
                 };
+
+                // DEBUG: Log dữ liệu gửi lên backend
+                console.log("=== DEBUG TẠO LỊCH ===");
+                console.log("Form values:", values);
+                console.log("Request data (single):", JSON.stringify(requestData, null, 2));
+                console.log("Time range raw:", values.timeRange);
+                console.log("Start time format:", values.timeRange[0].format('HH:mm'));
+                console.log("End time format:", values.timeRange[1].format('HH:mm'));
+                console.log("========================");
 
                 const response = await fetch(`${API_BASE_URL}/schedule/bulk`, {
                     method: 'POST',
@@ -134,13 +149,28 @@ const ScheduleManagement = () => {
                     pattern: values.usePattern ? {
                         startDate: values.dateRange[0].format('YYYY-MM-DD'),
                         endDate: values.dateRange[1].format('YYYY-MM-DD'),
-                        startTime: values.timeRange[0].format('HH:mm'),
-                        endTime: values.timeRange[1].format('HH:mm'),
+                        startTime: values.timeRange[0].format('HH:mm') + ':00',
+                        endTime: values.timeRange[1].format('HH:mm') + ':00',
                         daysOfWeek: values.daysOfWeek,
                         duration: values.duration
                     } : null,
-                    schedules: values.usePattern ? null : values.specificSchedules
+                    schedules: values.usePattern ? null : (values.specificSchedules ? values.specificSchedules.split('\n').map(line => {
+                        const [start, end] = line.split(',');
+                        return {
+                            start_time: start.trim(),
+                            end_time: end.trim()
+                        };
+                    }) : null)
                 };
+
+                // DEBUG: Log dữ liệu gửi lên backend
+                console.log("=== DEBUG TẠO LỊCH (MULTIPLE) ===");
+                console.log("Form values:", values);
+                console.log("Request data (multiple):", JSON.stringify(requestData, null, 2));
+                console.log("Time range raw:", values.timeRange);
+                console.log("Start time format:", values.timeRange[0].format('HH:mm'));
+                console.log("End time format:", values.timeRange[1].format('HH:mm'));
+                console.log("================================");
 
                 const response = await fetch(`${API_BASE_URL}/schedule/bulk-multiple`, {
                     method: 'POST',

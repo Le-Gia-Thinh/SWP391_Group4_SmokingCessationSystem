@@ -1,6 +1,11 @@
 // middleware/auth.js
 const jwt = require('jsonwebtoken');
 const { sql, dbConfig } = require('../config/database');
+const dayjs = require('dayjs');
+const utc = require('dayjs/plugin/utc');
+const timezone = require('dayjs/plugin/timezone');
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 // Middleware xác thực JWT và kiểm tra user tồn tại trong DB
 const auth = async (req, res, next) => {
@@ -27,8 +32,11 @@ const auth = async (req, res, next) => {
 
     // Kết nối DB và tìm user theo id trong payload token
     const pool = await sql.connect(dbConfig);
+    const userId = decoded.id || decoded.user_id;
     const result = await pool.request()
-      .input('id', sql.Int, decoded.id)
+
+    // cho e chinh ke mien decoded.user_id
+      .input('id', sql.Int, userId)
       .query('SELECT user_id AS id, email, full_name AS name, user_role AS role, NULL AS avatar FROM CUSTOMER WHERE user_id = @id');
 
     // Nếu user không tồn tại, từ chối truy cập
@@ -69,15 +77,6 @@ const authorize = (allowedRoles) => {
       return res.status(403).json({ message: 'Bạn không có quyền truy cập chức năng này' });
     }
 
-    next();
-  };
-};
-
-exports.authorize = (role) => {
-  return (req, res, next) => {
-    if (req.user.role !== role) {
-      return res.status(403).json({ message: 'Không có quyền truy cập' });
-    }
     next();
   };
 };

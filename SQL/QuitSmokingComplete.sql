@@ -338,12 +338,14 @@ GO
 
 -- 19. ACHIEVEMENT: Lưu các loại huy hiệu / thành tích có thể nhận được
     CREATE TABLE ACHIEVEMENT (
-        achievement_id INT IDENTITY(1,1) PRIMARY KEY,      -- Khóa chính tự tăng
-        title NVARCHAR(100) NOT NULL,                       -- Tiêu đề thành tích (ví dụ: '7 ngày không hút thuốc')
-        description TEXT,                                  -- Mô tả chi tiết về thành tích
-        badge_image VARCHAR(255),                          -- Đường dẫn tới ảnh huy hiệu (biểu tượng thành tích)
-        achievement_type VARCHAR(20),                      -- Loại thành tích: 'daily', 'milestone', 'event'...
-        difficulty_level INT                               -- Mức độ khó (1: dễ, 5: rất khó), dùng cho phân loại hoặc game hóa
+        achievement_id INT IDENTITY(1,1) PRIMARY KEY,                       -- Khóa chính tự tăng
+        title NVARCHAR(100) NOT NULL,                                       -- Tiêu đề thành tích (ví dụ: '7 ngày không hút thuốc')
+        description NVARCHAR(MAX),                                          -- Mô tả chi tiết về ý nghĩa thành tựu
+        badge_image VARCHAR(255),                                           -- Đường dẫn tới ảnh huy hiệu (biểu tượng thành tích)
+        achievement_type NVARCHAR(20),                                      -- Loại thành tích: 'daily', 'milestone', 'event'...
+        difficulty_level INT CHECK (difficulty_level BETWEEN 1 AND 5),      -- Mức độ khó: 1 (dễ) → 5 (rất khó)
+        phase TINYINT CHECK (phase BETWEEN 1 AND 4),                        -- Giai đoạn (1 → 4) tương ứng với tiến trình cai thuốc
+        check_code VARCHAR(100)                                -- Mã kiểm tra điều kiện mở khóa (dùng trong backend)
     );
     -- Chỉ mục gợi ý nếu thường lọc theo loại hoặc mức độ khó
     CREATE INDEX idx_achievement_type_level ON ACHIEVEMENT(achievement_type, difficulty_level);
@@ -394,6 +396,7 @@ GO
         user_id INT NULL,                                  -- Tác giả bài viết, liên kết đến CUSTOMER
         title NVARCHAR(100),                               -- Tiêu đề bài viết
         content NVARCHAR(MAX),                             -- Nội dung chi tiết
+        like_count INT DEFAULT 0,
         created_at DATETIME NOT NULL,                      -- Thời điểm đăng bài
         last_updated DATETIME,                             -- Thời điểm chỉnh sửa gần nhất
         view_count INT DEFAULT 0,                          -- Lượt xem bài viết
@@ -460,7 +463,6 @@ GO
     CREATE TABLE HABIT_LOG (
         log_id INT IDENTITY(1,1) PRIMARY KEY,                  -- Khóa chính tự tăng
         user_id INT NOT NULL,                                 -- Người dùng thực hiện hành vi
-        plan_id INT NOT NULL,                                 -- Kế hoạch bỏ thuốc liên qua
         log_date DATE NOT NULL,                               -- Ngày ghi nhận
         time_slot INT NOT NULL CHECK (time_slot BETWEEN 0 AND 8), -- Mốc thời gian (0: 7h, ..., 8: 22h)
         completed BIT NOT NULL DEFAULT 0,                     -- Đã hoàn thành không hút tại slot đó hay chưa
@@ -468,7 +470,6 @@ GO
         created_at DATETIME DEFAULT GETDATE(),                -- Ngày tạo bản ghi
 
         CONSTRAINT fk_habitlog_user FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id) ON DELETE CASCADE,
-        CONSTRAINT fk_habitlog_plan FOREIGN KEY (plan_id) REFERENCES CESSATION_PLAN(plan_id),
         UNIQUE(user_id, log_date, time_slot)                  -- Một người chỉ có 1 bản ghi/slot/ngày
     );
 
@@ -527,4 +528,38 @@ CREATE TABLE TOPIC_MESSAGE (
 
     CONSTRAINT fk_topicmsg_topic FOREIGN KEY (topic_id) REFERENCES CHAT_TOPIC(topic_id), -- Khóa ngoại đến CHAT_TOPIC
     CONSTRAINT fk_topicmsg_user FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id)       -- Khóa ngoại đến CUSTOMER
+);
+
+-- 34. USER_BEHAVIOR_TASK_LOG: Lưu nhật ký các nhiệm vụ hành vi của người dùng
+CREATE TABLE USER_BEHAVIOR_TASK_LOG (
+    log_id INT IDENTITY(1,1) PRIMARY KEY,
+    user_id INT NOT NULL,
+    log_date DATE NOT NULL,
+    time_slot INT NOT NULL CHECK (time_slot BETWEEN 0 AND 8),
+    task_id NVARCHAR(20) NOT NULL,       -- Ví dụ: 'P3_10_2'
+    is_completed BIT DEFAULT 1,          -- Mặc định là đã chọn xong (chỉ chọn 1)
+    points_awarded FLOAT DEFAULT 0,      -- ⚠️ Luôn có điểm mặc định là 0
+    created_at DATETIME DEFAULT GETDATE(),
+
+    CONSTRAINT fk_behavior_user FOREIGN KEY (user_id)
+        REFERENCES CUSTOMER(user_id) ON DELETE CASCADE,
+
+    UNIQUE(user_id, log_date, time_slot) -- Mỗi user chỉ chọn 1 task/slot/ngày
+);
+	
+-- 35. DIRECT_MESSAGE: Tin nhắn trao đổi trực tiếp giữa Coach và Member
+CREATE TABLE DIRECT_MESSAGE (
+    message_id INT IDENTITY PRIMARY KEY,         -- Khóa chính tự tăng
+    session_id INT NOT NULL,                     -- Liên kết đến phiên tư vấn
+    sender_id INT NOT NULL,                      -- ID của người gửi (Coach hoặc Member)
+    sender_role VARCHAR(20) NOT NULL CHECK (
+        sender_role IN ('member', 'coach')       -- Phân biệt vai trò người gửi
+    ),
+    message NVARCHAR(MAX) NOT NULL,              -- Nội dung tin nhắn
+    file_url NVARCHAR(MAX) NULL,                 -- Ảnh/tệp đính kèm
+    sent_at DATETIME DEFAULT GETDATE(),          -- Thời điểm gửi tin nhắn
+    is_read BIT DEFAULT 0,                       -- Đánh dấu đã đọc tin nhắn. 0: chưa đọc 1: đã đọc
+
+    CONSTRAINT fk_directmsg_session FOREIGN KEY (session_id) REFERENCES COACHING_SESSION(session_id),
+    CONSTRAINT fk_directmsg_sender FOREIGN KEY (sender_id) REFERENCES CUSTOMER(user_id)
 );

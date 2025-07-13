@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Button, Table, Tag, message, Avatar, Space, Typography, Spin, Row, Col, Alert, Popconfirm, Tooltip } from 'antd';
+import { Card, Button, Table, Tag, message, Avatar, Space, Typography, Spin, Row, Col, Alert, Popconfirm, Tooltip, Modal, Form, Input } from 'antd';
 import {
     CloseOutlined,
     ReloadOutlined,
     UserOutlined,
-    CalendarOutlined
+    CalendarOutlined,
+    WarningOutlined
 } from '@ant-design/icons';
 import { useAuth } from '../../contexts/AuthContext';
 import Navbar from '../../layouts/Navbar';
 import './MemberBookings.css';
+import moment from 'moment-timezone';
 
 const { Title, Text } = Typography;
 
@@ -17,6 +19,10 @@ const MemberBookings = () => {
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(false);
     const [initialLoading, setInitialLoading] = useState(true);
+    const [reportCoachModal, setReportCoachModal] = useState(false);
+    const [reportReason, setReportReason] = useState('');
+    const [currentSessionId, setCurrentSessionId] = useState(null);
+    const [modalLoading, setModalLoading] = useState(false);
 
     // API Base URL
     const API_BASE_URL = 'http://localhost:5000/api';
@@ -69,9 +75,10 @@ const MemberBookings = () => {
                 headers: getAuthHeaders()
             });
 
+            const data = await response.json();
+
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Không thể hủy cuộc hẹn');
+                throw new Error(data.message || 'Không thể hủy cuộc hẹn');
             }
 
             message.success('Hủy cuộc hẹn thành công!');
@@ -82,6 +89,73 @@ const MemberBookings = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const canCancelAppointment = (scheduledTime) => {
+        const now = moment();
+        const scheduledDateTime = moment.parseZone(scheduledTime);
+        const hoursDifference = scheduledDateTime.diff(now, 'hours', true);
+        return hoursDifference >= 2;
+    };
+
+    const getCancelButtonTooltip = (scheduledTime) => {
+        if (!canCancelAppointment(scheduledTime)) {
+            const now = moment();
+            const scheduledDateTime = moment.parseZone(scheduledTime);
+            const hoursDifference = scheduledDateTime.diff(now, 'hours', true);
+            if (hoursDifference < 0) {
+                return 'Không thể hủy lịch hẹn đã qua';
+            } else {
+                return `Chỉ có thể hủy trước 2 giờ. Còn ${Math.ceil(hoursDifference)} giờ`;
+            }
+        }
+        return 'Hủy cuộc hẹn';
+    };
+
+    const handleOpenReportCoachModal = (sessionId) => {
+        setCurrentSessionId(sessionId);
+        setReportReason('');
+        setReportCoachModal(true);
+    };
+
+    const handleReportMissingCoach = async () => {
+        setModalLoading(true);
+        try {
+            const response = await fetch(`${API_BASE_URL}/appointment/report-missing-coach`, {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ session_id: currentSessionId, reason: reportReason })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Không thể báo cáo huấn luyện viên vắng mặt');
+            }
+
+            message.success('Đã báo cáo huấn luyện viên vắng mặt!');
+            setReportCoachModal(false);
+            loadMyBookings();
+        } catch (error) {
+            message.error(error.message || 'Không thể báo cáo huấn luyện viên vắng mặt');
+        } finally {
+            setModalLoading(false);
+        }
+    };
+
+    const canReportMissingCoach = (scheduledTime) => {
+        const now = moment();
+        const scheduledDateTime = moment.parseZone(scheduledTime);
+        return now.isSameOrAfter(scheduledDateTime);
+    };
+
+    const getReportCoachButtonTooltip = (scheduledTime) => {
+        const now = moment();
+        const scheduledDateTime = moment.parseZone(scheduledTime);
+        if (now.isBefore(scheduledDateTime)) {
+            return 'Chỉ được báo cáo sau giờ hẹn';
+        }
+        return 'Báo cáo huấn luyện viên vắng mặt';
     };
 
     const getStatusColor = (status) => {
@@ -119,12 +193,15 @@ const MemberBookings = () => {
     };
 
     const formatDateTime = (dateTimeString) => {
-        const date = new Date(dateTimeString);
+        if (!dateTimeString) return { date: '', time: '' };
+        const local = moment.parseZone(dateTimeString);
         return {
-            date: date.toLocaleDateString('en-US'),
-            time: date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+            date: local.format('DD/MM/YYYY'),
+            time: local.format('HH:mm')
         };
     };
+
+    const isActionable = (status) => ['pending', 'accepted'].includes(status);
 
     const columns = [
         {
@@ -166,39 +243,59 @@ const MemberBookings = () => {
             title: 'Hành động',
             key: 'actions',
             render: (_, record) => (
-                <Space>
-                    {record.session_status === 'pending' && (
-                        <Popconfirm
-                            title="Hủy cuộc hẹn"
-                            description="Bạn có chắc chắn muốn hủy cuộc hẹn này không? Hành động này không thể hoàn tác."
-                            onConfirm={() => handleCancelAppointment(record.session_id)}
-                            okText="Có, hủy"
-                            okType="danger"
-                            cancelText="Không"
-                        >
-                            <Tooltip title="Hủy cuộc hẹn">
+                isActionable(record.session_status) ? (
+                    <Space>
+                        {record.session_status === 'pending' && (
+                            <Popconfirm
+                                title={getCancelButtonTooltip(record.scheduled_time)}
+                                description="Bạn có chắc chắn muốn hủy cuộc hẹn này không? Hành động này không thể hoàn tác."
+                                onConfirm={() => handleCancelAppointment(record.session_id)}
+                                okText="Có, hủy"
+                                okType="danger"
+                                cancelText="Không"
+                                disabled={!canCancelAppointment(record.scheduled_time)}
+                            >
+                                <Tooltip title={getCancelButtonTooltip(record.scheduled_time)}>
+                                    <Button
+                                        type="default"
+                                        icon={<CloseOutlined />}
+                                        danger
+                                        loading={loading}
+                                        disabled={!canCancelAppointment(record.scheduled_time)}
+                                        style={{
+                                            opacity: canCancelAppointment(record.scheduled_time) ? 1 : 0.5
+                                        }}
+                                    />
+                                </Tooltip>
+                            </Popconfirm>
+                        )}
+                        {record.session_status === 'accepted' && record.google_meet_link && (
+                            <Tooltip title="Tham gia Google Meet">
+                                <Button
+                                    type="primary"
+                                    href={record.google_meet_link.startsWith('http') ? record.google_meet_link : `https://${record.google_meet_link}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    Tham gia cuộc họp
+                                </Button>
+                            </Tooltip>
+                        )}
+                        {record.session_status === 'accepted' && (
+                            <Tooltip title={getReportCoachButtonTooltip(record.scheduled_time)}>
                                 <Button
                                     type="default"
-                                    icon={<CloseOutlined />}
-                                    danger
-                                    loading={loading}
+                                    icon={<WarningOutlined style={{ color: canReportMissingCoach(record.scheduled_time) ? 'red' : '#d9d9d9' }} />}
+                                    onClick={() => handleOpenReportCoachModal(record.session_id)}
+                                    disabled={!canReportMissingCoach(record.scheduled_time)}
+                                    style={{
+                                        opacity: canReportMissingCoach(record.scheduled_time) ? 1 : 0.5
+                                    }}
                                 />
                             </Tooltip>
-                        </Popconfirm>
-                    )}
-                    {record.session_status === 'accepted' && record.google_meet_link && (
-                        <Tooltip title="Tham gia Google Meet">
-                            <Button
-                                type="primary"
-                                href={record.google_meet_link.startsWith('http') ? record.google_meet_link : `https://${record.google_meet_link}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                            >
-                                Tham gia cuộc họp
-                            </Button>
-                        </Tooltip>
-                    )}
-                </Space>
+                        )}
+                    </Space>
+                ) : null
             ),
         },
     ];
@@ -273,6 +370,27 @@ const MemberBookings = () => {
                     </Card>
                 </div>
             </div>
+            {/* Modal báo cáo coach vắng mặt */}
+            <Modal
+                title="Báo cáo huấn luyện viên vắng mặt"
+                open={reportCoachModal}
+                onCancel={() => setReportCoachModal(false)}
+                onOk={handleReportMissingCoach}
+                confirmLoading={modalLoading}
+                okText="Báo cáo"
+                cancelText="Hủy"
+            >
+                <Form layout="vertical">
+                    <Form.Item label="Lý do vắng mặt" required>
+                        <Input.TextArea
+                            value={reportReason}
+                            onChange={e => setReportReason(e.target.value)}
+                            placeholder="Nhập lý do huấn luyện viên vắng mặt..."
+                            rows={3}
+                        />
+                    </Form.Item>
+                </Form>
+            </Modal>
         </div>
     );
 };

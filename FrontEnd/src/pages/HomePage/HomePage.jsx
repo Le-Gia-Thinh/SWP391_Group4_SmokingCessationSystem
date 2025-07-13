@@ -32,6 +32,7 @@ import { useScrollReveal } from "../../hooks/useScrollReveal";
 import meditationImg from "../../assets/meditation.jpg";
 import healthyEatingImg from "../../assets/healthy-eating.jpg";
 import fitnessImg from "../../assets/fitness.jpg";
+import { useAuth } from "../../contexts/AuthContext";
 
 import "./HomePage.css";
 
@@ -123,28 +124,37 @@ const legalLinks = [
   "Chính sách cookie",
   "Hỗ trợ",
 ];
+const videoModules = import.meta.glob('/src/assets/video/*.mp4', {
+  eager: true,
+  as: 'url'
+});
+const videoList = Object.values(videoModules);
 
 /* ===== TRANG CHÍNH ===== */
 const HomePage = () => {
+  const { user } = useAuth();
   const [showUpgrade, setShowUpgrade] = useState(false);
   const timerRef = useRef(null);
   const homepageRef = useRef(null);
+
   useEffect(() => {
-    // sau 2s kể từ khi mount
     timerRef.current = setTimeout(() => setShowUpgrade(true), 2000);
     return () => clearTimeout(timerRef.current);
   }, []);
+
   useScrollReveal();
+  const isMember = user && user.role === "member";
   return (
     <Layout className="homepage" ref={homepageRef}>
       <Navbar />
-      {showUpgrade && (
+      {showUpgrade && isMember && (
         <PlanUpgradeModal
           open={showUpgrade}
           onClose={() => setShowUpgrade(false)}
-          scrollContainer={homepageRef} // ← truyền prop scrollContainer
+          scrollContainer={homepageRef}
         />
       )}
+
       {/* ---------- HERO ---------- */}
       <section className="hero-section scroll-section">
         <Row align="middle" style={{ minHeight: "500px" }}>
@@ -173,7 +183,7 @@ const HomePage = () => {
 
           <Col xs={24} lg={12} className="hero-video">
             <video width="100%" height="auto" controls autoPlay muted loop>
-              <source src="/src/assets/video/quit_smoking_bg.mp4" type="video/mp4" />
+              <source src={videoList[0]} type="video/mp4" />
             </video>
           </Col>
         </Row>
@@ -265,7 +275,7 @@ const HomePage = () => {
           <Row gutter={[32, 48]}>
             {lifestyleSteps.map((step, i) => (
               <Col xs={24} lg={12} key={i}>
-                <Card className="lifestyle-card" bodyStyle={{ padding: 0 }}>
+                <Card className="lifestyle-card" styles={{ padding: 0 }}>
                   <Row>
                     <Col span={8}>
                       <img
@@ -386,11 +396,12 @@ const HomePage = () => {
             <Col xs={24} lg={14}>
               <Space direction="vertical" size="large">
                 <Paragraph>
-                  Đội ngũ chuyên gia dinh dưỡng của chúng tôi ở đây để giúp bạn đạt được
-                  mục tiêu sức khỏe và thể chất. Các chuyên gia dinh dưỡng của chúng tôi là những
-                  chuyên gia được đào tạo cao và có trình độ với sự hiểu biết sâu sắc
-                  về khoa học đằng sau dinh dưỡng và cách nó có thể tác động đến
-                  cơ thể và tâm trí của bạn.
+                  Đội ngũ chuyên gia dinh dưỡng của chúng tôi ở đây để giúp bạn
+                  đạt được mục tiêu sức khỏe và thể chất. Các chuyên gia dinh
+                  dưỡng của chúng tôi là những chuyên gia được đào tạo cao và có
+                  trình độ với sự hiểu biết sâu sắc về khoa học đằng sau dinh
+                  dưỡng và cách nó có thể tác động đến cơ thể và tâm trí của
+                  bạn.
                 </Paragraph>
                 <List
                   dataSource={expertQualifications}
