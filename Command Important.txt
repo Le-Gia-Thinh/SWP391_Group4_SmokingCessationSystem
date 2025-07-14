@@ -22,3 +22,5 @@ npm install moment
 npm install canvas-confetti
 
 npm install howler
+
+npm install chart.js react-chartjs-2
