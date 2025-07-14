@@ -86,6 +86,16 @@ GO
         created_at DATE NOT NULL                                 -- Ngày tạo gói
     );
 
+-- 3.1 Thêm các gói mặc định
+INSERT INTO SUBSCRIPTION_PACKAGE
+  (package_name, description, price, duration_days, coach_access, community_access, premium_content, created_at)
+VALUES
+  (N'Miễn phí',            N'Truy cập các tính năng cơ bản',            0.00,     7,  0, 1, 0, CAST(GETDATE() AS DATE)),
+  (N'Premium 1 tháng',     N'Truy cập Premium trong 1 tháng',        99000.00,    30, 1, 1, 1, CAST(GETDATE() AS DATE)),
+  (N'Premium 3 tháng',     N'Tiết kiệm hơn khi mua 3 tháng',        269000.00,    90, 1, 1, 1, CAST(GETDATE() AS DATE)),
+  (N'Premium 6 tháng',     N'Tiết kiệm hơn khi mua 6 tháng',        549000.00,   180, 1, 1, 1, CAST(GETDATE() AS DATE)),
+  (N'Premium 1 năm',       N'Tiết kiệm tối đa khi mua 1 năm',       899000.00,   365, 1, 1, 1, CAST(GETDATE() AS DATE));
+
 -- 4. USER_SUBSCRIPTION: Lưu thông tin đăng ký gói của người dùng
     CREATE TABLE USER_SUBSCRIPTION (
         subscription_id INT IDENTITY(1,1) PRIMARY KEY,         -- Khóa chính tự tăng
@@ -114,15 +124,16 @@ GO
         payment_status NVARCHAR(20) CHECK (
             payment_status IN ('pending', 'paid', 'failed')
         ),                                                     -- Trạng thái hợp lệ        
-        qr_code_url NVARCHAR(255),                             -- Đường dẫn ảnh mã QR
         note NVARCHAR(255),                                    -- Ghi chú
-        
+        order_code VARCHAR(100),                               -- Mã đơn hàng (PayOS sinh hoặc hệ thống)
+
         CONSTRAINT fk_payment_subscription 
             FOREIGN KEY (subscription_id) REFERENCES USER_SUBSCRIPTION(subscription_id) ON DELETE SET NULL
     );
 
     CREATE INDEX idx_payment_status ON PAYMENT(payment_status);
     CREATE INDEX idx_payment_transaction_id ON PAYMENT(transaction_id);
+    -- CREATE INDEX idx_payment_order_code ON PAYMENT(order_code); Kiểm tra tra cứu theo mã đơn hàng
 
 -- 6. COACH: Thông tin của huấn luyện viên
     CREATE TABLE COACH (
@@ -219,7 +230,7 @@ GO
         CONSTRAINT fk_feedback_coach FOREIGN KEY (coach_id) REFERENCES COACH(coach_id) ON DELETE SET NULL
     );
 
--- 13\2. SMOKING_LOG: Ghi lại hành vi hút thuốc của người dùng theo thời gian
+-- 12. SMOKING_LOG: Ghi lại hành vi hút thuốc của người dùng theo thời gian
     CREATE TABLE SMOKING_LOG (
         log_id INT IDENTITY(1,1) PRIMARY KEY,                  -- Mã log tự tăng
         user_id INT NULL,                                      -- Cho phép null nếu user bị xóa
@@ -239,7 +250,7 @@ GO
         date DATE NOT NULL,                                    -- Ngày cụ thể
         total_cigarettes INT CHECK (total_cigarettes >= 0),    -- Tổng số điếu hút
         relapsed BIT DEFAULT 0,                                -- Đánh dấu tái nghiện
-        -- plan_id INT,                                           -- Liên kết kế hoạch (có thể null)
+        -- plan_id INT, x                                             -- Liên kết kế hoạch (có thể null)
 
         CONSTRAINT fk_dsm_summary_customer FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id) ON DELETE SET NULL,
         -- CONSTRAINT fk_dsm_summary_plan FOREIGN KEY (plan_id) REFERENCES CESSATION_PLAN(plan_id) ON DELETE SET NULL
@@ -305,7 +316,6 @@ GO
         ),
 
         session_type VARCHAR(20),                                         -- Loại phiên: online, offline,...
-        google_meet_link VARCHAR(255),                                    -- Link Google Meet (nếu là phiên online)
         session_notes TEXT,                                               -- Ghi chú sau phiên
         created_at DATETIME DEFAULT GETDATE(),                            -- Ngày tạo phiên
 
