@@ -91,6 +91,7 @@ export default function Navbar() {
         { key: '/admin-dashboard', icon: <UserOutlined />, label: 'Bảng điều khiển Admin', onClick: () => navigate('/admin-dashboard') },
         { key: '/schedule-management', icon: <ScheduleOutlined />, label: 'Quản lý Lịch', onClick: () => navigate('/schedule-management') },
         { key: '/post-approval', icon: <FileDoneOutlined />, label: 'Quản lý Bài Viết', onClick: () => navigate('/post-approval') },
+        { key: '/admin/revenue-stats', icon: <BarChartOutlined />, label: 'Thống kê doanh thu', onClick: () => navigate('/admin/revenue-stats') },
       );
     }
 
