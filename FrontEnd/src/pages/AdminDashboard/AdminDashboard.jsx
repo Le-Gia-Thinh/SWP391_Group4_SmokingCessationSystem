@@ -1051,8 +1051,8 @@ const AdminDashboard = () => {
                 <Text>
                   {selectedCoach.registration_date
                     ? new Date(
-                        selectedCoach.registration_date
-                      ).toLocaleDateString()
+                      selectedCoach.registration_date
+                    ).toLocaleDateString()
                     : "N/A"}
                 </Text>
               </Col>
