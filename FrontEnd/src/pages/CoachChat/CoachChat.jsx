@@ -21,7 +21,7 @@ import {
 } from "@ant-design/icons";
 import axios from "axios";
 import { useSocket } from "../../contexts/SocketContext";
-import "../Chat/ChatPage.css";
+import "../Community/CommunityPage.css";
 import moment from 'moment-timezone';
 
 const { Content } = Layout;
