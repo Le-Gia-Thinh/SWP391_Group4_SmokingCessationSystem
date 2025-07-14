@@ -86,6 +86,7 @@ export default function Navbar() {
         { key: '/user/stats', icon: <BarChartOutlined />, label: 'Bảng thống kê', onClick: () => navigate('/user/stats') },
         { key: '/admin-dashboard', icon: <UserOutlined />, label: 'Quản lý Coach', onClick: () => navigate('/admin-dashboard') },
         { key: '/schedule-management', icon: <ScheduleOutlined />, label: 'Quản lý lịch tư vấn', onClick: () => navigate('/schedule-management') },
+        { key: '/post-approval', icon: <FileDoneOutlined />, label: 'Duyệt bài', onClick: () => navigate('/post-approval') },
         { key: '/admin/revenue-stats', icon: <BarChartOutlined />, label: 'Thống kê doanh thu', onClick: () => navigate('/admin/revenue-stats') },
       ];
     }
