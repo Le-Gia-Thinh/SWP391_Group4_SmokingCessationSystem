@@ -1,7 +1,7 @@
 import React from "react";
 import UserProgressStats from "./pages/QuitPlanStats/UserProgressStats";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { Card, Typography, Space } from "antd";
+import { Card, Typography, Space, Button } from "antd";
 import { AuthProvider } from "./contexts/AuthContext";
 import { SocketProvider } from "./contexts/SocketContext";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -22,13 +22,13 @@ import QuitPlanDetail from "./pages/QuitPlanning/QuitPlanDetail";
 import RankingBoard from "./pages/Ranking/RankingBoard";
 import Profile from './pages/Profile/Profile.jsx';
 import Notifications from './pages/Notifications/Notifications.jsx';
-import ChatPage from './pages/Chat/ChatPage.jsx';
 import "./App.css";
 import CheckoutPage from "./pages/Payment/CheckoutPage";
-import BlogList from "./pages/Blog/BlogList";
 import PostApproval from './pages/PostApproval/PostApproval';
+import CommunityPage from './pages/Community/CommunityPage';
+import RevenueStats from './pages/AdminDashboard/RevenueStats';
 const { Title, Paragraph } = Typography;
-
+import PaymentSuccess from "./pages/Payment/PaymentSuccess";
 function App() {
   return (
     <AuthProvider>
@@ -69,8 +69,10 @@ function App() {
             <Route path="/user/stats" element={<UserProgressStats />} />
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/checkout" element={<CheckoutPage />} />
-            <Route path="/blog" element={<BlogList />} />
-            <Route path="/chat" element={<ChatPage />} />
+            {/* <Route path="/blog" element={<BlogList />} />
+            <Route path="/chat" element={<ChatPage />} /> */}
+            <Route path="/payment-success" element={<PaymentSuccess />} />
+            <Route path="/community" element={<CommunityPage />} />
             {/* Protected routes - Member Bookings */}
             <Route
               path="/my-bookings"
@@ -117,6 +119,16 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={["admin"]}>
                   <PostApproval />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Protected routes - Admin Revenue Stats */}
+            <Route
+              path="/admin/revenue-stats"
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <RevenueStats />
                 </ProtectedRoute>
               }
             />
