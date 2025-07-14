@@ -127,29 +127,32 @@ exports.acceptAppointment = async (req, res) => {
     const memberUserId = check.recordset[0].user_id;
     const actualMemberUserId = memberUserId === 0 ? null : memberUserId;
 
-    // Lấy link cố định
+    // Lấy link cố định từ bảng COACH
     const linkQuery = await pool.request()
       .input('id', sql.Int, actualCoachId)
       .query('SELECT google_meet_link FROM COACH WHERE coach_id = @id');
 
     const meetLink = linkQuery.recordset[0]?.google_meet_link || null;
 
+    // Cập nhật trạng thái thành 'accepted' (KHÔNG cập nhật google_meet_link)
     await pool.request()
       .input('id', sql.Int, sessionId)
-      .input('link', sql.VarChar, meetLink)
       .query(`
         UPDATE COACHING_SESSION
-        SET session_status = 'accepted', google_meet_link = @link
+        SET session_status = 'accepted'
         WHERE session_id = @id
       `);
 
-    // Gửi thông báo
+    // Gửi thông báo kèm link
     await pool.request()
       .input('session_id', sql.Int, sessionId)
       .input('user_id', sql.Int, actualMemberUserId)
       .input('coach_id', sql.Int, actualCoachId)
       .input('content', sql.NVarChar, `Lịch hẹn đã được duyệt. Link Meet: ${meetLink}`)
-      .query(`INSERT INTO COACHING_MESSAGE (session_id, user_id, coach_id, content, sent_at, is_read) VALUES (@session_id, @user_id, @coach_id, @content, GETDATE(), 0)`);
+      .query(`
+        INSERT INTO COACHING_MESSAGE (session_id, user_id, coach_id, content, sent_at, is_read)
+        VALUES (@session_id, @user_id, @coach_id, @content, GETDATE(), 0)
+      `);
 
     res.json({ success: true, message: 'Đã duyệt lịch hẹn và gửi link Meet' });
   } catch (err) {
@@ -157,6 +160,7 @@ exports.acceptAppointment = async (req, res) => {
     res.status(500).json({ message: 'Lỗi server' });
   }
 };
+
 
 // Coach từ chối lịch
 exports.rejectAppointment = async (req, res) => {
@@ -284,25 +288,21 @@ exports.cancelAppointment = async (req, res) => {
 exports.getMyAppointments = async (req, res) => {
   try {
     const userId = req.user.id;
-    // console.log('DEBUG: In getMyAppointments (Member View)');
-    // console.log('DEBUG: userId from token:', userId);
-
     const pool = await sql.connect(dbConfig);
 
     const result = await pool.request()
       .input('user_id', sql.Int, userId)
       .query(`
         SELECT 
-          cs.session_id, cs.scheduled_time, cs.session_status, cs.google_meet_link, cs.duration_minutes,
-          c.full_name AS coach_name, c.email AS coach_email
+          cs.session_id, cs.scheduled_time, cs.session_status, cs.duration_minutes,
+          c.full_name AS coach_name, c.email AS coach_email,
+          ch.google_meet_link
         FROM COACHING_SESSION cs
         JOIN COACH ch ON cs.coach_id = ch.coach_id
         JOIN CUSTOMER c ON ch.user_id = c.user_id
         WHERE cs.user_id = @user_id
         ORDER BY cs.scheduled_time DESC
       `);
-
-    // console.log('DEBUG: result.recordset from DB for Member View:', result.recordset);
 
     res.status(200).json({ success: true, data: result.recordset });
   } catch (error) {
@@ -327,10 +327,11 @@ exports.getCoachAllSchedules = async (req, res) => {
   }
 };
 
+
 // Coach xem tất cả các phiên coaching của mình (đã đặt, đã duyệt, đã hủy, ...)
 exports.getCoachAllAppointments = async (req, res) => {
   try {
-    const coachId = req.user.coach_id; // Lấy coach_id từ thông tin người dùng đã xác thực
+    const coachId = req.user.coach_id;
     console.log('DEBUG: In getCoachAllAppointments');
     console.log('DEBUG: coachId from token:', coachId);
 
@@ -339,10 +340,12 @@ exports.getCoachAllAppointments = async (req, res) => {
       .input('coach_id', sql.Int, coachId)
       .query(`
         SELECT 
-          cs.session_id, cs.scheduled_time, cs.session_status, cs.google_meet_link, cs.duration_minutes,
-          c.full_name AS member_name, c.email AS member_email, c.user_id as member_user_id
+          cs.session_id, cs.scheduled_time, cs.session_status, cs.duration_minutes,
+          c.full_name AS member_name, c.email AS member_email, c.user_id as member_user_id,
+          ch.google_meet_link
         FROM COACHING_SESSION cs
         LEFT JOIN CUSTOMER c ON cs.user_id = c.user_id
+        JOIN COACH ch ON cs.coach_id = ch.coach_id
         WHERE cs.coach_id = @coach_id
         ORDER BY cs.scheduled_time DESC
       `);
@@ -355,6 +358,7 @@ exports.getCoachAllAppointments = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error when fetching all coach appointments' });
   }
 };
+
 
 // Coach submit sau khi kết thúc buổi tư vấn
 exports.completeAppointment = async (req, res) => {

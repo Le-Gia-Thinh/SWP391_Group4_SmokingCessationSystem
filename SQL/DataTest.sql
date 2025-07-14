@@ -188,11 +188,11 @@ FROM COACH WHERE user_id = (SELECT user_id FROM CUSTOMER WHERE username = 'coach
 -- Phiên accepted (member2)
 INSERT INTO COACHING_SESSION (
     user_id, coach_id, schedule_id, scheduled_time,
-    duration_minutes, session_status, session_type, google_meet_link
+    duration_minutes, session_status, session_type
 )
 SELECT u.user_id, c.coach_id, s.schedule_id, s.start_time,
        DATEDIFF(MINUTE, s.start_time, s.end_time),
-       'accepted', 'online', c.google_meet_link
+       'accepted', 'online'
 FROM CUSTOMER u
 JOIN COACH c ON c.user_id = (SELECT user_id FROM CUSTOMER WHERE username = 'coach1')
 JOIN COACH_SCHEDULE s ON s.coach_id = c.coach_id
