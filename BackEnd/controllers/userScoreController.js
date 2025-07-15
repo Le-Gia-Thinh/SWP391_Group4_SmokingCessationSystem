@@ -5,7 +5,7 @@ const getRanking = async (req, res) => {
   try {
     const pool = await sql.connect(dbConfig);
     const result = await pool.request().query(`
-      SELECT TOP 10
+      SELECT TOP 20
         s.user_id,
         c.full_name,
         c.avatar_url,
@@ -35,6 +35,41 @@ const getRanking = async (req, res) => {
   }
 };
 
+// Vị trí của người dùng hiện tại
+const getMyRanking = async (req, res) => {
+  const userId = req.user.id;
+  try {
+    const pool = await sql.connect(dbConfig);
+    const result = await pool.request().query(`
+      SELECT 
+        s.user_id,
+        c.full_name,
+        c.avatar_url,
+        s.total_points,
+        s.current_level,
+        RANK() OVER (ORDER BY s.total_points DESC) AS rank,
+        CASE
+          WHEN s.current_level = 'Beginner' THEN CAST(s.total_points * 100.0 / 100 AS INT)
+          WHEN s.current_level = 'Intermediate' THEN CAST((s.total_points - 100) * 100.0 / 300 AS INT)
+          WHEN s.current_level = 'Advanced' THEN CAST((s.total_points - 400) * 100.0 / 600 AS INT)
+          WHEN s.current_level = 'Master' THEN 100
+          ELSE 0
+        END AS progress_to_next
+      FROM USER_SCORE s
+      JOIN CUSTOMER c ON s.user_id = c.user_id
+    `);
+
+    const userRow = result.recordset.find((row) => row.user_id === userId);
+
+    if (!userRow) return res.status(404).json({ success: false });
+
+    res.json({ success: true, data: userRow });
+  } catch (err) {
+    console.error("❌ Lỗi lấy thứ hạng người dùng:", err);
+    res.status(500).json({ success: false });
+  }
+};
+
 const updateUserScore = async (req, res) => {
   const userId = req.user?.id || req.body.user_id || req.query.user_id;
   if (!userId) {
@@ -44,8 +79,7 @@ const updateUserScore = async (req, res) => {
     const pool = await sql.connect(dbConfig);
 
     // Đếm số hành vi hoàn thành
-    const result = await pool.request()
-      .input("user_id", sql.Int, userId)
+    const result = await pool.request().input("user_id", sql.Int, userId)
       .query(`
         SELECT COUNT(*) AS completedCount
         FROM HABIT_LOG
@@ -55,8 +89,7 @@ const updateUserScore = async (req, res) => {
     const completedCount = result.recordset[0].completedCount;
 
     // Lấy thông tin plan để tính điểm mỗi slot
-    const planRes = await pool.request()
-      .input("user_id", sql.Int, userId)
+    const planRes = await pool.request().input("user_id", sql.Int, userId)
       .query(`
         SELECT TOP 1 month_quit
         FROM CESSATION_PLAN
@@ -76,11 +109,11 @@ const updateUserScore = async (req, res) => {
     else if (totalPoints >= 100) newLevel = "Intermediate";
 
     // Cập nhật USER_SCORE
-    await pool.request()
+    await pool
+      .request()
       .input("user_id", sql.Int, userId)
       .input("total_points", sql.Float, totalPoints)
-      .input("current_level", sql.VarChar, newLevel)
-      .query(`
+      .input("current_level", sql.VarChar, newLevel).query(`
         UPDATE USER_SCORE
         SET total_points = @total_points, current_level = @current_level, last_updated = GETDATE()
         WHERE user_id = @user_id
@@ -95,5 +128,6 @@ const updateUserScore = async (req, res) => {
 
 module.exports = {
   getRanking,
+  getMyRanking,
   updateUserScore,
 };
