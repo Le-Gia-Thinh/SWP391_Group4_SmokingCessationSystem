@@ -1,7 +1,166 @@
-.line-chart-wrapper {
-  height: 370px; /* hoặc 300px tuỳ bạn */
+/* Admin Stats Dashboard Styles */
+
+/* Chart Container */
+.chart-container {
+  position: relative;
+  padding: 20px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.line-chart-wrapper canvas {
-  height: 100% !important;
+/* Stats Cards */
+.card {
+  transition: all 0.3s ease;
+  border-radius: 15px !important;
+  overflow: hidden;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+/* Header Styling */
+.text-primary {
+  color: #6366f1 !important;
+}
+
+.text-success {
+  color: #10b981 !important;
+}
+
+.text-info {
+  color: #06b6d4 !important;
+}
+
+.text-warning {
+  color: #f59e0b !important;
+}
+
+.text-danger {
+  color: #ef4444 !important;
+}
+
+.text-dark {
+  color: #1f2937 !important;
+}
+
+/* Badge Styling */
+.badge {
+  font-size: 0.875rem;
+  padding: 0.5rem 1rem;
+  border-radius: 25px;
+}
+
+/* Button Styling */
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+/* Radio Button Group */
+.ant-radio-group {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.ant-radio-button-wrapper {
+  border-radius: 0 !important;
+  border-color: #e5e7eb;
+  font-weight: 500;
+}
+
+.ant-radio-button-wrapper-checked {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: #667eea;
+}
+
+/* Date Picker */
+.ant-picker {
+  border-radius: 8px;
+  border-color: #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.ant-picker:hover {
+  border-color: #667eea;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .chart-container {
+    height: 300px !important;
+  }
+  
+  .card-body {
+    padding: 1rem;
+  }
+  
+  .fs-1 {
+    font-size: 2rem !important;
+  }
+  
+  h2 {
+    font-size: 1.5rem !important;
+  }
+}
+
+@media (max-width: 576px) {
+  .container-fluid {
+    padding: 1rem !important;
+  }
+  
+  .chart-container {
+    height: 250px !important;
+  }
+}
+
+/* Loading Spinner */
+.ant-spin-dot {
+  color: #667eea;
+}
+
+/* Card Title */
+.card-title {
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+/* Animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card, .chart-container {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* Gradient Background */
+.container-fluid {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  min-height: 100vh;
 }

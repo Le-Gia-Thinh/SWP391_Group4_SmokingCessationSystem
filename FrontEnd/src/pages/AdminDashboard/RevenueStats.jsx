@@ -14,9 +14,13 @@ import {
   Legend,
   RadarController,
 } from "chart.js";
-import { DatePicker, Radio, Button, message, Spin } from "antd";
+import { DatePicker, Radio, Button, message, Spin, Layout } from "antd";
 import dayjs from "dayjs";
+import "bootstrap/dist/css/bootstrap.min.css";
+import Navbar from "../../layouts/Navbar";
 import "./RevenueStats.css";
+
+const { Content } = Layout;
 
 ChartJS.register(
   CategoryScale,
@@ -53,19 +57,27 @@ const AdminStatDashboard = () => {
 
   // Lưu vào localStorage
   const saveChartSettings = (type, options = {}) => {
-    localStorage.setItem("chartSettings", JSON.stringify({ type, options }));
+    const saved = JSON.parse(localStorage.getItem("chartSettings") || "{}");
+    saved[type] = options;
+    localStorage.setItem("chartSettings", JSON.stringify(saved));
   };
 
-  // Lấy từ localStorage (nếu có)
-  const getSavedChartSettings = () => {
-    const saved = localStorage.getItem("chartSettings");
-    if (!saved) return null;
-    try {
-      return JSON.parse(saved);
-    } catch {
-      return null;
-    }
+  //Thêm hàm mới để lấy options theo loại
+  const getChartOptionsByType = (type) => {
+    const saved = JSON.parse(localStorage.getItem("chartSettings") || "{}");
+    return saved[type] || {};
   };
+
+  // // Lấy từ localStorage (nếu có)
+  // const getSavedChartSettings = () => {
+  //   const saved = localStorage.getItem("chartSettings");
+  //   if (!saved) return null;
+  //   try {
+  //     return JSON.parse(saved);
+  //   } catch {
+  //     return null;
+  //   }
+  // };
 
   const formatDateVN = (dateStr) => {
     const d = new Date(dateStr);
@@ -142,27 +154,28 @@ const AdminStatDashboard = () => {
           revenue_year: resStats.data.total_year,
         });
 
-        // 👉 Nếu có cài đặt biểu đồ trước đó, khôi phục lại
-        const saved = getSavedChartSettings();
-        if (saved) {
-          setSelectedType(saved.type);
-          if (saved.type === "day") {
-            setStartDate(
-              saved.options?.from ? dayjs(saved.options.from) : null
-            );
-            setEndDate(saved.options?.to ? dayjs(saved.options.to) : null);
-          } else if (saved.type === "week") {
-            setWeekMonthSelected(
-              saved.options?.from ? dayjs(saved.options.from) : null
-            );
-          } else if (saved.type === "month") {
-            setYearSelected(saved.options?.year || dayjs().year());
-          }
-          fetchRevenueChart(saved.type, saved.options || {});
-        } else {
-          // Nếu không có cài đặt cũ, gọi mặc định theo tháng
-          fetchRevenueChart("month", { year: dayjs().year() });
+        const chartSettings = JSON.parse(
+          localStorage.getItem("chartSettings") || "{}"
+        );
+        const defaultType = chartSettings["month"]
+          ? "month"
+          : Object.keys(chartSettings)[0] || "month";
+        const savedOptions = chartSettings[defaultType] || {};
+
+        setSelectedType(defaultType);
+
+        if (defaultType === "day") {
+          setStartDate(savedOptions?.from ? dayjs(savedOptions.from) : null);
+          setEndDate(savedOptions?.to ? dayjs(savedOptions.to) : null);
+        } else if (defaultType === "week") {
+          setWeekMonthSelected(
+            savedOptions?.from ? dayjs(savedOptions.from) : null
+          );
+        } else if (defaultType === "month") {
+          setYearSelected(savedOptions?.year || dayjs().year());
         }
+
+        fetchRevenueChart(defaultType, savedOptions);
       } catch (err) {
         console.error("Lỗi khi tải thống kê:", err);
       }
@@ -174,21 +187,24 @@ const AdminStatDashboard = () => {
   const onTypeChange = (e) => {
     const newType = e.target.value;
     setSelectedType(newType);
-    setStartDate(null);
-    setEndDate(null);
-    setWeekMonthSelected(null);
-    setYearSelected(dayjs().year());
 
-    saveChartSettings(newType, {}); // <== THÊM DÒNG NÀY
+    const savedOptions = getChartOptionsByType(newType);
 
-    if (newType === "year") {
-      fetchRevenueChart("year");
-    } else if (newType === "month") {
-      fetchRevenueChart("month", { year: dayjs().year() });
-    } else if (newType === "day") {
-      fetchRevenueChart("day");
+    if (newType === "day") {
+      setStartDate(savedOptions?.from ? dayjs(savedOptions.from) : null);
+      setEndDate(savedOptions?.to ? dayjs(savedOptions.to) : null);
+      fetchRevenueChart("day", savedOptions);
     } else if (newType === "week") {
-      fetchRevenueChart("week");
+      setWeekMonthSelected(
+        savedOptions?.from ? dayjs(savedOptions.from) : null
+      );
+      fetchRevenueChart("week", savedOptions);
+    } else if (newType === "month") {
+      const year = savedOptions?.year || dayjs().year();
+      setYearSelected(year);
+      fetchRevenueChart("month", { year });
+    } else if (newType === "year") {
+      fetchRevenueChart("year");
     }
   };
 
@@ -242,11 +258,23 @@ const AdminStatDashboard = () => {
       ],
     };
 
-    const options = {
+    const commonOptions = {
       responsive: true,
+      maintainAspectRatio: false,
       plugins: {
         legend: {
           position: "bottom",
+          labels: {
+            padding: 15,
+            font: {
+              size: 11,
+            },
+          },
+        },
+        tooltip: {
+          backgroundColor: "rgba(0,0,0,0.8)",
+          titleColor: "white",
+          bodyColor: "white",
         },
       },
     };
@@ -254,51 +282,84 @@ const AdminStatDashboard = () => {
     switch (chartType) {
       case "day":
         return (
-          <div className="line-chart-wrapper">
-            <Line
-              key={chartType}
-              data={{
-                labels: revenueChart.labels?.map((d) => formatDateVN(d)) || [],
-                datasets: [
-                  {
-                    label: "Doanh thu (VND)",
-                    data: revenueChart.data || [],
-                    borderColor: "#36A2EB",
-                    backgroundColor: "rgba(54, 162, 235, 0.2)",
-                    tension: 0.3,
-                    fill: true,
-                    pointBackgroundColor: "#36A2EB",
-                  },
-                ],
-              }}
-              options={{
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                  legend: { position: "top" },
-                  tooltip: { enabled: true },
+          <Line
+            key={chartType}
+            data={{
+              labels: revenueChart.labels?.map((d) => formatDateVN(d)) || [],
+              datasets: [
+                {
+                  label: "Doanh thu (VND)",
+                  data: revenueChart.data || [],
+                  borderColor: "#36A2EB",
+                  backgroundColor: "rgba(54, 162, 235, 0.2)",
+                  tension: 0.3,
+                  fill: true,
+                  pointBackgroundColor: "#36A2EB",
+                  pointBorderColor: "#36A2EB",
+                  pointRadius: 4,
+                  pointHoverRadius: 6,
                 },
-                scales: {
-                  x: {
-                    display:
-                      revenueChart.labels && revenueChart.labels.length > 10
-                        ? false
-                        : true,
+              ],
+            }}
+            options={{
+              ...commonOptions,
+              scales: {
+                x: {
+                  display:
+                    revenueChart.labels && revenueChart.labels.length > 10
+                      ? false
+                      : true,
+                  grid: {
+                    display: false,
                   },
-                  y: {
-                    beginAtZero: true,
-                    ticks: {
-                      callback: (value) => value.toLocaleString() + " đ",
+                },
+                y: {
+                  beginAtZero: true,
+                  ticks: {
+                    callback: (value) => value.toLocaleString() + " đ",
+                    font: {
+                      size: 10,
                     },
                   },
+                  grid: {
+                    color: "rgba(0,0,0,0.1)",
+                  },
                 },
-              }}
-            />
-          </div>
+              },
+            }}
+          />
         );
 
       case "week":
-        return <PolarArea key={chartType} data={chartData} options={options} />;
+        return (
+          <PolarArea
+            key={chartType}
+            data={{
+              ...chartData,
+              datasets: [
+                {
+                  ...chartData.datasets[0],
+                  backgroundColor: [
+                    "rgba(255, 99, 132, 0.8)",
+                    "rgba(54, 162, 235, 0.8)",
+                    "rgba(255, 206, 86, 0.8)",
+                    "rgba(75, 192, 192, 0.8)",
+                    "rgba(153, 102, 255, 0.8)",
+                  ],
+                  borderColor: [
+                    "rgba(255, 99, 132, 1)",
+                    "rgba(54, 162, 235, 1)",
+                    "rgba(255, 206, 86, 1)",
+                    "rgba(75, 192, 192, 1)",
+                    "rgba(153, 102, 255, 1)",
+                  ],
+                  borderWidth: 2,
+                },
+              ],
+            }}
+            options={commonOptions}
+          />
+        );
 
       case "month":
         return (
@@ -314,21 +375,31 @@ const AdminStatDashboard = () => {
                   borderColor: "rgba(255, 99, 132, 1)",
                   borderWidth: 2,
                   pointBackgroundColor: "rgba(255, 99, 132, 1)",
+                  pointBorderColor: "rgba(255, 99, 132, 1)",
+                  pointRadius: 4,
+                  pointHoverRadius: 6,
                 },
               ],
             }}
             options={{
-              responsive: true,
+              ...commonOptions,
               scales: {
                 r: {
                   beginAtZero: true,
                   ticks: {
                     callback: (value) => value.toLocaleString() + " đ",
+                    font: {
+                      size: 9,
+                    },
+                    stepSize: undefined,
+                  },
+                  grid: {
+                    color: "rgba(0,0,0,0.1)",
+                  },
+                  angleLines: {
+                    color: "rgba(0,0,0,0.1)",
                   },
                 },
-              },
-              plugins: {
-                legend: { position: "top" },
               },
             }}
           />
@@ -336,227 +407,440 @@ const AdminStatDashboard = () => {
 
       case "year":
       default:
-        return <Doughnut key={chartType} data={chartData} options={options} />;
+        return (
+          <Doughnut
+            key={chartType}
+            data={{
+              ...chartData,
+              datasets: [
+                {
+                  ...chartData.datasets[0],
+                  backgroundColor: [
+                    "rgba(255, 99, 132, 0.8)",
+                    "rgba(54, 162, 235, 0.8)",
+                    "rgba(255, 206, 86, 0.8)",
+                    "rgba(75, 192, 192, 0.8)",
+                    "rgba(153, 102, 255, 0.8)",
+                  ],
+                  borderColor: [
+                    "rgba(255, 99, 132, 1)",
+                    "rgba(54, 162, 235, 1)",
+                    "rgba(255, 206, 86, 1)",
+                    "rgba(75, 192, 192, 1)",
+                    "rgba(153, 102, 255, 1)",
+                  ],
+                  borderWidth: 2,
+                  hoverOffset: 4,
+                },
+              ],
+            }}
+            options={{
+              ...commonOptions,
+              cutout: "40%",
+            }}
+          />
+        );
     }
   };
 
   return (
-    <div style={{ padding: "2rem" }}>
-      <h2>📊 Thống kê quản trị</h2>
-
-      <div
-        style={{
-          display: "flex",
-          gap: "2rem",
-          margin: "2rem 0",
-          flexWrap: "wrap",
-        }}
-      >
-        <div>
-          <strong>👤 Tổng member:</strong> {summary.total_users}
-        </div>
-        <div>
-          <strong>🧑‍🏫 Coach active:</strong> {summary.active_coach}
-        </div>
-        <div>
-          <strong>💰 Hôm nay:</strong> {summary.revenue_today?.toLocaleString()}{" "}
-          đ
-        </div>
-        <div>
-          <strong>📅 Tuần:</strong> {summary.revenue_week?.toLocaleString()} đ
-        </div>
-        <div>
-          <strong>🗓️ Tháng:</strong> {summary.revenue_month?.toLocaleString()} đ
-        </div>
-        <div>
-          <strong>🧾 Năm:</strong> {summary.revenue_year?.toLocaleString()} đ
-        </div>
-      </div>
-
-      <div style={{ marginBottom: "1rem" }}>
-        <Radio.Group
-          onChange={onTypeChange}
-          value={selectedType}
-          buttonStyle="solid"
-        >
-          <Radio.Button value="day">📅 Theo ngày</Radio.Button>
-          <Radio.Button value="week">📈 Theo tuần</Radio.Button>
-          <Radio.Button value="month">📊 Theo tháng</Radio.Button>
-          <Radio.Button value="year">📆 Theo năm</Radio.Button>
-        </Radio.Group>
-
-        <div
-          style={{ marginTop: "0.5rem", display: "flex", alignItems: "center" }}
-        >
-          {selectedType === "day" && (
-            <>
-              <DatePicker
-                value={startDate}
-                onChange={setStartDate}
-                format="YYYY-MM-DD"
-                placeholder="Start date"
-                disabledDate={(current) =>
-                  current && current > dayjs().endOf("day")
-                }
-                style={{ marginRight: 8 }}
-              />
-              <DatePicker
-                value={endDate}
-                onChange={setEndDate}
-                format="YYYY-MM-DD"
-                placeholder="End date"
-                disabledDate={(current) =>
-                  current &&
-                  (current > dayjs().endOf("day") ||
-                    (startDate && current < startDate))
-                }
-                style={{ marginRight: 8 }}
-              />
-            </>
-          )}
-
-          {selectedType === "week" && (
-            <DatePicker
-              picker="month"
-              value={weekMonthSelected}
-              onChange={setWeekMonthSelected}
-              style={{ width: 150, marginRight: 8 }}
-              disabledDate={(current) =>
-                current && current > dayjs().endOf("month")
-              }
-            />
-          )}
-
-          {selectedType === "month" && (
-            <DatePicker
-              picker="year"
-              value={dayjs(String(yearSelected))}
-              onChange={(d) => setYearSelected(d ? d.year() : null)}
-              style={{ width: 120, marginRight: 8 }}
-              disabledDate={(current) =>
-                current && current > dayjs().endOf("year")
-              }
-            />
-          )}
-
-          <Button type="primary" onClick={onClickFetch} loading={loading}>
-            Xem
-          </Button>
-        </div>
-      </div>
-
-      <div style={{ marginBottom: "3rem" }}>
-        <h3>
-          🧾 Biểu đồ doanh thu theo{" "}
-          {
-            {
-              day: "7 ngày gần nhất (tính từ hôm nay)",
-              week: "các tuần trong tháng được chọn",
-              month: "12 tháng trong năm",
-              year: "các năm",
-            }[chartType]
-          }
-        </h3>
-        <Spin spinning={loading} tip="Đang tải...">
-          <div style={{ display: "flex", gap: "2rem", alignItems: "center" }}>
-            <div style={{ flex: 2 }}>
-              <Bar
-                redraw={true}
-                data={{
-                  labels:
-                    chartType === "day"
-                      ? revenueChart.labels.map((d) => formatDateVN(d))
-                      : revenueChart.labels || [],
-                  datasets: [
-                    {
-                      label: "Doanh thu (VND)",
-                      data: revenueChart.data || [],
-                      backgroundColor: "rgba(75, 192, 192, 0.7)",
-                      borderWidth: 1,
-                    },
-                  ],
-                }}
-                options={{
-                  responsive: true,
-                  plugins: {
-                    legend: { position: "top" },
-                    tooltip: { enabled: true },
-                  },
-                  scales: {
-                    x: {
-                      display:
-                        revenueChart.labels && revenueChart.labels.length > 15
-                          ? false
-                          : true,
-                    },
-                    y: {
-                      beginAtZero: true,
-                      ticks: {
-                        callback: (value) => value.toLocaleString() + " đ",
-                      },
-                    },
-                  },
-                }}
-              />
+    <Layout style={{ minHeight: "100vh", backgroundColor: "#f8f9fa" }}>
+      <Navbar />
+      <Content style={{ padding: "0" }}>
+        <div className="container-fluid py-4">
+          {/* Header */}
+          <div className="row mb-4">
+            <div className="col-12">
+              <div className="d-flex align-items-center">
+                <h1 className="mb-0 text-primary fw-bold">
+                  📊 Thống kê quản trị
+                </h1>
+                <div className="ms-auto">
+                  <span className="badge bg-success fs-6">Dashboard</span>
+                </div>
+              </div>
+              <hr className="my-3" />
             </div>
-            <div style={{ flex: 1 }}>{renderSecondChart()}</div>
           </div>
-        </Spin>
-      </div>
 
-      <div>
-        <h3>📉 Số tháng trung bình theo mức độ nghiện</h3>
-        <div style={{ display: "flex", gap: "2rem", alignItems: "center" }}>
-          <div style={{ flex: 2 }}>
-            <Bar
-              data={{
-                labels: avgAddiction.labels,
-                datasets: [
-                  {
-                    label: "Tháng trung bình",
-                    data: avgAddiction.data,
-                    backgroundColor: ["#ff6384", "#36a2eb", "#ffce56"],
-                    borderWidth: 1,
-                  },
-                ],
-              }}
-              options={{
-                responsive: true,
-                plugins: {
-                  legend: { position: "top" },
-                  tooltip: { enabled: true },
-                },
-                scales: {
-                  y: { beginAtZero: true },
-                },
-              }}
-            />
+          {/* Stats Cards */}
+          <div className="row g-4 mb-4">
+            <div className="col-lg-2 col-md-4 col-sm-6">
+              <div className="card h-100 border-0 shadow-sm">
+                <div className="card-body text-center">
+                  <div className="fs-1 text-primary mb-2">👤</div>
+                  <h5 className="card-title text-muted mb-1">Tổng member</h5>
+                  <h2 className="text-primary fw-bold">
+                    {summary.total_users}
+                  </h2>
+                </div>
+              </div>
+            </div>
+            <div className="col-lg-2 col-md-4 col-sm-6">
+              <div className="card h-100 border-0 shadow-sm">
+                <div className="card-body text-center">
+                  <div className="fs-1 text-success mb-2">🧑‍🏫</div>
+                  <h5 className="card-title text-muted mb-1">Coach active</h5>
+                  <h2 className="text-success fw-bold">
+                    {summary.active_coach}
+                  </h2>
+                </div>
+              </div>
+            </div>
+            <div className="col-lg-2 col-md-4 col-sm-6">
+              <div className="card h-100 border-0 shadow-sm">
+                <div className="card-body text-center">
+                  <div className="fs-1 text-info mb-2">💰</div>
+                  <h5 className="card-title text-muted mb-1">Hôm nay</h5>
+                  <h2 className="text-info fw-bold">
+                    {summary.revenue_today?.toLocaleString()}đ
+                  </h2>
+                </div>
+              </div>
+            </div>
+            <div className="col-lg-2 col-md-4 col-sm-6">
+              <div className="card h-100 border-0 shadow-sm">
+                <div className="card-body text-center">
+                  <div className="fs-1 text-warning mb-2">📅</div>
+                  <h5 className="card-title text-muted mb-1">Tuần</h5>
+                  <h2 className="text-warning fw-bold">
+                    {summary.revenue_week?.toLocaleString()}đ
+                  </h2>
+                </div>
+              </div>
+            </div>
+            <div className="col-lg-2 col-md-4 col-sm-6">
+              <div className="card h-100 border-0 shadow-sm">
+                <div className="card-body text-center">
+                  <div className="fs-1 text-danger mb-2">🗓️</div>
+                  <h5 className="card-title text-muted mb-1">Tháng</h5>
+                  <h2 className="text-danger fw-bold">
+                    {summary.revenue_month?.toLocaleString()}đ
+                  </h2>
+                </div>
+              </div>
+            </div>
+            <div className="col-lg-2 col-md-4 col-sm-6">
+              <div className="card h-100 border-0 shadow-sm">
+                <div className="card-body text-center">
+                  <div className="fs-1 text-dark mb-2">🧾</div>
+                  <h5 className="card-title text-muted mb-1">Năm</h5>
+                  <h2 className="text-dark fw-bold">
+                    {summary.revenue_year?.toLocaleString()}đ
+                  </h2>
+                </div>
+              </div>
+            </div>
           </div>
-          <div style={{ flex: 1 }}>
-            <Doughnut
-              data={{
-                labels: avgAddiction.labels,
-                datasets: [
-                  {
-                    label: "Tỷ lệ nghiện",
-                    data: avgAddiction.data,
-                    backgroundColor: ["#ff6384", "#36a2eb", "#ffce56"],
-                  },
-                ],
-              }}
-              options={{
-                responsive: true,
-                plugins: {
-                  legend: {
-                    position: "bottom",
-                  },
-                },
-              }}
-            />
+
+          {/* Filter Controls */}
+          <div className="row mb-4">
+            <div className="col-12">
+              <div className="card border-0 shadow-sm">
+                <div className="card-body">
+                  <div className="row align-items-center">
+                    <div className="col-md-6">
+                      <Radio.Group
+                        onChange={onTypeChange}
+                        value={selectedType}
+                        buttonStyle="solid"
+                        className="mb-3 mb-md-0"
+                      >
+                        <Radio.Button value="day">📅 Theo ngày</Radio.Button>
+                        <Radio.Button value="week">📈 Theo tuần</Radio.Button>
+                        <Radio.Button value="month">📊 Theo tháng</Radio.Button>
+                        <Radio.Button value="year">📆 Theo năm</Radio.Button>
+                      </Radio.Group>
+                    </div>
+                    <div className="col-md-6">
+                      <div className="d-flex flex-wrap gap-2 align-items-center">
+                        {selectedType === "day" && (
+                          <>
+                            <DatePicker
+                              value={startDate}
+                              onChange={setStartDate}
+                              format="YYYY-MM-DD"
+                              placeholder="Ngày bắt đầu"
+                              disabledDate={(current) =>
+                                current && current > dayjs().endOf("day")
+                              }
+                              className="flex-fill"
+                            />
+                            <DatePicker
+                              value={endDate}
+                              onChange={setEndDate}
+                              format="YYYY-MM-DD"
+                              placeholder="Ngày kết thúc"
+                              disabledDate={(current) =>
+                                current &&
+                                (current > dayjs().endOf("day") ||
+                                  (startDate && current < startDate))
+                              }
+                              className="flex-fill"
+                            />
+                          </>
+                        )}
+
+                        {selectedType === "week" && (
+                          <DatePicker
+                            picker="month"
+                            value={weekMonthSelected}
+                            onChange={setWeekMonthSelected}
+                            placeholder="Chọn tháng"
+                            disabledDate={(current) =>
+                              current && current > dayjs().endOf("month")
+                            }
+                            className="flex-fill"
+                          />
+                        )}
+
+                        {selectedType === "month" && (
+                          <DatePicker
+                            picker="year"
+                            value={dayjs(String(yearSelected))}
+                            onChange={(d) =>
+                              setYearSelected(d ? d.year() : null)
+                            }
+                            placeholder="Chọn năm"
+                            disabledDate={(current) =>
+                              current && current > dayjs().endOf("year")
+                            }
+                            className="flex-fill"
+                          />
+                        )}
+
+                        <Button
+                          type="primary"
+                          onClick={onClickFetch}
+                          loading={loading}
+                          size="large"
+                          className="px-4"
+                        >
+                          Xem thống kê
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Revenue Chart */}
+          <div className="row mb-4">
+            <div className="col-12">
+              <div className="card border-0 shadow-sm">
+                <div className="card-body">
+                  <h4 className="card-title d-flex align-items-center mb-4">
+                    <span className="me-2">🧾</span>
+                    Biểu đồ doanh thu theo{" "}
+                    {
+                      {
+                        day: "7 ngày gần nhất (tính từ hôm nay)",
+                        week: "các tuần trong tháng được chọn",
+                        month: "12 tháng trong năm",
+                        year: "các năm",
+                      }[chartType]
+                    }
+                  </h4>
+                  <Spin spinning={loading} tip="Đang tải...">
+                    <div className="row">
+                      <div className="col-lg-8 col-md-12 mb-4 mb-lg-0">
+                        <div
+                          className="chart-container"
+                          style={{ height: "400px" }}
+                        >
+                          <Bar
+                            redraw={true}
+                            data={{
+                              labels:
+                                chartType === "day"
+                                  ? revenueChart.labels.map((d) =>
+                                      formatDateVN(d)
+                                    )
+                                  : revenueChart.labels || [],
+                              datasets: [
+                                {
+                                  label: "Doanh thu (VND)",
+                                  data: revenueChart.data || [],
+                                  backgroundColor: "rgba(75, 192, 192, 0.7)",
+                                  borderColor: "rgba(75, 192, 192, 1)",
+                                  borderWidth: 2,
+                                  borderRadius: 5,
+                                },
+                              ],
+                            }}
+                            options={{
+                              responsive: true,
+                              maintainAspectRatio: false,
+                              plugins: {
+                                legend: { position: "top" },
+                                tooltip: { enabled: true },
+                              },
+                              scales: {
+                                x: {
+                                  display:
+                                    revenueChart.labels &&
+                                    revenueChart.labels.length > 15
+                                      ? false
+                                      : true,
+                                  grid: {
+                                    display: false,
+                                  },
+                                },
+                                y: {
+                                  beginAtZero: true,
+                                  ticks: {
+                                    callback: (value) =>
+                                      value.toLocaleString() + " đ",
+                                  },
+                                  grid: {
+                                    color: "rgba(0,0,0,0.1)",
+                                  },
+                                },
+                              },
+                            }}
+                          />
+                        </div>
+                      </div>
+                      <div className="col-lg-4 col-md-12">
+                        <div
+                          className="chart-container"
+                          style={{ height: "400px" }}
+                        >
+                          {renderSecondChart()}
+                        </div>
+                      </div>
+                    </div>
+                  </Spin>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Addiction Statistics */}
+          <div className="row mb-4">
+            <div className="col-12">
+              <div className="card border-0 shadow-sm">
+                <div className="card-body">
+                  <h4 className="card-title d-flex align-items-center mb-4">
+                    <span className="me-2">📉</span>
+                    Số tháng trung bình theo mức độ nghiện
+                  </h4>
+                  <div className="row">
+                    <div className="col-lg-8 col-md-12 mb-4 mb-lg-0">
+                      <div
+                        className="chart-container"
+                        style={{ height: "400px" }}
+                      >
+                        <Bar
+                          data={{
+                            labels: avgAddiction.labels,
+                            datasets: [
+                              {
+                                label: "Tháng trung bình",
+                                data: avgAddiction.data,
+                                backgroundColor: [
+                                  "rgba(255, 99, 132, 0.8)",
+                                  "rgba(54, 162, 235, 0.8)",
+                                  "rgba(255, 206, 86, 0.8)",
+                                ],
+                                borderColor: [
+                                  "rgba(255, 99, 132, 1)",
+                                  "rgba(54, 162, 235, 1)",
+                                  "rgba(255, 206, 86, 1)",
+                                ],
+                                borderWidth: 2,
+                                borderRadius: 5,
+                              },
+                            ],
+                          }}
+                          options={{
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                              legend: { position: "top" },
+                              tooltip: {
+                                enabled: true,
+                                backgroundColor: "rgba(0,0,0,0.8)",
+                                titleColor: "white",
+                                bodyColor: "white",
+                              },
+                            },
+                            scales: {
+                              y: {
+                                beginAtZero: true,
+                                grid: {
+                                  color: "rgba(0,0,0,0.1)",
+                                },
+                              },
+                              x: {
+                                grid: {
+                                  display: false,
+                                },
+                              },
+                            },
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className="col-lg-4 col-md-12">
+                      <div
+                        className="chart-container"
+                        style={{ height: "400px" }}
+                      >
+                        <PolarArea
+                          data={{
+                            labels: avgAddiction.labels,
+                            datasets: [
+                              {
+                                label: "Tỷ lệ nghiện",
+                                data: avgAddiction.data,
+                                backgroundColor: [
+                                  "rgba(255, 99, 132, 0.8)",
+                                  "rgba(54, 162, 235, 0.8)",
+                                  "rgba(255, 206, 86, 0.8)",
+                                ],
+                                borderColor: [
+                                  "rgba(255, 99, 132, 1)",
+                                  "rgba(54, 162, 235, 1)",
+                                  "rgba(255, 206, 86, 1)",
+                                ],
+                                borderWidth: 2,
+                              },
+                            ],
+                          }}
+                          options={{
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                              legend: {
+                                position: "bottom",
+                                labels: {
+                                  padding: 20,
+                                  font: {
+                                    size: 12,
+                                  },
+                                },
+                              },
+                              tooltip: {
+                                backgroundColor: "rgba(0,0,0,0.8)",
+                                titleColor: "white",
+                                bodyColor: "white",
+                              },
+                            },
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+      </Content>
+    </Layout>
   );
 };
 

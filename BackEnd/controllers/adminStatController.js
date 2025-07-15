@@ -218,64 +218,57 @@ const getRevenueByWeekRange = async (req, res) => {
   const { from, to } = req.query;
   try {
     const pool = await sql.connect(dbConfig);
-    const result = await pool
-      .request()
-      .input("from", sql.Date, from)
-      .input("to", sql.Date, to).query(`
-        WITH WeekGroups AS (
-          SELECT
-            DATEADD(DAY, 1 - DATEPART(WEEKDAY, CAST(payment_date AS DATE)), CAST(payment_date AS DATE)) AS week_start,
-            SUM(amount) AS total
-          FROM PAYMENT P
-          JOIN USER_SUBSCRIPTION US ON P.subscription_id = US.subscription_id
-          JOIN CUSTOMER C ON US.user_id = C.user_id
-          WHERE 
-            P.payment_status = 'paid'
-            AND C.user_role = 'member'
-            AND CAST(payment_date AS DATE) BETWEEN @from AND @to
-          GROUP BY DATEADD(DAY, 1 - DATEPART(WEEKDAY, CAST(payment_date AS DATE)), CAST(payment_date AS DATE))
-        )
-        SELECT 
-          FORMAT(week_start, 'dd-MM') + ' __ ' + FORMAT(DATEADD(DAY, 6, week_start), 'dd-MM') AS label,
-          total
-        FROM WeekGroups
-        ORDER BY week_start
-      `);
 
-    // Tạo tuần đầy đủ trong khoảng nếu thiếu tuần nào
-    const fromDate = new Date(from);
-    const toDate = new Date(to);
-    let current = new Date(fromDate);
-    const weekLabelsMap = {};
-    while (current <= toDate) {
-      const startOfWeek = new Date(current);
-      startOfWeek.setDate(current.getDate() - (current.getDay() || 7) + 1); // ISO week Monday
-      const endOfWeek = new Date(startOfWeek);
-      endOfWeek.setDate(startOfWeek.getDate() + 6);
+    // Chuyển from về Date object
+    const start = new Date(from);
+    const weekRanges = [];
 
-      if (startOfWeek > toDate) break;
+    for (let i = 0; i < 5; i++) {
+      const weekStart = new Date(start);
+      weekStart.setDate(start.getDate() + i * 7);
 
-      const label = `${startOfWeek.toLocaleDateString("vi-VN", {
-        day: "2-digit",
-        month: "2-digit",
-      })} đến ${endOfWeek.toLocaleDateString("vi-VN", {
-        day: "2-digit",
-        month: "2-digit",
-      })}`;
-      if (!weekLabelsMap[label]) weekLabelsMap[label] = 0;
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 6);
 
-      current.setDate(current.getDate() + 7);
+      weekRanges.push({ start: weekStart, end: weekEnd });
     }
 
-    // Gán dữ liệu thực tế vào map tuần
-    result.recordset.forEach((r) => {
-      weekLabelsMap[r.label] = r.total;
-    });
+    // Tạo SQL truy vấn tổng doanh thu theo từng khoảng tuần
+    const queries = await Promise.all(
+      weekRanges.map(async ({ start, end }) => {
+        const result = await pool
+          .request()
+          .input("start", sql.Date, start)
+          .input("end", sql.Date, end).query(`
+            SELECT 
+              SUM(P.amount) AS total
+            FROM PAYMENT P
+            JOIN USER_SUBSCRIPTION US ON P.subscription_id = US.subscription_id
+            JOIN CUSTOMER C ON US.user_id = C.user_id
+            WHERE 
+              P.payment_status = 'paid' AND C.user_role = 'member'
+              AND CAST(P.payment_date AS DATE) BETWEEN @start AND @end
+          `);
 
-    res.json({
-      labels: Object.keys(weekLabelsMap),
-      data: Object.values(weekLabelsMap),
-    });
+        const label = `${start.toLocaleDateString("vi-VN", {
+          day: "2-digit",
+          month: "2-digit",
+        })} __ ${end.toLocaleDateString("vi-VN", {
+          day: "2-digit",
+          month: "2-digit",
+        })}`;
+
+        return {
+          label,
+          total: result.recordset[0].total || 0,
+        };
+      })
+    );
+
+    const labels = queries.map((q) => q.label);
+    const data = queries.map((q) => q.total);
+
+    res.json({ labels, data });
   } catch (err) {
     console.error("getRevenueByWeekRange error:", err);
     res.status(500).json({ error: "Internal server error" });
@@ -368,28 +361,58 @@ const getAverageMonthsByAddictionLevel = async (req, res) => {
 };
 
 const getRevenueStats = async (req, res) => {
+  // 👇 Hàm chỉ dùng trong đây
+  function getStartOfCurrentWeek(fromBase) {
+    const now = new Date();
+    const start = new Date(fromBase);
+
+    for (let i = 0; i < 5; i++) {
+      const weekStart = new Date(start);
+      weekStart.setDate(start.getDate() + i * 7);
+
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 6);
+
+      if (now >= weekStart && now <= weekEnd) {
+        return { start: weekStart, end: weekEnd };
+      }
+    }
+
+    return { start: null, end: null };
+  }
+
   try {
+    const fromBase = new Date(req.query.from || new Date());
+    const { start, end } = getStartOfCurrentWeek(fromBase);
+
+    console.log("📅 Tuần hiện tại:", {
+      start: start?.toLocaleDateString("vi-VN"),
+      end: end?.toLocaleDateString("vi-VN"),
+    });
+
     const pool = await sql.connect(dbConfig);
-    const result = await pool.request().query(`
-      SELECT
-        (SELECT SUM(amount) FROM PAYMENT
-         WHERE payment_status = 'paid'
-           AND CAST(payment_date AS DATE) = CAST(GETDATE() AS DATE)) AS total_today,
+    const result = await pool
+      .request()
+      .input("start", sql.Date, start)
+      .input("end", sql.Date, end).query(`
+        SELECT
+          (SELECT SUM(amount) FROM PAYMENT
+           WHERE payment_status = 'paid'
+             AND CAST(payment_date AS DATE) = CAST(GETDATE() AS DATE)) AS total_today,
 
-        (SELECT SUM(amount) FROM PAYMENT
-         WHERE payment_status = 'paid'
-           AND DATEPART(ISO_WEEK, payment_date) = DATEPART(ISO_WEEK, GETDATE())
-           AND YEAR(payment_date) = YEAR(GETDATE())) AS total_week,
+          (SELECT SUM(amount) FROM PAYMENT
+           WHERE payment_status = 'paid'
+             AND CAST(payment_date AS DATE) BETWEEN @start AND @end) AS total_week,
 
-        (SELECT SUM(amount) FROM PAYMENT
-         WHERE payment_status = 'paid'
-           AND MONTH(payment_date) = MONTH(GETDATE())
-           AND YEAR(payment_date) = YEAR(GETDATE())) AS total_month,
+          (SELECT SUM(amount) FROM PAYMENT
+           WHERE payment_status = 'paid'
+             AND MONTH(payment_date) = MONTH(GETDATE())
+             AND YEAR(payment_date) = YEAR(GETDATE())) AS total_month,
 
-        (SELECT SUM(amount) FROM PAYMENT
-         WHERE payment_status = 'paid'
-           AND YEAR(payment_date) = YEAR(GETDATE())) AS total_year
-    `);
+          (SELECT SUM(amount) FROM PAYMENT
+           WHERE payment_status = 'paid'
+             AND YEAR(payment_date) = YEAR(GETDATE())) AS total_year
+      `);
 
     const stats = result.recordset[0];
     res.json({
