@@ -89,7 +89,7 @@ exports.bookAppointment = async (req, res) => {
       .input('schedule_id', sql.Int, schedule_id)
       .input('scheduled_time', sql.DateTime, scheduledTime)
       .input('duration_minutes', sql.Int, durationMinutes)
-      .input('session_status', sql.VarChar, 'pending')
+      .input('session_status', sql.VarChar, 'accepted')
       .query(`
         INSERT INTO COACHING_SESSION (user_id, coach_id, schedule_id, scheduled_time, duration_minutes, session_status)
         VALUES (@user_id, @coach_id, @schedule_id, @scheduled_time, @duration_minutes, @session_status)
@@ -168,7 +168,7 @@ exports.rejectAppointment = async (req, res) => {
     const coachId = req.user.coach_id;
     const actualCoachId = (coachId === 0 || coachId === undefined) ? null : coachId;
     const sessionId = req.params.id;
-    
+
 
     console.log('DEBUG: In rejectAppointment');
     console.log('DEBUG: actualCoachId from token:', actualCoachId);
@@ -295,6 +295,7 @@ exports.getMyAppointments = async (req, res) => {
       .query(`
         SELECT 
           cs.session_id, cs.scheduled_time, cs.session_status, cs.duration_minutes,
+          cs.coach_id, -- Thêm trường coach_id
           c.full_name AS coach_name, c.email AS coach_email,
           ch.google_meet_link
         FROM COACHING_SESSION cs
