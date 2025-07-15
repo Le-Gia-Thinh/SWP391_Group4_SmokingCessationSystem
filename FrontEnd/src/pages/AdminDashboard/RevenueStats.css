@@ -1,0 +1,7 @@
+.line-chart-wrapper {
+  height: 370px; /* hoặc 300px tuỳ bạn */
+}
+
+.line-chart-wrapper canvas {
+  height: 100% !important;
+}

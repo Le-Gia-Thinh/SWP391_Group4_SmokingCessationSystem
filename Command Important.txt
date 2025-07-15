@@ -73,5 +73,5 @@ npm install canvas-confetti
 
 npm install howler
 
-npm install chart.js react-chartjs-2
+npm install chart.js react-chartjs-2 --legacy-peer-deps
 npm install bootstrap
