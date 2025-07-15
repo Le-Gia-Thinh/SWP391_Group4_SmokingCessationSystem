@@ -26,11 +26,11 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-// Tạo middleware upload
+// Tạo instance upload
 const upload = multer({
   storage,
   limits: { fileSize: 5 * 1024 * 1024 }, // Giới hạn 5MB
   fileFilter
 });
 
-module.exports = upload.single('file'); // Trường file tên "file"
+module.exports = upload; // ✅ Export multer gốc

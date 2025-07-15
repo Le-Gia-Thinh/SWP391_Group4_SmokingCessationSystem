@@ -34,7 +34,7 @@ const checkFunctions = {
   // Hành vi
   task_first: async (pool, userId) => {
     const result = await pool.request().input("user_id", sql.Int, userId)
-      .query(`SELECT 1 FROM USER_BEHAVIOR_TASK_LOG WHERE user_id = @user_id`);
+      .query(`SELECT 1 FROM USER_BEHAVIOR_TASK_LOG WHERE user_id = @user_id AND log_date <= CAST(GETDATE() AS DATE)`);
     return result.recordset.length > 0;
   },
 
@@ -42,8 +42,7 @@ const checkFunctions = {
     const result = await pool.request().input("user_id", sql.Int, userId)
       .query(`
         SELECT COUNT(*) AS count FROM (
-          SELECT log_date FROM USER_BEHAVIOR_TASK_LOG
-          WHERE user_id = @user_id
+          SELECT log_date FROM USER_BEHAVIOR_TASK_LOG WHERE user_id = @user_id AND log_date <= CAST(GETDATE() AS DATE)
           GROUP BY log_date HAVING COUNT(DISTINCT time_slot) = 9
         ) AS FullDay
       `);
@@ -52,19 +51,19 @@ const checkFunctions = {
 
   task_10_total: async (pool, userId) => {
     const result = await pool.request().input("user_id", sql.Int, userId)
-      .query(`SELECT COUNT(*) AS count FROM USER_BEHAVIOR_TASK_LOG WHERE user_id = @user_id`);
+      .query(`SELECT COUNT(*) AS count FROM USER_BEHAVIOR_TASK_LOG WHERE user_id = @user_id AND log_date <= CAST(GETDATE() AS DATE)`);
     return result.recordset[0].count >= 10;
   },
 
   task_20_total: async (pool, userId) => {
     const result = await pool.request().input("user_id", sql.Int, userId)
-      .query(`SELECT COUNT(*) AS count FROM USER_BEHAVIOR_TASK_LOG WHERE user_id = @user_id`);
+      .query(`SELECT COUNT(*) AS count FROM USER_BEHAVIOR_TASK_LOG WHERE user_id = @user_id AND log_date <= CAST(GETDATE() AS DATE)`);
     return result.recordset[0].count >= 20;
   },
 
   task_40_total: async (pool, userId) => {
     const result = await pool.request().input("user_id", sql.Int, userId)
-      .query(`SELECT COUNT(*) AS count FROM USER_BEHAVIOR_TASK_LOG WHERE user_id = @user_id`);
+      .query(`SELECT COUNT(*) AS count FROM USER_BEHAVIOR_TASK_LOG WHERE user_id = @user_id AND log_date <= CAST(GETDATE() AS DATE)`);
     return result.recordset[0].count >= 40;
   },
 
@@ -72,9 +71,7 @@ const checkFunctions = {
     const result = await pool.request().input("user_id", sql.Int, userId)
       .query(`
         SELECT COUNT(*) AS count FROM (
-          SELECT log_date
-          FROM USER_BEHAVIOR_TASK_LOG
-          WHERE user_id = @user_id
+          SELECT log_date FROM USER_BEHAVIOR_TASK_LOG WHERE user_id = @user_id AND log_date <= CAST(GETDATE() AS DATE)
           GROUP BY log_date
           HAVING COUNT(*) >= 5
         ) AS Days
@@ -86,91 +83,135 @@ const checkFunctions = {
     const result = await pool.request().input("user_id", sql.Int, userId)
       .query(`
         SELECT COUNT(DISTINCT time_slot) AS count
-        FROM USER_BEHAVIOR_TASK_LOG
-        WHERE user_id = @user_id
+        FROM USER_BEHAVIOR_TASK_LOG WHERE user_id = @user_id AND log_date <= CAST(GETDATE() AS DATE)
       `);
     return result.recordset[0].count >= 9;
   },
 
   // Không hút thuốc
   clean_3_days: async (pool, userId) => {
-    const result = await pool.request().input("user_id", sql.Int, userId)
-      .query(`
-        SELECT COUNT(DISTINCT date) AS days
-        FROM DAILY_SMOKING_SUMMARY
-        WHERE user_id = @user_id AND total_cigarettes = 0
-      `);
-    return result.recordset[0].days >= 3;
-  },
+  const result = await pool.request().input("user_id", sql.Int, userId)
+    .query(`
+      SELECT COUNT(*) AS count
+      FROM DAILY_SMOKING_SUMMARY
+      WHERE user_id = @user_id AND date <= CAST(GETDATE() AS DATE)
+    `);
+  if (result.recordset[0].count < 3) return false;
+
+  const cleanResult = await pool.request().input("user_id", sql.Int, userId)
+    .query(`
+      SELECT COUNT(DISTINCT date) AS days
+      FROM DAILY_SMOKING_SUMMARY
+      WHERE user_id = @user_id AND total_cigarettes = 0 AND date <= CAST(GETDATE() AS DATE)
+    `);
+  return cleanResult.recordset[0].days >= 3;
+},
 
   clean_7_days: async (pool, userId) => {
-    const result = await pool.request().input("user_id", sql.Int, userId)
-      .query(`
-        WITH Streaks AS (
-          SELECT 
-            date,
-            ROW_NUMBER() OVER (ORDER BY date) -
-            ROW_NUMBER() OVER (PARTITION BY total_cigarettes ORDER BY date) AS grp
-          FROM DAILY_SMOKING_SUMMARY
-          WHERE user_id = @user_id AND total_cigarettes = 0
-        )
-        SELECT COUNT(*) AS streak
-        FROM (
-          SELECT COUNT(*) AS streak_length
-          FROM Streaks
-          GROUP BY grp
-          HAVING COUNT(*) >= 7
-        ) AS ValidStreaks
-      `);
-    return result.recordset.length > 0;
-  },
+  const result = await pool.request().input("user_id", sql.Int, userId)
+    .query(`
+      WITH SortedLogs AS (
+        SELECT 
+          date,
+          ROW_NUMBER() OVER (ORDER BY date) AS rn
+        FROM DAILY_SMOKING_SUMMARY
+        WHERE user_id = @user_id AND total_cigarettes = 0
+      ),
+      Streaks AS (
+        SELECT 
+          date,
+          DATEADD(DAY, -rn, date) AS grp
+        FROM SortedLogs
+      )
+      SELECT MAX(streak_length) AS streak_length
+      FROM (
+        SELECT COUNT(*) AS streak_length
+        FROM Streaks
+        GROUP BY grp
+      ) AS StreakGroups
+    `);
+
+  return result.recordset.length > 0 && result.recordset[0].streak_length >= 7;
+},
 
   clean_15_days: async (pool, userId) => {
-    const result = await pool.request().input("user_id", sql.Int, userId)
-      .query(`
-        SELECT COUNT(DISTINCT date) AS days
-        FROM DAILY_SMOKING_SUMMARY
-        WHERE user_id = @user_id AND total_cigarettes = 0
-      `);
-    return result.recordset[0].days >= 15;
-  },
+  const result = await pool.request().input("user_id", sql.Int, userId)
+    .query(`
+      SELECT COUNT(*) AS count
+      FROM DAILY_SMOKING_SUMMARY
+      WHERE user_id = @user_id AND date <= CAST(GETDATE() AS DATE)
+    `);
+  if (result.recordset[0].count < 15) return false;
+
+  const cleanResult = await pool.request().input("user_id", sql.Int, userId)
+    .query(`
+      SELECT COUNT(DISTINCT date) AS days
+      FROM DAILY_SMOKING_SUMMARY
+      WHERE user_id = @user_id AND total_cigarettes = 0 AND date <= CAST(GETDATE() AS DATE)
+    `);
+  return cleanResult.recordset[0].days >= 15;
+},
 
   clean_30_days: async (pool, userId) => {
-    const result = await pool.request().input("user_id", sql.Int, userId)
-      .query(`
-        SELECT COUNT(DISTINCT date) AS days
-        FROM DAILY_SMOKING_SUMMARY
-        WHERE user_id = @user_id AND total_cigarettes = 0
-      `);
-    return result.recordset[0].days >= 30;
-  },
+  const result = await pool.request().input("user_id", sql.Int, userId)
+    .query(`
+      SELECT COUNT(*) AS count
+      FROM DAILY_SMOKING_SUMMARY
+      WHERE user_id = @user_id AND date <= CAST(GETDATE() AS DATE)
+    `);
+  if (result.recordset[0].count < 30) return false;
+
+  const cleanResult = await pool.request().input("user_id", sql.Int, userId)
+    .query(`
+      SELECT COUNT(DISTINCT date) AS days
+      FROM DAILY_SMOKING_SUMMARY
+      WHERE user_id = @user_id AND total_cigarettes = 0 AND date <= CAST(GETDATE() AS DATE)
+    `);
+  return cleanResult.recordset[0].days >= 30;
+},
 
   clean_60_days: async (pool, userId) => {
-    const result = await pool.request().input("user_id", sql.Int, userId)
-      .query(`
-        SELECT COUNT(DISTINCT date) AS days
-        FROM DAILY_SMOKING_SUMMARY
-        WHERE user_id = @user_id AND total_cigarettes = 0
-      `);
-    return result.recordset[0].days >= 60;
-  },
+  const result = await pool.request().input("user_id", sql.Int, userId)
+    .query(`
+      SELECT COUNT(*) AS count
+      FROM DAILY_SMOKING_SUMMARY
+      WHERE user_id = @user_id AND date <= CAST(GETDATE() AS DATE)
+    `);
+  if (result.recordset[0].count < 60) return false;
+
+  const cleanResult = await pool.request().input("user_id", sql.Int, userId)
+    .query(`
+      SELECT COUNT(DISTINCT date) AS days
+      FROM DAILY_SMOKING_SUMMARY
+      WHERE user_id = @user_id AND total_cigarettes = 0 AND date <= CAST(GETDATE() AS DATE)
+    `);
+  return cleanResult.recordset[0].days >= 60;
+},
 
   clean_90_days: async (pool, userId) => {
-    const result = await pool.request().input("user_id", sql.Int, userId)
-      .query(`
-        SELECT COUNT(DISTINCT date) AS days
-        FROM DAILY_SMOKING_SUMMARY
-        WHERE user_id = @user_id AND total_cigarettes = 0
-      `);
-    return result.recordset[0].days >= 90;
-  },
+  const result = await pool.request().input("user_id", sql.Int, userId)
+    .query(`
+      SELECT COUNT(*) AS count
+      FROM DAILY_SMOKING_SUMMARY
+      WHERE user_id = @user_id AND date <= CAST(GETDATE() AS DATE)
+    `);
+  if (result.recordset[0].count < 90) return false;
+
+  const cleanResult = await pool.request().input("user_id", sql.Int, userId)
+    .query(`
+      SELECT COUNT(DISTINCT date) AS days
+      FROM DAILY_SMOKING_SUMMARY
+      WHERE user_id = @user_id AND total_cigarettes = 0 AND date <= CAST(GETDATE() AS DATE)
+    `);
+  return cleanResult.recordset[0].days >= 90;
+},
 
   first_day_clean: async (pool, userId) => {
     const result = await pool.request().input("user_id", sql.Int, userId)
       .query(`
         SELECT TOP 1 total_cigarettes
         FROM DAILY_SMOKING_SUMMARY
-        WHERE user_id = @user_id
+        WHERE user_id = @user_id AND date <= CAST(GETDATE() AS DATE)
         ORDER BY date ASC
       `);
     return result.recordset.length > 0 && result.recordset[0].total_cigarettes === 0;

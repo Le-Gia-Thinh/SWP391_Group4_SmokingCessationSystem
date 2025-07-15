@@ -273,9 +273,22 @@ const MemberBookings = () => {
                             <Tooltip title="Tham gia Google Meet">
                                 <Button
                                     type="primary"
-                                    href={record.google_meet_link.startsWith('http') ? record.google_meet_link : `https://${record.google_meet_link}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
+                                    onClick={() => {
+                                        const now = moment();
+                                        const scheduled = moment(record.scheduled_time);
+                                        const minutesBefore = scheduled.diff(now, 'minutes');
+
+                                        // Tự cập nhật từ state (dữ liệu mới nhất từ backend)
+                                        const currentSession = appointments.find((a) => a.session_id === record.session_id);
+                                        const latestLink = currentSession?.google_meet_link;
+
+                                        if (!latestLink) {
+                                            message.error("Không tìm thấy link cuộc họp.");
+                                        return;
+                                        }
+
+                                        window.open(latestLink.startsWith('http') ? latestLink : `https://${latestLink}`, '_blank');
+                                    }}
                                 >
                                     Tham gia cuộc họp
                                 </Button>
