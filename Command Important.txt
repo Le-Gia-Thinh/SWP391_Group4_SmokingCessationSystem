@@ -33,7 +33,7 @@ payment
  npm install -g ngrok
  mở powershell chạy admin 
  # 1. Cho phép chạy scripts trong phiên này
-Set-ExecutionPolicy Bypass -Scope Process -Force
+  Set-ExecutionPolicy Bypass -Scope Process -Force
 
 # 2. Bật chế độ TLS 1.2 để tải về an toàn
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -72,4 +72,6 @@ npm install moment
 npm install canvas-confetti
 
 npm install howler
+
+npm install chart.js react-chartjs-2 --legacy-peer-deps
 npm install bootstrap
