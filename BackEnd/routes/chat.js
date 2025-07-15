@@ -2,14 +2,18 @@ const express = require('express');
 const router = express.Router();
 const chatController = require('../controllers/chatController');
 const { auth } = require('../middleware/auth');
+const upload = require('../utils/chatUpload');
 
-// Gửi tin nhắn (POST /chat/:session_id/message)
-router.post('/:session_id/message', auth, chatController.sendMessage);
+// Gửi tin nhắn hỗ trợ liên tục (POST /chat/guided/send)
+router.post('/guided/send', auth, upload.single('file'), chatController.sendGuidedMessage);
 
-// Lấy tin nhắn (GET /chat/:session_id/messages?before=&limit=)
-router.get('/:session_id/messages', auth, chatController.getMessages);
+// Lấy tin nhắn theo partner_id (GET /chat/guided/:partner_id)
+router.get('/guided/:partner_id', auth, chatController.getGuidedMessages);
 
-// Đánh dấu đã dọc tin nhắn
-router.put('/:session_id/read', auth, chatController.markAsRead);
+// Đánh dấu đã đọc (PUT /chat/guided/:thread_id/mark-read)
+router.put('/guided/:thread_id/mark-read', auth, chatController.markGuidedAsRead);
+
+// Lấy danh sách tất cả các cuộc trò chuyện của người dùng
+router.get('/guided', auth, chatController.getChatThreads);
 
 module.exports = router;

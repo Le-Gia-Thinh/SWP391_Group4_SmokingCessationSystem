@@ -556,20 +556,33 @@ CREATE TABLE USER_BEHAVIOR_TASK_LOG (
 
     UNIQUE(user_id, log_date, time_slot) -- Mỗi user chỉ chọn 1 task/slot/ngày
 );
+
+-- 35. DIRECT_CHAT_THREAD: Quản lí từng box chat
+CREATE TABLE DIRECT_CHAT_THREAD (
+    thread_id INT IDENTITY(1,1) PRIMARY KEY,       -- Mã luồng chat
+    member_id INT NOT NULL,                        -- Người dùng là member
+    coach_id INT NOT NULL,                         -- Người dùng là coach
+    created_at DATETIME DEFAULT GETDATE(),         -- Ngày tạo luồng chat
+
+    UNIQUE(member_id, coach_id),                   -- Mỗi cặp chỉ có 1 luồng duy nhất
+
+    FOREIGN KEY (member_id) REFERENCES CUSTOMER(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (coach_id) REFERENCES COACH(coach_id) ON DELETE CASCADE
+);
 	
--- 35. DIRECT_MESSAGE: Tin nhắn trao đổi trực tiếp giữa Coach và Member
+-- 36. DIRECT_MESSAGE: Lưu nội dung, thời gian, file chat tư vấn Coach - Member
 CREATE TABLE DIRECT_MESSAGE (
     message_id INT IDENTITY PRIMARY KEY,         -- Khóa chính tự tăng
-    session_id INT NOT NULL,                     -- Liên kết đến phiên tư vấn
-    sender_id INT NOT NULL,                      -- ID của người gửi (Coach hoặc Member)
+    thread_id INT NULL,                          -- Liên kết đến DIRECT_CHAT_THREAD
+    sender_id INT NULL,                          -- ID người gửi
     sender_role VARCHAR(20) NOT NULL CHECK (
-        sender_role IN ('member', 'coach')       -- Phân biệt vai trò người gửi
+        sender_role IN ('member', 'coach')
     ),
-    message NVARCHAR(MAX) NOT NULL,              -- Nội dung tin nhắn
-    file_url NVARCHAR(MAX) NULL,                 -- Ảnh/tệp đính kèm
-    sent_at DATETIME DEFAULT GETDATE(),          -- Thời điểm gửi tin nhắn
-    is_read BIT DEFAULT 0,                       -- Đánh dấu đã đọc tin nhắn. 0: chưa đọc 1: đã đọc
+    message NVARCHAR(MAX) NOT NULL,              -- Nội dung
+    file_url NVARCHAR(MAX) NULL,                 -- File đính kèm
+    sent_at DATETIME DEFAULT GETDATE(),          -- Thời điểm gửi
+    is_read BIT DEFAULT 0,                       -- Đã đọc hay chưa
 
-    CONSTRAINT fk_directmsg_session FOREIGN KEY (session_id) REFERENCES COACHING_SESSION(session_id),
-    CONSTRAINT fk_directmsg_sender FOREIGN KEY (sender_id) REFERENCES CUSTOMER(user_id)
+    CONSTRAINT fk_directmsg_thread FOREIGN KEY (thread_id) REFERENCES DIRECT_CHAT_THREAD(thread_id) ON DELETE SET NULL,
+    CONSTRAINT fk_directmsg_sender FOREIGN KEY (sender_id) REFERENCES CUSTOMER(user_id) ON DELETE NO ACTION
 );

@@ -212,26 +212,60 @@ JOIN COACH_SCHEDULE s ON s.coach_id = c.coach_id
 WHERE u.username = 'member3' AND s.start_time = @start2;
 
 
--- 10. DIRECT_MESSAGE
+-- 10. DIRECT_CHAT_THREAD: Tạo luồng chat giữa member2 và coach1
+DECLARE @member_id INT = (SELECT user_id FROM CUSTOMER WHERE username = 'member2');
+DECLARE @coach_user_id INT = (SELECT user_id FROM CUSTOMER WHERE username = 'coach1');
+DECLARE @coach_id INT = (SELECT coach_id FROM COACH WHERE user_id = @coach_user_id);
+
+-- Kiểm tra nếu chưa có thread thì mới tạo
+IF NOT EXISTS (
+    SELECT 1 FROM DIRECT_CHAT_THREAD WHERE member_id = @member_id AND coach_id = @coach_id
+)
+BEGIN
+    INSERT INTO DIRECT_CHAT_THREAD (member_id, coach_id, created_at)
+    VALUES (@member_id, @coach_id, GETDATE());
+END;
+
+
+-- 10.1. DIRECT_MESSAGE: Coach và member trò chuyện qua thread chat
+DECLARE @thread_id1 INT;
+
+-- Lấy thread_id vừa tạo hoặc đã tồn tại
+SELECT @thread_id1 = thread_id
+FROM DIRECT_CHAT_THREAD
+WHERE member_id = @member_id AND coach_id = @coach_id;
+
+-- Coach → Member
+INSERT INTO DIRECT_MESSAGE (thread_id, sender_id, sender_role, message, file_url)
+VALUES (
+    @thread_id1,
+    @coach_user_id,
+    'coach',
+    N'Chào bạn, chúng ta sẽ bắt đầu buổi tư vấn lúc 9h nhé!',
+    NULL
+);
+
+-- Member → Coach
+INSERT INTO DIRECT_MESSAGE (thread_id, sender_id, sender_role, message, file_url)
+VALUES (
+    @thread_id1,
+    @member_id,
+    'member',
+    N'Dạ vâng, em đã sẵn sàng!',
+    NULL
+);
+
+
+-- 11. COACHING_MESSAGE
 DECLARE @session_id1 INT;
 
+-- Gán session_id của buổi hẹn giữa member2 và coach1 vào biến
 SELECT @session_id1 = session_id
 FROM COACHING_SESSION
 WHERE user_id = (SELECT user_id FROM CUSTOMER WHERE username = 'member2')
   AND scheduled_time = @start1;
 
--- Coach → Member
-INSERT INTO DIRECT_MESSAGE (session_id, sender_id, sender_role, message, file_url)
-SELECT @session_id1, user_id, 'coach', N'Chào bạn, chúng ta sẽ bắt đầu buổi tư vấn lúc 9h nhé!', NULL
-FROM CUSTOMER WHERE username = 'coach1';
-
--- Member → Coach
-INSERT INTO DIRECT_MESSAGE (session_id, sender_id, sender_role, message, file_url)
-SELECT @session_id1, user_id, 'member', N'Dạ vâng, em đã sẵn sàng!', NULL
-FROM CUSTOMER WHERE username = 'member2';
-
-
--- 11. COACHING_MESSAGE
+-- Chèn tin nhắn vào bảng COACHING_MESSAGE
 INSERT INTO COACHING_MESSAGE (session_id, user_id, coach_id, content, sent_at)
 SELECT @session_id1, u.user_id, c.coach_id,
        N'Lịch hẹn đã được duyệt. Link Meet: ' + c.google_meet_link, GETDATE()
