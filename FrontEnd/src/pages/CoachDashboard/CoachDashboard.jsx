@@ -22,6 +22,7 @@ import FormModal from '../../components/ui/FormModal';
 import BookingManagement from '../BookingManagement/BookingManagement';
 import CoachChat from '../CoachChat/CoachChat';
 import Navbar from '../../layouts/Navbar';
+import CoachScheduleTab from './CoachScheduleTab';
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
@@ -424,7 +425,7 @@ const CoachDashboard = () => {
                                 }
                                 key="schedule"
                             >
-                                {/* <ScheduleManagement /> */}
+                                <CoachScheduleTab />
                             </TabPane>
                             <TabPane
                                 tab={
