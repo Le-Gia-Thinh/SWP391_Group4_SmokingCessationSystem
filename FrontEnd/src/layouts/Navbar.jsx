@@ -76,7 +76,7 @@ export default function Navbar() {
     ];
 
     if (user?.role === 'member') {
-      items.push({ key: '/membership', icon: <TeamOutlined />, label: 'Thành viên', onClick: () => navigate('/membership') });
+      items.push({ key: '/membership', icon: <TeamOutlined />, label: 'Mua gói cao cấp', onClick: () => navigate("/checkout") });
     }
 
     if (!isCoach() && !isAdmin()) {
@@ -201,12 +201,12 @@ export default function Navbar() {
       </div>
 
       {/* Drawer (mobile menu) */}
-      <Drawer
+      <Drawer styles={{ body: { padding: '0' } }}
         title="Menu"
         placement="left"
         onClose={() => setDrawerOpen(false)}
         open={drawerOpen}
-        bodyStyle={{ padding: 0 }}
+
       >
         <Menu
           mode="inline"

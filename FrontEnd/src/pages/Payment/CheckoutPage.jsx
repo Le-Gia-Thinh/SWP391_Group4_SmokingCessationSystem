@@ -3,7 +3,7 @@ import { Typography, Card, Radio, Button, Row, Col, Spin, message } from 'antd';
 import { CheckCircleTwoTone, CreditCardOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-
+import Navbar from "../../layouts/Navbar";
 const { Title, Paragraph } = Typography;
 
 const CheckoutPage = () => {
@@ -147,157 +147,160 @@ const CheckoutPage = () => {
     }
 
     return (
-        <div style={{
-            maxWidth: 1000,
-            margin: '40px auto',
-            padding: 32,
-            background: '#fff',
-            borderRadius: 12,
-            boxShadow: '0 4px 24px rgba(0,0,0,0.1)',
-        }}>
-            <div style={{ textAlign: 'center', marginBottom: 40 }}>
-                <CreditCardOutlined style={{ fontSize: 48, color: '#52c41a', marginBottom: 16 }} />
-                <Title level={2} style={{ margin: 0 }}>
-                    Chọn gói dịch vụ
-                </Title>
-                <Paragraph type="secondary" style={{ fontSize: 16, marginTop: 8 }}>
-                    Chọn gói dịch vụ phù hợp để nâng cao trải nghiệm của bạn
-                </Paragraph>
-            </div>
-
-            <Radio.Group
-                onChange={handlePackageChange}
-                value={selectedPackage}
-                style={{ width: '100%' }}
-            >
-                <Row gutter={[24, 24]}>
-                    {packages.map(pkg => (
-                        <Col xs={24} sm={12} lg={8} key={pkg.package_id}>
-                            <Card
-                                hoverable
-                                style={{
-                                    border: selectedPackage === pkg.package_id ? '2px solid #52c41a' : '1px solid #d9d9d9',
-                                    boxShadow: selectedPackage === pkg.package_id ? '0 0 12px rgba(82, 196, 26, 0.2)' : undefined,
-                                    borderRadius: 10,
-                                    minHeight: 280,
-                                    textAlign: 'center',
-                                    transition: 'all 0.3s ease',
-                                    cursor: 'pointer',
-                                    position: 'relative'
-                                }}
-                                onClick={() => setSelectedPackage(pkg.package_id)}
-                                bodyStyle={{ padding: 20 }}
-                            >
-                                <Radio
-                                    value={pkg.package_id}
-                                    style={{
-                                        marginBottom: 16,
-                                        display: 'block'
-                                    }}
-                                >
-                                    <Title level={4} style={{ margin: 0, color: '#1890ff' }}>
-                                        {pkg.package_name}
-                                    </Title>
-                                </Radio>
-
-                                <div style={{
-                                    fontSize: 28,
-                                    fontWeight: 'bold',
-                                    color: '#52c41a',
-                                    margin: '16px 0',
-                                    lineHeight: 1
-                                }}>
-                                    {pkg.price === 0 ? 'Miễn phí' : `${pkg.price.toLocaleString()} đ`}
-                                </div>
-
-                                <Paragraph style={{
-                                    minHeight: 60,
-                                    color: '#666',
-                                    fontSize: 14,
-                                    marginBottom: 16
-                                }}>
-                                    {pkg.description}
-                                </Paragraph>
-
-                                <div style={{
-                                    fontSize: 13,
-                                    color: '#999',
-                                    marginBottom: 16,
-                                    padding: '8px 0',
-                                    borderTop: '1px solid #f0f0f0'
-                                }}>
-                                    <strong>Thời hạn:</strong> {pkg.duration_days} ngày
-                                </div>
-
-                                {/* Hiển thị features */}
-                                <div style={{
-                                    fontSize: 12,
-                                    color: '#666',
-                                    textAlign: 'left',
-                                    marginBottom: 16
-                                }}>
-                                    {pkg.coach_access && (
-                                        <div style={{ marginBottom: 4 }}>
-                                            ✓ Truy cập huấn luyện viên
-                                        </div>
-                                    )}
-                                    {pkg.community_access && (
-                                        <div style={{ marginBottom: 4 }}>
-                                            ✓ Truy cập cộng đồng
-                                        </div>
-                                    )}
-                                    {pkg.premium_content && (
-                                        <div style={{ marginBottom: 4 }}>
-                                            ✓ Nội dung premium
-                                        </div>
-                                    )}
-                                </div>
-
-                                {selectedPackage === pkg.package_id && (
-                                    <div style={{
-                                        position: 'absolute',
-                                        top: 10,
-                                        right: 10
-                                    }}>
-                                        <CheckCircleTwoTone
-                                            twoToneColor="#52c41a"
-                                            style={{ fontSize: 24 }}
-                                        />
-                                    </div>
-                                )}
-                            </Card>
-                        </Col>
-                    ))}
-                </Row>
-            </Radio.Group>
-
+        <>
+            <Navbar />
             <div style={{
-                marginTop: 40,
-                textAlign: 'center',
-                padding: '20px 0',
-                borderTop: '1px solid #f0f0f0'
+                maxWidth: 1000,
+                margin: '40px auto',
+                padding: 32,
+                background: '#fff',
+                borderRadius: 12,
+                boxShadow: '0 4px 24px rgba(0,0,0,0.1)',
             }}>
-                <Button
-                    type="primary"
-                    size="large"
-                    onClick={handleContinue}
-                    disabled={!selectedPackage || processing}
-                    loading={processing}
-                    style={{
-                        minWidth: 200,
-                        height: 50,
-                        fontSize: 16,
-                        fontWeight: 'bold'
-                    }}
-                >
-                    {processing ? 'Đang xử lý...' : 'Tiếp tục thanh toán'}
-                </Button>
+                <div style={{ textAlign: 'center', marginBottom: 40 }}>
+                    <CreditCardOutlined style={{ fontSize: 48, color: '#52c41a', marginBottom: 16 }} />
+                    <Title level={2} style={{ margin: 0 }}>
+                        Chọn gói dịch vụ
+                    </Title>
+                    <Paragraph type="secondary" style={{ fontSize: 16, marginTop: 8 }}>
+                        Chọn gói dịch vụ phù hợp để nâng cao trải nghiệm của bạn
+                    </Paragraph>
+                </div>
 
-                <div style={{ marginTop: 16, fontSize: 12, color: '#999' }}>
-                    Bạn sẽ được chuyển hướng đến trang thanh toán PayOS
+                <Radio.Group
+                    onChange={handlePackageChange}
+                    value={selectedPackage}
+                    style={{ width: '100%' }}
+                >
+                    <Row gutter={[24, 24]}>
+                        {packages.map(pkg => (
+                            <Col xs={24} sm={12} lg={8} key={pkg.package_id}>
+                                <Card
+                                    hoverable
+                                    style={{
+                                        border: selectedPackage === pkg.package_id ? '2px solid #52c41a' : '1px solid #d9d9d9',
+                                        boxShadow: selectedPackage === pkg.package_id ? '0 0 12px rgba(82, 196, 26, 0.2)' : undefined,
+                                        borderRadius: 10,
+                                        minHeight: 280,
+                                        textAlign: 'center',
+                                        transition: 'all 0.3s ease',
+                                        cursor: 'pointer',
+                                        position: 'relative'
+                                    }}
+                                    onClick={() => setSelectedPackage(pkg.package_id)}
+                                    bodyStyle={{ padding: 20 }}
+                                >
+                                    <Radio
+                                        value={pkg.package_id}
+                                        style={{
+                                            marginBottom: 16,
+                                            display: 'block'
+                                        }}
+                                    >
+                                        <Title level={4} style={{ margin: 0, color: '#1890ff' }}>
+                                            {pkg.package_name}
+                                        </Title>
+                                    </Radio>
+
+                                    <div style={{
+                                        fontSize: 28,
+                                        fontWeight: 'bold',
+                                        color: '#52c41a',
+                                        margin: '16px 0',
+                                        lineHeight: 1
+                                    }}>
+                                        {pkg.price === 0 ? 'Miễn phí' : `${pkg.price.toLocaleString()} đ`}
+                                    </div>
+
+                                    <Paragraph style={{
+                                        minHeight: 60,
+                                        color: '#666',
+                                        fontSize: 14,
+                                        marginBottom: 16
+                                    }}>
+                                        {pkg.description}
+                                    </Paragraph>
+
+                                    <div style={{
+                                        fontSize: 13,
+                                        color: '#999',
+                                        marginBottom: 16,
+                                        padding: '8px 0',
+                                        borderTop: '1px solid #f0f0f0'
+                                    }}>
+                                        <strong>Thời hạn:</strong> {pkg.duration_days} ngày
+                                    </div>
+
+                                    {/* Hiển thị features */}
+                                    <div style={{
+                                        fontSize: 12,
+                                        color: '#666',
+                                        textAlign: 'left',
+                                        marginBottom: 16
+                                    }}>
+                                        {pkg.coach_access && (
+                                            <div style={{ marginBottom: 4 }}>
+                                                ✓ Truy cập huấn luyện viên
+                                            </div>
+                                        )}
+                                        {pkg.community_access && (
+                                            <div style={{ marginBottom: 4 }}>
+                                                ✓ Truy cập cộng đồng
+                                            </div>
+                                        )}
+                                        {pkg.premium_content && (
+                                            <div style={{ marginBottom: 4 }}>
+                                                ✓ Nội dung premium
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {selectedPackage === pkg.package_id && (
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: 10,
+                                            right: 10
+                                        }}>
+                                            <CheckCircleTwoTone
+                                                twoToneColor="#52c41a"
+                                                style={{ fontSize: 24 }}
+                                            />
+                                        </div>
+                                    )}
+                                </Card>
+                            </Col>
+                        ))}
+                    </Row>
+                </Radio.Group>
+
+                <div style={{
+                    marginTop: 40,
+                    textAlign: 'center',
+                    padding: '20px 0',
+                    borderTop: '1px solid #f0f0f0'
+                }}>
+                    <Button
+                        type="primary"
+                        size="large"
+                        onClick={handleContinue}
+                        disabled={!selectedPackage || processing}
+                        loading={processing}
+                        style={{
+                            minWidth: 200,
+                            height: 50,
+                            fontSize: 16,
+                            fontWeight: 'bold'
+                        }}
+                    >
+                        {processing ? 'Đang xử lý...' : 'Tiếp tục thanh toán'}
+                    </Button>
+
+                    <div style={{ marginTop: 16, fontSize: 12, color: '#999' }}>
+                        Bạn sẽ được chuyển hướng đến trang thanh toán PayOS
+                    </div>
                 </div>
             </div>
-        </div>
+        </>
     );
 };
 
