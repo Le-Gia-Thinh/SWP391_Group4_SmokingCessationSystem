@@ -279,12 +279,12 @@ const MemberBookings = () => {
                                         const minutesBefore = scheduled.diff(now, 'minutes');
 
                                         // Tự cập nhật từ state (dữ liệu mới nhất từ backend)
-                                        const currentSession = appointments.find((a) => a.session_id === record.session_id);
+                                        const currentSession = bookings.find((a) => a.session_id === record.session_id);
                                         const latestLink = currentSession?.google_meet_link;
 
                                         if (!latestLink) {
                                             message.error("Không tìm thấy link cuộc họp.");
-                                        return;
+                                            return;
                                         }
 
                                         window.open(latestLink.startsWith('http') ? latestLink : `https://${latestLink}`, '_blank');
