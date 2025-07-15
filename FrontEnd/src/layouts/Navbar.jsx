@@ -143,16 +143,16 @@ export default function Navbar() {
     return user?.role === "admin"
       ? "Quản trị viên"
       : user?.role === "coach"
-      ? "Huấn luyện viên"
-      : "Thành viên";
+        ? "Huấn luyện viên"
+        : "Thành viên";
   };
 
   const badgeColor =
     remainingDays && remainingDays > 0
       ? "#52c41a"
       : user?.role === "admin"
-      ? "#ff4d4f"
-      : "#52c41a";
+        ? "#ff4d4f"
+        : "#52c41a";
 
   /* ---------- JSX ---------- */
   return (
@@ -202,7 +202,19 @@ export default function Navbar() {
                 onClick={() => navigate("/notifications")}
                 style={{ marginRight: 4 }}
               />
-
+              <Dropdown
+                popupRender={() => <UserDropdownMenu />}
+                placement="bottomRight"
+                trigger={["click"]}
+              >
+                <Avatar
+                  icon={<UserOutlined />}
+                  style={{
+                    backgroundColor: user.role === "admin" ? "#ff4d4f" : "#52c41a",
+                    cursor: "pointer",
+                  }}
+                />
+              </Dropdown>
               {/* Badge */}
               <Badge
                 count={
@@ -211,18 +223,18 @@ export default function Navbar() {
                       ? `Premium ${remainingDays} ngày`
                       : `Premium ${Math.floor(remainingDays / 30)} tháng`
                     : user.role === "admin"
-                    ? "Quản trị viên"
-                    : user.role === "coach"
-                    ? "Huấn luyện viên"
-                    : "Thành viên"
+                      ? "Quản trị viên"
+                      : user.role === "coach"
+                        ? "Huấn luyện viên"
+                        : "Thành viên"
                 }
                 style={{
                   backgroundColor:
                     remainingDays && remainingDays > 0
                       ? "#52c41a"
                       : user.role === "admin"
-                      ? "#ff4d4f"
-                      : "#52c41a",
+                        ? "#ff4d4f"
+                        : "#52c41a",
                 }}
               />
 
