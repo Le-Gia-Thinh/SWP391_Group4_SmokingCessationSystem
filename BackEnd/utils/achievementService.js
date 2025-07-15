@@ -223,6 +223,7 @@ async function grantIfNotExist(pool, userId, achievementId) {
         VALUES (@user_id, @achievement_id, GETDATE(), 0)
       `);
 
+<<<<<<< HEAD
       const result = await pool.request()
       .input("id", sql.Int, achievementId)
       .query(`SELECT title FROM ACHIEVEMENT WHERE achievement_id = @id`);
@@ -240,6 +241,26 @@ async function grantIfNotExist(pool, userId, achievementId) {
       .query(`
         INSERT INTO NOTIFICATION (user_id, content, created_at, is_read)
         VALUES (@user_id, @content, @created_at, @is_read)
+=======
+    const info = await pool.request()
+  .input("achievement_id", sql.Int, achievementId)
+  .query(`SELECT title, description FROM ACHIEVEMENT WHERE achievement_id = @achievement_id`);
+
+    const { title, description } = info.recordset[0];
+    const content = `🏆 Bạn vừa đạt thành tựu: ${title}! ${description}`;
+
+    // ✅ 3. Gửi thông báo lên bảng NOTIFICATION
+    await pool.request()
+      .input("user_id", sql.Int, userId)
+      .input("title", sql.NVarChar, "🎉 Thành tựu mới")
+      .input("content", sql.NVarChar, content)
+      .input("notification_type", sql.VarChar, "achievement")
+      .input("created_at", sql.DateTime, new Date())
+      .input("is_read", sql.Bit, 0)
+      .query(`
+        INSERT INTO NOTIFICATION (user_id, title, content, notification_type, created_at, is_read)
+        VALUES (@user_id, @title, @content, @notification_type, @created_at, @is_read)
+>>>>>>> QBao
       `);
   }
 }
