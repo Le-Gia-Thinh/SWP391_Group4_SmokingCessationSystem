@@ -98,7 +98,7 @@ const checkFunctions = {
       .query(`
         SELECT COUNT(DISTINCT date) AS days
         FROM DAILY_SMOKING_SUMMARY
-        WHERE user_id = @user_id AND total_cigarettes = 0
+        WHERE user_id = @user_id AND total_cigarettes = 0 AND date <= CAST(GETDATE() AS DATE)
       `);
     return result.recordset[0].days >= 3;
   },
@@ -112,7 +112,7 @@ const checkFunctions = {
             ROW_NUMBER() OVER (ORDER BY date) -
             ROW_NUMBER() OVER (PARTITION BY total_cigarettes ORDER BY date) AS grp
           FROM DAILY_SMOKING_SUMMARY
-          WHERE user_id = @user_id AND total_cigarettes = 0
+          WHERE user_id = @user_id AND total_cigarettes = 0 AND date <= CAST(GETDATE() AS DATE)
         )
         SELECT COUNT(*) AS streak
         FROM (
@@ -130,7 +130,7 @@ const checkFunctions = {
       .query(`
         SELECT COUNT(DISTINCT date) AS days
         FROM DAILY_SMOKING_SUMMARY
-        WHERE user_id = @user_id AND total_cigarettes = 0
+        WHERE user_id = @user_id AND total_cigarettes = 0  AND date <= CAST(GETDATE() AS DATE)
       `);
     return result.recordset[0].days >= 15;
   },
@@ -140,7 +140,7 @@ const checkFunctions = {
       .query(`
         SELECT COUNT(DISTINCT date) AS days
         FROM DAILY_SMOKING_SUMMARY
-        WHERE user_id = @user_id AND total_cigarettes = 0
+        WHERE user_id = @user_id AND total_cigarettes = 0 AND date <= CAST(GETDATE() AS DATE)
       `);
     return result.recordset[0].days >= 30;
   },
@@ -150,7 +150,7 @@ const checkFunctions = {
       .query(`
         SELECT COUNT(DISTINCT date) AS days
         FROM DAILY_SMOKING_SUMMARY
-        WHERE user_id = @user_id AND total_cigarettes = 0
+        WHERE user_id = @user_id AND total_cigarettes = 0 AND date <= CAST(GETDATE() AS DATE)
       `);
     return result.recordset[0].days >= 60;
   },
@@ -160,7 +160,7 @@ const checkFunctions = {
       .query(`
         SELECT COUNT(DISTINCT date) AS days
         FROM DAILY_SMOKING_SUMMARY
-        WHERE user_id = @user_id AND total_cigarettes = 0
+        WHERE user_id = @user_id AND total_cigarettes = 0 AND date <= CAST(GETDATE() AS DATE)
       `);
     return result.recordset[0].days >= 90;
   },
@@ -221,6 +221,26 @@ async function grantIfNotExist(pool, userId, achievementId) {
       .query(`
         INSERT INTO USER_ACHIEVEMENT (user_id, achievement_id, earned_date, is_shared)
         VALUES (@user_id, @achievement_id, GETDATE(), 0)
+      `);
+
+    const info = await pool.request()
+      .input("achievement_id", sql.Int, achievementId)
+      .query(`SELECT title, description FROM ACHIEVEMENT WHERE achievement_id = @achievement_id`);
+
+    const { title, description } = info.recordset[0];
+    const content = `🏆 Bạn vừa đạt thành tựu: ${title}! ${description}`;
+
+    // ✅ 3. Gửi thông báo lên bảng NOTIFICATION
+    await pool.request()
+      .input("user_id", sql.Int, userId)
+      .input("title", sql.NVarChar, "🎉 Thành tựu mới")
+      .input("content", sql.NVarChar, content)
+      .input("notification_type", sql.VarChar, "achievement")
+      .input("created_at", sql.DateTime, new Date())
+      .input("is_read", sql.Bit, 0)
+      .query(`
+        INSERT INTO NOTIFICATION (user_id, title, content, notification_type, created_at, is_read)
+        VALUES (@user_id, @title, @content, @notification_type, @created_at, @is_read)
       `);
   }
 }

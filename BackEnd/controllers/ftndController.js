@@ -23,7 +23,7 @@ exports.checkFTNDExists = async (req, res) => {
 
 // Ghi nhận kết quả FTND (cập nhật ftnd_level cho user)
 exports.submitFTNDResult = async (req, res) => {
-  const { user_id, level } = req.body;
+  const { user_id, level, q4_value} = req.body;
 
   if (!user_id || !level) {
     return res.status(400).json({ message: "Thiếu user_id hoặc level" });
@@ -38,6 +38,17 @@ exports.submitFTNDResult = async (req, res) => {
       .query(
         "UPDATE CUSTOMER SET ftnd_level = @level WHERE user_id = @user_id"
       );
+      
+      await pool
+      .request()
+      .input("user_id", sql.Int, user_id)
+      .input("level", sql.NVarChar, level)
+      .input("submitted_at", sql.DateTime, new Date())
+      .input("q4_value", sql.Int, q4_value)
+      .query(`
+        INSERT INTO FTND_RESULT (user_id, level, submitted_at, q4_value)
+        VALUES (@user_id, @level, @submitted_at, @q4_value)
+      `);
 
       // tao id
       const achResult = await pool
@@ -95,5 +106,3 @@ exports.getFtndLevel = async (req, res) => {
     res.status(500).json({ msg: "Lỗi server" });
   }
 };
-
-

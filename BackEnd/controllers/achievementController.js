@@ -19,25 +19,41 @@ exports.getAllAchievements = async (req, res) => {
 
 // Lấy thành tựu member đã đạt
 exports.getUnlockedAchievements = async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const pool = await sql.connect(dbConfig);
+  const userId = req.user.id;
 
-    // Tự động kiểm tra và mở khóa trước khi trả
-    await evaluateAndUnlockAchievements(userId);
+  try {
+    const pool = await sql.connect(dbConfig);
 
     const result = await pool.request()
       .input("user_id", sql.Int, userId)
       .query(`
-        SELECT a.achievement_id, a.title, a.description, a.badge_image, a.achievement_type, a.phase, ua.earned_date
-        FROM USER_ACHIEVEMENT ua
-        JOIN ACHIEVEMENT a ON a.achievement_id = ua.achievement_id
-        WHERE ua.user_id = @user_id
-        ORDER BY a.phase, a.difficulty_level
+        SELECT 
+          a.achievement_id,
+          a.title,
+          a.description,
+          a.phase,
+          a.achievement_type,
+          a.difficulty_level,
+          a.check_code,
+          ISNULL(ua.earned_date, NULL) AS earned_date,
+          ISNULL(ua.is_shared, 0) AS is_shared,
+          CASE 
+            WHEN ua.user_id IS NOT NULL THEN 1 ELSE 0
+          END AS unlocked
+        FROM ACHIEVEMENT a
+        LEFT JOIN USER_ACHIEVEMENT ua 
+          ON a.achievement_id = ua.achievement_id AND ua.user_id = @user_id
+        ORDER BY a.achievement_id
       `);
-    res.json(result.recordset);
+
+    const achievements = result.recordset.map(row => ({
+      ...row,
+      unlocked: row.unlocked === 1
+    }));
+
+    res.json(achievements);
   } catch (err) {
-    console.error("Lỗi lấy thành tựu đã mở khóa:", err);
-    res.status(500).json({ message: "Lỗi máy chủ" });
+    console.error("❌ Lỗi getUnlockedAchievements:", err);
+    res.status(500).json({ message: 'Lỗi lấy danh sách thành tựu' });
   }
 };

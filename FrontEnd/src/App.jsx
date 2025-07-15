@@ -26,6 +26,7 @@ import "./App.css";
 import CheckoutPage from "./pages/Payment/CheckoutPage";
 import PostApproval from './pages/PostApproval/PostApproval';
 import CommunityPage from './pages/Community/CommunityPage';
+import RevenueStats from './pages/AdminDashboard/RevenueStats';
 const { Title, Paragraph } = Typography;
 import PaymentSuccess from "./pages/Payment/PaymentSuccess";
 function App() {
@@ -118,6 +119,16 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={["admin"]}>
                   <PostApproval />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Protected routes - Admin Revenue Stats */}
+            <Route
+              path="/admin/revenue-stats"
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <RevenueStats />
                 </ProtectedRoute>
               }
             />

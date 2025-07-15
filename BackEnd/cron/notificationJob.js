@@ -3,7 +3,6 @@ const { sql, dbConfig } = require("../config/database");
 const dayjs = require("dayjs");
 const utc = require("dayjs/plugin/utc");
 const timezone = require("dayjs/plugin/timezone");
-
 const { evaluateAndUnlockAchievements } = require("../utils/achievementService");
 dayjs.extend(utc);
 dayjs.extend(timezone);
