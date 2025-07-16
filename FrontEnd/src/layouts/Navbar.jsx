@@ -81,48 +81,173 @@ export default function Navbar() {
     // Guest (not logged in)
     if (!user) {
       return [
-        { key: '/', icon: <HomeOutlined />, label: 'Trang chủ', onClick: () => navigate('/') },
-        { key: '/QuitPlanCalendar', icon: <CalendarOutlined />, label: 'Lộ trình cai thuốc', onClick: () => navigate('/QuitPlanCalendar') },
-        { key: '/RankingBoard', icon: <TrophyOutlined />, label: 'Bảng xếp hạng', onClick: () => navigate('/RankingBoard') },
-        { key: '/community', icon: <TeamOutlined />, label: 'Cộng đồng', onClick: () => navigate('/community') },
+        {
+          key: "/",
+          icon: <HomeOutlined />,
+          label: "Trang chủ",
+          onClick: () => navigate("/"),
+        },
+        {
+          key: "/QuitPlanCalendar",
+          icon: <CalendarOutlined />,
+          label: "Lộ trình cai thuốc",
+          onClick: () => navigate("/QuitPlanCalendar"),
+        },
+        {
+          key: "/RankingBoard",
+          icon: <TrophyOutlined />,
+          label: "Bảng xếp hạng",
+          onClick: () => navigate("/RankingBoard"),
+        },
+        {
+          key: "/community",
+          icon: <TeamOutlined />,
+          label: "Cộng đồng",
+          onClick: () => navigate("/community"),
+        },
       ];
     }
 
     // Admin
     if (isAdmin()) {
       return [
-        { key: '/', icon: <HomeOutlined />, label: 'Trang chủ', onClick: () => navigate('/') },
-        { key: '/RankingBoard', icon: <TrophyOutlined />, label: 'Bảng xếp hạng', onClick: () => navigate('/RankingBoard') },
-        { key: '/community', icon: <TeamOutlined />, label: 'Cộng đồng', onClick: () => navigate('/community') },
-        { key: '/checkout', icon: <TeamOutlined />, label: 'Gói thành viên', onClick: () => navigate('/checkout') },
-        { key: '/user/stats', icon: <BarChartOutlined />, label: 'Bảng thống kê', onClick: () => navigate('/user/stats') },
-        { key: '/admin-dashboard', icon: <UserOutlined />, label: 'Quản lý Coach', onClick: () => navigate('/admin-dashboard') },
-        { key: '/schedule-management', icon: <ScheduleOutlined />, label: 'Quản lý lịch tư vấn', onClick: () => navigate('/schedule-management') },
-        { key: '/post-approval', icon: <FileDoneOutlined />, label: 'Duyệt bài', onClick: () => navigate('/post-approval') },
-        { key: '/admin/revenue-stats', icon: <BarChartOutlined />, label: 'Thống kê doanh thu', onClick: () => navigate('/admin/revenue-stats') },
+        {
+          key: "/",
+          icon: <HomeOutlined />,
+          label: "Trang chủ",
+          onClick: () => navigate("/"),
+        },
+        {
+          key: "/RankingBoard",
+          icon: <TrophyOutlined />,
+          label: "Bảng xếp hạng",
+          onClick: () => navigate("/RankingBoard"),
+        },
+        {
+          key: "/community",
+          icon: <TeamOutlined />,
+          label: "Cộng đồng",
+          onClick: () => navigate("/community"),
+        },
+        {
+          key: "/checkout",
+          icon: <TeamOutlined />,
+          label: "Gói thành viên",
+          onClick: () => navigate("/checkout"),
+        },
+        {
+          key: "/user/stats",
+          icon: <BarChartOutlined />,
+          label: "Bảng thống kê",
+          onClick: () => navigate("/user/stats"),
+        },
+        {
+          key: "/AdminManageCoach",
+          icon: <UserOutlined />,
+          label: "Quản lý Coach",
+          onClick: () => navigate("/AdminManageCoach"),
+        },
+        {
+          key: "/schedule-management",
+          icon: <ScheduleOutlined />,
+          label: "Quản lý lịch tư vấn",
+          onClick: () => navigate("/schedule-management"),
+        },
+        {
+          key: "/post-approval",
+          icon: <FileDoneOutlined />,
+          label: "Duyệt bài",
+          onClick: () => navigate("/post-approval"),
+        },
+        {
+          key: "/admin/revenue-stats",
+          icon: <BarChartOutlined />,
+          label: "Thống kê doanh thu",
+          onClick: () => navigate("/admin/revenue-stats"),
+        },
       ];
     }
 
     // Coach
     if (isCoach()) {
       return [
-        { key: '/', icon: <HomeOutlined />, label: 'Trang chủ', onClick: () => navigate('/') },
-        { key: '/RankingBoard', icon: <TrophyOutlined />, label: 'Bảng xếp hạng', onClick: () => navigate('/RankingBoard') },
-        { key: '/community', icon: <TeamOutlined />, label: 'Cộng đồng', onClick: () => navigate('/community') },
-        { key: '/coach-dashboard', icon: <UserOutlined />, label: 'Tổng quan Huấn luyện viên', onClick: () => navigate('/coach-dashboard') },
+        {
+          key: "/",
+          icon: <HomeOutlined />,
+          label: "Trang chủ",
+          onClick: () => navigate("/"),
+        },
+        {
+          key: "/RankingBoard",
+          icon: <TrophyOutlined />,
+          label: "Bảng xếp hạng",
+          onClick: () => navigate("/RankingBoard"),
+        },
+        {
+          key: "/community",
+          icon: <TeamOutlined />,
+          label: "Cộng đồng",
+          onClick: () => navigate("/community"),
+        },
+        {
+          key: "/coach-dashboard",
+          icon: <UserOutlined />,
+          label: "Tổng quan Huấn luyện viên",
+          onClick: () => navigate("/coach-dashboard"),
+        },
       ];
     }
 
     // Member (not coach, not admin)
     return [
-      { key: '/', icon: <HomeOutlined />, label: 'Trang chủ', onClick: () => navigate('/') },
-      { key: '/QuitPlanCalendar', icon: <CalendarOutlined />, label: 'Lộ trình cai thuốc', onClick: handlePlanClick },
-      { key: '/RankingBoard', icon: <TrophyOutlined />, label: 'Bảng xếp hạng', onClick: () => navigate('/RankingBoard') },
-      { key: '/community', icon: <TeamOutlined />, label: 'Cộng đồng', onClick: () => navigate('/community') },
-      { key: '/checkout', icon: <TeamOutlined />, label: 'Gói thành viên', onClick: () => navigate('/checkout') },
-      { key: '/user/stats', icon: <BarChartOutlined />, label: 'Bảng thống kê', onClick: () => navigate('/user/stats') },
-      { key: '/book-coach', icon: <ContactsOutlined />, label: 'Đặt lịch tư vấn', onClick: () => navigate('/book-coach') },
-      { key: '/my-bookings', icon: <CalendarOutlined />, label: 'Quản lý lịch', onClick: () => navigate('/my-bookings') },
+      {
+        key: "/",
+        icon: <HomeOutlined />,
+        label: "Trang chủ",
+        onClick: () => navigate("/"),
+      },
+      {
+        key: "/QuitPlanCalendar",
+        icon: <CalendarOutlined />,
+        label: "Lộ trình cai thuốc",
+        onClick: handlePlanClick,
+      },
+      {
+        key: "/RankingBoard",
+        icon: <TrophyOutlined />,
+        label: "Bảng xếp hạng",
+        onClick: () => navigate("/RankingBoard"),
+      },
+      {
+        key: "/community",
+        icon: <TeamOutlined />,
+        label: "Cộng đồng",
+        onClick: () => navigate("/community"),
+      },
+      {
+        key: "/checkout",
+        icon: <TeamOutlined />,
+        label: "Gói thành viên",
+        onClick: () => navigate("/checkout"),
+      },
+      {
+        key: "/user/stats",
+        icon: <BarChartOutlined />,
+        label: "Bảng thống kê",
+        onClick: () => navigate("/user/stats"),
+      },
+      {
+        key: "/book-coach",
+        icon: <ContactsOutlined />,
+        label: "Đặt lịch tư vấn",
+        onClick: () => navigate("/book-coach"),
+      },
+      {
+        key: "/my-bookings",
+        icon: <CalendarOutlined />,
+        label: "Quản lý lịch",
+        onClick: () => navigate("/my-bookings"),
+      },
     ];
   };
 
@@ -143,16 +268,16 @@ export default function Navbar() {
     return user?.role === "admin"
       ? "Quản trị viên"
       : user?.role === "coach"
-        ? "Huấn luyện viên"
-        : "Thành viên";
+      ? "Huấn luyện viên"
+      : "Thành viên";
   };
 
   const badgeColor =
     remainingDays && remainingDays > 0
       ? "#52c41a"
       : user?.role === "admin"
-        ? "#ff4d4f"
-        : "#52c41a";
+      ? "#ff4d4f"
+      : "#52c41a";
 
   /* ---------- JSX ---------- */
   return (
@@ -210,7 +335,8 @@ export default function Navbar() {
                 <Avatar
                   icon={<UserOutlined />}
                   style={{
-                    backgroundColor: user.role === "admin" ? "#ff4d4f" : "#52c41a",
+                    backgroundColor:
+                      user.role === "admin" ? "#ff4d4f" : "#52c41a",
                     cursor: "pointer",
                   }}
                 />
@@ -223,18 +349,18 @@ export default function Navbar() {
                       ? `Premium ${remainingDays} ngày`
                       : `Premium ${Math.floor(remainingDays / 30)} tháng`
                     : user.role === "admin"
-                      ? "Quản trị viên"
-                      : user.role === "coach"
-                        ? "Huấn luyện viên"
-                        : "Thành viên"
+                    ? "Quản trị viên"
+                    : user.role === "coach"
+                    ? "Huấn luyện viên"
+                    : "Thành viên"
                 }
                 style={{
                   backgroundColor:
                     remainingDays && remainingDays > 0
                       ? "#52c41a"
                       : user.role === "admin"
-                        ? "#ff4d4f"
-                        : "#52c41a",
+                      ? "#ff4d4f"
+                      : "#52c41a",
                 }}
               />
 
@@ -256,12 +382,12 @@ export default function Navbar() {
       </div>
 
       {/* Drawer (mobile menu) */}
-      <Drawer styles={{ body: { padding: '0' } }}
+      <Drawer
+        styles={{ body: { padding: "0" } }}
         title="Menu"
         placement="left"
         onClose={() => setDrawerOpen(false)}
         open={drawerOpen}
-
       >
         <Menu
           mode="inline"
