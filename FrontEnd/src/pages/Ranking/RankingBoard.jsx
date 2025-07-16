@@ -94,10 +94,10 @@ const RankingBoard = () => {
             rank === 1
               ? "gold"
               : rank === 2
-              ? "blue"
-              : rank === 3
-              ? "green"
-              : "volcano"
+                ? "blue"
+                : rank === 3
+                  ? "green"
+                  : "volcano"
           }
         >
           {rank === 1 ? (
@@ -159,7 +159,7 @@ const RankingBoard = () => {
       </Header>
 
       <Content style={{ margin: 0, padding: 0, width: "100%" }}>
-        <Card
+        <Card className="ranking-board-container"
           style={{
             border: "1px solid #91d5ff",
             borderRadius: 20,
@@ -250,9 +250,10 @@ const RankingBoard = () => {
                     marginTop: 24,
                   }}
                 >
-                  {achievements.map((ach) => (
+                  {achievements.map((ach, index) => (
                     <Card
                       key={ach.achievement_id}
+                      className="animated-card"
                       title={
                         <div style={{ wordBreak: "break-word" }}>
                           <div style={{ fontWeight: 600 }}>
@@ -267,15 +268,22 @@ const RankingBoard = () => {
                       }
                       bordered
                       style={{
+                        animationDelay: `${index * 0.1}s`,
                         borderRadius: 12,
                         backgroundColor: ach.unlocked ? "#f6ffed" : "#ffffff",
                         borderColor: ach.unlocked ? "#b7eb8f" : undefined,
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "center",
+                        height: "220px"
                       }}
                     >
                       <p style={{ marginBottom: 12 }}>{ach.description}</p>
-                      <Tag color="purple">Giai đoạn {ach.phase}</Tag>
-                      <Tag color="blue">{ach.achievement_type}</Tag>
-                      <Tag color="green">Độ khó: {ach.difficulty_level}</Tag>
+                      <div className="tag-nowrap">
+                        <Tag color="purple">Giai đoạn {ach.phase}</Tag>
+                        <Tag color="blue">{ach.achievement_type}</Tag>
+                        <Tag color="green">Độ khó: {ach.difficulty_level}</Tag>
+                      </div>
                     </Card>
                   ))}
                 </div>
