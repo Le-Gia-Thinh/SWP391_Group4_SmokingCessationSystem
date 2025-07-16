@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Typography, Card, Radio, Button, Spin, message } from "antd";
-import { CheckCircleTwoTone, CreditCardOutlined } from "@ant-design/icons";
+import { CheckCircleTwoTone, CreditCardOutlined, CalendarOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Navbar from "../../layouts/Navbar";
@@ -258,9 +258,8 @@ const CheckoutPage = () => {
                 {packages.map((pkg) => (
                   <div
                     key={pkg.package_id}
-                    className={`package-card ${
-                      selectedPackage === pkg.package_id ? "selected" : ""
-                    }`}
+                    className={`package-card ${selectedPackage === pkg.package_id ? "selected" : ""
+                      }`}
                     onClick={() => setSelectedPackage(pkg.package_id)}
                   >
                     {/* Popular Badge */}
@@ -299,6 +298,14 @@ const CheckoutPage = () => {
 
                     {/* Features List */}
                     <div className="features-list">
+                      {pkg.community_access && (
+                        <div className="feature-item">
+                          <div className="feature-icon">
+                            <CalendarOutlined />
+                          </div>
+                          <span>Tự lập kế hoạch cai nghiện</span>
+                        </div>
+                      )}
                       {pkg.coach_access && (
                         <div className="feature-item">
                           <div className="feature-icon">
