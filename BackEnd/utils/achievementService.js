@@ -12,7 +12,7 @@ const checkFunctions = {
     const result = await pool.request().input("user_id", sql.Int, userId)
       .query(`
         SELECT COUNT(*) AS count FROM COMMUNITY_POST
-        WHERE user_id = @user_id AND created_at >= DATEADD(DAY, -6, CAST(GETDATE() AS DATE))
+        WHERE user_id = @user_id AND created_at >= DATEADD(DAY, -6, CAST(GETDATE() AdS DATE))
       `);
     return result.recordset[0].count >= 5;
   },
@@ -223,25 +223,6 @@ async function grantIfNotExist(pool, userId, achievementId) {
         VALUES (@user_id, @achievement_id, GETDATE(), 0)
       `);
 
-<<<<<<< HEAD
-      const result = await pool.request()
-      .input("id", sql.Int, achievementId)
-      .query(`SELECT title FROM ACHIEVEMENT WHERE achievement_id = @id`);
-
-    const title = result.recordset[0]?.title || "Thành tựu mới";
-
-    const content = `🏆 Bạn vừa đạt thành tựu: ${title}`;
-
-    // 3. Gửi thông báo
-    await pool.request()
-      .input("user_id", sql.Int, userId)
-      .input("content", sql.NVarChar, content)
-      .input("created_at", sql.DateTime, new Date())
-      .input("is_read", sql.Bit, 0)
-      .query(`
-        INSERT INTO NOTIFICATION (user_id, content, created_at, is_read)
-        VALUES (@user_id, @content, @created_at, @is_read)
-=======
     const info = await pool.request()
   .input("achievement_id", sql.Int, achievementId)
   .query(`SELECT title, description FROM ACHIEVEMENT WHERE achievement_id = @achievement_id`);
@@ -260,7 +241,6 @@ async function grantIfNotExist(pool, userId, achievementId) {
       .query(`
         INSERT INTO NOTIFICATION (user_id, title, content, notification_type, created_at, is_read)
         VALUES (@user_id, @title, @content, @notification_type, @created_at, @is_read)
->>>>>>> QBao
       `);
   }
 }
