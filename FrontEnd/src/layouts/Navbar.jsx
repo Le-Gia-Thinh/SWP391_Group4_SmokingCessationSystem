@@ -244,12 +244,12 @@ export default function Navbar() {
       </div>
 
       {/* Drawer (mobile menu) */}
-      <Drawer
+      <Drawer styles={{ body: { padding: '0' } }}
         title="Menu"
         placement="left"
         onClose={() => setDrawerOpen(false)}
         open={drawerOpen}
-        bodyStyle={{ padding: 0 }}
+
       >
         <Menu
           mode="inline"
