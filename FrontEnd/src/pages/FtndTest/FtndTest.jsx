@@ -29,13 +29,21 @@ const FTNDTest = () => {
     else if (score <= 6) level = "Medium";
     else level = "High";
 
+    console.log("📤 FTND sending:", {
+      user_id: user.id,
+      level,
+      q4_value: parseInt(values.q4),
+    });
+
     try {
       await axios.post("http://localhost:5000/api/ftnd/result", {
         user_id: user.id,
         level,
+        q4_value: parseInt(values.q4),
       });
 
       alert(`Đánh giá gửi thành công!\nMức độ: ${level}`);
+      await new Promise(resolve => setTimeout(resolve, 500));
       navigate("/QuitPlanCalendar"); // ✅ chuyển trang sau khi thành công
     } catch (err) {
       console.error("Lỗi gửi dữ liệu:", err);

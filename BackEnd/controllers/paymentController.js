@@ -83,6 +83,11 @@ exports.handlePaymentCallback = async (req, res) => {
         console.log('Update status:', `"${status}"`);
         const pool = await sql.connect(dbConfig);
 
+        const currentStatusRes = await pool.request()
+            .input('orderCode', sql.NVarChar, orderCode.toString())
+            .query('SELECT payment_status FROM PAYMENT WHERE order_code = @orderCode');
+
+            const alreadyPaid = currentStatusRes.recordset[0]?.payment_status === 'paid';
         // Lấy subscription_id từ PAYMENT
         const subResult = await pool.request()
             .input('orderCode', sql.NVarChar, orderCode.toString())
@@ -93,22 +98,54 @@ exports.handlePaymentCallback = async (req, res) => {
             return res.status(200).json({ success: false, message: 'Không tìm thấy subscription_id' });
         }
 
+        
+
         const subscriptionId = subResult.recordset[0].subscription_id;
+    if (!alreadyPaid) {
+    // Update PAYMENT
+    await pool.request()
+        .input('status', sql.NVarChar, status)
+        .input('orderCode', sql.NVarChar, orderCode.toString())
+        .query('UPDATE PAYMENT SET payment_status = @status WHERE order_code = @orderCode');
 
-        // Update PAYMENT
-        await pool.request()
-            .input('status', sql.NVarChar, status)
-            .input('orderCode', sql.NVarChar, orderCode.toString())
-            .query('UPDATE PAYMENT SET payment_status = @status WHERE order_code = @orderCode');
-
-        // Update USER_SUBSCRIPTION
-        await pool.request()
-            .input('status', sql.NVarChar, status)
+    // Update USER_SUBSCRIPTION
+    await pool.request()
+        .input('status', sql.NVarChar, status)
+        .input('subscriptionId', sql.Int, subscriptionId)
+        .query('UPDATE USER_SUBSCRIPTION SET payment_status = @status WHERE subscription_id = @subscriptionId');
+    }
+        // 👉 Gửi thông báo cho người dùng
+        if (status === 'paid') {
+        const userResult = await pool.request()
             .input('subscriptionId', sql.Int, subscriptionId)
-            .query('UPDATE USER_SUBSCRIPTION SET payment_status = @status WHERE subscription_id = @subscriptionId');
+            .query('SELECT user_id FROM USER_SUBSCRIPTION WHERE subscription_id = @subscriptionId');
 
-        res.status(200).json({ success: true, message: 'Xử lý webhook thành công' });
+        const userId = userResult.recordset[0].user_id;
 
+        const content = '💳 Cảm ơn bạn đã thanh toán! Gói dịch vụ đã được kích hoạt. Chúc bạn sớm cai thuốc thành công!';
+        // 🔍 Kiểm tra xem đã gửi thông báo này chưa
+        const checkNoti = await pool.request()
+            .input('user_id', sql.Int, userId)
+            .input('content', sql.NVarChar, content)
+            .query('SELECT 1 FROM NOTIFICATION WHERE user_id = @user_id AND content = @content');
+
+        if (checkNoti.recordset.length === 0) {
+            await pool.request()
+        .input('user_id', sql.Int, userId)
+        .input('title', sql.NVarChar, 'Thanh toán thành công')
+        .input('content', sql.NVarChar, content)
+        .input('notification_type', sql.VarChar, 'payment')
+        .input('created_at', sql.DateTime, new Date())
+        .input('is_read', sql.Bit, 0)
+        .query(`
+            INSERT INTO NOTIFICATION (user_id, title, content, notification_type, created_at, is_read)
+            VALUES (@user_id, @title, @content, @notification_type, @created_at, @is_read)
+        `);
+        }
+        }
+
+
+    res.status(200).json({ success: true, message: 'Xử lý webhook thành công' });
     } catch (err) {
         console.error('❌ Lỗi webhook:', err);
         // Vẫn trả về 200 OK để PayOS không báo lỗi webhook
