@@ -1,5 +1,5 @@
-/* MemberBookings Styles */
-.member-bookings-page {
+/* CoachDashboard Styles */
+.coach-dashboard-page {
     min-height: 100vh;
     background: #f8f9fa;
     position: relative;
@@ -8,7 +8,7 @@
 }
 
 /* Wrapper for main content - creates distinct section from navbar */
-.member-bookings-wrapper {
+.coach-dashboard-wrapper {
     min-height: 100vh;
     width: 100%;
     background: #ffffff;
@@ -22,12 +22,12 @@
     margin: 0;
 }
 
-.member-bookings-wrapper:hover {
+.coach-dashboard-wrapper:hover {
     box-shadow: 0 12px 48px rgba(0, 0, 0, 0.12), 0 20px 80px rgba(0, 0, 0, 0.08);
     transform: translateY(-2px);
 }
 
-.member-bookings-wrapper::before {
+.coach-dashboard-wrapper::before {
     content: '';
     position: absolute;
     top: 0;
@@ -38,7 +38,7 @@
     border-radius: 16px 16px 0 0;
 }
 
-.member-bookings-wrapper::after {
+.coach-dashboard-wrapper::after {
     content: '';
     position: absolute;
     top: 0;
@@ -49,14 +49,14 @@
     pointer-events: none;
 }
 
-.member-bookings-container {
+.coach-dashboard-container {
     position: relative;
     z-index: 1;
     padding: 0;
 }
 
 /* Loading States */
-.member-bookings-loading-container {
+.coach-dashboard-loading-container {
     background: #f8f9fa;
     min-height: 100vh;
     display: flex;
@@ -65,7 +65,7 @@
     padding: 20px;
 }
 
-.member-bookings-loading-container .text-center {
+.coach-dashboard-loading-container .text-center {
     min-height: 100vh;
     width: 100%;
     background: #ffffff;
@@ -83,12 +83,12 @@
     margin: 0;
 }
 
-.member-bookings-loading-container .text-center:hover {
+.coach-dashboard-loading-container .text-center:hover {
     box-shadow: 0 12px 48px rgba(0, 0, 0, 0.12), 0 20px 80px rgba(0, 0, 0, 0.08);
     transform: translateY(-2px);
 }
 
-.member-bookings-loading-container .text-center::before {
+.coach-dashboard-loading-container .text-center::before {
     content: '';
     position: absolute;
     top: 0;
@@ -99,7 +99,7 @@
     border-radius: 16px 16px 0 0;
 }
 
-.member-bookings-loading-container .text-center::after {
+.coach-dashboard-loading-container .text-center::after {
     content: '';
     position: absolute;
     top: 0;
@@ -126,13 +126,13 @@
 }
 
 /* Header Section */
-.member-bookings-header-section {
+.coach-dashboard-header-section {
     text-align: center;
     margin-bottom: 20px;
     padding: 8px 0;
 }
 
-.member-bookings-header-title {
+.coach-dashboard-header-title {
     color: #2c3e50;
     font-size: 1.75rem;
     font-weight: 700;
@@ -140,7 +140,7 @@
     text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
 }
 
-.member-bookings-header-subtitle {
+.coach-dashboard-header-subtitle {
     color: #7f8c8d;
     font-size: 0.95rem;
     margin-bottom: 12px;
@@ -148,7 +148,7 @@
     margin: 0 auto;
 }
 
-.member-bookings-header-badge {
+.coach-dashboard-header-badge {
     display: inline-block;
     background: rgba(82, 196, 26, 0.1);
     border: 2px solid rgba(82, 196, 26, 0.3);
@@ -161,165 +161,152 @@
     font-size: 0.85rem;
 }
 
+/* Custom Tabs Styling */
+.coach-dashboard-tabs {
+    position: relative;
+    z-index: 1;
+}
+
+.coach-dashboard-tabs .ant-tabs-nav {
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 8px;
+    margin-bottom: 20px;
+    padding: 4px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.coach-dashboard-tabs .ant-tabs-tab {
+    border-radius: 6px;
+    margin: 0 4px;
+    transition: all 0.3s ease;
+}
+
+.coach-dashboard-tabs .ant-tabs-tab:hover {
+    background: rgba(82, 196, 26, 0.1);
+    color: #52c41a;
+}
+
+.coach-dashboard-tabs .ant-tabs-tab-active {
+    background: #52c41a;
+    color: white !important;
+}
+
+.coach-dashboard-tabs .ant-tabs-ink-bar {
+    display: none;
+}
+
 /* Responsive Design */
 @media (max-width: 1200px) {
-    .member-bookings-wrapper {
+    .coach-dashboard-wrapper {
         margin: 0;
         padding: 16px;
     }
     
-    .member-bookings-loading-container .text-center {
+    .coach-dashboard-loading-container .text-center {
         margin: 0;
         padding: 16px;
     }
 }
 
 @media (max-width: 768px) {
-    .member-bookings-page {
+    .coach-dashboard-page {
         padding: 0;
     }
     
-    .member-bookings-wrapper {
+    .coach-dashboard-wrapper {
         margin: 0;
         padding: 12px;
         border-radius: 12px;
         min-height: 100vh;
     }
     
-    .member-bookings-loading-container .text-center {
+    .coach-dashboard-loading-container .text-center {
         margin: 0;
         padding: 12px;
         border-radius: 12px;
         min-height: 100vh;
     }
     
-    .member-bookings-header-section {
+    .coach-dashboard-header-section {
         padding: 4px 0;
         margin-bottom: 16px;
     }
     
-    .member-bookings-header-title {
+    .coach-dashboard-header-title {
         font-size: 1.5rem;
         margin-bottom: 4px;
     }
     
-    .member-bookings-header-subtitle {
+    .coach-dashboard-header-subtitle {
         font-size: 0.9rem;
         margin-bottom: 8px;
     }
     
-    .member-bookings-header-badge {
+    .coach-dashboard-header-badge {
         font-size: 0.8rem;
         padding: 3px 10px;
         margin-top: 4px;
         margin-bottom: 8px;
     }
-    
-    .ant-table {
-        font-size: 12px;
-    }
-
-    .ant-card {
-        margin-bottom: 16px;
-    }
-
-    .booking-details {
-        padding: 8px 0;
-    }
 }
 
 @media (max-width: 480px) {
-    .member-bookings-wrapper {
+    .coach-dashboard-wrapper {
         margin: 0;
         padding: 8px;
         border-radius: 8px;
         min-height: 100vh;
     }
     
-    .member-bookings-loading-container .text-center {
+    .coach-dashboard-loading-container .text-center {
         margin: 0;
         padding: 8px;
         border-radius: 8px;
         min-height: 100vh;
     }
     
-    .member-bookings-header-title {
+    .coach-dashboard-header-title {
         font-size: 1.25rem;
     }
     
-    .member-bookings-header-subtitle {
+    .coach-dashboard-header-subtitle {
         font-size: 0.85rem;
     }
     
-    .member-bookings-header-badge {
+    .coach-dashboard-header-badge {
         font-size: 0.75rem;
         padding: 2px 8px;
     }
 }
 
-.booking-details {
-    padding: 16px 0;
-}
-
-.booking-info h3 {
-    margin-bottom: 16px;
-    color: #1890ff;
-    border-bottom: 2px solid #f0f0f0;
-    padding-bottom: 8px;
-}
-
-.booking-info p {
-    margin-bottom: 8px;
-    line-height: 1.6;
-}
-
-.booking-info strong {
-    color: #333;
-    font-weight: 600;
-}
-
-.ant-table-tbody>tr:hover>td {
-    background-color: #f6ffed !important;
-}
-
-.ant-card {
+/* Additional styling for coach dashboard specific elements */
+.coach-dashboard-stats-card {
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(82, 196, 26, 0.1);
+    transition: all 0.3s ease;
 }
 
-.ant-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    transition: box-shadow 0.3s ease;
+.coach-dashboard-stats-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
 }
 
-.ant-tag {
-    border-radius: 4px;
-    font-weight: 500;
-}
-
-.ant-btn {
-    border-radius: 6px;
-}
-
-.ant-modal-content {
+.coach-dashboard-meet-link-section {
+    background: #f6ffed;
+    border: 1px solid #b7eb8f;
     border-radius: 8px;
+    padding: 16px;
+    margin: 16px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
-.ant-alert {
-    border-radius: 6px;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .ant-table {
-        font-size: 12px;
-    }
-
-    .ant-card {
-        margin-bottom: 16px;
-    }
-
-    .booking-details {
-        padding: 8px 0;
-    }
+.coach-dashboard-welcome-card {
+    background: linear-gradient(135deg, #f6ffed 0%, #e6f7ff 100%);
+    border: 1px solid rgba(82, 196, 26, 0.2);
+    border-radius: 12px;
+    margin-bottom: 24px;
 }
