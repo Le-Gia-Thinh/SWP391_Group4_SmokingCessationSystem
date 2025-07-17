@@ -29,6 +29,7 @@ import CommunityPage from './pages/Community/CommunityPage';
 import RevenueStats from './pages/AdminDashboard/RevenueStats';
 const { Title, Paragraph } = Typography;
 import PaymentSuccess from "./pages/Payment/PaymentSuccess";
+import PackageCrudPage from "./pages/AdminDashboard/PackageCrudPage";
 function App() {
   return (
     <AuthProvider>
@@ -73,6 +74,7 @@ function App() {
             <Route path="/chat" element={<ChatPage />} /> */}
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/community" element={<CommunityPage />} />
+
             {/* Protected routes - Member Bookings */}
             <Route
               path="/my-bookings"
@@ -102,7 +104,14 @@ function App() {
                 </ProtectedRoute>
               }
             />
-
+            <Route
+              path="/admin/packages"
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <PackageCrudPage />
+                </ProtectedRoute>
+              }
+            />
             {/* Protected routes - Schedule Management */}
             <Route
               path="/schedule-management"
