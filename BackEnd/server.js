@@ -3,6 +3,7 @@ require('./config/passport'); // Chạy file config/passport ngay sau, để pas
 const http = require('http');
 const { Server } = require('socket.io');
 require("./cron/notificationJob");
+require("./cron/paymentExpireJob");
 const express = require('express');
 const session = require('express-session');
 const cors = require('cors');
@@ -164,7 +165,7 @@ app.use((err, req, res, next) => {
 
 // 19. Chat coach.member
 app.use('/api/chat', chatRoutes);
- 
+
 // 20) 404 handler
 app.use('*', (req, res) => {
   res.status(404).json({ success: false, message: 'Endpoint không tồn tại' });
