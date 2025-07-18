@@ -175,17 +175,6 @@ export default function CoachChat() {
     fetchCoachMessages(partnerId);
     };  
 
-    // Check if session is currently active
-    const isSessionActive = (session) => {
-        if (!session) return false;
-        const now = moment();
-        const start = moment.parseZone(session.scheduled_time);
-        const end = moment(start).add(session.duration_minutes, 'minutes');
-        const allowedStart = moment(start).subtract(15, 'minutes');
-        const allowedEnd = moment(end).add(15, 'minutes');
-        return now.isBetween(allowedStart, allowedEnd, null, '[]');
-    };
-
     // Format session time
     const formatSessionTime = (dateTimeString) => {
         return moment.parseZone(dateTimeString).format('HH:mm DD/MM/YYYY');
@@ -265,19 +254,7 @@ export default function CoachChat() {
                                         <Title level={4} style={{ margin: 0 }}>
                                             Chat với {selectedSession.member_name || `Member ${selectedSession.user_id}`}
                                         </Title>
-                                        {selectedSession.scheduled_time && selectedSession.duration_minutes ? (
-                                            <>
-                                                <Text type="secondary">
-                                                    {formatSessionTime(selectedSession.scheduled_time)} - {selectedSession.duration_minutes} phút
-                                                </Text>
-                                                <br />
-                                                <Tag color={isSessionActive(selectedSession) ? 'green' : 'red'} style={{ marginTop: '8px' }}>
-                                                    {isSessionActive(selectedSession) ? '🟢 Có thể chat' : '🔴 Không thể chat'}
-                                                </Tag>
-                                            </>
-                                        ) : (
-                                            <Text type="secondary">Không có thông tin lịch hẹn</Text>
-                                        )}
+                                        <Tag color="blue">Đã kết nối hỗ trợ</Tag>
                                     </div>
 
                                     <div className="messages-container">
@@ -314,7 +291,7 @@ export default function CoachChat() {
                                                                     )}
                                                                 </div>
                                                             )}
-                                                        </div> {formatSessionTime(selectedSession.scheduled_time)} - {selectedSession.duration_minutes} phút
+                                                        </div>
                                                     </List.Item>
                                                 )}
                                             />
@@ -330,13 +307,13 @@ export default function CoachChat() {
                                             onKeyPress={handleKeyPress}
                                             placeholder="Nhập tin nhắn..."
                                             autoSize={{ minRows: 2, maxRows: 4 }}
-                                            disabled={!isSessionActive(selectedSession) || !isConnected}
+                                            disabled={!isConnected}
                                         />
                                         <Button
                                             type="primary"
                                             icon={<SendOutlined />}
                                             onClick={sendCoachMessage}
-                                            disabled={!newMessage.trim() || !isSessionActive(selectedSession) || !isConnected}
+                                            disabled={!newMessage.trim() || !isConnected}
                                         >
                                             Gửi
                                         </Button>
@@ -344,7 +321,7 @@ export default function CoachChat() {
                                 </>
                             ) : (
                                 <div className="no-topic-selected">
-                                    <Empty description="Chọn phiên tư vấn để bắt đầu chat" />
+                                    <Empty description="Chọn người để bắt đầu hỗ trợ chat" />
                                 </div>
                             )}
                         </div>

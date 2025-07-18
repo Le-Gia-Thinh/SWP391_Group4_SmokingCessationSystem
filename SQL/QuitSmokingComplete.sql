@@ -75,7 +75,7 @@ GO
 
 -- 3. SUBSCRIPTION_PACKAGE: Các gói dịch vụ người dùng có thể đăng ký
     CREATE TABLE SUBSCRIPTION_PACKAGE (
-        package_id INT IDENTITY(1,1) PRIMARY KEY,                 -- Khóa chính tự tăng
+        package_id INT IDENTITY(1,1) PRIMARY KEY,                -- Khóa chính tự tăng
         package_name NVARCHAR(100) NOT NULL,                     -- Tên gói (ví dụ: Gói Cơ Bản, Gói Premium)
         description NVARCHAR(MAX),                               -- Mô tả chi tiết về gói
         price DECIMAL(10,2) NOT NULL,                            -- Giá gói (đơn vị: VND hoặc USD)
@@ -83,26 +83,30 @@ GO
         coach_access BIT DEFAULT 0,                              -- Có được quyền truy cập huấn luyện viên không
         community_access BIT DEFAULT 0,                          -- Có quyền vào cộng đồng hỗ trợ không
         premium_content BIT DEFAULT 0,                           -- Có quyền truy cập nội dung nâng cao không
-        created_at DATE NOT NULL                                 -- Ngày tạo gói
+        created_at DATETIME2(0) NOT NULL DEFAULT SYSUTCDATETIME(),-- Ngày tạo gói
+        update_at DATETIME2(0) NULL                              -- Ngày cập nhập gói
+
+        CONSTRAINT DF_SUBSCRIPTION_PACKAGE_update_at DEFAULT SYSUTCDATETIME() -- Thời gian cập nhật cuối (UTC)
     );
 
 -- 3.1 Thêm các gói mặc định
 INSERT INTO SUBSCRIPTION_PACKAGE
   (package_name, description, price, duration_days, coach_access, community_access, premium_content, created_at)
 VALUES
-  (N'Miễn phí',            N'Truy cập các tính năng cơ bản',            0.00,     7,  0, 1, 0, CAST(GETDATE() AS DATE)),
+  (N'Test 10d',            N'Gói test 10 ngày, chỉ 10 000đ? …',         10000,    10, 0, 0, 0, CAST(GETDATE() AS DATE)),
+  (N'Miễn phí',            N'Truy cập các tính năng cơ bản',             0.00,    7,  0, 1, 0, CAST(GETDATE() AS DATE)),
   (N'Premium 1 tháng',     N'Truy cập Premium trong 1 tháng',        99000.00,    30, 1, 1, 1, CAST(GETDATE() AS DATE)),
   (N'Premium 3 tháng',     N'Tiết kiệm hơn khi mua 3 tháng',        269000.00,    90, 1, 1, 1, CAST(GETDATE() AS DATE)),
   (N'Premium 6 tháng',     N'Tiết kiệm hơn khi mua 6 tháng',        549000.00,   180, 1, 1, 1, CAST(GETDATE() AS DATE)),
   (N'Premium 1 năm',       N'Tiết kiệm tối đa khi mua 1 năm',       899000.00,   365, 1, 1, 1, CAST(GETDATE() AS DATE));
-
+ 
 -- 4. USER_SUBSCRIPTION: Lưu thông tin đăng ký gói của người dùng
     CREATE TABLE USER_SUBSCRIPTION (
         subscription_id INT IDENTITY(1,1) PRIMARY KEY,         -- Khóa chính tự tăng
         user_id INT NULL,                                      -- Cho phép NULL để tránh lỗi cascade
         package_id INT NOT NULL,                               -- FK: Gói đã đăng ký
-        start_date DATE NOT NULL,                              -- Ngày bắt đầu
-        end_date DATE NOT NULL,                                -- Ngày kết thúc
+        start_date DATETIME2(0) NOT NULL,                      -- Ngày bắt đầu (đầy đủ thời gian, chính xác đến giây)
+        end_date DATETIME2(0) NOT NULL,                        -- Ngày kết thúc (đầy đủ thời gian, chính xác đến giây)
         auto_renew BIT DEFAULT 0,                              -- Có tự gia hạn hay không (1: Có, 0: Không)
         payment_status NVARCHAR(20) CHECK (payment_status IN (
             'pending', 'paid', 'failed', 'expired'
@@ -118,14 +122,14 @@ VALUES
         payment_id INT IDENTITY(1,1) PRIMARY KEY,              -- Khóa chính tự tăng       
         subscription_id INT NULL,                              -- Cho phép NULL nếu subscription bị xóa
         amount DECIMAL(10,2) NOT NULL CHECK (amount >= 0),     -- Số tiền ≥ 0
-        payment_date DATE NOT NULL,                            -- Ngày thực hiện thanh toán        
+        payment_date DATETIME2(0) NOT NULL,                    -- Ngày thực hiện thanh toán (đầy đủ thời gian, chính xác đến giây)        
         transaction_id VARCHAR(100) UNIQUE,                    -- Mã giao dịch
         payment_method NVARCHAR(50),                           -- Phương thức: 'QR-Momo', 'ZaloPay', 'BankTransfer',...
         payment_status NVARCHAR(20) CHECK (
             payment_status IN ('pending', 'paid', 'failed')
         ),                                                     -- Trạng thái hợp lệ        
         note NVARCHAR(255),                                    -- Ghi chú
-        order_code VARCHAR(100),                               -- Mã đơn hàng (PayOS sinh hoặc hệ thống)
+        order_code VARCHAR(50),                              -- Mã đơn hàng (PayOS sinh hoặc hệ thống)
 
         CONSTRAINT fk_payment_subscription 
             FOREIGN KEY (subscription_id) REFERENCES USER_SUBSCRIPTION(subscription_id) ON DELETE SET NULL
@@ -265,6 +269,7 @@ VALUES
         money_saved DECIMAL(10,2) CHECK (money_saved >= 0),        -- Tiền tiết kiệm
         avoided_cigarettes INT CHECK (avoided_cigarettes >= 0),    -- Điếu tránh được
         health_improvements TEXT,                                  -- Ghi chú cải thiện sức khỏe
+        q4_value INT,
 
         CONSTRAINT fk_progress_customer FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id) ON DELETE SET NULL
     );
@@ -378,9 +383,9 @@ VALUES
         user_id INT NOT NULL,                                -- Mã người dùng nhận thông báo
         title NVARCHAR(100),                                 -- Tiêu đề thông báo
         content NVARCHAR(MAX),                               -- Nội dung chi tiết
-        created_at DATETIME NOT NULL,                        -- Ngày giờ tạo thông báo
+        created_at DATETIME2(0) NOT NULL,                    -- Ngày giờ tạo thông báo
         is_read BIT DEFAULT 0,                               -- Trạng thái đã đọc (0: chưa đọc, 1: đã đọc)
-        notification_type NVARCHAR(20),                       -- Loại thông báo: 'system', 'reminder', 'coach_msg',...
+        notification_type NVARCHAR(20),                      -- Loại thông báo: 'system', 'reminder', 'coach_msg',...
 
         CONSTRAINT fk_notification_customer 
             FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id) ON DELETE CASCADE
