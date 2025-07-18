@@ -1,0 +1,312 @@
+/* CoachDashboard Styles */
+.coach-dashboard-page {
+    min-height: 100vh;
+    background: #f8f9fa;
+    position: relative;
+    overflow: hidden;
+    padding: 0;
+}
+
+/* Wrapper for main content - creates distinct section from navbar */
+.coach-dashboard-wrapper {
+    min-height: 100vh;
+    width: 100%;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 16px 64px rgba(0, 0, 0, 0.06);
+    border: 1px solid #f0f0f0;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    margin: 0;
+}
+
+.coach-dashboard-wrapper:hover {
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.12), 0 20px 80px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+}
+
+.coach-dashboard-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #52c41a 0%, #389e0d 50%, #52c41a 100%);
+    border-radius: 16px 16px 0 0;
+}
+
+.coach-dashboard-wrapper::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(82, 196, 26, 0.02) 0%, rgba(56, 158, 13, 0.02) 100%);
+    pointer-events: none;
+}
+
+.coach-dashboard-container {
+    position: relative;
+    z-index: 1;
+    padding: 0;
+}
+
+/* Loading States */
+.coach-dashboard-loading-container {
+    background: #f8f9fa;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.coach-dashboard-loading-container .text-center {
+    min-height: 100vh;
+    width: 100%;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 16px 64px rgba(0, 0, 0, 0.06);
+    border: 1px solid #f0f0f0;
+    padding: 32px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+}
+
+.coach-dashboard-loading-container .text-center:hover {
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.12), 0 20px 80px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+}
+
+.coach-dashboard-loading-container .text-center::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #52c41a 0%, #389e0d 50%, #52c41a 100%);
+    border-radius: 16px 16px 0 0;
+}
+
+.coach-dashboard-loading-container .text-center::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(82, 196, 26, 0.02) 0%, rgba(56, 158, 13, 0.02) 100%);
+    pointer-events: none;
+}
+
+.loading-icon {
+    background: linear-gradient(135deg, #52c41a 0%, #389e0d 100%);
+    box-shadow: 0 8px 32px rgba(82, 196, 26, 0.3);
+    border: 3px solid rgba(82, 196, 26, 0.2);
+    padding: 24px;
+    border-radius: 50%;
+    margin-bottom: 24px;
+    animation: rotate 2s linear infinite;
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Header Section */
+.coach-dashboard-header-section {
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 8px 0;
+}
+
+.coach-dashboard-header-title {
+    color: #2c3e50;
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+
+.coach-dashboard-header-subtitle {
+    color: #7f8c8d;
+    font-size: 0.95rem;
+    margin-bottom: 12px;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.coach-dashboard-header-badge {
+    display: inline-block;
+    background: rgba(82, 196, 26, 0.1);
+    border: 2px solid rgba(82, 196, 26, 0.3);
+    border-radius: 20px;
+    padding: 4px 12px;
+    color: #52c41a;
+    font-weight: 600;
+    margin-top: 6px;
+    margin-bottom: 12px;
+    font-size: 0.85rem;
+}
+
+/* Custom Tabs Styling */
+.coach-dashboard-tabs {
+    position: relative;
+    z-index: 1;
+}
+
+.coach-dashboard-tabs .ant-tabs-nav {
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 8px;
+    margin-bottom: 20px;
+    padding: 4px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.coach-dashboard-tabs .ant-tabs-tab {
+    border-radius: 6px;
+    margin: 0 4px;
+    transition: all 0.3s ease;
+}
+
+.coach-dashboard-tabs .ant-tabs-tab:hover {
+    background: rgba(82, 196, 26, 0.1);
+    color: #52c41a;
+}
+
+.coach-dashboard-tabs .ant-tabs-tab-active {
+    background: #52c41a;
+    color: white !important;
+}
+
+.coach-dashboard-tabs .ant-tabs-ink-bar {
+    display: none;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .coach-dashboard-wrapper {
+        margin: 0;
+        padding: 16px;
+    }
+    
+    .coach-dashboard-loading-container .text-center {
+        margin: 0;
+        padding: 16px;
+    }
+}
+
+@media (max-width: 768px) {
+    .coach-dashboard-page {
+        padding: 0;
+    }
+    
+    .coach-dashboard-wrapper {
+        margin: 0;
+        padding: 12px;
+        border-radius: 12px;
+        min-height: 100vh;
+    }
+    
+    .coach-dashboard-loading-container .text-center {
+        margin: 0;
+        padding: 12px;
+        border-radius: 12px;
+        min-height: 100vh;
+    }
+    
+    .coach-dashboard-header-section {
+        padding: 4px 0;
+        margin-bottom: 16px;
+    }
+    
+    .coach-dashboard-header-title {
+        font-size: 1.5rem;
+        margin-bottom: 4px;
+    }
+    
+    .coach-dashboard-header-subtitle {
+        font-size: 0.9rem;
+        margin-bottom: 8px;
+    }
+    
+    .coach-dashboard-header-badge {
+        font-size: 0.8rem;
+        padding: 3px 10px;
+        margin-top: 4px;
+        margin-bottom: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .coach-dashboard-wrapper {
+        margin: 0;
+        padding: 8px;
+        border-radius: 8px;
+        min-height: 100vh;
+    }
+    
+    .coach-dashboard-loading-container .text-center {
+        margin: 0;
+        padding: 8px;
+        border-radius: 8px;
+        min-height: 100vh;
+    }
+    
+    .coach-dashboard-header-title {
+        font-size: 1.25rem;
+    }
+    
+    .coach-dashboard-header-subtitle {
+        font-size: 0.85rem;
+    }
+    
+    .coach-dashboard-header-badge {
+        font-size: 0.75rem;
+        padding: 2px 8px;
+    }
+}
+
+/* Additional styling for coach dashboard specific elements */
+.coach-dashboard-stats-card {
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(82, 196, 26, 0.1);
+    transition: all 0.3s ease;
+}
+
+.coach-dashboard-stats-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+.coach-dashboard-meet-link-section {
+    background: #f6ffed;
+    border: 1px solid #b7eb8f;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 16px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.coach-dashboard-welcome-card {
+    background: linear-gradient(135deg, #f6ffed 0%, #e6f7ff 100%);
+    border: 1px solid rgba(82, 196, 26, 0.2);
+    border-radius: 12px;
+    margin-bottom: 24px;
+}

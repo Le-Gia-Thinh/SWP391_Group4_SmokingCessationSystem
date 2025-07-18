@@ -74,6 +74,12 @@
     border-radius: 0 0 16px 16px;
 }
 
+.title {
+    display: flex;
+    justify-content: center;
+    font-weight: 600;
+}
+
 /* Plan cards */
 .plan-card {
     border-radius: 12px;
@@ -106,6 +112,10 @@
 .premium-plan .ant-btn-primary:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(82, 196, 26, 0.4);
+}
+
+.premium-plan .ant-space-gap-row-large {
+    row-gap: 16px;
 }
 
 /* Animation xuất hiện */

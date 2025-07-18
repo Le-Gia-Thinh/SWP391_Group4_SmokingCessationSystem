@@ -33,7 +33,7 @@ payment
  npm install -g ngrok
  mở powershell chạy admin 
  # 1. Cho phép chạy scripts trong phiên này
-Set-ExecutionPolicy Bypass -Scope Process -Force
+  Set-ExecutionPolicy Bypass -Scope Process -Force
 
 # 2. Bật chế độ TLS 1.2 để tải về an toàn
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -63,13 +63,26 @@ tunnels:
     subdomain: smokingsession
 Mỗi lần chạy server xong chỉ việc:
 ngrok start smokingsession
+npx ngrok http 5000    
 
-
-// làm miễn phí
+// làm miễn phíWWW
 npm install axios dayjs
 npm i @payos/node
 npm install moment
 npm install canvas-confetti
 
 npm install howler
+npm install bootstrap hoặc npm install bootstrap --save --legacy-peer-dep    
+npm i jquery
+	npm i owl.carousel
+ npm i wow.js
+
+ ĐẦY ĐỦ : npm i jquery jquery.counterup owl.carousel wowjs bootstrap bootstrap-icons
+
+ npm i react-countup (--legacy-peer-deps nếu bên kia không tải được thì thêm dòng --....)
+ npm install wowjs animate.css (--legacy-peer-deps)
+ npm install react-use --save --legacy-peer-dep 
+ npm install react-parallax --save --legacy-peer-dep 
+
+npm install chart.js react-chartjs-2 --legacy-peer-deps
 npm install bootstrap
