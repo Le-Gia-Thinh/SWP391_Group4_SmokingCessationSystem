@@ -284,6 +284,7 @@ const AdminStatDashboard = () => {
         return (
           <Line
             key={chartType}
+            redraw={true}
             data={{
               labels: revenueChart.labels?.map((d) => formatDateVN(d)) || [],
               datasets: [
@@ -334,6 +335,7 @@ const AdminStatDashboard = () => {
         return (
           <PolarArea
             key={chartType}
+            redraw={true}
             data={{
               ...chartData,
               datasets: [
@@ -365,6 +367,7 @@ const AdminStatDashboard = () => {
         return (
           <Radar
             key={chartType}
+            redraw={true}
             data={{
               labels: revenueChart.labels || [],
               datasets: [
@@ -410,6 +413,7 @@ const AdminStatDashboard = () => {
         return (
           <Doughnut
             key={chartType}
+            redraw={true}
             data={{
               ...chartData,
               datasets: [
@@ -590,7 +594,7 @@ const AdminStatDashboard = () => {
                             disabledDate={(current) =>
                               current && current > dayjs().endOf("month")
                             }
-                            className="flex-fill"
+                            style={{ width: "140px" }}
                           />
                         )}
 
@@ -605,7 +609,7 @@ const AdminStatDashboard = () => {
                             disabledDate={(current) =>
                               current && current > dayjs().endOf("year")
                             }
-                            className="flex-fill"
+                            style={{ width: "120px" }}
                           />
                         )}
 
