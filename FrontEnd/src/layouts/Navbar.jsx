@@ -231,8 +231,8 @@ export default function Navbar() {
     remainingDays && remainingDays > 0
       ? "#52c41a"
       : user?.role === "admin"
-        ? "#ff4d4f"
-        : "#52c41a";
+      ? "#ff4d4f"
+      : "#52c41a";
 
   return (
     <Header className="navbar">

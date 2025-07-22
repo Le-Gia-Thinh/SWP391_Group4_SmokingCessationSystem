@@ -14,19 +14,19 @@ import GoogleRedirectHandler from "./components/GoogleRedirectHandler";
 import BookingPage from "./pages/BookingPage/BookingPage";
 import MemberBookings from "./pages/MemberBookings/MemberBookings";
 import CoachDashboard from "./pages/CoachDashboard/CoachDashboard";
-import AdminDashboard from "./pages/AdminDashboard/AdminDashboard";
+import AdminPage from "./pages/Admin_Page/AdminPage";
 import ScheduleManagement from "./pages/ScheduleManagement/ScheduleManagement";
 import FtndTest from "./pages/FtndTest/FtndTest";
 import QuitPlanCalendar from "./pages/QuitPlanning/QuitPlanCalendar";
 import QuitPlanDetail from "./pages/QuitPlanning/QuitPlanDetail";
 import RankingBoard from "./pages/Ranking/RankingBoard";
-import Profile from './pages/Profile/Profile.jsx';
-import Notifications from './pages/Notifications/Notifications.jsx';
+import Profile from "./pages/Profile/Profile.jsx";
+import Notifications from "./pages/Notifications/Notifications.jsx";
 import "./App.css";
 import CheckoutPage from "./pages/Payment/CheckoutPage";
-import PostApproval from './pages/PostApproval/PostApproval';
-import CommunityPage from './pages/Community/CommunityPage';
-import RevenueStats from './pages/AdminDashboard/RevenueStats';
+import PostApproval from "./pages/PostApproval/PostApproval";
+import CommunityPage from "./pages/Community/CommunityPage";
+import RevenueStats from "./pages/AdminManageCoach/RevenueStats.jsx";
 const { Title, Paragraph } = Typography;
 import PaymentSuccess from "./pages/Payment/PaymentSuccess";
 import PackageCrudPage from "./pages/AdminDashboard/PackageCrudPage";
@@ -64,7 +64,10 @@ function App() {
             <Route path="/book-coach" element={<BookingPage />} />
             <Route path="/FtndTest" element={<FtndTest />} />
             <Route path="/QuitPlanCalendar" element={<QuitPlanCalendar />} />
-            <Route path="/quit-plan-detail/:date" element={<QuitPlanDetail />} />
+            <Route
+              path="/quit-plan-detail/:date"
+              element={<QuitPlanDetail />}
+            />
             <Route path="/RankingBoard" element={<RankingBoard />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/user/stats" element={<UserProgressStats />} />
@@ -97,10 +100,18 @@ function App() {
 
             {/* Protected routes - Admin Dashboard */}
             <Route
-              path="/admin-dashboard"
+              path="/admin"
               element={
                 <ProtectedRoute allowedRoles={["admin"]}>
-                  <AdminDashboard />
+                  <AdminPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/adminManageCoach"
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <AdminManageCoach />
                 </ProtectedRoute>
               }
             />

@@ -44,7 +44,7 @@ import StatisticCard from "../../components/ui/StatisticCard";
 import DataTable from "../../components/ui/DataTable";
 import FormModal from "../../components/ui/FormModal";
 import ActionButtonGroup from "../../components/ui/ActionButtonGroup";
-import "./AdminDashboard.css";
+import "./AdminManageCoach.css";
 import moment from "moment-timezone";
 
 const { Header, Content } = Layout;
@@ -1051,8 +1051,8 @@ const AdminDashboard = () => {
                 <Text>
                   {selectedCoach.registration_date
                     ? new Date(
-                      selectedCoach.registration_date
-                    ).toLocaleDateString()
+                        selectedCoach.registration_date
+                      ).toLocaleDateString()
                     : "N/A"}
                 </Text>
               </Col>
