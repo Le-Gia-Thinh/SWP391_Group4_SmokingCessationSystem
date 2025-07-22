@@ -18,14 +18,21 @@ const PlanSetupModal = ({ userId, onPlanReady }) => {
         const res = await axios.get(
           `http://localhost:5000/api/ftnd/getFtndLevel/${userId}`
         );
-        setFtndLevel(res.data.ftnd_level);
+        if (res.data.ftnd_level) {
+          setFtndLevel(res.data.ftnd_level);
+        } else {
+          // Chưa có FTND test -> redirect đến FTND test
+          navigate("/FtndTest");
+        }
       } catch (err) {
         console.error("Lỗi lấy FTND level:", err);
+        // Nếu có lỗi API -> cũng redirect đến FTND test
+        navigate("/FtndTest");
       }
     };
 
     if (userId) fetchFTNDLevel();
-  }, [userId]);
+  }, [userId, navigate]);
 
   // 👇 THÊM: Hàm gợi ý placeholder theo mức độ nghiện
   const getPlaceholderByFTND = (ftndLevel) => {
@@ -82,7 +89,9 @@ const PlanSetupModal = ({ userId, onPlanReady }) => {
           onChange={setStartDate}
           style={{ width: "100%" }}
           size="large"
-          disabledDate={(current) => current && current < new Date().setHours(0, 0, 0, 0)}
+          disabledDate={(current) =>
+            current && current < new Date().setHours(0, 0, 0, 0)
+          }
         />
       </div>
       <div style={{ marginBottom: 18 }}>
