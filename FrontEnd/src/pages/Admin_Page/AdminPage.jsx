@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import AdminStatDashboard from "../AdminManageCoach/RevenueStats";
-import AdminManageCoach from "../adminManageCoach/adminManageCoach";
+import AdminManageCoach from "../AdminManageCoach/AdminManageCoach";
 import PostApprovalContent from "../PostApproval/PostApprovalContent";
 import ScheduleManagementContent from "../ScheduleManagement/ScheduleManagementContent";
+import PackageCrudPage from "./PackageCrudPage";
 import {
   Layout,
   Menu,
@@ -11,15 +12,9 @@ import {
   Button,
   Space,
   Input,
-  DatePicker,
-  Switch,
-  Tooltip,
   Divider,
-  Badge,
   Dropdown,
   Avatar,
-  Row,
-  Col,
 } from "antd";
 import {
   DashboardOutlined,
@@ -29,15 +24,16 @@ import {
   FileTextOutlined,
   ScheduleOutlined,
   BarChartOutlined,
-  BellOutlined,
   SettingOutlined,
   LogoutOutlined,
   SearchOutlined,
   PlusOutlined,
   FilterOutlined,
   ExportOutlined,
+  ShoppingOutlined,
 } from "@ant-design/icons";
 import "./AdminPage.css";
+import tabStyles from "./AdminTabs.module.css";
 
 const { Sider, Content, Header } = Layout;
 const { Title, Text } = Typography;
@@ -46,6 +42,35 @@ const { Search } = Input;
 const AdminPage = () => {
   const [selectedKey, setSelectedKey] = useState("revenue");
   const [collapsed, setCollapsed] = useState(false);
+
+  // Block browser back navigation to prevent going back to main site
+  useEffect(() => {
+    const handlePopState = (e) => {
+      // Only block if trying to go back to previous site/page
+      // Allow navigation within admin panel
+      const currentUrl = window.location.href;
+      const isAdminRoute = currentUrl.includes("/admin");
+
+      if (isAdminRoute) {
+        // Prevent default back behavior only for admin routes
+        e.preventDefault();
+        // Keep user on current admin page by pushing current state again
+        window.history.pushState(null, "", window.location.href);
+      }
+    };
+
+    // Clear existing history and add current state to history stack
+    window.history.replaceState(null, "", window.location.href);
+    window.history.pushState(null, "", window.location.href);
+
+    // Listen for back button events
+    window.addEventListener("popstate", handlePopState);
+
+    // Cleanup listeners on component unmount
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, []); // Run on every mount, including route changes
 
   // Menu items configuration
   const menuItems = [
@@ -68,6 +93,12 @@ const AdminPage = () => {
       title: "Quản lý huấn luyện viên",
     },
     {
+      key: "packages",
+      icon: <ShoppingOutlined />,
+      label: "Quản lý gói",
+      title: "Quản lý gói",
+    },
+    {
       key: "tasks",
       icon: <TrophyOutlined />,
       label: "Quản lý nhiệm vụ",
@@ -84,18 +115,6 @@ const AdminPage = () => {
       icon: <ScheduleOutlined />,
       label: "Quản lý lịch trình",
       title: "Quản lý lịch trình",
-    },
-    {
-      key: "notifications",
-      icon: <BellOutlined />,
-      label: "Thông báo",
-      title: "Quản lý thông báo",
-    },
-    {
-      key: "settings",
-      icon: <SettingOutlined />,
-      label: "Cài đặt",
-      title: "Cài đặt hệ thống",
     },
   ];
 
@@ -121,28 +140,40 @@ const AdminPage = () => {
 
       case "users":
         return (
-          <div className="users-container">
-            <Card>
-              <div className="page-header">
-                <Title level={3}>
-                  <UserOutlined style={{ marginRight: 8 }} />
-                  Quản lý người dùng
-                </Title>
-                <Space>
-                  <Search
-                    placeholder="Tìm kiếm người dùng..."
-                    style={{ width: 300 }}
-                  />
-                  <Button icon={<FilterOutlined />}>Lọc</Button>
-                  <Button type="primary" icon={<PlusOutlined />}>
-                    Thêm người dùng
-                  </Button>
-                </Space>
+          <div className={tabStyles.adminTabContainer}>
+            <Card className={tabStyles.modernCard}>
+              <div className={tabStyles.modernCardBody}>
+                <div className={tabStyles.modernPageHeader}>
+                  <Title level={3}>
+                    <UserOutlined style={{ marginRight: 8 }} />
+                    Quản lý người dùng
+                  </Title>
+                  <Space className={tabStyles.modernSpace}>
+                    <Search
+                      placeholder="Tìm kiếm người dùng..."
+                      style={{ width: 300 }}
+                      className={tabStyles.modernSearchInput}
+                    />
+                    <Button
+                      icon={<FilterOutlined />}
+                      className={`${tabStyles.modernButton} ${tabStyles.modernButtonDefault}`}
+                    >
+                      Lọc
+                    </Button>
+                    <Button
+                      type="primary"
+                      icon={<PlusOutlined />}
+                      className={`${tabStyles.modernButton} ${tabStyles.modernButtonPrimary}`}
+                    >
+                      Thêm người dùng
+                    </Button>
+                  </Space>
+                </div>
+                <Divider className={tabStyles.modernDivider} />
+                <Text className={tabStyles.modernText}>
+                  Tính năng quản lý người dùng sẽ được triển khai ở đây.
+                </Text>
               </div>
-              <Divider />
-              <Text>
-                Tính năng quản lý người dùng sẽ được triển khai ở đây.
-              </Text>
             </Card>
           </div>
         );
@@ -150,33 +181,62 @@ const AdminPage = () => {
       case "coaches":
         return <AdminManageCoach />;
 
+      case "packages":
+        return <PackageCrudPage />;
+
       case "tasks":
         return (
-          <div className="tasks-container">
-            <Card>
-              <div className="page-header">
-                <Title level={3}>
-                  <TrophyOutlined style={{ marginRight: 8 }} />
-                  Quản lý nhiệm vụ
-                </Title>
-                <Space>
-                  <Search
-                    placeholder="Tìm kiếm nhiệm vụ..."
-                    style={{ width: 300 }}
-                  />
-                  <Button icon={<FilterOutlined />}>Lọc</Button>
-                  <Button type="primary" icon={<PlusOutlined />}>
-                    Thêm nhiệm vụ
-                  </Button>
-                </Space>
-              </div>
-              <Divider />
-              <div style={{ marginTop: "20px" }}>
-                <Space>
-                  <Button type="primary">Thêm nhiệm vụ</Button>
-                  <Button>Sửa nhiệm vụ</Button>
-                  <Button danger>Xóa nhiệm vụ</Button>
-                </Space>
+          <div className={tabStyles.adminTabContainer}>
+            <Card className={tabStyles.modernCard}>
+              <div className={tabStyles.modernCardBody}>
+                <div className={tabStyles.modernPageHeader}>
+                  <Title level={3}>
+                    <TrophyOutlined style={{ marginRight: 8 }} />
+                    Quản lý nhiệm vụ
+                  </Title>
+                  <Space className={tabStyles.modernSpace}>
+                    <Search
+                      placeholder="Tìm kiếm nhiệm vụ..."
+                      style={{ width: 300 }}
+                      className={tabStyles.modernSearchInput}
+                    />
+                    <Button
+                      icon={<FilterOutlined />}
+                      className={`${tabStyles.modernButton} ${tabStyles.modernButtonDefault}`}
+                    >
+                      Lọc
+                    </Button>
+                    <Button
+                      type="primary"
+                      icon={<PlusOutlined />}
+                      className={`${tabStyles.modernButton} ${tabStyles.modernButtonPrimary}`}
+                    >
+                      Thêm nhiệm vụ
+                    </Button>
+                  </Space>
+                </div>
+                <Divider className={tabStyles.modernDivider} />
+                <div className={tabStyles.modernActionContainer}>
+                  <Space className={tabStyles.modernSpace}>
+                    <Button
+                      type="primary"
+                      className={`${tabStyles.modernButton} ${tabStyles.modernButtonSuccess}`}
+                    >
+                      Thêm nhiệm vụ
+                    </Button>
+                    <Button
+                      className={`${tabStyles.modernButton} ${tabStyles.modernButtonDefault}`}
+                    >
+                      Sửa nhiệm vụ
+                    </Button>
+                    <Button
+                      danger
+                      className={`${tabStyles.modernButton} ${tabStyles.modernButtonDanger}`}
+                    >
+                      Xóa nhiệm vụ
+                    </Button>
+                  </Space>
+                </div>
               </div>
             </Card>
           </div>
@@ -187,95 +247,6 @@ const AdminPage = () => {
 
       case "schedules":
         return <ScheduleManagementContent />;
-
-      case "notifications":
-        return (
-          <div className="notifications-container">
-            <Card>
-              <div className="page-header">
-                <Title level={3}>
-                  <BellOutlined style={{ marginRight: 8 }} />
-                  Quản lý thông báo
-                </Title>
-                <Space>
-                  <Search
-                    placeholder="Tìm kiếm thông báo..."
-                    style={{ width: 300 }}
-                  />
-                  <Button icon={<FilterOutlined />}>Lọc</Button>
-                  <Button type="primary" icon={<PlusOutlined />}>
-                    Tạo thông báo
-                  </Button>
-                </Space>
-              </div>
-              <Divider />
-              <Text>Tính năng quản lý thông báo sẽ được triển khai ở đây.</Text>
-            </Card>
-          </div>
-        );
-
-      case "settings":
-        return (
-          <div className="settings-container">
-            <Card>
-              <div className="page-header">
-                <Title level={3}>
-                  <SettingOutlined style={{ marginRight: 8 }} />
-                  Cài đặt hệ thống
-                </Title>
-              </div>
-              <Divider />
-              <div className="settings-content">
-                <Row gutter={[24, 24]}>
-                  <Col xs={24} md={12}>
-                    <Card size="small" title="Cài đặt chung">
-                      <div className="setting-item">
-                        <div className="setting-label">
-                          <Text strong>Chế độ bảo trì</Text>
-                          <Text type="secondary" style={{ display: "block" }}>
-                            Tạm thời ngừng hoạt động hệ thống
-                          </Text>
-                        </div>
-                        <Switch />
-                      </div>
-                      <div className="setting-item">
-                        <div className="setting-label">
-                          <Text strong>Thông báo email</Text>
-                          <Text type="secondary" style={{ display: "block" }}>
-                            Gửi thông báo qua email
-                          </Text>
-                        </div>
-                        <Switch defaultChecked />
-                      </div>
-                    </Card>
-                  </Col>
-                  <Col xs={24} md={12}>
-                    <Card size="small" title="Bảo mật">
-                      <div className="setting-item">
-                        <div className="setting-label">
-                          <Text strong>Xác thực 2 bước</Text>
-                          <Text type="secondary" style={{ display: "block" }}>
-                            Bảo mật tài khoản admin
-                          </Text>
-                        </div>
-                        <Switch defaultChecked />
-                      </div>
-                      <div className="setting-item">
-                        <div className="setting-label">
-                          <Text strong>Tự động đăng xuất</Text>
-                          <Text type="secondary" style={{ display: "block" }}>
-                            Đăng xuất sau 30 phút không hoạt động
-                          </Text>
-                        </div>
-                        <Switch defaultChecked />
-                      </div>
-                    </Card>
-                  </Col>
-                </Row>
-              </div>
-            </Card>
-          </div>
-        );
 
       default:
         return (
@@ -390,28 +361,6 @@ const AdminPage = () => {
 
             <div className="header-right">
               <Space size="large">
-                <Tooltip title="Thông báo">
-                  <Badge count={5} size="small">
-                    <Button
-                      type="text"
-                      icon={<BellOutlined />}
-                      size="large"
-                      className="header-btn"
-                    />
-                  </Badge>
-                </Tooltip>
-
-                <Tooltip title="Cài đặt">
-                  <Button
-                    type="text"
-                    icon={<SettingOutlined />}
-                    size="large"
-                    className="header-btn"
-                  />
-                </Tooltip>
-
-                <Divider type="vertical" style={{ height: "30px" }} />
-
                 <Dropdown
                   menu={{
                     items: [
@@ -419,11 +368,6 @@ const AdminPage = () => {
                         key: "profile",
                         icon: <UserOutlined />,
                         label: "Hồ sơ",
-                      },
-                      {
-                        key: "settings",
-                        icon: <SettingOutlined />,
-                        label: "Cài đặt",
                       },
                       {
                         type: "divider",
@@ -435,6 +379,11 @@ const AdminPage = () => {
                         onClick: handleLogout,
                       },
                     ],
+                    onClick: ({ key }) => {
+                      if (key === "profile") {
+                        window.location.href = "/profile";
+                      }
+                    },
                   }}
                 >
                   <div className="user-info">

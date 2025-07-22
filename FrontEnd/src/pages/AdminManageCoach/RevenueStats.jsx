@@ -17,7 +17,6 @@ import {
 import { DatePicker, Radio, Button, message, Spin, Layout } from "antd";
 import dayjs from "dayjs";
 import "bootstrap/dist/css/bootstrap.min.css";
-import Navbar from "../../layouts/Navbar";
 import "./RevenueStats.css";
 
 const { Content } = Layout;
@@ -449,7 +448,6 @@ const AdminStatDashboard = () => {
 
   return (
     <Layout style={{ minHeight: "100vh", backgroundColor: "#f8f9fa" }}>
-      <Navbar />
       <Content style={{ padding: "0" }}>
         <div className="container-fluid py-4">
           {/* Header */}

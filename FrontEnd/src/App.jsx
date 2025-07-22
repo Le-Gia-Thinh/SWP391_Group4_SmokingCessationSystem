@@ -27,9 +27,10 @@ import CheckoutPage from "./pages/Payment/CheckoutPage";
 import PostApproval from "./pages/PostApproval/PostApproval";
 import CommunityPage from "./pages/Community/CommunityPage";
 import RevenueStats from "./pages/AdminManageCoach/RevenueStats.jsx";
+import AdminManageCoach from "./pages/AdminManageCoach/AdminManageCoach.jsx";
 const { Title, Paragraph } = Typography;
 import PaymentSuccess from "./pages/Payment/PaymentSuccess";
-import PackageCrudPage from "./pages/AdminDashboard/PackageCrudPage";
+import PackageCrudPage from "./pages/Admin_Page/PackageCrudPage";
 function App() {
   return (
     <AuthProvider>

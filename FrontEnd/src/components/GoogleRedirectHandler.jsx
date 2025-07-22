@@ -64,7 +64,7 @@ const GoogleRedirectHandler = () => {
         console.log("Redirecting based on role:", userObj.user_role);
         setTimeout(() => {
           if (userObj.user_role === "admin") {
-            navigate("/adminManageCoach");
+            navigate("/admin");
           } else if (userObj.user_role === "coach") {
             navigate("/coach-dashboard");
           } else {
