@@ -13,34 +13,7 @@ function parseVietnamTime(str) {
   return new Date(year, month - 1, day, hour, minute, second);
 }
 
-// 1. Coach tạo lịch rảnh
-exports.createSchedule = async (req, res) => {
-  try {
-    const coachId = req.user.coach_id;
-    let { start_time, end_time } = req.body;
-
-    // Bỏ moment.tz, chỉ parse thẳng giờ local
-    start_time = parseVietnamTime(start_time);
-    end_time = parseVietnamTime(end_time);
-
-    const pool = await sql.connect(dbConfig);
-    await pool.request()
-      .input('coach_id', sql.Int, coachId)
-      .input('start_time', sql.DateTime, start_time)
-      .input('end_time', sql.DateTime, end_time)
-      .query(`
-        INSERT INTO COACH_SCHEDULE (coach_id, start_time, end_time)
-        VALUES (@coach_id, @start_time, @end_time)
-      `);
-
-    res.status(201).json({ success: true, message: 'Lịch đã tạo thành công' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, message: 'Lỗi server' });
-  }
-};
-
-// 1.1 Admin tạo lịch hàng loạt cho coach
+// 1 Admin tạo lịch hàng loạt cho coach
 exports.createBulkSchedules = async (req, res) => {
   try {
     const { coach_id, schedules, pattern } = req.body;
@@ -224,7 +197,7 @@ exports.createBulkSchedules = async (req, res) => {
   }
 };
 
-// 1.2 Admin tạo lịch cho nhiều coach cùng lúc
+// 1.1 Admin tạo lịch cho nhiều coach cùng lúc
 exports.createSchedulesForMultipleCoaches = async (req, res) => {
   try {
     const { coachIds, schedules, pattern } = req.body;
@@ -423,6 +396,31 @@ exports.deleteSchedule = async (req, res) => {
     res.status(500).json({ success: false, message: 'Lỗi server khi xóa lịch' });
   }
 };
+
+// 4. Coach xem lịch của chính mình
+exports.getMySchedules = async (req, res) => {
+  try {
+    const coachId = req.user.coach_id; // Lấy từ token đã xác thực
+
+    const pool = await sql.connect(dbConfig);
+    const result = await pool.request()
+      .input('coach_id', sql.Int, coachId)
+      .query(`
+        SELECT * FROM COACH_SCHEDULE 
+        WHERE coach_id = @coach_id 
+        ORDER BY start_time DESC
+      `);
+
+    res.status(200).json({
+      success: true,
+      data: result.recordset
+    });
+  } catch (err) {
+    console.error('Lỗi khi coach xem lịch của mình:', err);
+    res.status(500).json({ success: false, message: 'Lỗi server khi lấy lịch của coach' });
+  }
+};
+
 
 // API: Admin xem tất cả lịch của một coach bất kỳ
 exports.getAllSchedulesByCoachId = async (req, res) => {

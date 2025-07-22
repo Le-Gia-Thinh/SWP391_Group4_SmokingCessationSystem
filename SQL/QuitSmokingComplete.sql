@@ -86,6 +86,16 @@ GO
         created_at DATE NOT NULL                                 -- Ngày tạo gói
     );
 
+-- 3.1 Thêm các gói mặc định
+INSERT INTO SUBSCRIPTION_PACKAGE
+  (package_name, description, price, duration_days, coach_access, community_access, premium_content, created_at)
+VALUES
+  (N'Miễn phí',            N'Truy cập các tính năng cơ bản',            0.00,     7,  0, 1, 0, CAST(GETDATE() AS DATE)),
+  (N'Premium 1 tháng',     N'Truy cập Premium trong 1 tháng',        99000.00,    30, 1, 1, 1, CAST(GETDATE() AS DATE)),
+  (N'Premium 3 tháng',     N'Tiết kiệm hơn khi mua 3 tháng',        269000.00,    90, 1, 1, 1, CAST(GETDATE() AS DATE)),
+  (N'Premium 6 tháng',     N'Tiết kiệm hơn khi mua 6 tháng',        549000.00,   180, 1, 1, 1, CAST(GETDATE() AS DATE)),
+  (N'Premium 1 năm',       N'Tiết kiệm tối đa khi mua 1 năm',       899000.00,   365, 1, 1, 1, CAST(GETDATE() AS DATE));
+
 -- 4. USER_SUBSCRIPTION: Lưu thông tin đăng ký gói của người dùng
     CREATE TABLE USER_SUBSCRIPTION (
         subscription_id INT IDENTITY(1,1) PRIMARY KEY,         -- Khóa chính tự tăng
@@ -114,15 +124,16 @@ GO
         payment_status NVARCHAR(20) CHECK (
             payment_status IN ('pending', 'paid', 'failed')
         ),                                                     -- Trạng thái hợp lệ        
-        qr_code_url NVARCHAR(255),                             -- Đường dẫn ảnh mã QR
         note NVARCHAR(255),                                    -- Ghi chú
-        
+        order_code VARCHAR(100),                               -- Mã đơn hàng (PayOS sinh hoặc hệ thống)
+
         CONSTRAINT fk_payment_subscription 
             FOREIGN KEY (subscription_id) REFERENCES USER_SUBSCRIPTION(subscription_id) ON DELETE SET NULL
     );
 
     CREATE INDEX idx_payment_status ON PAYMENT(payment_status);
     CREATE INDEX idx_payment_transaction_id ON PAYMENT(transaction_id);
+    -- CREATE INDEX idx_payment_order_code ON PAYMENT(order_code); Kiểm tra tra cứu theo mã đơn hàng
 
 -- 6. COACH: Thông tin của huấn luyện viên
     CREATE TABLE COACH (
@@ -219,7 +230,7 @@ GO
         CONSTRAINT fk_feedback_coach FOREIGN KEY (coach_id) REFERENCES COACH(coach_id) ON DELETE SET NULL
     );
 
--- 13\2. SMOKING_LOG: Ghi lại hành vi hút thuốc của người dùng theo thời gian
+-- 12. SMOKING_LOG: Ghi lại hành vi hút thuốc của người dùng theo thời gian
     CREATE TABLE SMOKING_LOG (
         log_id INT IDENTITY(1,1) PRIMARY KEY,                  -- Mã log tự tăng
         user_id INT NULL,                                      -- Cho phép null nếu user bị xóa
@@ -239,7 +250,7 @@ GO
         date DATE NOT NULL,                                    -- Ngày cụ thể
         total_cigarettes INT CHECK (total_cigarettes >= 0),    -- Tổng số điếu hút
         relapsed BIT DEFAULT 0,                                -- Đánh dấu tái nghiện
-        -- plan_id INT,                                           -- Liên kết kế hoạch (có thể null)
+        -- plan_id INT, x                                             -- Liên kết kế hoạch (có thể null)
 
         CONSTRAINT fk_dsm_summary_customer FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id) ON DELETE SET NULL,
         -- CONSTRAINT fk_dsm_summary_plan FOREIGN KEY (plan_id) REFERENCES CESSATION_PLAN(plan_id) ON DELETE SET NULL
@@ -305,7 +316,6 @@ GO
         ),
 
         session_type VARCHAR(20),                                         -- Loại phiên: online, offline,...
-        google_meet_link VARCHAR(255),                                    -- Link Google Meet (nếu là phiên online)
         session_notes TEXT,                                               -- Ghi chú sau phiên
         created_at DATETIME DEFAULT GETDATE(),                            -- Ngày tạo phiên
 
@@ -366,11 +376,11 @@ GO
     CREATE TABLE NOTIFICATION (
         notification_id INT IDENTITY(1,1) PRIMARY KEY,       -- Khóa chính tự tăng
         user_id INT NOT NULL,                                -- Mã người dùng nhận thông báo
-        title VARCHAR(100),                                  -- Tiêu đề thông báo
-        content TEXT,                                        -- Nội dung chi tiết
+        title NVARCHAR(100),                                 -- Tiêu đề thông báo
+        content NVARCHAR(MAX),                               -- Nội dung chi tiết
         created_at DATETIME NOT NULL,                        -- Ngày giờ tạo thông báo
         is_read BIT DEFAULT 0,                               -- Trạng thái đã đọc (0: chưa đọc, 1: đã đọc)
-        notification_type VARCHAR(20),                       -- Loại thông báo: 'system', 'reminder', 'coach_msg',...
+        notification_type NVARCHAR(20),                       -- Loại thông báo: 'system', 'reminder', 'coach_msg',...
 
         CONSTRAINT fk_notification_customer 
             FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id) ON DELETE CASCADE
@@ -546,20 +556,33 @@ CREATE TABLE USER_BEHAVIOR_TASK_LOG (
 
     UNIQUE(user_id, log_date, time_slot) -- Mỗi user chỉ chọn 1 task/slot/ngày
 );
+
+-- 35. DIRECT_CHAT_THREAD: Quản lí từng box chat
+CREATE TABLE DIRECT_CHAT_THREAD (
+    thread_id INT IDENTITY(1,1) PRIMARY KEY,       -- Mã luồng chat
+    member_id INT NOT NULL,                        -- Người dùng là member
+    coach_id INT NOT NULL,                         -- Người dùng là coach
+    created_at DATETIME DEFAULT GETDATE(),         -- Ngày tạo luồng chat
+
+    UNIQUE(member_id, coach_id),                   -- Mỗi cặp chỉ có 1 luồng duy nhất
+
+    FOREIGN KEY (member_id) REFERENCES CUSTOMER(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (coach_id) REFERENCES COACH(coach_id) ON DELETE CASCADE
+);
 	
--- 35. DIRECT_MESSAGE: Tin nhắn trao đổi trực tiếp giữa Coach và Member
+-- 36. DIRECT_MESSAGE: Lưu nội dung, thời gian, file chat tư vấn Coach - Member
 CREATE TABLE DIRECT_MESSAGE (
     message_id INT IDENTITY PRIMARY KEY,         -- Khóa chính tự tăng
-    session_id INT NOT NULL,                     -- Liên kết đến phiên tư vấn
-    sender_id INT NOT NULL,                      -- ID của người gửi (Coach hoặc Member)
+    thread_id INT NULL,                          -- Liên kết đến DIRECT_CHAT_THREAD
+    sender_id INT NULL,                          -- ID người gửi
     sender_role VARCHAR(20) NOT NULL CHECK (
-        sender_role IN ('member', 'coach')       -- Phân biệt vai trò người gửi
+        sender_role IN ('member', 'coach')
     ),
-    message NVARCHAR(MAX) NOT NULL,              -- Nội dung tin nhắn
-    file_url NVARCHAR(MAX) NULL,                 -- Ảnh/tệp đính kèm
-    sent_at DATETIME DEFAULT GETDATE(),          -- Thời điểm gửi tin nhắn
-    is_read BIT DEFAULT 0,                       -- Đánh dấu đã đọc tin nhắn. 0: chưa đọc 1: đã đọc
+    message NVARCHAR(MAX) NOT NULL,              -- Nội dung
+    file_url NVARCHAR(MAX) NULL,                 -- File đính kèm
+    sent_at DATETIME DEFAULT GETDATE(),          -- Thời điểm gửi
+    is_read BIT DEFAULT 0,                       -- Đã đọc hay chưa
 
-    CONSTRAINT fk_directmsg_session FOREIGN KEY (session_id) REFERENCES COACHING_SESSION(session_id),
-    CONSTRAINT fk_directmsg_sender FOREIGN KEY (sender_id) REFERENCES CUSTOMER(user_id)
+    CONSTRAINT fk_directmsg_thread FOREIGN KEY (thread_id) REFERENCES DIRECT_CHAT_THREAD(thread_id) ON DELETE SET NULL,
+    CONSTRAINT fk_directmsg_sender FOREIGN KEY (sender_id) REFERENCES CUSTOMER(user_id) ON DELETE NO ACTION
 );

@@ -63,9 +63,15 @@ const ScenesVideo = () => {
   const [t, setT] = useState(15);
 
   useEffect(() => {
-    const tick = setInterval(() => setT(s => (s <= 1 ? 15 : s - 1)), 1000);
-    const swap = setInterval(() => setIdx(i => (i + 1) % slides.length), 3000);
-    return () => { clearInterval(tick); clearInterval(swap); };
+    const tick = setInterval(() => setT((s) => (s <= 1 ? 15 : s - 1)), 1000);
+    const swap = setInterval(
+      () => setIdx((i) => (i + 1) % slides.length),
+      3000
+    );
+    return () => {
+      clearInterval(tick);
+      clearInterval(swap);
+    };
   }, []);
 
   /* (tuỳ chọn) đổi gradient ngoài card */
@@ -75,7 +81,10 @@ const ScenesVideo = () => {
 
   return (
     <div className="video-container">
-      <div className="progress-bar" style={{ width: `${((15 - t) / 15) * 100}%` }} />
+      <div
+        className="progress-bar"
+        style={{ width: `${((15 - t) / 15) * 100}%` }}
+      />
 
       {slides.map((s, i) => (
         <div
@@ -110,9 +119,13 @@ const Login = () => {
     setErrorMessage("");
     try {
       const user = await login(values.email, values.password);
-      if (user.role === "admin") navigate("/admin-dashboard");
-      else if (user.role === "coach") navigate("/coach-dashboard");
-      else navigate("/");
+
+      // Đảm bảo context được cập nhật trước khi navigate
+      setTimeout(() => {
+        if (user.user_role === "admin") navigate("/admin");
+        else if (user.user_role === "coach") navigate("/coach-dashboard");
+        else navigate("/");
+      }, 100);
     } catch {
       setErrorMessage("Sai email hoặc mật khẩu");
     } finally {
@@ -148,7 +161,7 @@ const Login = () => {
             <span
               className="pin-icon"
               onClick={() => {
-                setPinned(p => !p);
+                setPinned((p) => !p);
                 if (!pinned) clearTimeout(leaveTimerRef.current);
               }}
             >
@@ -168,21 +181,37 @@ const Login = () => {
                   <Form.Item
                     name="email"
                     label="Email"
-                    rules={[{ required: true, message: "Vui lòng nhập email của bạn!" }]}
+                    rules={[
+                      {
+                        required: true,
+                        message: "Vui lòng nhập email của bạn!",
+                      },
+                    ]}
                   >
-                    <Input placeholder="abc@gmail.com" suffix={<MailOutlined />} />
+                    <Input
+                      placeholder="abc@gmail.com"
+                      suffix={<MailOutlined />}
+                    />
                   </Form.Item>
 
                   <Form.Item
                     name="password"
                     label="Mật khẩu"
-                    rules={[{ required: true, message: "Vui lòng nhập mật khẩu của bạn!" }]}
+                    rules={[
+                      {
+                        required: true,
+                        message: "Vui lòng nhập mật khẩu của bạn!",
+                      },
+                    ]}
                   >
                     <Input.Password placeholder="•••••••" />
                   </Form.Item>
 
                   {errorMessage && (
-                    <Text type="danger" style={{ display: "block", marginBottom: 16 }}>
+                    <Text
+                      type="danger"
+                      style={{ display: "block", marginBottom: 16 }}
+                    >
                       {errorMessage}
                     </Text>
                   )}
@@ -216,7 +245,8 @@ const Login = () => {
                     block
                     className="google-button"
                     onClick={() =>
-                      (window.location.href = "http://localhost:5000/api/auth/google")
+                      (window.location.href =
+                        "http://localhost:5000/api/auth/google")
                     }
                   >
                     Google
@@ -224,7 +254,8 @@ const Login = () => {
 
                   <div className="signup-text">
                     <Text>
-                      Chưa có tài khoản? <RouterLink to="/register">Đăng ký</RouterLink>
+                      Chưa có tài khoản?{" "}
+                      <RouterLink to="/register">Đăng ký</RouterLink>
                     </Text>
                   </div>
                 </Form>

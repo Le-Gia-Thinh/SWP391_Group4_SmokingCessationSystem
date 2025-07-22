@@ -1,49 +1,51 @@
-require('dotenv').config();   // Load biến môi trường trước hết
-require('./config/passport'); // Chạy file config/passport ngay sau, để passport được khởi tạo
-const http = require('http');
-const { Server } = require('socket.io');
+require("dotenv").config(); // Load biến môi trường trước hết
+require("./config/passport"); // Chạy file config/passport ngay sau, để passport được khởi tạo
+const http = require("http");
+const { Server } = require("socket.io");
 require("./cron/notificationJob");
-const express = require('express');
-const session = require('express-session');
-const cors = require('cors');
-const passport = require('./config/passport');
+require("./cron/paymentExpireJob");
+const express = require("express");
+const session = require("express-session");
+const cors = require("cors");
+const passport = require("./config/passport");
 
 // Routes
-const authRoutes = require('./routes/auth');
-const roleRoutes = require('./routes/roleTestRoutes');
-const habitLogRoutes = require('./routes/habitLogRoutes');
-const smokingSummaryRoutes = require('./routes/smokingSummaryRoutes');
-const communityRoutes = require('./routes/community');
-const communityChatRoutes = require('./routes/communityChat');
-const topicChatRoutes = require('./routes/topicChat');
-const adminRoutes = require('./routes/admin');
-const appointmentRoutes = require('./routes/appointment');
-const scheduleRoutes = require('./routes/schedule');
-const coachRoutes = require('./routes/coach');
-const memberRoutes = require('./routes/member');
+const authRoutes = require("./routes/auth");
+const roleRoutes = require("./routes/roleTestRoutes");
+const habitLogRoutes = require("./routes/habitLogRoutes");
+const smokingSummaryRoutes = require("./routes/smokingSummaryRoutes");
+const communityRoutes = require("./routes/community");
+const communityChatRoutes = require("./routes/communityChat");
+const topicChatRoutes = require("./routes/topicChat");
+const adminRoutes = require("./routes/admin");
+const appointmentRoutes = require("./routes/appointment");
+const scheduleRoutes = require("./routes/schedule");
+const coachRoutes = require("./routes/coach");
+const memberRoutes = require("./routes/member");
 const customerRoutes = require("./routes/customer");
 const userRoutes = require("./routes/user");
 const userScoreRoutes = require("./routes/userScore");
 
-const paymentRoutes = require('./routes/payment');
-const subscriptionRoutes = require('./routes/subscription');
+const paymentRoutes = require("./routes/payment");
+const subscriptionRoutes = require("./routes/subscription");
 
-const ftndRoutes = require('./routes/ftnd');
+const ftndRoutes = require("./routes/ftnd");
 const quitPlanRoutes = require("./routes/quitPlan");
-const commentRoutes = require('./routes/comment');
+const commentRoutes = require("./routes/comment");
 
 const achievementRoutes = require("./routes/achievementRoutes");
 const notificationRoutes = require("./routes/notification");
+const phaseRoutes = require("./routes/phases");
 const app = express();
 const server = http.createServer(app);
-const chatRoutes = require('./routes/chat');
+const chatRoutes = require("./routes/chat");
 
 // 1) CORS: bắt buộc phải cho phép credentials (cookie) và origin chạy React (5173 / 3000)
 app.use(
   cors({
-    origin: ['http://localhost:5173', 'http://localhost:3000'],
+    origin: ["http://localhost:5173", "http://localhost:3000"],
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    methods: ["GET", "POST", "PUT", "DELETE"],
   })
 );
 
@@ -51,13 +53,12 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-
 const io = new Server(server, {
   cors: {
-    origin: ['http://localhost:5173', 'http://localhost:3000'],
-    methods: ['GET', 'POST'],
+    origin: ["http://localhost:5173", "http://localhost:3000"],
+    methods: ["GET", "POST"],
     credentials: true,
-  }
+  },
 });
 
 // Gắn io vào req để sử dụng trong controller
@@ -67,39 +68,39 @@ app.use((req, res, next) => {
 });
 
 // Socket.IO lắng nghe kết nối
-io.on('connection', (socket) => {
-  console.log('📡 Client connected:', socket.id);
+io.on("connection", (socket) => {
+  console.log("📡 Client connected:", socket.id);
 
-  socket.on('joinSession', (sessionId) => {
+  socket.on("joinSession", (sessionId) => {
     socket.join(sessionId);
     console.log(`👥 Joined room session ${sessionId}`);
   });
 
-  socket.on('disconnect', () => {
-    console.log('❌ Client disconnected:', socket.id);
+  socket.on("disconnect", () => {
+    console.log("❌ Client disconnected:", socket.id);
   });
 });
 
 // 2.1) Serve file chat uploads
-const path = require('path');
-app.use('/uploads/chat', express.static(path.join(__dirname, 'uploads/chat')));
+const path = require("path");
+app.use("/uploads/chat", express.static(path.join(__dirname, "uploads/chat")));
 
 // 3) Check FTND: Mức độ nghiện
-app.use('/api/ftnd', ftndRoutes);
-app.use('/api/quitplan', quitPlanRoutes);
-app.use('/api/customer', customerRoutes);
+app.use("/api/ftnd", ftndRoutes);
+app.use("/api/quitplan", quitPlanRoutes);
+app.use("/api/customer", customerRoutes);
 
 // 4) User Score (lấy và update)
-app.use('/api/user-score', userScoreRoutes);
+app.use("/api/user-score", userScoreRoutes);
 
 // 5) Session middleware (phải nằm trước passport.session())
 app.use(
   session({
-    secret: process.env.JWT_SECRET || 'fallback_secret',
+    secret: process.env.JWT_SECRET || "fallback_secret",
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: process.env.NODE_ENV === 'production',
+      secure: process.env.NODE_ENV === "production",
       maxAge: 24 * 60 * 60 * 1000, // 1 ngày
     },
   })
@@ -110,45 +111,47 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // 7) Auth & Role
-app.use('/api/auth', authRoutes);
-app.use('/api/role', roleRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/role", roleRoutes);
 
 // 8) Admin / Coach / Member
-app.use('/api/admin', adminRoutes);
-app.use('/api/coach', coachRoutes);
-app.use('/api/member', memberRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/coach", coachRoutes);
+app.use("/api/member", memberRoutes);
 
 // 9) Appointment & Schedule
-app.use('/api/appointment', appointmentRoutes);
-app.use('/api/schedule', scheduleRoutes);
+app.use("/api/appointment", appointmentRoutes);
+app.use("/api/schedule", scheduleRoutes);
 
 // 10) Community & Comment & Chat
-app.use('/api/community', communityRoutes);
-app.use('/api/comment', commentRoutes);
-app.use('/api/community-chat', communityChatRoutes);
-app.use('/api/topic-chat', topicChatRoutes);
+app.use("/api/community", communityRoutes);
+app.use("/api/comment", commentRoutes);
+app.use("/api/community-chat", communityChatRoutes);
+app.use("/api/topic-chat", topicChatRoutes);
 
 // 11) Habit Log & Smoking Summary
-app.use('/api/habit-log', habitLogRoutes);
-app.use('/api/smoking-summary', smokingSummaryRoutes);
+app.use("/api/habit-log", habitLogRoutes);
+app.use("/api/smoking-summary", smokingSummaryRoutes);
 
 // 12) User Profile
-app.use('/api/user', userRoutes);
+app.use("/api/user", userRoutes);
 
-// 13) Payment 
-app.use('/api/payment', paymentRoutes);
-app.use('/api/subscriptions', subscriptionRoutes);
+// 13) Payment
+app.use("/api/payment", paymentRoutes);
+app.use("/api/subscriptions", subscriptionRoutes);
 
 // 14) Root test endpoint
-app.get('/', (req, res) => {
-  res.json({ success: true, message: 'Auth API đang hoạt động!' });
+app.get("/", (req, res) => {
+  res.json({ success: true, message: "Auth API đang hoạt động!" });
 });
 
 // 15) Middleware log request (debug)
 // 15.1) Xử lí thành tựu
-app.use('/api/achievement', achievementRoutes);
+app.use("/api/achievement", achievementRoutes);
 // Xử lí thông báo
 app.use("/api/notification", notificationRoutes);
+// Phase routes
+app.use("/api", phaseRoutes);
 
 // 16) Middleware log request
 app.use((req, res, next) => {
@@ -158,16 +161,18 @@ app.use((req, res, next) => {
 
 // 16) Global error handler
 app.use((err, req, res, next) => {
-  console.error('Unhandled error:', err);
-  res.status(500).json({ success: false, message: 'Lỗi server không xác định' });
+  console.error("Unhandled error:", err);
+  res
+    .status(500)
+    .json({ success: false, message: "Lỗi server không xác định" });
 });
 
 // 19. Chat coach.member
-app.use('/api/chat', chatRoutes);
- 
+app.use("/api/chat", chatRoutes);
+
 // 20) 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({ success: false, message: 'Endpoint không tồn tại' });
+app.use("*", (req, res) => {
+  res.status(404).json({ success: false, message: "Endpoint không tồn tại" });
 });
 
 const PORT = process.env.PORT || 5000;

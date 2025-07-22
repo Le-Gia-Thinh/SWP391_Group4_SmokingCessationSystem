@@ -1,7 +1,3 @@
-/**
- * Navbar.jsx – hiển thị badge Premium theo số ngày còn lại
- */
-
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Layout, Menu, Button, Avatar, Space, Badge, Drawer } from "antd";
@@ -10,22 +6,20 @@ import {
   LogoutOutlined,
   HomeOutlined,
   TrophyOutlined,
-  BookOutlined,
   TeamOutlined,
-  ContactsOutlined,
   CalendarOutlined,
-  BellOutlined,
+  BarChartOutlined,
+  ContactsOutlined,
   MenuOutlined,
-  MoreOutlined,
+  BellOutlined,
   ScheduleOutlined,
   FileDoneOutlined,
-  MessageOutlined,
-  BarChartOutlined,
+  MoreOutlined,
+  BookOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "../contexts/AuthContext";
 import axios from "axios";
 import "./Navbar.css";
-import { Dropdown } from "antd";
 import UserDropdownMenu from "../components/UserDropdownMenu";
 
 const { Header } = Layout;
@@ -37,14 +31,13 @@ export default function Navbar() {
   const { user, logout, isCoach, isAdmin } = useAuth();
   const [remainingDays, setRemainingDays] = useState(null);
 
-  /* ---------- Logout ---------- */
+  // Logout
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
 
-  /* ---------- Lấy remainingDays mỗi khi user thay đổi ---------- */
-
+  // Lấy remaining_days từ /current
   useEffect(() => {
     if (!user) {
       setRemainingDays(null);
@@ -55,98 +48,251 @@ export default function Navbar() {
     const baseURL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
     axios
-      .get(`${baseURL}/api/subscriptions/remaining`, {
+      .get(`${baseURL}/api/subscriptions/current`, {
         headers: { Authorization: `Bearer ${token}` },
       })
-      .then(({ data }) => setRemainingDays(data.remainingDays))
+      .then(({ data }) => {
+        const sub = data.subscription;
+        setRemainingDays(sub ? sub.remaining_days : 0);
+      })
       .catch(() => setRemainingDays(null));
   }, [user]);
 
-  /* ---------- Đi tới trang lập kế hoạch ---------- */
-  const handlePlanClick = async () => {
-    if (!user) return navigate("/login");
+  // Kiểm tra FTND trước khi navigate đến QuitPlanCalendar
+  const checkFTNDBeforeNavigation = async () => {
+    console.log("🔍 Checking FTND before navigation...");
+
+    if (!user?.id) {
+      // User chưa đăng nhập -> yêu cầu đăng nhập trước
+      console.log("❌ User chưa đăng nhập, chuyển đến login");
+      navigate("/login");
+      return;
+    }
+
     try {
-      const { data } = await axios.get(
-        `http://localhost:5000/api/ftnd/exists/${user.id}`,
-        { withCredentials: true }
+      const token = localStorage.getItem("token");
+      console.log("📡 Calling FTND API for user:", user.id);
+
+      const response = await axios.get(
+        `http://localhost:5000/api/customer/ftnd-level/${user.id}`,
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-      navigate(data.exists ? "/QuitPlanCalendar" : "/FtndTest");
-    } catch {
+
+      console.log("📊 FTND API response:", response.data);
+
+      if (response.data.ftnd_level) {
+        // Đã có FTND test -> cho phép vào QuitPlanCalendar
+        console.log("✅ FTND có rồi, chuyển đến QuitPlanCalendar");
+        navigate("/QuitPlanCalendar");
+      } else {
+        // Chưa có FTND test -> chuyển đến FTND test
+        console.log("⚠️ Chưa có FTND, chuyển đến FtndTest");
+        navigate("/FtndTest");
+      }
+    } catch (error) {
+      console.error("❌ Lỗi kiểm tra FTND:", error);
+      // Nếu có lỗi, vẫn chuyển đến FTND test để user làm
+      console.log("🔄 Có lỗi, chuyển đến FtndTest");
       navigate("/FtndTest");
     }
   };
-
-  /* ---------- Menu items ---------- */
   const getMenuItems = () => {
+<<<<<<< HEAD
     // Guest (not logged in)
+=======
+>>>>>>> 343e78daba7bdc27b0041750b20f922a7932541d
     if (!user) {
       return [
-        { key: '/', icon: <HomeOutlined />, label: 'Trang chủ', onClick: () => navigate('/') },
-        { key: '/QuitPlanCalendar', icon: <CalendarOutlined />, label: 'Lộ trình cai thuốc', onClick: () => navigate('/QuitPlanCalendar') },
-        { key: '/RankingBoard', icon: <TrophyOutlined />, label: 'Bảng xếp hạng', onClick: () => navigate('/RankingBoard') },
-        { key: '/community', icon: <TeamOutlined />, label: 'Cộng đồng', onClick: () => navigate('/community') },
+        {
+          key: "/",
+          icon: <HomeOutlined />,
+          label: "Trang chủ",
+          onClick: () => navigate("/"),
+        },
+        {
+          key: "/QuitPlanCalendar",
+          icon: <CalendarOutlined />,
+          label: "Lộ trình cai thuốc",
+          onClick: () => checkFTNDBeforeNavigation(),
+        },
+        {
+          key: "/RankingBoard",
+          icon: <TrophyOutlined />,
+          label: "Bảng xếp hạng",
+          onClick: () => navigate("/RankingBoard"),
+        },
+        {
+          key: "/community",
+          icon: <TeamOutlined />,
+          label: "Cộng đồng",
+          onClick: () => navigate("/community"),
+        },
       ];
     }
+<<<<<<< HEAD
 
     // Admin
+=======
+>>>>>>> 343e78daba7bdc27b0041750b20f922a7932541d
     if (isAdmin()) {
       return [
-        { key: '/', icon: <HomeOutlined />, label: 'Trang chủ', onClick: () => navigate('/') },
-        { key: '/RankingBoard', icon: <TrophyOutlined />, label: 'Bảng xếp hạng', onClick: () => navigate('/RankingBoard') },
-        { key: '/community', icon: <TeamOutlined />, label: 'Cộng đồng', onClick: () => navigate('/community') },
-        { key: '/checkout', icon: <TeamOutlined />, label: 'Gói thành viên', onClick: () => navigate('/checkout') },
-        { key: '/user/stats', icon: <BarChartOutlined />, label: 'Bảng thống kê', onClick: () => navigate('/user/stats') },
-        { key: '/admin-dashboard', icon: <UserOutlined />, label: 'Quản lý Coach', onClick: () => navigate('/admin-dashboard') },
-        { key: '/schedule-management', icon: <ScheduleOutlined />, label: 'Quản lý lịch tư vấn', onClick: () => navigate('/schedule-management') },
-        { key: '/post-approval', icon: <FileDoneOutlined />, label: 'Duyệt bài', onClick: () => navigate('/post-approval') },
-        { key: '/admin/revenue-stats', icon: <BarChartOutlined />, label: 'Thống kê doanh thu', onClick: () => navigate('/admin/revenue-stats') },
+        {
+          key: "/",
+          icon: <HomeOutlined />,
+          label: "Trang chủ",
+          onClick: () => navigate("/"),
+        },
+        {
+          key: "/RankingBoard",
+          icon: <TrophyOutlined />,
+          label: "Bảng xếp hạng",
+          onClick: () => navigate("/RankingBoard"),
+        },
+        {
+          key: "/community",
+          icon: <TeamOutlined />,
+          label: "Cộng đồng",
+          onClick: () => navigate("/community"),
+        },
+        {
+          key: "/checkout",
+          icon: <TeamOutlined />,
+          label: "Gói thành viên",
+          onClick: () => navigate("/checkout"),
+        },
+        {
+          key: "/user/stats",
+          icon: <BarChartOutlined />,
+          label: "Bảng thống kê",
+          onClick: () => navigate("/user/stats"),
+        },
+        {
+          key: "/admin-dashboard",
+          icon: <UserOutlined />,
+          label: "Quản lý Coach",
+          onClick: () => navigate("/admin-dashboard"),
+        },
+        {
+          key: "/admin/packages",
+          icon: <BookOutlined />,
+          label: "Quản lý gói",
+          onClick: () => navigate("/admin/packages"),
+        },
+        {
+          key: "/schedule-management",
+          icon: <ScheduleOutlined />,
+          label: "Quản lý lịch tư vấn",
+          onClick: () => navigate("/schedule-management"),
+        },
+        {
+          key: "/post-approval",
+          icon: <FileDoneOutlined />,
+          label: "Duyệt bài",
+          onClick: () => navigate("/post-approval"),
+        },
+        {
+          key: "/admin/revenue-stats",
+          icon: <BarChartOutlined />,
+          label: "Thống kê doanh thu",
+          onClick: () => navigate("/admin/revenue-stats"),
+        },
       ];
     }
-
-    // Coach
     if (isCoach()) {
       return [
-        { key: '/', icon: <HomeOutlined />, label: 'Trang chủ', onClick: () => navigate('/') },
-        { key: '/RankingBoard', icon: <TrophyOutlined />, label: 'Bảng xếp hạng', onClick: () => navigate('/RankingBoard') },
-        { key: '/community', icon: <TeamOutlined />, label: 'Cộng đồng', onClick: () => navigate('/community') },
-        { key: '/coach-dashboard', icon: <UserOutlined />, label: 'Tổng quan Huấn luyện viên', onClick: () => navigate('/coach-dashboard') },
+        {
+          key: "/",
+          icon: <HomeOutlined />,
+          label: "Trang chủ",
+          onClick: () => navigate("/"),
+        },
+        {
+          key: "/RankingBoard",
+          icon: <TrophyOutlined />,
+          label: "Bảng xếp hạng",
+          onClick: () => navigate("/RankingBoard"),
+        },
+        {
+          key: "/community",
+          icon: <TeamOutlined />,
+          label: "Cộng đồng",
+          onClick: () => navigate("/community"),
+        },
+        {
+          key: "/coach-dashboard",
+          icon: <UserOutlined />,
+          label: "Tổng quan Huấn luyện viên",
+          onClick: () => navigate("/coach-dashboard"),
+        },
       ];
     }
-
-    // Member (not coach, not admin)
+    // Member thông thường
     return [
-      { key: '/', icon: <HomeOutlined />, label: 'Trang chủ', onClick: () => navigate('/') },
-      { key: '/QuitPlanCalendar', icon: <CalendarOutlined />, label: 'Lộ trình cai thuốc', onClick: handlePlanClick },
-      { key: '/RankingBoard', icon: <TrophyOutlined />, label: 'Bảng xếp hạng', onClick: () => navigate('/RankingBoard') },
-      { key: '/community', icon: <TeamOutlined />, label: 'Cộng đồng', onClick: () => navigate('/community') },
-      { key: '/checkout', icon: <TeamOutlined />, label: 'Gói thành viên', onClick: () => navigate('/checkout') },
-      { key: '/user/stats', icon: <BarChartOutlined />, label: 'Bảng thống kê', onClick: () => navigate('/user/stats') },
-      { key: '/book-coach', icon: <ContactsOutlined />, label: 'Đặt lịch tư vấn', onClick: () => navigate('/book-coach') },
-      { key: '/my-bookings', icon: <CalendarOutlined />, label: 'Quản lý lịch', onClick: () => navigate('/my-bookings') },
+      {
+        key: "/",
+        icon: <HomeOutlined />,
+        label: "Trang chủ",
+        onClick: () => navigate("/"),
+      },
+      {
+        key: "/QuitPlanCalendar",
+        icon: <CalendarOutlined />,
+        label: "Lộ trình cai thuốc",
+        onClick: () => checkFTNDBeforeNavigation(),
+      },
+      {
+        key: "/RankingBoard",
+        icon: <TrophyOutlined />,
+        label: "Bảng xếp hạng",
+        onClick: () => navigate("/RankingBoard"),
+      },
+      {
+        key: "/community",
+        icon: <TeamOutlined />,
+        label: "Cộng đồng",
+        onClick: () => navigate("/community"),
+      },
+      {
+        key: "/checkout",
+        icon: <TeamOutlined />,
+        label: "Gói thành viên",
+        onClick: () => navigate("/checkout"),
+      },
+      {
+        key: "/user/stats",
+        icon: <BarChartOutlined />,
+        label: "Bảng thống kê",
+        onClick: () => navigate("/user/stats"),
+      },
+      {
+        key: "/book-coach",
+        icon: <ContactsOutlined />,
+        label: "Đặt lịch tư vấn",
+        onClick: () => navigate("/book-coach"),
+      },
+      {
+        key: "/my-bookings",
+        icon: <CalendarOutlined />,
+        label: "Quản lý lịch",
+        onClick: () => navigate("/my-bookings"),
+      },
     ];
   };
 
-  /* ---------- Xác định mục đang active ---------- */
-  const selectedKey = /^\/(QuitPlanCalendar|FtndTest|quit-plan-detail)/.test(
-    location.pathname
-  )
-    ? "/plan"
-    : location.pathname;
+  // determine active key
+  const selectedKey = location.pathname;
 
-  /* ---------- Tạo badge ---------- */
-  const getBadgeText = () => {
-    if (remainingDays && remainingDays > 0) {
-      return remainingDays < 30
+  // build badge text & color
+  const badgeText =
+    remainingDays && remainingDays > 0
+      ? remainingDays < 30
         ? `Premium ${remainingDays} ngày`
-        : `Premium ${Math.floor(remainingDays / 30)} tháng`;
-    }
-    return user?.role === "admin"
+        : `Premium ${Math.floor(remainingDays / 30)} tháng`
+      : user?.role === "admin"
       ? "Quản trị viên"
       : user?.role === "coach"
       ? "Huấn luyện viên"
       : "Thành viên";
-  };
-
   const badgeColor =
     remainingDays && remainingDays > 0
       ? "#52c41a"
@@ -154,16 +300,13 @@ export default function Navbar() {
       ? "#ff4d4f"
       : "#52c41a";
 
-  /* ---------- JSX ---------- */
   return (
     <Header className="navbar">
       <div className="navbar-content">
-        {/* Logo */}
         <div className="navbar-logo" onClick={() => navigate("/")}>
           <span className="logo-text">QuitSmoking</span>
         </div>
 
-        {/* Menu chính (desktop) */}
         <Menu
           mode="horizontal"
           selectedKeys={[selectedKey]}
@@ -172,7 +315,6 @@ export default function Navbar() {
           overflowedIndicator={<MoreOutlined />}
         />
 
-        {/* Nút hamburger (mobile) */}
         <Button
           className="mobile-menu-button"
           type="text"
@@ -180,7 +322,6 @@ export default function Navbar() {
           onClick={() => setDrawerOpen(true)}
         />
 
-        {/* User actions */}
         <div className="navbar-actions">
           {!user ? (
             <Space>
@@ -193,43 +334,26 @@ export default function Navbar() {
             </Space>
           ) : (
             <Space wrap={false}>
-              {/* Thông báo */}
               <Button
                 type="text"
                 icon={
                   <BellOutlined style={{ fontSize: 20, color: "#52c41a" }} />
                 }
                 onClick={() => navigate("/notifications")}
-                style={{ marginRight: 4 }}
               />
-
-              {/* Badge */}
-              <Badge
-                count={
-                  remainingDays && remainingDays > 0
-                    ? remainingDays < 30
-                      ? `Premium ${remainingDays} ngày`
-                      : `Premium ${Math.floor(remainingDays / 30)} tháng`
-                    : user.role === "admin"
-                    ? "Quản trị viên"
-                    : user.role === "coach"
-                    ? "Huấn luyện viên"
-                    : "Thành viên"
-                }
+              <Avatar
+                icon={<UserOutlined />}
                 style={{
                   backgroundColor:
-                    remainingDays && remainingDays > 0
-                      ? "#52c41a"
-                      : user.role === "admin"
-                      ? "#ff4d4f"
-                      : "#52c41a",
+                    user.role === "admin" ? "#ff4d4f" : "#52c41a",
+                  cursor: "pointer",
                 }}
               />
-
-              {/* Tên người dùng */}
+              <Badge
+                count={badgeText}
+                style={{ backgroundColor: badgeColor }}
+              />
               <span className="username-text">{user.name || user.email}</span>
-
-              {/* Logout */}
               <Button
                 type="text"
                 icon={<LogoutOutlined />}
@@ -243,13 +367,11 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Drawer (mobile menu) */}
-      <Drawer styles={{ body: { padding: '0' } }}
+      <Drawer
         title="Menu"
         placement="left"
         onClose={() => setDrawerOpen(false)}
         open={drawerOpen}
-
       >
         <Menu
           mode="inline"

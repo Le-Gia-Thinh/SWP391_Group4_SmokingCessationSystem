@@ -1,11 +1,13 @@
 // components/GoogleRedirectHandler.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 const GoogleRedirectHandler = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [status, setStatus] = useState("Đang xử lý...");
+  const { setUser } = useAuth();
 
   useEffect(() => {
     console.log("GoogleRedirectHandler mounted");
@@ -42,20 +44,33 @@ const GoogleRedirectHandler = () => {
         const payload = JSON.parse(payloadString);
         console.log("Token payload:", payload);
 
-        // Giả sử payload chứa { id, email, name, avatar? }
+        // Giả sử payload chứa { id, email, name, user_role, avatar? }
         const userObj = {
           id: payload.id,
           email: payload.email,
           name: payload.name,
-          role: payload.role,
-          // Nếu trong payload có trường avatar, gán vào avatarUrl
-          avatar: payload.avatar || null
+          role: payload.user_role, // Map từ user_role sang role
+          user_role: payload.user_role, // Giữ nguyên user_role
+          avatar: payload.avatar || null,
         };
 
-        // 3. Lưu thông tin user giống như Login bằng email/password
+        // 3. Lưu thông tin user và update context
         localStorage.setItem("user", JSON.stringify(userObj));
+        setUser(userObj); // Update AuthContext
 
         setStatus("Đăng nhập thành công! Đang chuyển hướng...");
+
+        // 4. Chuyển hướng dựa trên role
+        console.log("Redirecting based on role:", userObj.user_role);
+        setTimeout(() => {
+          if (userObj.user_role === "admin") {
+            navigate("/admin");
+          } else if (userObj.user_role === "coach") {
+            navigate("/coach-dashboard");
+          } else {
+            navigate("/");
+          }
+        }, 100);
       } catch (e) {
         console.error("Invalid token format or cannot decode:", e);
         setStatus("Token không hợp lệ");
@@ -64,12 +79,6 @@ const GoogleRedirectHandler = () => {
         }, 2000);
         return;
       }
-
-      // 4. Chuyển về /home sau 1s
-      console.log("Redirecting to /home in 1 second...");
-      setTimeout(() => {
-        navigate("/home");
-      }, 1000);
     } else {
       console.error("No token received from Google auth");
       setStatus("Không nhận được token xác thực");
@@ -77,7 +86,7 @@ const GoogleRedirectHandler = () => {
         navigate("/login?error=no_token");
       }, 2000);
     }
-  }, [navigate, searchParams]);
+  }, [navigate, searchParams, setUser]);
 
   return (
     <div
@@ -87,7 +96,7 @@ const GoogleRedirectHandler = () => {
         alignItems: "center",
         height: "100vh",
         flexDirection: "column",
-        fontFamily: "Arial, sans-serif"
+        fontFamily: "Arial, sans-serif",
       }}
     >
       <div style={{ textAlign: "center" }}>
@@ -95,7 +104,7 @@ const GoogleRedirectHandler = () => {
         <p>Vui lòng chờ trong giây lát...</p>
 
         {/* Debug info - chỉ hiển thị trong development */}
-        {process.env.NODE_ENV === "development" && (
+        {import.meta.env.MODE === "development" && (
           <div
             style={{
               marginTop: "20px",
@@ -103,7 +112,7 @@ const GoogleRedirectHandler = () => {
               backgroundColor: "#f5f5f5",
               borderRadius: "5px",
               fontSize: "12px",
-              color: "#666"
+              color: "#666",
             }}
           >
             {/*  <p>

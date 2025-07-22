@@ -23,18 +23,17 @@
     "dayjs": "^1.11.13",
     "howler": "^2.2.4",
     "install": "^0.13.0",
+    "jquery": "^3.7.1",
     "jwt-decode": "^4.0.0",
     "moment": "^2.30.1",
     "moment-timezone": "^0.6.0",
     "multer": "^2.0.1",
     "npm": "^11.4.2",
+    "owl.carousel": "^2.3.4",
     "react": "^19.1.0",
-<<<<<<< HEAD
     "react-chartjs-2": "^5.3.0",
-    "react-credit-cards": "^0.8.3",
-=======
     "react-countup": "^6.5.3",
->>>>>>> 9e774e0c8af50c9a61178c9864113bf5e2c092da
+    "react-credit-cards": "^0.8.3",
     "react-credit-cards-2": "^1.0.3",
     "react-dom": "^19.1.0",
     "react-icons": "^5.5.0",
@@ -45,6 +44,7 @@
     "slick-carousel": "^1.8.1",
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1",
+    "wow.js": "^1.2.2",
     "wowjs": "^1.1.3"
   },
   "devDependencies": {

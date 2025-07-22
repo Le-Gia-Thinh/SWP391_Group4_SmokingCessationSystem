@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import {
   DatePicker,
   InputNumber,
@@ -39,649 +39,6 @@ import Navbar from "../../layouts/Navbar";
 
 const { Title } = Typography;
 const { Header, Content } = Layout;
-
-const PHASES = [
-  { phase: "Giai đoạn 1", range: [0, 20], goal: "Nhận diện – Giảm nhẹ liều" },
-  { phase: "Giai đoạn 2", range: [20, 40], goal: "Cắt giảm quyết liệt" },
-  { phase: "Giai đoạn 3", range: [40, 60], goal: "Còn hút ít, chuẩn bị cai" },
-  {
-    phase: "Giai đoạn 4",
-    range: [60, 80],
-    goal: "Cai hoàn toàn – vẫn khó chịu",
-  },
-  {
-    phase: "Giai đoạn 5",
-    range: [80, 100],
-    goal: "Củng cố, không hút trở lại",
-  },
-];
-
-const BEHAVIOR_PLAN_PHASES = [
-  // Phase 1: Nhận diện – Giảm nhẹ liều
-  [
-    {
-      phase: "P1",
-      name: "Nhận diện – Giảm nhẹ liều",
-      tasks: {
-        "07:00": [
-          {
-            task_id: "P1_07_1",
-            task: "Ngậm kẹo nicotine 2mg + đi bộ nhanh 3 phút + ghi 3 từ mô tả cảm giác thèm",
-          },
-          {
-            task_id: "P1_07_2",
-            task: "Thiền quan sát cảm giác thèm 5 phút + rửa mặt lạnh + ghi thang craving 1–10",
-          },
-          {
-            task_id: "P1_07_3",
-            task: "Chạy tại chỗ 2 phút + xịt nicotine 1 lần + vẽ nhanh khuôn mặt thèm thuốc",
-          },
-        ],
-        "08:00": [
-          {
-            task_id: "P1_08_1",
-            task: "Dán nicotine 16h + đi bộ nhẹ 3 phút + uống nước lọc",
-          },
-          {
-            task_id: "P1_08_2",
-            task: "Thiền hơi thở 5 phút sau ăn + viết 3 điều biết ơn",
-          },
-          {
-            task_id: "P1_08_3",
-            task: "Nghe podcast Coach hướng dẫn xử lý sau ăn + ghi cảm xúc",
-          },
-        ],
-        "10:00": [
-          {
-            task_id: "P1_10_1",
-            task: "Ghi nhanh lý do hút thuốc + vẽ mũi tên hướng thay thế",
-          },
-          {
-            task_id: "P1_10_2",
-            task: "Uống trà thảo mộc + vươn vai + ghi 1 điều đang lo",
-          },
-          {
-            task_id: "P1_10_3",
-            task: "Thiền kiểm soát cảm xúc 5 phút + đánh giá thèm thuốc",
-          },
-        ],
-        "12:00": [
-          {
-            task_id: "P1_12_1",
-            task: "Đi cầu thang 2 tầng sau ăn + chụp ảnh báo Coach",
-          },
-          {
-            task_id: "P1_12_2",
-            task: "Viết nhật ký cảm giác sau ăn khi không hút",
-          },
-          {
-            task_id: "P1_12_3",
-            task: "Nghe âm thanh thư giãn 4 phút + uống nước lọc",
-          },
-        ],
-        "14:00": [
-          {
-            task_id: "P1_14_1",
-            task: "Uống nước lạnh + đi bộ nhẹ 3 phút + thở sâu 3 lần",
-          },
-          {
-            task_id: "P1_14_2",
-            task: "Thiền tỉnh táo 5 phút + ghi nhật ký lý do muốn bỏ thuốc",
-          },
-          {
-            task_id: "P1_14_3",
-            task: "Vẽ tranh đơn giản về trạng thái cảm xúc lúc đó + viết 1 câu miêu tả",
-          },
-        ],
-        "16:00": [
-          {
-            task_id: "P1_16_1",
-            task: "Gửi tin nhắn cho Coach xin hướng dẫn + uống trà",
-          },
-          {
-            task_id: "P1_16_2",
-            task: "Viết lại tình huống khiến bạn stress + 1 cách đối phó",
-          },
-          {
-            task_id: "P1_16_3",
-            task: "Thực hiện 5 phút yoga cổ vai gáy theo video Coach cung cấp",
-          },
-        ],
-        "18:00": [
-          {
-            task_id: "P1_18_1",
-            task: "Ngậm kẹo bạc hà + uống nước lạnh + đi bộ 2 phút",
-          },
-          {
-            task_id: "P1_18_2",
-            task: "Chuẩn bị bữa ăn nhẹ lành mạnh + ghi lại cảm xúc trước/sau",
-          },
-          {
-            task_id: "P1_18_3",
-            task: "Làm nhiệm vụ hệ thống chọn sẵn (nút ngẫu nhiên)",
-          },
-        ],
-        "20:00": [
-          {
-            task_id: "P1_20_1",
-            task: "Đọc 1 bài viết ngắn về lợi ích bỏ thuốc + ghi cảm nhận",
-          },
-          { task_id: "P1_20_2", task: "Ghi lại cảm xúc của bạn sau bữa tối" },
-          {
-            task_id: "P1_20_3",
-            task: "Xem lại ảnh đồ ăn/hoạt động khỏe mạnh đã thực hiện trong ngày",
-          },
-        ],
-        "22:00": [
-          {
-            task_id: "P1_22_1",
-            task: "Viết 1 dòng nhật ký cảm xúc cuối ngày + đánh giá 1–10",
-          },
-          { task_id: "P1_22_2", task: "Thiền thư giãn 7 phút trước khi ngủ" },
-          {
-            task_id: "P1_22_3",
-            task: "Đọc lại nhật ký lý do bỏ thuốc đã viết",
-          },
-        ],
-      },
-    },
-  ],
-  // Phase 2: Cắt giảm quyết liệt
-  [
-    {
-      phase: "P2",
-      name: "Cắt giảm quyết liệt",
-      tasks: {
-        "07:00": [
-          {
-            task_id: "P2_07_1",
-            task: "Chạy bộ nhẹ 5 phút + uống nước ấm + ghi cảm xúc đầu ngày",
-          },
-          {
-            task_id: "P2_07_2",
-            task: "Thiền định buổi sáng 7 phút + viết mục tiêu hôm nay",
-          },
-          {
-            task_id: "P2_07_3",
-            task: "Tập thể dục tại chỗ 5 phút + ăn 1 trái chuối (giàu dopamine)",
-          },
-        ],
-        "08:00": [
-          {
-            task_id: "P2_08_1",
-            task: "Ăn sáng với trứng + trái cây + ghi lại cảm giác sau ăn",
-          },
-          {
-            task_id: "P2_08_2",
-            task: "Nghe nhạc thư giãn 5 phút + đi bộ chậm 4 phút",
-          },
-          {
-            task_id: "P2_08_3",
-            task: "Tự massage cổ vai gáy 3 phút + viết 3 điều mong chờ trong ngày",
-          },
-        ],
-        "10:00": [
-          {
-            task_id: "P2_10_1",
-            task: "Ghi lại 1 lần muốn hút thuốc gần đây + viết cách vượt qua",
-          },
-          { task_id: "P2_10_2", task: "Thiền thở sâu 6 phút + uống trà gừng" },
-          {
-            task_id: "P2_10_3",
-            task: "Vẽ cảm xúc + chia sẻ lên nhật ký hệ thống",
-          },
-        ],
-        "12:00": [
-          {
-            task_id: "P2_12_1",
-            task: "Ăn trưa chay nhẹ + đi bộ 3 phút sau ăn",
-          },
-          {
-            task_id: "P2_12_2",
-            task: "Đọc bài viết về tác hại thuốc lá + ghi lại 1 điều ấn tượng",
-          },
-          { task_id: "P2_12_3", task: "Tập động tác yoga nhẹ nhàng 5 phút" },
-        ],
-        "14:00": [
-          {
-            task_id: "P2_14_1",
-            task: "Chạy tại chỗ 3 phút + uống nước + đánh giá cảm giác",
-          },
-          {
-            task_id: "P2_14_2",
-            task: "Thiền kiểm soát cảm xúc 5 phút + ghi nhật ký",
-          },
-          {
-            task_id: "P2_14_3",
-            task: "Gọi điện cho người ủng hộ + chia sẻ tiến trình",
-          },
-        ],
-        "16:00": [
-          {
-            task_id: "P2_16_1",
-            task: "Bơi/đạp xe 10 phút (nếu có điều kiện) + ghi nhật ký",
-          },
-          {
-            task_id: "P2_16_2",
-            task: "Vẽ bản đồ tiến trình cai thuốc + đánh dấu ngày hiện tại",
-          },
-          {
-            task_id: "P2_16_3",
-            task: "Làm 1 việc thiện nhỏ trong ngày + viết cảm nhận",
-          },
-        ],
-        "18:00": [
-          {
-            task_id: "P2_18_1",
-            task: "Chuẩn bị bữa tối lành mạnh giàu đạm + chụp ảnh lưu giữ",
-          },
-          {
-            task_id: "P2_18_2",
-            task: "Lắng nghe 1 đoạn audio truyền động lực Coach",
-          },
-          {
-            task_id: "P2_18_3",
-            task: "Viết thư cho bản thân tương lai không hút thuốc",
-          },
-        ],
-        "20:00": [
-          {
-            task_id: "P2_20_1",
-            task: "Đi bộ thư giãn 5 phút + ngửi tinh dầu cam/quế",
-          },
-          {
-            task_id: "P2_20_2",
-            task: "Ghi lại cảm xúc cuối ngày và điều thành công nhỏ",
-          },
-          { task_id: "P2_20_3", task: "Thiền buông thư cơ thể 7 phút" },
-        ],
-        "22:00": [
-          {
-            task_id: "P2_22_1",
-            task: "Tắm nước ấm + uống sữa ấm (giảm thèm) + ngủ sớm",
-          },
-          {
-            task_id: "P2_22_2",
-            task: "Ghi nhật ký lý do mình xứng đáng được sống khỏe",
-          },
-          { task_id: "P2_22_3", task: "Nghe nhạc nhẹ thư giãn 10 phút" },
-        ],
-      },
-    },
-  ],
-  // Phase 3: Chuẩn bị cai hoàn toàn
-  [
-    {
-      phase: "P3",
-      name: "Còn hút ít, chuẩn bị cai",
-      tasks: {
-        "07:00": [
-          {
-            task_id: "P3_07_1",
-            task: "Chạy bộ nhẹ 5 phút + uống nước ấm + ghi cảm xúc đầu ngày",
-          },
-          {
-            task_id: "P3_07_2",
-            task: "Thiền định buổi sáng 7 phút + viết mục tiêu hôm nay",
-          },
-          {
-            task_id: "P3_07_3",
-            task: "Tập thể dục tại chỗ 5 phút + ăn 1 trái chuối (giàu dopamine)",
-          },
-        ],
-        "08:00": [
-          {
-            task_id: "P3_08_1",
-            task: "Ăn sáng với trứng + trái cây + ghi lại cảm giác sau ăn",
-          },
-          {
-            task_id: "P3_08_2",
-            task: "Nghe nhạc thư giãn 5 phút + đi bộ chậm 4 phút",
-          },
-          {
-            task_id: "P3_08_3",
-            task: "Tự massage cổ vai gáy 3 phút + viết 3 điều mong chờ trong ngày",
-          },
-        ],
-        "10:00": [
-          {
-            task_id: "P3_10_1",
-            task: "Ghi lại 1 lần muốn hút thuốc gần đây + viết cách vượt qua",
-          },
-          { task_id: "P3_10_2", task: "Thiền thở sâu 6 phút + uống trà gừng" },
-          {
-            task_id: "P3_10_3",
-            task: "Vẽ cảm xúc + chia sẻ lên nhật ký hệ thống",
-          },
-        ],
-        "12:00": [
-          {
-            task_id: "P3_12_1",
-            task: "Ăn trưa chay nhẹ + đi bộ 3 phút sau ăn",
-          },
-          {
-            task_id: "P3_12_2",
-            task: "Đọc bài viết về tác hại thuốc lá + ghi lại 1 điều ấn tượng",
-          },
-          { task_id: "P3_12_3", task: "Tập động tác yoga nhẹ nhàng 5 phút" },
-        ],
-        "14:00": [
-          {
-            task_id: "P3_14_1",
-            task: "Chạy tại chỗ 3 phút + uống nước + đánh giá cảm giác",
-          },
-          {
-            task_id: "P3_14_2",
-            task: "Thiền kiểm soát cảm xúc 5 phút + ghi nhật ký",
-          },
-          {
-            task_id: "P3_14_3",
-            task: "Gọi điện cho người ủng hộ + chia sẻ tiến trình",
-          },
-        ],
-        "16:00": [
-          {
-            task_id: "P3_16_1",
-            task: "Bơi/đạp xe 10 phút (nếu có điều kiện) + ghi nhật ký",
-          },
-          {
-            task_id: "P3_16_2",
-            task: "Vẽ bản đồ tiến trình cai thuốc + đánh dấu ngày hiện tại",
-          },
-          {
-            task_id: "P3_16_3",
-            task: "Làm 1 việc thiện nhỏ trong ngày + viết cảm nhận",
-          },
-        ],
-        "18:00": [
-          {
-            task_id: "P3_18_1",
-            task: "Chuẩn bị bữa tối lành mạnh giàu đạm + chụp ảnh lưu giữ",
-          },
-          {
-            task_id: "P3_18_2",
-            task: "Lắng nghe 1 đoạn audio truyền động lực Coach",
-          },
-          {
-            task_id: "P3_18_3",
-            task: "Viết thư cho bản thân tương lai không hút thuốc",
-          },
-        ],
-        "20:00": [
-          {
-            task_id: "P3_20_1",
-            task: "Đi bộ thư giãn 5 phút + ngửi tinh dầu cam/quế",
-          },
-          {
-            task_id: "P3_20_2",
-            task: "Ghi lại cảm xúc cuối ngày và điều thành công nhỏ",
-          },
-          { task_id: "P3_20_3", task: "Thiền buông thư cơ thể 7 phút" },
-        ],
-        "22:00": [
-          {
-            task_id: "P3_22_1",
-            task: "Tắm nước ấm + uống sữa ấm (giảm thèm) + ngủ sớm",
-          },
-          {
-            task_id: "P3_22_2",
-            task: "Ghi nhật ký lý do mình xứng đáng được sống khỏe",
-          },
-          { task_id: "P3_22_3", task: "Nghe nhạc nhẹ thư giãn 10 phút" },
-        ],
-      },
-    },
-  ],
-  // Phase 4: Cai hoàn toàn – vẫn khó chịu
-  [
-    {
-      phase: "P4",
-      name: "Cai hoàn toàn – vẫn khó chịu",
-      tasks: {
-        "07:00": [
-          {
-            task_id: "P4_07_1",
-            task: "Chạy bộ nhẹ 5 phút + uống nước ấm + ghi cảm xúc đầu ngày",
-          },
-          {
-            task_id: "P4_07_2",
-            task: "Thiền định buổi sáng 7 phút + viết mục tiêu hôm nay",
-          },
-          {
-            task_id: "P4_07_3",
-            task: "Tập thể dục tại chỗ 5 phút + ăn 1 trái chuối (giàu dopamine)",
-          },
-        ],
-        "08:00": [
-          {
-            task_id: "P4_08_1",
-            task: "Ăn sáng với trứng + trái cây + ghi lại cảm giác sau ăn",
-          },
-          {
-            task_id: "P4_08_2",
-            task: "Nghe nhạc thư giãn 5 phút + đi bộ chậm 4 phút",
-          },
-          {
-            task_id: "P4_08_3",
-            task: "Tự massage cổ vai gáy 3 phút + viết 3 điều mong chờ trong ngày",
-          },
-        ],
-        "10:00": [
-          {
-            task_id: "P4_10_1",
-            task: "Ghi lại 1 lần muốn hút thuốc gần đây + viết cách vượt qua",
-          },
-          { task_id: "P4_10_2", task: "Thiền thở sâu 6 phút + uống trà gừng" },
-          {
-            task_id: "P4_10_3",
-            task: "Vẽ cảm xúc + chia sẻ lên nhật ký hệ thống",
-          },
-        ],
-        "12:00": [
-          {
-            task_id: "P4_12_1",
-            task: "Ăn trưa chay nhẹ + đi bộ 3 phút sau ăn",
-          },
-          {
-            task_id: "P4_12_2",
-            task: "Đọc bài viết về tác hại thuốc lá + ghi lại 1 điều ấn tượng",
-          },
-          { task_id: "P4_12_3", task: "Tập động tác yoga nhẹ nhàng 5 phút" },
-        ],
-        "14:00": [
-          {
-            task_id: "P4_14_1",
-            task: "Chạy tại chỗ 3 phút + uống nước + đánh giá cảm giác",
-          },
-          {
-            task_id: "P4_14_2",
-            task: "Thiền kiểm soát cảm xúc 5 phút + ghi nhật ký",
-          },
-          {
-            task_id: "P4_14_3",
-            task: "Gọi điện cho người ủng hộ + chia sẻ tiến trình",
-          },
-        ],
-        "16:00": [
-          {
-            task_id: "P4_16_1",
-            task: "Bơi/đạp xe 10 phút (nếu có điều kiện) + ghi nhật ký",
-          },
-          {
-            task_id: "P4_16_2",
-            task: "Vẽ bản đồ tiến trình cai thuốc + đánh dấu ngày hiện tại",
-          },
-          {
-            task_id: "P4_16_3",
-            task: "Làm 1 việc thiện nhỏ trong ngày + viết cảm nhận",
-          },
-        ],
-        "18:00": [
-          {
-            task_id: "P4_18_1",
-            task: "Chuẩn bị bữa tối lành mạnh giàu đạm + chụp ảnh lưu giữ",
-          },
-          {
-            task_id: "P4_18_2",
-            task: "Lắng nghe 1 đoạn audio truyền động lực Coach",
-          },
-          {
-            task_id: "P4_18_3",
-            task: "Viết thư cho bản thân tương lai không hút thuốc",
-          },
-        ],
-        "20:00": [
-          {
-            task_id: "P4_20_1",
-            task: "Đi bộ thư giãn 5 phút + ngửi tinh dầu cam/quế",
-          },
-          {
-            task_id: "P4_20_2",
-            task: "Ghi lại cảm xúc cuối ngày và điều thành công nhỏ",
-          },
-          { task_id: "P4_20_3", task: "Thiền buông thư cơ thể 7 phút" },
-        ],
-        "22:00": [
-          {
-            task_id: "P4_22_1",
-            task: "Tắm nước ấm + uống sữa ấm (giảm thèm) + ngủ sớm",
-          },
-          {
-            task_id: "P4_22_2",
-            task: "Ghi nhật ký lý do mình xứng đáng được sống khỏe",
-          },
-          { task_id: "P4_22_3", task: "Nghe nhạc nhẹ thư giãn 10 phút" },
-        ],
-      },
-    },
-  ],
-  // Phase 5: Củng cố không tái nghiện
-  [
-    {
-      phase: "P5",
-      name: "Củng cố, không hút trở lại",
-      tasks: {
-        "07:00": [
-          {
-            task_id: "P5_07_1",
-            task: "Chạy bộ nhẹ 5 phút + uống nước ấm + ghi cảm xúc đầu ngày",
-          },
-          {
-            task_id: "P5_07_2",
-            task: "Thiền định buổi sáng 7 phút + viết mục tiêu hôm nay",
-          },
-          {
-            task_id: "P5_07_3",
-            task: "Tập thể dục tại chỗ 5 phút + ăn 1 trái chuối (giàu dopamine)",
-          },
-        ],
-        "08:00": [
-          {
-            task_id: "P5_08_1",
-            task: "Ăn sáng với trứng + trái cây + ghi lại cảm giác sau ăn",
-          },
-          {
-            task_id: "P5_08_2",
-            task: "Nghe nhạc thư giãn 5 phút + đi bộ chậm 4 phút",
-          },
-          {
-            task_id: "P5_08_3",
-            task: "Tự massage cổ vai gáy 3 phút + viết 3 điều mong chờ trong ngày",
-          },
-        ],
-        "10:00": [
-          {
-            task_id: "P5_10_1",
-            task: "Ghi lại 1 lần bạn vượt qua cơn thèm gần đây + ăn mừng nhẹ",
-          },
-          {
-            task_id: "P5_10_2",
-            task: "Thiền duy trì động lực 5 phút + ghi lại lý do bạn làm được",
-          },
-          {
-            task_id: "P5_10_3",
-            task: "Tạo infographic về hành trình đã qua + chia sẻ với Coach",
-          },
-        ],
-        "12:00": [
-          {
-            task_id: "P5_12_1",
-            task: "Ăn trưa lành mạnh + uống nước sau ăn + đi bộ 3 phút",
-          },
-          {
-            task_id: "P5_12_2",
-            task: "Xem lại nhật ký cảm xúc các tuần trước",
-          },
-          {
-            task_id: "P5_12_3",
-            task: "Thực hiện vài động tác yoga hoặc giãn cơ nhẹ nhàng",
-          },
-        ],
-        "14:00": [
-          {
-            task_id: "P5_14_1",
-            task: "Chạy tại chỗ 3 phút + đánh giá trạng thái hiện tại",
-          },
-          {
-            task_id: "P5_14_2",
-            task: "Thiền buông bỏ lo lắng + viết 1 câu nhắn gửi cho bản thân",
-          },
-          {
-            task_id: "P5_14_3",
-            task: "Lập kế hoạch cho hoạt động lành mạnh cuối tuần",
-          },
-        ],
-        "16:00": [
-          { task_id: "P5_16_1", task: "Bơi/đạp xe nhẹ 10 phút + uống nước" },
-          {
-            task_id: "P5_16_2",
-            task: "Xem video truyền cảm hứng từ người bỏ thuốc thành công",
-          },
-          {
-            task_id: "P5_16_3",
-            task: "Ghi lại mục tiêu mới không còn liên quan đến thuốc lá",
-          },
-        ],
-        "18:00": [
-          {
-            task_id: "P5_18_1",
-            task: "Chuẩn bị bữa tối cân bằng dinh dưỡng + ngồi ăn không dùng điện thoại",
-          },
-          { task_id: "P5_18_2", task: "Chia sẻ 1 bài học bạn rút ra hôm nay" },
-          {
-            task_id: "P5_18_3",
-            task: "Ghi lại điều bạn tự hào nhất trong quá trình cai thuốc",
-          },
-        ],
-        "20:00": [
-          { task_id: "P5_20_1", task: "Đi bộ nhẹ sau bữa tối + hít thở sâu" },
-          {
-            task_id: "P5_20_2",
-            task: "Viết thư cảm ơn cho người đã hỗ trợ bạn bỏ thuốc",
-          },
-          {
-            task_id: "P5_20_3",
-            task: "Ghi chép về cách bạn sẽ duy trì lối sống không thuốc",
-          },
-        ],
-        "22:00": [
-          {
-            task_id: "P5_22_1",
-            task: "Tắm nước ấm thư giãn + hít tinh dầu nhẹ",
-          },
-          {
-            task_id: "P5_22_2",
-            task: "Ghi nhận 3 điều bạn biết ơn trong ngày",
-          },
-          {
-            task_id: "P5_22_3",
-            task: "Nghe nhạc nhẹ trước khi ngủ + viết 1 dòng truyền cảm hứng cho ngày mai",
-          },
-        ],
-      },
-    },
-  ],
-];
 
 const generateWeeklyQuota = (months, level) => {
   const totalWeeks = Math.round(months * 4.3);
@@ -734,12 +91,55 @@ const QuitPlan = () => {
   const [tempSmokingLog, setTempSmokingLog] = useState({});
   const [habitLogByDate, setHabitLogByDate] = useState({});
 
+  // New states for API data
+  const [phases, setPhases] = useState([]);
+  const [behaviorPlanPhases, setBehaviorPlanPhases] = useState([]);
+  const [isLoadingPhases, setIsLoadingPhases] = useState(true);
+  const [apiError, setApiError] = useState(null);
+
   const [currentWeekPage, setCurrentWeekPage] = useState(() => {
     const savedPage = sessionStorage.getItem("quitPlanPage");
     return savedPage ? parseInt(savedPage, 10) : 1;
   });
   const [ftndLevel, setFtndLevel] = useState("");
   const navigate = useNavigate();
+
+  // Fetch phases và behavior phases từ API - CHỈ dùng API, không fallback
+  useEffect(() => {
+    const fetchPhaseData = async () => {
+      try {
+        setIsLoadingPhases(true);
+        setApiError(null);
+        const [phasesResponse, behaviorPhasesResponse] = await Promise.all([
+          fetch("http://localhost:5000/api/phases"),
+          fetch("http://localhost:5000/api/behavior-phases"),
+        ]);
+
+        if (!phasesResponse.ok || !behaviorPhasesResponse.ok) {
+          throw new Error("API response not ok");
+        }
+
+        const phasesData = await phasesResponse.json();
+        const behaviorPhasesData = await behaviorPhasesResponse.json();
+
+        if (phasesData.success && behaviorPhasesData.success) {
+          setPhases(phasesData.data);
+          setBehaviorPlanPhases(behaviorPhasesData.data);
+          console.log("✅ API phases loaded successfully");
+        } else {
+          throw new Error("API returned error response");
+        }
+      } catch (error) {
+        console.error("❌ Không thể tải dữ liệu phases từ API:", error.message);
+        setApiError("Không thể kết nối tới server. Vui lòng thử lại sau.");
+        message.error("Không thể tải dữ liệu giai đoạn từ server");
+      } finally {
+        setIsLoadingPhases(false);
+      }
+    };
+
+    fetchPhaseData();
+  }, []);
 
   // Fetch habit log từng ngày
   useEffect(() => {
@@ -822,6 +222,18 @@ const QuitPlan = () => {
       });
   }, []);
 
+  const totalDays = months ? months * 30 : 0;
+  const normalizeLevel = (level) => {
+    if (!level) return "medium";
+    const l = level.trim().toLowerCase();
+    if (l === "low") return "low";
+    if (l === "medium") return "medium";
+    if (l === "high") return "high";
+    return "medium";
+  };
+
+  const level = useMemo(() => normalizeLevel(ftndLevel), [ftndLevel]);
+
   useEffect(() => {
     if (!user?.id || !startDate || !months || !ftndLevel) return;
 
@@ -890,7 +302,7 @@ const QuitPlan = () => {
       .catch((err) => {
         console.error("Lỗi khi tải dữ liệu số điếu:", err);
       });
-  }, [user?.id, startDate, months, ftndLevel]);
+  }, [user?.id, startDate, months, ftndLevel, level]);
 
   const handlePlanReady = ({ startDate, months }) => {
     setStartDate(dayjs(startDate));
@@ -914,17 +326,6 @@ const QuitPlan = () => {
     }
   };
 
-  const totalDays = months ? months * 30 : 0;
-  const normalizeLevel = (level) => {
-    if (!level) return "medium";
-    const l = level.trim().toLowerCase();
-    if (l === "low") return "low";
-    if (l === "medium") return "medium";
-    if (l === "high") return "high";
-    return "medium";
-  };
-
-  const level = useMemo(() => normalizeLevel(ftndLevel), [ftndLevel]);
   const weeklyQuota = useMemo(
     () =>
       startDate && months && ftndLevel
@@ -932,46 +333,52 @@ const QuitPlan = () => {
         : [],
     [months, level, startDate, ftndLevel]
   );
-  const getRemainingCigs = (
-    dateStr,
-    weeklyQuota,
-    log = smokingLog,
-    tempLog = tempSmokingLog,
-    excludeCurrent = false
-  ) => {
-    const date = dayjs(dateStr, "DD/MM/YYYY");
-    const weekIndex = Math.floor(date.diff(startDate, "day") / 7);
+  const getRemainingCigs = useCallback(
+    (
+      dateStr,
+      weeklyQuota,
+      log = smokingLog,
+      tempLog = tempSmokingLog,
+      excludeCurrent = false
+    ) => {
+      const date = dayjs(dateStr, "DD/MM/YYYY");
+      const weekIndex = Math.floor(date.diff(startDate, "day") / 7);
 
-    // Lấy tất cả ngày trong tuần từ cả log và tempLog
-    const allDates = new Set([...Object.keys(log), ...Object.keys(tempLog)]);
-    const weekDates = Array.from(allDates).filter((key) => {
-      const d = dayjs(key, "DD/MM/YYYY");
-      const wi = Math.floor(d.diff(startDate, "day") / 7);
-      return wi === weekIndex && (!excludeCurrent || key !== dateStr);
-    });
+      // Lấy tất cả ngày trong tuần từ cả log và tempLog
+      const allDates = new Set([...Object.keys(log), ...Object.keys(tempLog)]);
+      const weekDates = Array.from(allDates).filter((key) => {
+        const d = dayjs(key, "DD/MM/YYYY");
+        const wi = Math.floor(d.diff(startDate, "day") / 7);
+        return wi === weekIndex && (!excludeCurrent || key !== dateStr);
+      });
 
-    // Tính tổng số điếu đã nhập (ưu tiên tempLog nếu có)
-    let used = weekDates.reduce((sum, key) => {
-      const tempVal = tempLog[key];
-      const val = log[key];
-      return sum + Number(tempVal !== undefined ? tempVal : val || 0);
-    }, 0);
+      // Tính tổng số điếu đã nhập (ưu tiên tempLog nếu có)
+      let used = weekDates.reduce((sum, key) => {
+        const tempVal = tempLog[key];
+        const val = log[key];
+        return sum + Number(tempVal !== undefined ? tempVal : val || 0);
+      }, 0);
 
-    const quota = weeklyQuota[weekIndex]?.maxCigs || 0;
-    return Math.max(0, quota - used);
-  };
+      const quota = weeklyQuota[weekIndex]?.maxCigs || 0;
+      return Math.max(0, quota - used);
+    },
+    [startDate, smokingLog, tempSmokingLog]
+  );
 
   // Sau đó mới khai báo planData
   const planData = useMemo(() => {
-    if (!startDate || !months) return [];
+    if (!startDate || !months || phases.length === 0) return [];
     const data = [];
     for (let i = 0; i < totalDays; i++) {
       const currentDate = startDate.add(i, "day");
       const formattedDate = currentDate.format("DD/MM/YYYY");
       const progress = Math.round((i / (totalDays - 1)) * 100);
-      const phase = PHASES.find(
+      const phase = phases.find(
         ({ range }) => progress >= range[0] && progress <= range[1]
       );
+
+      if (!phase) continue; // Skip if no phase found
+
       const weekIndex = Math.floor(i / 7);
       const weeklyCigs = weeklyQuota[weekIndex]?.maxCigs || 0;
       const dailyPattern = distributeDailyQuota(weeklyCigs);
@@ -980,6 +387,14 @@ const QuitPlan = () => {
         viewMode === "month"
           ? `Tháng ${Math.floor(i / 30) + 1} – Ngày ${(i % 30) + 1}`
           : `Tuần ${weekIndex + 1} – Ngày ${i - weekIndex * 7 + 1}`;
+
+      // Find matching behavior plan phase
+      const phaseIndex = phases.findIndex((p) => p.phase === phase.phase);
+      const behaviorPhase = behaviorPlanPhases[phaseIndex] || {
+        title: "Chưa có kế hoạch hành vi",
+        tasks: [],
+      };
+
       data.push({
         key: i,
         date: formattedDate, // "DD/MM/YYYY" để hiển thị
@@ -998,11 +413,22 @@ const QuitPlan = () => {
         ),
         weekIndex,
         weekDayLabel: label,
-        detailPlan: BEHAVIOR_PLAN_PHASES[PHASES.indexOf(phase)],
+        detailPlan: behaviorPhase,
       });
     }
     return data;
-  }, [startDate, months, viewMode, smokingLog, tempSmokingLog]); // <-- thêm tempSmokingLog vào dependency
+  }, [
+    startDate,
+    months,
+    viewMode,
+    smokingLog,
+    tempSmokingLog,
+    phases,
+    behaviorPlanPhases,
+    getRemainingCigs,
+    totalDays,
+    weeklyQuota,
+  ]);
 
   const columns = [
     {
@@ -1423,10 +849,10 @@ const QuitPlan = () => {
               >
                 {(() => {
                   const percent = animatedPercent;
-                  const currentPhaseIdx = PHASES.findIndex(
+                  const currentPhaseIdx = phases.findIndex(
                     ({ range }) => percent >= range[0] && percent <= range[1]
                   );
-                  const currentPhase = PHASES[currentPhaseIdx];
+                  const currentPhase = phases[currentPhaseIdx];
                   return currentPhase
                     ? `${currentPhase.phase} - ${currentPhase.goal}`
                     : "";
@@ -1435,10 +861,10 @@ const QuitPlan = () => {
               <div style={{ fontSize: 16, color: "#222", marginBottom: 16 }}>
                 {(() => {
                   const percent = animatedPercent;
-                  const currentPhaseIdx = PHASES.findIndex(
+                  const currentPhaseIdx = phases.findIndex(
                     ({ range }) => percent >= range[0] && percent <= range[1]
                   );
-                  const nextPhase = PHASES[currentPhaseIdx + 1];
+                  const nextPhase = phases[currentPhaseIdx + 1];
                   if (!nextPhase) return "Bạn đã ở giai đoạn cuối!";
                   const percentToNext = nextPhase.range[0] - percent;
                   return percentToNext > 0
@@ -1514,7 +940,31 @@ const QuitPlan = () => {
             </Card>
           </div>
 
+          {/* Hiển thị lỗi API nếu có */}
+          {apiError && (
+            <Alert
+              message="Lỗi kết nối"
+              description={apiError}
+              type="error"
+              showIcon
+              style={{
+                marginBottom: 16,
+                borderRadius: 8,
+              }}
+              action={
+                <Button
+                  size="small"
+                  type="primary"
+                  onClick={() => window.location.reload()}
+                >
+                  Thử lại
+                </Button>
+              }
+            />
+          )}
+
           <Table
+            loading={isLoadingPhases}
             columns={columns}
             dataSource={planData}
             title={() => (
@@ -1618,7 +1068,7 @@ const QuitPlan = () => {
                     state: {
                       ...record,
                       rawStartDate: startDate.toISOString(),
-                      behaviorTasks: record.detailPlan?.[0]?.tasks || {},
+                      behaviorTasks: record.detailPlan?.tasks || {},
                     },
                   }
                 );

@@ -375,8 +375,12 @@ const BookingManagement = () => {
             return booking.session_status === 'rejected' ||
                 booking.session_status === 'canceled_by_member' ||
                 booking.session_status === 'canceled_by_coach';
+        } else if (activeTab === 'accepted') {
+            return booking.session_status === 'accepted';
+        } else if (activeTab === 'completed') {
+            return booking.session_status === 'completed';
         } else {
-            return booking.session_status === activeTab;
+            return false;
         }
     });
     console.log('DEBUG: filteredBookings for active tab (', activeTab, '):', filteredBookings);
@@ -403,14 +407,14 @@ const BookingManagement = () => {
 
             <Card>
                 <Tabs
-                    defaultActiveKey="pending"
-                    activeKey={activeTab}
+                    defaultActiveKey="accepted"
+                    activeKey={activeTab === 'pending' ? 'accepted' : activeTab}
                     onChange={key => {
                         setActiveTab(key);
                         if (key === 'rejected_cancelled') setRejectedBadge(0);
                     }}
                 >
-                    <TabPane tab={<span>Cuộc hẹn đang chờ <Badge count={bookings.filter(b => b.session_status === 'pending').length} /></span>} key="pending" />
+                    {/* <TabPane tab={<span>Cuộc hẹn đang chờ <Badge count={bookings.filter(b => b.session_status === 'pending').length} /></span>} key="pending" /> */}
                     <TabPane tab={<span>Cuộc hẹn đã chấp nhận <Badge count={bookings.filter(b => b.session_status === 'accepted').length} /></span>} key="accepted" />
                     <TabPane tab={<span>Cuộc hẹn đã hoàn thành <Badge count={bookings.filter(b => b.session_status === 'completed').length} /></span>} key="completed" />
                     <TabPane tab={<span>Cuộc hẹn bị từ chối/hủy <Badge count={rejectedBadge} /></span>} key="rejected_cancelled" />
@@ -421,7 +425,7 @@ const BookingManagement = () => {
                     dataSource={filteredBookings}
                     loading={loading}
                     rowKey="session_id"
-                    noDataContent={activeTab === 'pending' ? 'Không có cuộc hẹn nào đang chờ. Tất cả yêu cầu đã được xử lý!' : `Không có cuộc hẹn nào ${getStatusText(activeTab)}.`}
+                    noDataContent={`Không có cuộc hẹn nào ${getStatusText(activeTab)}.`}
                 />
 
                 {selectedBooking && (

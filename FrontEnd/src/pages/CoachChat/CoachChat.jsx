@@ -29,7 +29,7 @@ const { Text, Title, Paragraph } = Typography;
 const { TextArea } = Input;
 
 export default function CoachChat() {
-    const [coachingSessions, setCoachingSessions] = useState([]);
+    const [chatThreads, setChatThreads] = useState([]);
     const [selectedSession, setSelectedSession] = useState(null);
     const [coachMessages, setCoachMessages] = useState([]);
     const [coachLoading, setCoachLoading] = useState(false);
@@ -54,13 +54,13 @@ export default function CoachChat() {
     useEffect(() => {
         if (!socket) return;
 
-        socket.on('receiveMessage', (messageData) => {
+        socket.on('receiveGuidedMessage', (messageData) => {
             console.log('📨 Coach received real-time message:', messageData);
 
-            if (selectedSession && messageData.session_id === selectedSession.session_id) {
+            if (selectedSession && messageData.thread_id === selectedSession.thread_id) {
                 setCoachMessages(prev => [...prev, {
                     message_id: Date.now(), // Temporary ID
-                    session_id: messageData.session_id,
+                    thread_id: messageData.thread_id,
                     sender_id: messageData.sender_id,
                     sender_role: messageData.sender_role || 'member',
                     message: messageData.message,
@@ -72,34 +72,31 @@ export default function CoachChat() {
         });
 
         return () => {
-            socket.off('receiveMessage');
+            socket.off('receiveGuidedMessage');
         };
     }, [socket, selectedSession]);
 
     // Join session room when session changes
     useEffect(() => {
         if (selectedSession && isConnected) {
-            if (selectedSession.session_id) {
-                leaveSession(selectedSession.session_id);
+            if (selectedSession.thread_id) {
+                leaveSession(selectedSession.thread_id);
             }
-            joinSession(selectedSession.session_id);
+            joinSession(selectedSession.thread_id);
         }
     }, [selectedSession, isConnected, joinSession, leaveSession]);
 
     // Fetch coaching sessions for coach
-    const fetchCoachingSessions = async () => {
+    const fetchChatThreads = async () => {
         if (!token) return;
         setSessionsLoading(true);
         try {
             const response = await axios.get(
-                "http://localhost:5000/api/appointment/all-coach-appointments",
+                 "http://localhost:5000/api/chat/guided",
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             if (response.data.success) {
-                const acceptedSessions = response.data.data.filter(
-                    session => session.session_status === 'accepted'
-                );
-                setCoachingSessions(acceptedSessions);
+                setChatThreads(response.data.data);
             }
         } catch (err) {
             message.error("Lỗi khi tải danh sách phiên tư vấn");
@@ -108,24 +105,33 @@ export default function CoachChat() {
         }
     };
 
-    // Fetch coach messages
-    const fetchCoachMessages = async (sessionId) => {
-        if (!sessionId) return;
+    // Fetch coach messages (Guided Support)
+    const fetchCoachMessages = async (partnerId) => {
+        if (!partnerId) return;
         setCoachLoading(true);
+
         try {
             const response = await axios.get(
-                `http://localhost:5000/api/chat/${sessionId}/messages`,
-                { headers: { Authorization: `Bearer ${token}` } }
+                `http://localhost:5000/api/chat/guided/${partnerId}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
             );
+
             if (response.data.success) {
-                setCoachMessages(response.data.data.reverse());
+                setCoachMessages(response.data.data); // Đã được sắp xếp tăng dần theo thời gian gửi
+            } else {
+                message.error("Không thể lấy dữ liệu tin nhắn");
             }
         } catch (err) {
+            console.error("❌ Lỗi khi lấy tin nhắn:", err);
             message.error("Lỗi khi tải tin nhắn");
         } finally {
             setCoachLoading(false);
         }
-    };
+    };  
 
     // Send coach message
     const sendCoachMessage = async () => {
@@ -137,9 +143,10 @@ export default function CoachChat() {
         try {
             const formData = new FormData();
             formData.append('message', newMessage);
+            formData.append('recipient_id', selectedSession.member_id || selectedSession.coach_id);
 
             const response = await axios.post(
-                `http://localhost:5000/api/chat/${selectedSession.session_id}/message`,
+                `http://localhost:5000/api/chat/guided/send`,
                 formData,
                 {
                     headers: {
@@ -162,10 +169,11 @@ export default function CoachChat() {
     };
 
     // Handle session selection
-    const handleSessionSelect = (session) => {
-        setSelectedSession(session);
-        fetchCoachMessages(session.session_id);
-    };
+    const handleSessionSelect = (thread) => {
+    setSelectedSession(thread);
+    const partnerId = thread.member_id || thread.coach_id;
+    fetchCoachMessages(partnerId);
+    };  
 
     // Check if session is currently active
     const isSessionActive = (session) => {
@@ -192,7 +200,7 @@ export default function CoachChat() {
     // Load initial data
     useEffect(() => {
         if (token) {
-            fetchCoachingSessions();
+            fetchChatThreads();
         }
     }, [token]);
 
@@ -222,28 +230,26 @@ export default function CoachChat() {
                             <div className="sessions-list">
                                 {sessionsLoading ? (
                                     <div style={{ textAlign: 'center', padding: '20px' }}><Spin /></div>
-                                ) : coachingSessions.length === 0 ? (
+                                ) : chatThreads.length === 0 ? (
                                     <Empty description="Chưa có phiên tư vấn nào" />
                                 ) : (
                                     <List
-                                        dataSource={coachingSessions}
-                                        renderItem={(session) => (
+                                        dataSource={chatThreads}
+                                        renderItem={(thread) => (
                                             <List.Item
-                                                className={`session-item ${selectedSession?.session_id === session.session_id ? 'selected' : ''}`}
-                                                onClick={() => handleSessionSelect(session)}
+                                                className={`session-item ${selectedSession?.thread_id === thread.thread_id ? 'selected' : ''}`}
+                                                onClick={() => handleSessionSelect(thread)}
                                             >
                                                 <div>
-                                                    <Text strong>
-                                                        {session.member_name || `Member ${session.user_id}`}
-                                                    </Text>
+                                                    <Text strong>{thread.member_name || thread.coach_name}</Text>
                                                     <br />
                                                     <Text type="secondary" style={{ fontSize: '12px' }}>
-                                                        <ClockCircleOutlined /> {formatSessionTime(session.scheduled_time)}
+                                                        🗨 {thread.last_message || 'Chưa có tin nhắn'}
                                                     </Text>
                                                     <br />
-                                                    <Tag color={isSessionActive(session) ? 'green' : 'default'}>
-                                                        {isSessionActive(session) ? 'Đang hoạt động' : 'Không hoạt động'}
-                                                    </Tag>
+                                                    <Text type="secondary">
+                                                        🕒 {formatTime(thread.last_time)}
+                                                    </Text>
                                                 </div>
                                             </List.Item>
                                         )}
@@ -259,13 +265,19 @@ export default function CoachChat() {
                                         <Title level={4} style={{ margin: 0 }}>
                                             Chat với {selectedSession.member_name || `Member ${selectedSession.user_id}`}
                                         </Title>
-                                        <Text type="secondary">
-                                            {formatSessionTime(selectedSession.scheduled_time)} - {selectedSession.duration_minutes} phút
-                                        </Text>
-                                        <br />
-                                        <Tag color={isSessionActive(selectedSession) ? 'green' : 'red'} style={{ marginTop: '8px' }}>
-                                            {isSessionActive(selectedSession) ? '🟢 Có thể chat' : '🔴 Không thể chat'}
-                                        </Tag>
+                                        {selectedSession.scheduled_time && selectedSession.duration_minutes ? (
+                                            <>
+                                                <Text type="secondary">
+                                                    {formatSessionTime(selectedSession.scheduled_time)} - {selectedSession.duration_minutes} phút
+                                                </Text>
+                                                <br />
+                                                <Tag color={isSessionActive(selectedSession) ? 'green' : 'red'} style={{ marginTop: '8px' }}>
+                                                    {isSessionActive(selectedSession) ? '🟢 Có thể chat' : '🔴 Không thể chat'}
+                                                </Tag>
+                                            </>
+                                        ) : (
+                                            <Text type="secondary">Không có thông tin lịch hẹn</Text>
+                                        )}
                                     </div>
 
                                     <div className="messages-container">
@@ -291,7 +303,18 @@ export default function CoachChat() {
                                                             <Paragraph className="message-text">
                                                                 {msg.message}
                                                             </Paragraph>
-                                                        </div>
+                                                            {msg.file_url && (
+                                                                <div style={{ marginTop: 8 }}>
+                                                                        {/\.(jpg|jpeg|png)$/i.test(msg.file_url) ? (
+                                                                            <img src={msg.file_url} alt="attachment" style={{ maxWidth: '100%', maxHeight: 300 }} />
+                                                                        ) : (
+                                                                            <a href={msg.file_url} target="_blank" rel="noopener noreferrer">
+                                                                            📎 Xem tệp đính kèm
+                                                                        </a>
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                        </div> {formatSessionTime(selectedSession.scheduled_time)} - {selectedSession.duration_minutes} phút
                                                     </List.Item>
                                                 )}
                                             />

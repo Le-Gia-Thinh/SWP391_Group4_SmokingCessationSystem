@@ -224,8 +224,8 @@ async function grantIfNotExist(pool, userId, achievementId) {
       `);
 
     const info = await pool.request()
-  .input("achievement_id", sql.Int, achievementId)
-  .query(`SELECT title, description FROM ACHIEVEMENT WHERE achievement_id = @achievement_id`);
+      .input("achievement_id", sql.Int, achievementId)
+      .query(`SELECT title, description FROM ACHIEVEMENT WHERE achievement_id = @achievement_id`);
 
     const { title, description } = info.recordset[0];
     const content = `🏆 Bạn vừa đạt thành tựu: ${title}! ${description}`;
