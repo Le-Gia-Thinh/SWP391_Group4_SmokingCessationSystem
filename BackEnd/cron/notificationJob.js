@@ -6,6 +6,13 @@ const timezone = require("dayjs/plugin/timezone");
 const { evaluateAndUnlockAchievements } = require("../utils/achievementService");
 dayjs.extend(utc);
 dayjs.extend(timezone);
+
+const typeMap = {
+  '🔔': 'behavior_tip',
+  '🏆': 'achievement',
+  '📅': 'appointment',
+  '💳': 'payment',
+};
 // ==== 1. Behavior Plan Mapping (phase|time => behavior & replacement) ====
 const BEHAVIOR_PLAN_PHASES = [
   // Phase 1: Nhận diện – Giảm nhẹ liều
@@ -264,7 +271,13 @@ cron.schedule("* * * * *", async () => {
     const now = dayjs().tz("Asia/Ho_Chi_Minh");
     //test thong bao
     //const now = dayjs().hour(7).minute(50).second(0);
-    const nowDate = now.format("YYYY-MM-DD");
+    const nowDate = now.toDate();
+
+    // 🔥 Xóa các thông báo nhắc hành vi trong ngày hiện tại để tránh lặp
+    await pool.request().query(`
+      DELETE FROM NOTIFICATION
+      WHERE content LIKE N'🔔%';
+    `);
 
     // ==== Cập nhật current_stage mỗi ngày ==== // de tam
     const plans = await pool.request().query(`
@@ -302,12 +315,12 @@ cron.schedule("* * * * *", async () => {
     ];
 
     // 1. Lấy các thông báo đã gửi hôm nay
-    const sentTodayRes = await pool.request().input("today", sql.Date, nowDate)
-      .query(`
-        SELECT user_id, content
-        FROM NOTIFICATION
-        WHERE CAST(created_at AS DATE) = @today
-      `);
+    const sentTodayRes = await pool.request()
+    .query(`
+      SELECT user_id, content
+      FROM NOTIFICATION
+      WHERE CAST(created_at AS DATE) = CAST(@today AS DATE)
+    `); 
     const sentMap = new Set(
       sentTodayRes.recordset.map((n) => `${n.user_id}|${n.content}`)
     );
@@ -332,7 +345,9 @@ cron.schedule("* * * * *", async () => {
         if (plan) {
           const content = `🔔 ${plan.behavior} có thể xảy ra lúc ${targetTime}. Gợi ý: ${plan.replacement}`;
           if (!sentMap.has(`${userId}|${content}`)) {
-            notifications.push({ user_id: userId, content });
+            const emoji = content[0];
+            const notificationType = typeMap[emoji] || 'general';
+            notifications.push({ user_id: userId, content, type: notificationType });
           }
         }
       }
@@ -362,7 +377,9 @@ cron.schedule("* * * * *", async () => {
         } lúc ${scheduled.format("HH:mm")} hôm nay. Hãy chuẩn bị nhé!`;
         const key = `${session.user_id}|${content}`;
         if (!sentMap.has(key)) {
-          notifications.push({ user_id: session.user_id, content });
+          const emoji = content[0];
+          const notificationType = typeMap[emoji] || 'general';
+          notifications.push({ user_id: session.user_id, content, type: notificationType });
         }
       }
     });
@@ -374,11 +391,14 @@ cron.schedule("* * * * *", async () => {
         .input("user_id", sql.Int, noti.user_id)
         .input("content", sql.NVarChar, noti.content)
         .input("created_at", sql.DateTime, new Date())
-        .input("is_read", sql.Bit, 0).query(`
-          INSERT INTO NOTIFICATION (user_id, content, created_at, is_read)
-          VALUES (@user_id, @content, @created_at, @is_read)
+        .input("is_read", sql.Bit, 0)
+        .input("notification_type", sql.VarChar, noti.type)
+        .query(`
+          INSERT INTO NOTIFICATION (user_id, content, created_at, is_read, notification_type)
+          VALUES (@user_id, @content, @created_at, @is_read, @notification_type)
         `);
     }
+
 
     if (notifications.length > 0) {
       console.log(
