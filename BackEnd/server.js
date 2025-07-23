@@ -35,10 +35,11 @@ const commentRoutes = require("./routes/comment");
 
 const achievementRoutes = require("./routes/achievementRoutes");
 const notificationRoutes = require("./routes/notification");
-const phaseRoutes = require("./routes/phases");
+const taskRoutes = require("./routes/taskRoutes.js");
 const app = express();
 const server = http.createServer(app);
 const chatRoutes = require("./routes/chat");
+const adminMemberRoutes = require("./routes/adminMemberRoutes");
 
 // 1) CORS: bắt buộc phải cho phép credentials (cookie) và origin chạy React (5173 / 3000)
 app.use(
@@ -150,8 +151,8 @@ app.get("/", (req, res) => {
 app.use("/api/achievement", achievementRoutes);
 // Xử lí thông báo
 app.use("/api/notification", notificationRoutes);
-// Phase routes
-app.use("/api", phaseRoutes);
+// Task routes
+app.use("/api/admin/tasks", taskRoutes);
 
 // 16) Middleware log request
 app.use((req, res, next) => {
@@ -166,6 +167,9 @@ app.use((err, req, res, next) => {
     .status(500)
     .json({ success: false, message: "Lỗi server không xác định" });
 });
+
+// 17) Admin Member Routes
+app.use("/api/admin/members", adminMemberRoutes);
 
 // 19. Chat coach.member
 app.use("/api/chat", chatRoutes);

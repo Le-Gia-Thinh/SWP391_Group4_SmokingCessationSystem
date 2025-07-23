@@ -4,6 +4,8 @@ import AdminManageCoach from "../AdminManageCoach/AdminManageCoach";
 import PostApprovalContent from "../PostApproval/PostApprovalContent";
 import ScheduleManagementContent from "../ScheduleManagement/ScheduleManagementContent";
 import PackageCrudPage from "./PackageCrudPage";
+import AdminUserManager from "./AdminUserManager";
+import AdminTaskManager from "./AdminTaskManager";
 import {
   Layout,
   Menu,
@@ -139,44 +141,7 @@ const AdminPage = () => {
         return <AdminStatDashboard />;
 
       case "users":
-        return (
-          <div className={tabStyles.adminTabContainer}>
-            <Card className={tabStyles.modernCard}>
-              <div className={tabStyles.modernCardBody}>
-                <div className={tabStyles.modernPageHeader}>
-                  <Title level={3}>
-                    <UserOutlined style={{ marginRight: 8 }} />
-                    Quản lý người dùng
-                  </Title>
-                  <Space className={tabStyles.modernSpace}>
-                    <Search
-                      placeholder="Tìm kiếm người dùng..."
-                      style={{ width: 300 }}
-                      className={tabStyles.modernSearchInput}
-                    />
-                    <Button
-                      icon={<FilterOutlined />}
-                      className={`${tabStyles.modernButton} ${tabStyles.modernButtonDefault}`}
-                    >
-                      Lọc
-                    </Button>
-                    <Button
-                      type="primary"
-                      icon={<PlusOutlined />}
-                      className={`${tabStyles.modernButton} ${tabStyles.modernButtonPrimary}`}
-                    >
-                      Thêm người dùng
-                    </Button>
-                  </Space>
-                </div>
-                <Divider className={tabStyles.modernDivider} />
-                <Text className={tabStyles.modernText}>
-                  Tính năng quản lý người dùng sẽ được triển khai ở đây.
-                </Text>
-              </div>
-            </Card>
-          </div>
-        );
+        return <AdminUserManager />;
 
       case "coaches":
         return <AdminManageCoach />;
@@ -185,62 +150,7 @@ const AdminPage = () => {
         return <PackageCrudPage />;
 
       case "tasks":
-        return (
-          <div className={tabStyles.adminTabContainer}>
-            <Card className={tabStyles.modernCard}>
-              <div className={tabStyles.modernCardBody}>
-                <div className={tabStyles.modernPageHeader}>
-                  <Title level={3}>
-                    <TrophyOutlined style={{ marginRight: 8 }} />
-                    Quản lý nhiệm vụ
-                  </Title>
-                  <Space className={tabStyles.modernSpace}>
-                    <Search
-                      placeholder="Tìm kiếm nhiệm vụ..."
-                      style={{ width: 300 }}
-                      className={tabStyles.modernSearchInput}
-                    />
-                    <Button
-                      icon={<FilterOutlined />}
-                      className={`${tabStyles.modernButton} ${tabStyles.modernButtonDefault}`}
-                    >
-                      Lọc
-                    </Button>
-                    <Button
-                      type="primary"
-                      icon={<PlusOutlined />}
-                      className={`${tabStyles.modernButton} ${tabStyles.modernButtonPrimary}`}
-                    >
-                      Thêm nhiệm vụ
-                    </Button>
-                  </Space>
-                </div>
-                <Divider className={tabStyles.modernDivider} />
-                <div className={tabStyles.modernActionContainer}>
-                  <Space className={tabStyles.modernSpace}>
-                    <Button
-                      type="primary"
-                      className={`${tabStyles.modernButton} ${tabStyles.modernButtonSuccess}`}
-                    >
-                      Thêm nhiệm vụ
-                    </Button>
-                    <Button
-                      className={`${tabStyles.modernButton} ${tabStyles.modernButtonDefault}`}
-                    >
-                      Sửa nhiệm vụ
-                    </Button>
-                    <Button
-                      danger
-                      className={`${tabStyles.modernButton} ${tabStyles.modernButtonDanger}`}
-                    >
-                      Xóa nhiệm vụ
-                    </Button>
-                  </Space>
-                </div>
-              </div>
-            </Card>
-          </div>
-        );
+        return <AdminTaskManager />;
 
       case "posts":
         return <PostApprovalContent />;

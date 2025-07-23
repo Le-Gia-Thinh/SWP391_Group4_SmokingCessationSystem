@@ -97,11 +97,9 @@ export default function Navbar() {
     }
   };
   const getMenuItems = () => {
-<<<<<<< HEAD
-    // Guest (not logged in)
-=======
->>>>>>> 343e78daba7bdc27b0041750b20f922a7932541d
+    
     if (!user) {
+      // Chưa đăng nhập -> chỉ hiển thị trang chủ và đăng nhập
       return [
         {
           key: "/",
@@ -129,12 +127,7 @@ export default function Navbar() {
         },
       ];
     }
-<<<<<<< HEAD
-
-    // Admin
-=======
->>>>>>> 343e78daba7bdc27b0041750b20f922a7932541d
-    if (isAdmin()) {
+    if (isAdmin()) { 
       return [
         {
           key: "/",
