@@ -95,6 +95,18 @@ exports.bookAppointment = async (req, res) => {
         VALUES (@user_id, @coach_id, @schedule_id, @scheduled_time, @duration_minutes, @session_status)
       `);
 
+    // Tạo box chat nếu chưa có
+    const existingThread = await pool.request()
+      .input('member_id', sql.Int, userId)
+      .input('coach_id', sql.Int, coachId)
+      .query(`SELECT thread_id FROM DIRECT_CHAT_THREAD WHERE member_id = @member_id AND coach_id = @coach_id`);
+    if (existingThread.recordset.length === 0) {
+      await pool.request()
+        .input('member_id', sql.Int, userId)
+        .input('coach_id', sql.Int, coachId)
+        .query(`INSERT INTO DIRECT_CHAT_THREAD (member_id, coach_id) VALUES (@member_id, @coach_id)`);
+    }
+
     await pool.request()
       .input('id', sql.Int, schedule_id)
       .query(`UPDATE COACH_SCHEDULE SET is_booked = 1 WHERE schedule_id = @id`);
