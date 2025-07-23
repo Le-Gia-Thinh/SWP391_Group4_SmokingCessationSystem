@@ -193,6 +193,7 @@ exports.getPhases = async (req, res) => {
     // Format data để match với frontend expectations
     const formattedData = result.recordset.map((row) => ({
       phase: row.phase,
+      phase_code: row.phase_code,
       range: [row.range_start, row.range_end],
       goal: row.goal,
       order: row.phase_order,
@@ -216,6 +217,7 @@ exports.getBehaviorPhasesWithTasks = async (req, res) => {
       SELECT 
         bp.phase_code,
         bp.phase_name,
+        bp.phase_order,
         bt.time_slot,
         bt.task_description,
         bt.task_order
@@ -230,6 +232,8 @@ exports.getBehaviorPhasesWithTasks = async (req, res) => {
       if (!groupedData[row.phase_code]) {
         groupedData[row.phase_code] = {
           title: row.phase_name,
+          phase_code: row.phase_code,
+          phase_order: row.phase_order,
           tasks: {},
         };
       }
@@ -244,17 +248,17 @@ exports.getBehaviorPhasesWithTasks = async (req, res) => {
       }
     });
 
-    // Convert to array format
-    const formattedData = Object.values(groupedData);
+    // Convert to array format in correct order
+    const formattedData = Object.values(groupedData).sort(
+      (a, b) => a.phase_order - b.phase_order
+    );
 
     res.status(200).json({ success: true, data: formattedData });
   } catch (error) {
     console.error("[getBehaviorPhasesWithTasks] Error:", error);
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Lỗi khi lấy behavior phases với tasks",
-      });
+    res.status(500).json({
+      success: false,
+      message: "Lỗi khi lấy behavior phases với tasks",
+    });
   }
 };

@@ -390,11 +390,12 @@ const QuitPlan = () => {
           ? `Tháng ${Math.floor(i / 30) + 1} – Ngày ${(i % 30) + 1}`
           : `Tuần ${weekIndex + 1} – Ngày ${i - weekIndex * 7 + 1}`;
 
-      // Find matching behavior plan phase
-      const phaseIndex = phases.findIndex((p) => p.phase === phase.phase);
-      const behaviorPhase = behaviorPlanPhases[phaseIndex] || {
+      // Find matching behavior plan phase by phase_code
+      const behaviorPhase = behaviorPlanPhases.find(
+        (bp) => bp.phase_code === phase.phase_code
+      ) || {
         title: "Chưa có kế hoạch hành vi",
-        tasks: [],
+        tasks: {},
       };
 
       data.push({
