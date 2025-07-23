@@ -111,8 +111,10 @@ const QuitPlan = () => {
         setIsLoadingPhases(true);
         setApiError(null);
         const [phasesResponse, behaviorPhasesResponse] = await Promise.all([
-          fetch("http://localhost:5000/api/admin/tasks/main-phases"), // phases chính
-          fetch("http://localhost:5000/api/admin/tasks/phases"), // behavior phases
+          fetch("http://localhost:5000/api/admin/tasks/main-phases"),
+          fetch(
+            "http://localhost:5000/api/admin/tasks/behavior-phases-with-tasks"
+          ),
         ]);
 
         if (!phasesResponse.ok || !behaviorPhasesResponse.ok) {

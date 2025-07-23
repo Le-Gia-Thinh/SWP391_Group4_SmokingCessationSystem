@@ -10,5 +10,9 @@ router.delete("/:id", taskController.deleteTask);
 
 router.get("/phases", taskController.getBehaviorPhaseList);
 router.get("/main-phases", taskController.getPhases);
+router.get(
+  "/behavior-phases-with-tasks",
+  taskController.getBehaviorPhasesWithTasks
+);
 
 module.exports = router;

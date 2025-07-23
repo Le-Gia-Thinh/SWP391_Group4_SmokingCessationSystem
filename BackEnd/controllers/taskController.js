@@ -172,7 +172,7 @@ exports.getBehaviorPhaseList = async (req, res) => {
   }
 };
 
-// 6. Lấy danh sách phases chính (với range và goal)
+// 6. Lấy danh sách phases chính (với range và goal) - cho frontend
 exports.getPhases = async (req, res) => {
   try {
     const pool = await sql.connect(dbConfig);
@@ -181,6 +181,7 @@ exports.getPhases = async (req, res) => {
       SELECT 
         id,
         phase_name as phase,
+        phase_code,
         range_start,
         range_end,
         goal,
@@ -203,5 +204,57 @@ exports.getPhases = async (req, res) => {
     res
       .status(500)
       .json({ success: false, message: "Lỗi khi lấy danh sách phases" });
+  }
+};
+
+// 7. Lấy behavior phases với tasks đầy đủ - cho frontend
+exports.getBehaviorPhasesWithTasks = async (req, res) => {
+  try {
+    const pool = await sql.connect(dbConfig);
+
+    const result = await pool.request().query(`
+      SELECT 
+        bp.phase_code,
+        bp.phase_name,
+        bt.time_slot,
+        bt.task_description,
+        bt.task_order
+      FROM behavior_phases bp
+      LEFT JOIN behavior_tasks bt ON bp.phase_code = bt.phase_code
+      ORDER BY bp.phase_order, bt.time_slot, bt.task_order
+    `);
+
+    // Group data by phase
+    const groupedData = {};
+    result.recordset.forEach((row) => {
+      if (!groupedData[row.phase_code]) {
+        groupedData[row.phase_code] = {
+          title: row.phase_name,
+          tasks: {},
+        };
+      }
+
+      if (row.time_slot && row.task_description) {
+        if (!groupedData[row.phase_code].tasks[row.time_slot]) {
+          groupedData[row.phase_code].tasks[row.time_slot] = [];
+        }
+        groupedData[row.phase_code].tasks[row.time_slot].push(
+          row.task_description
+        );
+      }
+    });
+
+    // Convert to array format
+    const formattedData = Object.values(groupedData);
+
+    res.status(200).json({ success: true, data: formattedData });
+  } catch (error) {
+    console.error("[getBehaviorPhasesWithTasks] Error:", error);
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "Lỗi khi lấy behavior phases với tasks",
+      });
   }
 };

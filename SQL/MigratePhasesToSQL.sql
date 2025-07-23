@@ -346,3 +346,10 @@ DROP TABLE IF EXISTS phases;
 -- ✅ Đã insert đầy đủ dữ liệu từ constants
 -- ✅ Tổng cộng: 5 phases + 5 behavior_phases + 135 behavior_tasks
 -- ✅ Sẵn sàng để tạo API endpoints!
+ALTER TABLE phases
+ADD phase_code VARCHAR(10);
+UPDATE phases SET phase_code = 'P1' WHERE phase_order = 1;
+UPDATE phases SET phase_code = 'P2' WHERE phase_order = 2;
+UPDATE phases SET phase_code = 'P3' WHERE phase_order = 3;
+UPDATE phases SET phase_code = 'P4' WHERE phase_order = 4;
+UPDATE phases SET phase_code = 'P5' WHERE phase_order = 5;
