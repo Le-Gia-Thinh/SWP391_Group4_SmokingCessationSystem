@@ -31,6 +31,7 @@ import AdminManageCoach from "./pages/AdminManageCoach/AdminManageCoach.jsx";
 const { Title, Paragraph } = Typography;
 import PaymentSuccess from "./pages/Payment/PaymentSuccess";
 import PackageCrudPage from "./pages/Admin_Page/PackageCrudPage";
+import AchievementCrudPage from "./pages/Admin_Page/AchievementCrudPage";
 function App() {
   return (
     <AuthProvider>
@@ -121,6 +122,15 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={["admin"]}>
                   <PackageCrudPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/admin/achievements"
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <AchievementCrudPage />
                 </ProtectedRoute>
               }
             />

@@ -8,7 +8,6 @@ import ReactDOM from 'react-dom/client';
 import $ from 'jquery';              // import mặc định
 window.$ = window.jQuery = $;        // đặt jQuery global
 import "animate.css/animate.min.css";
-import WOW from 'wowjs';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'owl.carousel/dist/assets/owl.carousel.css';

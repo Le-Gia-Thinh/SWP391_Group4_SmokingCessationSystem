@@ -6,6 +6,7 @@ import ScheduleManagementContent from "../ScheduleManagement/ScheduleManagementC
 import PackageCrudPage from "./PackageCrudPage";
 import AdminUserManager from "./AdminUserManager";
 import AdminTaskManager from "./AdminTaskManager";
+import AchievementCrudPage from "./AchievementCrudPage";
 import {
   Layout,
   Menu,
@@ -101,6 +102,12 @@ const AdminPage = () => {
       title: "Quản lý gói",
     },
     {
+      key: "addAchievement",
+      icon: <TrophyOutlined />,
+      label: "Quản lí thành tựu",
+      title: "Quản lí thành tựu",
+    },
+    {
       key: "tasks",
       icon: <TrophyOutlined />,
       label: "Quản lý nhiệm vụ",
@@ -149,6 +156,9 @@ const AdminPage = () => {
       case "packages":
         return <PackageCrudPage />;
 
+      case "addAchievement":
+        return <AchievementCrudPage />;
+
       case "tasks":
         return <AdminTaskManager />;
 
@@ -169,6 +179,7 @@ const AdminPage = () => {
         );
     }
   };
+  // Memoize components to prevent unnecessary re-creation
 
   return (
     <Layout className="admin-page" style={{ minHeight: "100vh" }}>
