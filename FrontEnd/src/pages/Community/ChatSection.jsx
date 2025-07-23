@@ -25,6 +25,7 @@ import {
 } from "@ant-design/icons";
 import axios from "axios";
 import moment from 'moment-timezone';
+import { useAuth } from '../../contexts/AuthContext';
 
 const { Paragraph, Title, Text } = Typography;
 const { TextArea } = Input;
@@ -46,25 +47,55 @@ export default function ChatSection({ token, socket, isConnected }) {
     const [coachMessages, setCoachMessages] = useState([]);
     const [coachLoading, setCoachLoading] = useState(false);
     const [sessionsLoading, setSessionsLoading] = useState(false);
-    const messagesEndRef = useRef(null);
+    const communityEndRef = useRef(null);
+    const topicEndRef = useRef(null);
+    const coachEndRef = useRef(null);
     const [topicForm] = Form.useForm();
+    const { user } = useAuth();
 
     // Auto scroll to bottom
     const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+        }
     };
+
+    // Community scroll
     useEffect(() => {
-        scrollToBottom();
-    }, [communityMessages, topicMessages, coachMessages]);
+        if (activeChatTab === "community" && communityMessages.length > 0) {
+            requestAnimationFrame(() => {
+                communityEndRef.current?.scrollIntoView({ behavior: "smooth" });
+            });
+        }
+    }, [communityMessages, activeChatTab]);
+
+    // Topic scroll
+    useEffect(() => {
+        if (activeChatTab === "topics" && topicMessages.length > 0) {
+            requestAnimationFrame(() => {
+                topicEndRef.current?.scrollIntoView({ behavior: "smooth" });
+            });
+        }
+    }, [topicMessages, activeChatTab]);
+
+    // Coach scroll
+    useEffect(() => {
+        if (activeChatTab === "coach" && coachMessages.length > 0) {
+            requestAnimationFrame(() => {
+                coachEndRef.current?.scrollIntoView({ behavior: "smooth" });
+            });
+        }
+    }, [coachMessages, activeChatTab]);
 
     // Socket.IO event listeners
     useEffect(() => {
         if (!socket) return;
-        socket.on('receiveMessage', (messageData) => {
-            if (selectedSession && messageData.session_id === selectedSession.session_id) {
+        // Listen for guided chat messages (coach-member)
+        socket.on('receiveGuidedMessage', (messageData) => {
+            if (selectedSession && messageData.thread_id === selectedSession.session_id) {
                 setCoachMessages(prev => [...prev, {
                     message_id: Date.now(),
-                    session_id: messageData.session_id,
+                    thread_id: messageData.thread_id,
                     sender_id: messageData.sender_id,
                     sender_role: messageData.sender_role || 'member',
                     message: messageData.message,
@@ -74,20 +105,37 @@ export default function ChatSection({ token, socket, isConnected }) {
                 }]);
             }
         });
+        // Community chat
         socket.on('communityMessage', (messageData) => {
-            setCommunityMessages(prev => [...prev, messageData]);
+            setCommunityMessages(prev => {
+                const updated = [...prev, messageData];
+                return updated;
+            });
         });
+        // Topic chat
         socket.on('topicMessage', (messageData) => {
             if (selectedTopic && messageData.topic_id === selectedTopic.topic_id) {
                 setTopicMessages(prev => [...prev, messageData]);
             }
         });
         return () => {
-            socket.off('receiveMessage');
+            socket.off('receiveGuidedMessage');
             socket.off('communityMessage');
             socket.off('topicMessage');
         };
     }, [socket, selectedSession, selectedTopic]);
+
+    // Join socket room khi chọn phiên tư vấn
+    useEffect(() => {
+        if (!socket || !selectedSession) return;
+        // Lấy thread_id từ backend (cần fetch lại hoặc mapping)
+        // Ở đây ta giả định thread_id = selectedSession.session_id (nếu không đúng, cần sửa lại mapping)
+        const threadRoom = `chat-${selectedSession.session_id}`;
+        socket.emit('joinRoom', threadRoom);
+        return () => {
+            socket.emit('leaveRoom', threadRoom);
+        };
+    }, [socket, selectedSession]);
 
     // ========== API FUNCTIONS ==========
     const fetchCoachingSessions = async () => {
@@ -110,16 +158,17 @@ export default function ChatSection({ token, socket, isConnected }) {
             setSessionsLoading(false);
         }
     };
-    const fetchCoachMessages = async (sessionId) => {
-        if (!sessionId) return;
+    const fetchCoachMessages = async (partnerId) => {
+        if (!partnerId) return;
         setCoachLoading(true);
         try {
             const response = await axios.get(
-                `http://localhost:5000/api/chat/${sessionId}/messages`,
+                `http://localhost:5000/api/chat/guided/${partnerId}`,
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             if (response.data.success) {
-                setCoachMessages(response.data.data.reverse());
+                console.log('API messages:', response.data.data);
+                setCoachMessages(response.data.data); // Không reverse nữa
             }
         } catch (err) {
             message.error("Lỗi khi tải tin nhắn");
@@ -174,7 +223,14 @@ export default function ChatSection({ token, socket, isConnected }) {
     // ========== HANDLERS ==========
     const handleSessionSelect = (session) => {
         setSelectedSession(session);
-        fetchCoachMessages(session.session_id);
+        if (!user) return;
+        if (user.role === 'coach') {
+            console.log('Chọn phiên (coach):', session);
+            fetchCoachMessages(session.member_id);
+        } else if (user.role === 'member') {
+            console.log('Chọn phiên (member):', session);
+            fetchCoachMessages(session.coach_id);
+        }
     };
     const handleTopicSelect = (topic) => {
         setSelectedTopic(topic);
@@ -257,17 +313,42 @@ export default function ChatSection({ token, socket, isConnected }) {
         try {
             const formData = new FormData();
             formData.append('message', newMessage);
+            // Xác định recipient_id là người còn lại trong thread
+            let recipientId;
+            if (!user) {
+                message.error("Không xác định được người dùng hiện tại");
+                return;
+            }
+            if (user.role === 'coach') {
+                recipientId = selectedSession.member_id;
+            } else if (user.role === 'member') {
+                recipientId = selectedSession.coach_id;
+            } else {
+                message.error("Vai trò không hợp lệ");
+                return;
+            }
+            formData.append('recipient_id', recipientId);
+            // Thêm log để debug
+            console.log('recipient_id:', recipientId, 'message:', newMessage, 'selectedSession:', selectedSession, 'user:', user);
+            for (let pair of formData.entries()) {
+                console.log('formData', pair[0] + ': ' + pair[1]);
+            }
             const response = await axios.post(
-                `http://localhost:5000/api/chat/${selectedSession.session_id}/message`,
+                `http://localhost:5000/api/chat/guided/send`,
                 formData,
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`,
-                        'Content-Type': 'multipart/form-data'
+                        Authorization: `Bearer ${token}`
+                        // KHÔNG set 'Content-Type', axios sẽ tự động set đúng boundary
                     }
                 }
             );
             if (response.data.success) {
+                // Thêm tin nhắn mới vào mảng coachMessages (không fetch lại toàn bộ)
+                setCoachMessages(prev => [
+                    ...prev,
+                    response.data.data // backend trả về bản ghi vừa lưu
+                ]);
                 setNewMessage("");
             }
         } catch (err) {
@@ -381,7 +462,7 @@ export default function ChatSection({ token, socket, isConnected }) {
                                             )}
                                         />
                                     )}
-                                    <div ref={messagesEndRef} />
+                                    <div ref={communityEndRef} />
                                 </div>
                                 <Divider />
                                 <div className="message-input">
@@ -487,7 +568,7 @@ export default function ChatSection({ token, socket, isConnected }) {
                                                         )}
                                                     />
                                                 )}
-                                                <div ref={messagesEndRef} />
+                                                <div ref={topicEndRef} />
                                             </div>
                                             <Divider />
                                             <div className="message-input">
@@ -584,11 +665,10 @@ export default function ChatSection({ token, socket, isConnected }) {
                                                     <div className="loading-container">
                                                         <Spin size="large" />
                                                     </div>
-                                                ) : coachMessages.length === 0 ? (
-                                                    <Empty description="Chưa có tin nhắn nào" />
                                                 ) : (
                                                     <List
                                                         dataSource={coachMessages}
+                                                        locale={{ emptyText: 'Chưa có tin nhắn nào trong phiên này. Hãy bắt đầu cuộc trò chuyện!' }}
                                                         renderItem={(msg) => (
                                                             <List.Item className="message-item">
                                                                 <div className="message-content">
@@ -609,7 +689,7 @@ export default function ChatSection({ token, socket, isConnected }) {
                                                         )}
                                                     />
                                                 )}
-                                                <div ref={messagesEndRef} />
+                                                <div ref={coachEndRef} />
                                             </div>
                                             <Divider />
                                             <div className="message-input">
@@ -619,13 +699,13 @@ export default function ChatSection({ token, socket, isConnected }) {
                                                     onKeyPress={handleKeyPress}
                                                     placeholder="Nhập tin nhắn..."
                                                     autoSize={{ minRows: 2, maxRows: 4 }}
-                                                    disabled={!isSessionActive(selectedSession) || !isConnected}
+                                                    disabled={!isConnected}
                                                 />
                                                 <Button
                                                     type="primary"
                                                     icon={<SendOutlined />}
                                                     onClick={sendCoachMessage}
-                                                    disabled={!newMessage.trim() || !isSessionActive(selectedSession) || !isConnected}
+                                                    disabled={!newMessage.trim() || !isConnected}
                                                     style={{ marginTop: 8 }}
                                                 >
                                                     Gửi

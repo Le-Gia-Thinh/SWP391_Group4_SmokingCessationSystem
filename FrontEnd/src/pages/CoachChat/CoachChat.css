@@ -1,0 +1,106 @@
+/* CoachChat riêng - layout đẹp, không tràn, sidebar và chat box cao bằng nhau */
+
+.coach-chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 70vh;
+    max-height: 70vh;
+    min-height: 0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.coach-topics-section {
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+    gap: 20px;
+}
+
+.coach-sessions-sidebar {
+    width: 300px;
+    border-right: 1px solid #f0f0f0;
+    padding-right: 16px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.coach-sessions-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f0f0f0;
+    flex-shrink: 0;
+}
+
+.coach-sessions-list {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.coach-topic-chat {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    height: 100%;
+    background: transparent;
+}
+
+.coach-session-header {
+    margin-bottom: 8px;
+}
+
+.coach-messages-container {
+    flex: 1;
+    min-height: 0;
+    max-height: 50vh;
+    overflow-y: auto;
+    margin-bottom: 0;
+    background: #f6ffed;
+    border-radius: 8px;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 16px;
+}
+
+.coach-message-item {
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.coach-message-item:last-child {
+    border-bottom: none;
+}
+
+.coach-message-content {
+    width: 100%;
+}
+
+.coach-message-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.coach-message-text {
+    margin: 0;
+    padding: 8px 12px;
+    background: white;
+    border-radius: 8px;
+    border-left: 3px solid #52c41a;
+}
+
+.coach-message-input {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+    margin-top: 8px;
+    padding-bottom: 8px;
+    width: 100%;
+    background: transparent;
+} 
