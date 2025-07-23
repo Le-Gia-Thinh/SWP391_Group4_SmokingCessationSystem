@@ -1,58 +1,335 @@
-body, #root, .ftnd-test-container {
-  margin: 0 !important;
-  padding: 0 !important;
-  box-sizing: border-box;
-}
-
-.navbar {
-  position: static !important; /* hoặc bỏ thuộc tính position nếu có */
-  margin-bottom: 0 !important;
-  margin-top: 0 !important;
-}
-
-.ftnd-wrapper {
-  background-color: white;
+/* FTND Test Page Specific Styles */
+.ftndTest-wrapper {
   min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.ftndTest-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="80" r="3" fill="rgba(255,255,255,0.08)"/><circle cx="40" cy="60" r="1" fill="rgba(255,255,255,0.12)"/></svg>');
+  animation: ftndTest-float 20s ease-in-out infinite;
+}
+
+@keyframes ftndTest-float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(180deg); }
+}
+
+.ftndTest-container {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 0;
+  padding: 2rem;
+  width: 100%;
+  max-width: 100%;
+  box-shadow: none;
+  border: none;
+  position: relative;
+  z-index: 1;
+  animation: ftndTest-slideUp 0.8s ease-out;
+  min-height: 100vh;
+}
+
+@keyframes ftndTest-slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ftndTest-title {
+  text-align: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 2.5rem !important;
+  font-weight: 700;
+  font-size: 2.2rem !important;
+  position: relative;
+}
+
+.ftndTest-title::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 2px;
+}
+
+.ftndTest-form-item {
+  margin-bottom: 1.5rem;
+  padding: 1.5rem 2rem;
+  background: rgba(103, 126, 234, 0.05);
+  border-radius: 15px;
+  border: 1px solid rgba(103, 126, 234, 0.1);
+  transition: all 0.3s ease;
+  animation: ftndTest-fadeInUp 0.6s ease-out forwards;
+  opacity: 0;
+  transform: translateY(20px);
+  max-width: 100%;
+}
+
+.ftndTest-form-item:nth-child(1) { animation-delay: 0.1s; }
+.ftndTest-form-item:nth-child(2) { animation-delay: 0.2s; }
+.ftndTest-form-item:nth-child(3) { animation-delay: 0.3s; }
+.ftndTest-form-item:nth-child(4) { animation-delay: 0.4s; }
+.ftndTest-form-item:nth-child(5) { animation-delay: 0.5s; }
+.ftndTest-form-item:nth-child(6) { animation-delay: 0.6s; }
+.ftndTest-form-item:nth-child(7) { animation-delay: 0.7s; }
+
+@keyframes ftndTest-fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ftndTest-form-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(103, 126, 234, 0.15);
+  border-color: rgba(103, 126, 234, 0.3);
+}
+
+.ftndTest-question-label {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 16px;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.ftndTest-options {
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.ftndTest-options .ant-radio-wrapper {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 15px;
+  line-height: 1.8;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid transparent;
+}
+
+.ftndTest-options .ant-radio-wrapper:hover {
+  background: rgba(103, 126, 234, 0.1);
+  border-color: rgba(103, 126, 234, 0.2);
+  transform: translateX(5px);
+}
+
+.ftndTest-options .ant-radio-wrapper-checked {
+  background: rgba(103, 126, 234, 0.15);
+  border-color: #667eea;
+  color: #667eea;
+  font-weight: 600;
+}
+
+.ftndTest-button-group {
   display: flex;
   justify-content: center;
-  align-items: center;
+  gap: 20px;
+  margin-top: 3rem;
+  animation: ftndTest-fadeInUp 0.8s ease-out 0.8s forwards;
+  opacity: 0;
+  transform: translateY(20px);
 }
 
-/* ✅ Thêm viền và bo góc cho container */
-.ftnd-container {
+.ftndTest-submit-button {
+  background: linear-gradient(135deg, #52c41a 0%, #73d13d 100%);
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  min-width: 160px;
+  height: 48px;
+  font-size: 16px;
+  box-shadow: 0 4px 15px rgba(82, 196, 26, 0.3);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.ftndTest-submit-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
   width: 100%;
-  max-width: 480px;
-  padding: 32px;
-  background-color: white;
-  border: 1px solid #d9d9d9; /* Viền xám nhẹ */
-  border-radius: 12px;        /* Bo góc */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); /* Đổ bóng nhẹ */
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s ease;
 }
 
-/* Tiêu đề */
-.ftnd-title {
-  text-align: center;
-  margin-bottom: 24px;
+.ftndTest-submit-button:hover::before {
+  left: 100%;
 }
 
-/* Nhóm radio */
-.ftnd-options label {
-  display: inline-block;
-  margin-right: 16px;
-  margin-top: 4px;
+.ftndTest-submit-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(82, 196, 26, 0.4);
 }
 
-/* Nút gửi */
-.ftnd-submit-button {
-  width: 100%;
-  height: 40px;
-  font-weight: 500;
-  background-color: #4BAC4F;
-  transition: background 0.2s;
+.ftndTest-cancel-button {
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid #d9d9d9;
+  border-radius: 12px;
+  font-weight: 600;
+  min-width: 160px;
+  height: 48px;
+  font-size: 16px;
+  color: #595959;
+  transition: all 0.3s ease;
 }
-.ftnd-submit-button:hover {
-  background: #389e0d !important;
-  border-color: #389e0d !important;
+
+.ftndTest-cancel-button:hover {
+  border-color: #ff7875;
+  color: #ff4d4f;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(255, 77, 79, 0.2);
+}
+
+.ftndTest-progress-indicator {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 4px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  transition: width 0.3s ease;
+  z-index: 1000;
+}
+
+/* Bootstrap responsive utilities */
+@media (max-width: 768px) {
+  .ftndTest-container {
+    padding: 1.5rem 1rem;
+    border-radius: 0;
+  }
+  
+  .ftndTest-title {
+    font-size: 1.8rem !important;
+  }
+  
+  .ftndTest-button-group {
+    flex-direction: column !important;
+    align-items: center;
+  }
+  
+  .ftndTest-submit-button,
+  .ftndTest-cancel-button {
+    width: 100%;
+    max-width: 320px;
+  }
+  
+  .ftndTest-form-item {
+    padding: 1.2rem 1rem;
+    margin-bottom: 1.2rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .ftndTest-wrapper {
+    padding: 0;
+  }
+  
+  .ftndTest-container {
+    padding: 1rem 0.8rem;
+    border-radius: 0;
+  }
+  
+  .ftndTest-form-item {
+    padding: 1rem 0.8rem;
+    margin-bottom: 1rem;
+  }
+  
+  .ftndTest-title {
+    font-size: 1.6rem !important;
+    margin-bottom: 1.5rem !important;
+  }
+  
+  .ftndTest-question-label {
+    font-size: 14px;
+  }
+}
+
+/* Thêm hiệu ứng cho Bootstrap */
+.ftndTest-wrapper .container-fluid {
+  animation: ftndTest-containerSlide 1s ease-out;
+}
+
+@keyframes ftndTest-containerSlide {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Override Bootstrap gap utilities nếu cần */
+.ftndTest-button-group.gap-3 {
+  gap: 1rem !important;
+}
+
+/* Đảm bảo responsive container hoạt động tốt */
+.ftndTest-wrapper .container-fluid {
+  max-width: 100%;
+  padding: 0 15px;
+}
+
+/* Animation cho progress bar */
+.ant-progress-bg {
+  transition: all 0.5s ease !important;
+}
+
+/* Cải thiện hiệu ứng hover cho mobile */
+@media (hover: hover) {
+  .ftndTest-options .ant-radio-wrapper:hover {
+    background: rgba(103, 126, 234, 0.1);
+    border-color: rgba(103, 126, 234, 0.2);
+    transform: translateX(5px);
+  }
+}
+
+/* Hiệu ứng pulse cho nút submit */
+.ftndTest-submit-button.ant-btn-loading {
+  animation: ftndTest-pulse 2s infinite;
+}
+
+@keyframes ftndTest-pulse {
+  0% {
+    box-shadow: 0 4px 15px rgba(82, 196, 26, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 25px rgba(82, 196, 26, 0.5);
+  }
+  100% {
+    box-shadow: 0 4px 15px rgba(82, 196, 26, 0.3);
+  }
 }
 
 
