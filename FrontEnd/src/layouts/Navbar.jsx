@@ -97,7 +97,9 @@ export default function Navbar() {
     }
   };
   const getMenuItems = () => {
+    
     if (!user) {
+      // Chưa đăng nhập -> chỉ hiển thị trang chủ và đăng nhập
       return [
         {
           key: "/",
@@ -125,7 +127,7 @@ export default function Navbar() {
         },
       ];
     }
-    if (isAdmin()) {
+    if (isAdmin()) { 
       return [
         {
           key: "/",

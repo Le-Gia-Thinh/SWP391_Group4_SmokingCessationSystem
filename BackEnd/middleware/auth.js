@@ -9,6 +9,7 @@ dayjs.extend(timezone);
 
 // Middleware xác thực JWT và kiểm tra user tồn tại trong DB
 const auth = async (req, res, next) => {
+  console.log('auth middleware called', req.method, req.originalUrl);
   try {
     let token = req.header('Authorization');
 
@@ -35,7 +36,7 @@ const auth = async (req, res, next) => {
     const userId = decoded.id || decoded.user_id;
     const result = await pool.request()
 
-    // cho e chinh ke mien decoded.user_id
+      // cho e chinh ke mien decoded.user_id
       .input('id', sql.Int, userId)
       .query('SELECT user_id AS id, email, full_name AS name, user_role AS role, NULL AS avatar FROM CUSTOMER WHERE user_id = @id');
 

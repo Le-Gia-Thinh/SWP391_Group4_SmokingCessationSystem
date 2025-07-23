@@ -21,8 +21,9 @@ import {
 } from "@ant-design/icons";
 import axios from "axios";
 import { useSocket } from "../../contexts/SocketContext";
-import "../Community/CommunityPage.css";
+import "./CoachChat.css";
 import moment from 'moment-timezone';
+import { useAuth } from '../../contexts/AuthContext';
 
 const { Content } = Layout;
 const { Text, Title, Paragraph } = Typography;
@@ -37,6 +38,7 @@ export default function CoachChat() {
     const [newMessage, setNewMessage] = useState("");
     const messagesEndRef = useRef(null);
     const token = localStorage.getItem("token");
+    const { user } = useAuth();
 
     // Socket.IO
     const { socket, isConnected, joinSession, leaveSession } = useSocket();
@@ -58,16 +60,19 @@ export default function CoachChat() {
             console.log('📨 Coach received real-time message:', messageData);
 
             if (selectedSession && messageData.thread_id === selectedSession.thread_id) {
-                setCoachMessages(prev => [...prev, {
-                    message_id: Date.now(), // Temporary ID
-                    thread_id: messageData.thread_id,
-                    sender_id: messageData.sender_id,
-                    sender_role: messageData.sender_role || 'member',
-                    message: messageData.message,
-                    file_url: messageData.file_url,
-                    sent_at: messageData.sent_at,
-                    is_read: 0
-                }]);
+                setCoachMessages(prev => [
+                    ...prev,
+                    {
+                        message_id: Date.now(), // Temporary ID
+                        thread_id: messageData.thread_id,
+                        sender_id: messageData.sender_id,
+                        sender_role: messageData.sender_role || 'member',
+                        message: messageData.message,
+                        file_url: messageData.file_url,
+                        sent_at: messageData.sent_at,
+                        is_read: 0
+                    }
+                ]);
             }
         });
 
@@ -92,7 +97,7 @@ export default function CoachChat() {
         setSessionsLoading(true);
         try {
             const response = await axios.get(
-                 "http://localhost:5000/api/chat/guided",
+                "http://localhost:5000/api/chat/guided",
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             if (response.data.success) {
@@ -131,7 +136,7 @@ export default function CoachChat() {
         } finally {
             setCoachLoading(false);
         }
-    };  
+    };
 
     // Send coach message
     const sendCoachMessage = async () => {
@@ -143,20 +148,42 @@ export default function CoachChat() {
         try {
             const formData = new FormData();
             formData.append('message', newMessage);
-            formData.append('recipient_id', selectedSession.member_id || selectedSession.coach_id);
+            // Xác định recipient_id là người còn lại trong thread
+            let recipientId;
+            if (!user) {
+                message.error("Không xác định được người dùng hiện tại");
+                return;
+            }
+            if (user.role === 'coach') {
+                recipientId = selectedSession.member_id;
+            } else if (user.role === 'member') {
+                recipientId = selectedSession.coach_id;
+            } else {
+                message.error("Vai trò không hợp lệ");
+                return;
+            }
+            formData.append('recipient_id', recipientId);
+            // Thêm log để debug formData
+            for (let pair of formData.entries()) {
+                console.log('formData', pair[0] + ': ' + pair[1]);
+            }
 
             const response = await axios.post(
                 `http://localhost:5000/api/chat/guided/send`,
                 formData,
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`,
-                        'Content-Type': 'multipart/form-data'
+                        Authorization: `Bearer ${token}`
+                        // KHÔNG set 'Content-Type', axios sẽ tự động set đúng boundary
                     }
                 }
             );
 
             if (response.data.success) {
+                setCoachMessages(prev => [
+                    ...prev,
+                    response.data.data // backend trả về bản ghi vừa lưu
+                ]);
                 setNewMessage("");
             }
         } catch (err) {
@@ -170,10 +197,10 @@ export default function CoachChat() {
 
     // Handle session selection
     const handleSessionSelect = (thread) => {
-    setSelectedSession(thread);
-    const partnerId = thread.member_id || thread.coach_id;
-    fetchCoachMessages(partnerId);
-    };  
+        setSelectedSession(thread);
+        const partnerId = thread.member_id || thread.coach_id;
+        fetchCoachMessages(partnerId);
+    };
 
     // Check if session is currently active
     const isSessionActive = (session) => {
@@ -213,8 +240,8 @@ export default function CoachChat() {
     };
 
     return (
-        <Content className="chat-content" style={{ height: 'calc(100vh - 64px)', padding: '20px' }}>
-            <div className="chat-container">
+        <Content className="coach-chat-container">
+            <div className="coach-chat-container">
                 <Card className="chat-card" style={{ height: '100%' }}>
                     <div style={{ position: 'absolute', top: 10, right: 10, zIndex: 1000 }}>
                         <Tag color={isConnected ? 'green' : 'red'}>
@@ -222,12 +249,12 @@ export default function CoachChat() {
                         </Tag>
                     </div>
 
-                    <div className="topics-section" style={{ height: '100%' }}>
-                        <div className="sessions-sidebar">
-                            <div className="sessions-header">
+                    <div className="coach-topics-section" style={{ height: '100%' }}>
+                        <div className="coach-sessions-sidebar">
+                            <div className="coach-sessions-header">
                                 <Title level={5}>Phiên Tư Vấn</Title>
                             </div>
-                            <div className="sessions-list">
+                            <div className="coach-sessions-list">
                                 {sessionsLoading ? (
                                     <div style={{ textAlign: 'center', padding: '20px' }}><Spin /></div>
                                 ) : chatThreads.length === 0 ? (
@@ -258,10 +285,10 @@ export default function CoachChat() {
                             </div>
                         </div>
 
-                        <div className="topic-chat">
+                        <div className="coach-topic-chat">
                             {selectedSession ? (
                                 <>
-                                    <div className="session-header">
+                                    <div className="coach-session-header">
                                         <Title level={4} style={{ margin: 0 }}>
                                             Chat với {selectedSession.member_name || `Member ${selectedSession.user_id}`}
                                         </Title>
@@ -280,7 +307,7 @@ export default function CoachChat() {
                                         )}
                                     </div>
 
-                                    <div className="messages-container">
+                                    <div className="coach-messages-container">
                                         {coachLoading ? (
                                             <div className="loading-container"><Spin size="large" /></div>
                                         ) : coachMessages.length === 0 ? (
@@ -289,9 +316,9 @@ export default function CoachChat() {
                                             <List
                                                 dataSource={coachMessages}
                                                 renderItem={(msg) => (
-                                                    <List.Item className="message-item">
-                                                        <div className="message-content">
-                                                            <div className="message-header">
+                                                    <List.Item className="coach-message-item">
+                                                        <div className="coach-message-content">
+                                                            <div className="coach-message-header">
                                                                 <Avatar icon={<UserOutlined />} />
                                                                 <Text strong>
                                                                     {msg.sender_role === 'coach' ? 'Bạn' : selectedSession.member_name}
@@ -300,15 +327,15 @@ export default function CoachChat() {
                                                                     <ClockCircleOutlined /> {formatTime(msg.sent_at)}
                                                                 </Text>
                                                             </div>
-                                                            <Paragraph className="message-text">
+                                                            <Paragraph className="coach-message-text">
                                                                 {msg.message}
                                                             </Paragraph>
                                                             {msg.file_url && (
                                                                 <div style={{ marginTop: 8 }}>
-                                                                        {/\.(jpg|jpeg|png)$/i.test(msg.file_url) ? (
-                                                                            <img src={msg.file_url} alt="attachment" style={{ maxWidth: '100%', maxHeight: 300 }} />
-                                                                        ) : (
-                                                                            <a href={msg.file_url} target="_blank" rel="noopener noreferrer">
+                                                                    {/(.jpg|.jpeg|.png)$/i.test(msg.file_url) ? (
+                                                                        <img src={msg.file_url} alt="attachment" style={{ maxWidth: '100%', maxHeight: 300 }} />
+                                                                    ) : (
+                                                                        <a href={msg.file_url} target="_blank" rel="noopener noreferrer">
                                                                             📎 Xem tệp đính kèm
                                                                         </a>
                                                                     )}
@@ -323,20 +350,20 @@ export default function CoachChat() {
                                     </div>
 
                                     <Divider style={{ margin: 0 }} />
-                                    <div className="message-input" style={{ padding: '16px' }}>
+                                    <div className="coach-message-input">
                                         <TextArea
                                             value={newMessage}
                                             onChange={(e) => setNewMessage(e.target.value)}
                                             onKeyPress={handleKeyPress}
                                             placeholder="Nhập tin nhắn..."
                                             autoSize={{ minRows: 2, maxRows: 4 }}
-                                            disabled={!isSessionActive(selectedSession) || !isConnected}
+                                            disabled={!isConnected}
                                         />
                                         <Button
                                             type="primary"
                                             icon={<SendOutlined />}
                                             onClick={sendCoachMessage}
-                                            disabled={!newMessage.trim() || !isSessionActive(selectedSession) || !isConnected}
+                                            disabled={!newMessage.trim() || !isConnected}
                                         >
                                             Gửi
                                         </Button>
