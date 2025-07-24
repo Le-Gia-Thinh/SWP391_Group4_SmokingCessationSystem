@@ -483,13 +483,13 @@ const HomePage = () => {
 
 
       {/* ---------- MEET ARTISTS (3/4 ảnh + 1/4 list) ---------- */}
-      <section className="artists-section section-padding" id="section_3">
+      <section className="artists-section section-padding  scroll-section" ref={sectionRef} data-reveal="up" id="section_3">
         <div className="container">
 
           {/* Row A: Title */}
           <div className="row justify-content-center">
-            <div className="col-12 text-center">
-              <h2 className="mb-4">Meet Artists</h2>
+            <div className="text-center  mx-auto " data-aos="fade-up" data-aos-delay="100" style={{ maxWidth: "500px" }}>
+              <h2 className="section-title bg-white text-center text-primary px-3 ">Meet Artists</h2>
             </div>
           </div>
 
@@ -603,7 +603,7 @@ const HomePage = () => {
                 <a
                   href="https://www.youtube.com/watch?v=sEvGwOa-tHE"
                   className="btn-play d-inline-flex align-items-center gap-2 mb-0"
-                  
+
                 >
                   <i className="bi bi-play-fill"></i>
                   Watch the Video
@@ -621,7 +621,7 @@ const HomePage = () => {
                     <div
                       className="col-sm-6 text-center"
                       key={i}
-                     
+
                     >
                       <div className="icon mb-3">
                         <i className={`bi bi-${item.icon} fs-4`}></i>
@@ -704,12 +704,12 @@ const HomePage = () => {
 
 
 
-      <section className="about-block" ref={sectionRef} data-reveal="up" >
+      <section className="about-block scroll-section" ref={sectionRef} data-reveal="up" >
         <div className="container">
           <Row gutter={[48, 48]} align="bottom">
             <Col xs={24} lg={12} className="about-left">
               <div className="about-grid">
-                <div className="about-exp-box"  onAnimationEnd={handleAnimationEnd}>
+                <div className="about-exp-box" onAnimationEnd={handleAnimationEnd}>
                   <h1 className="display-1 mb-0 ">
                     {inView && (
                       <CountUp start={0} end={25} duration={2} />
@@ -718,13 +718,13 @@ const HomePage = () => {
                   <small className="fs-5 fw-bold">Years Experience</small>
                 </div>
                 <div className="about-img-container">
-                  <img className="about-img img1"src={about1} alt="about1" />
+                  <img className="about-img img1" src={about1} alt="about1" />
                 </div>
                 <div className="about-img-container">
-                  <img className="about-img img2"src={about2} alt="about2" />
+                  <img className="about-img img2" src={about2} alt="about2" />
                 </div>
                 <div className="about-img-container">
-                  <img className="about-img img3"src={about3} alt="about3" />
+                  <img className="about-img img3" src={about3} alt="about3" />
                 </div>
               </div>
             </Col>
@@ -839,12 +839,12 @@ const HomePage = () => {
       <section className="service-section scroll-section">
         <div className="container-xxl py-5">
           <div className="container">
-            <div className="text-center mx-auto pb-4"style={{ maxWidth: "500px" }}>
+            <div className="text-center mx-auto pb-4" data-aos="fade-up" data-aos-delay="100" style={{ maxWidth: "500px" }}>
               <p className="section-title bg-white text-center text-primary px-3">Our Services</p>
               <h1 className="mb-5">Services That We Offer For Entrepreneurs</h1>
             </div>
             <div className="row gy-5 gx-4">
-              <div className="col-lg-4 col-md-6 pt-5" >
+              <div className="col-lg-4 col-md-6 pt-5" data-aos="fade-up" data-aos-delay="100">
                 <div className="service-item d-flex h-100">
                   <div className="service-img">
                     <img className="img-fluid" src={service1} alt="" />
@@ -859,7 +859,7 @@ const HomePage = () => {
                   </div>
                 </div>
               </div>
-              <div className="col-lg-4 col-md-6 pt-5">
+              <div className="col-lg-4 col-md-6 pt-5" data-aos="fade-up" data-aos-delay="300">
                 <div className="service-item d-flex h-100">
                   <div className="service-img">
                     <img className="img-fluid" src={service2} alt="" />
@@ -874,7 +874,7 @@ const HomePage = () => {
                   </div>
                 </div>
               </div>
-              <div className="col-lg-4 col-md-6 pt-5" >
+              <div className="col-lg-4 col-md-6 pt-5" data-aos="fade-up" data-aos-delay="500">
                 <div className="service-item d-flex h-100">
                   <div className="service-img">
                     <img className="img-fluid" src={service3} alt="" />
@@ -954,7 +954,7 @@ const HomePage = () => {
       <section className="testimonial-section scroll-section">
         <div className="container-xxl py-5">
           <div className="container">
-            <div className="text-center">
+            <div className="text-center  mx-auto " data-aos="fade-up" data-aos-delay="100" style={{ maxWidth: "500px" }}>
               <h6 className="section-title bg-white text-center text-primary px-3">Testimonial </h6>
               <h1 className="mb-5">Our Clients Say!</h1>
             </div>
@@ -1095,7 +1095,7 @@ const HomePage = () => {
       </section>
 
 
- {/* ----------RANKING --------- */}
+      {/* ----------RANKING --------- */}
       <section className="ranking-section">
         <div className="container">
           <div className="container">
