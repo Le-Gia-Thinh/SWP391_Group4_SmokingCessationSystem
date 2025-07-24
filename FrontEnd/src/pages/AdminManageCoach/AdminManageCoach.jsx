@@ -256,18 +256,20 @@ const AdminDashboard = () => {
   // Edit coach
   const handleEditCoach = (coach) => {
     setSelectedCoach(coach);
-    editForm.setFieldsValue({
-      full_name: coach.full_name,
-      email: coach.email,
-      phone_number: coach.phone_number,
-      account_status: coach.account_status,
-      specialization: coach.specialization,
-      bio: coach.bio,
-      experience_years: coach.experience_years,
-      google_meet_link: coach.google_meet_link,
-      coach_status: coach.coach_status,
-    });
     setEditCoachModal(true);
+    setTimeout(() => {
+      editForm.setFieldsValue({
+        full_name: coach.full_name || "",
+        email: coach.email || "",
+        phone_number: coach.phone_number || "",
+        account_status: coach.account_status || "",
+        specialization: coach.specialization || "",
+        bio: coach.bio || "",
+        experience_years: coach.experience_years !== undefined && coach.experience_years !== null ? coach.experience_years : "",
+        google_meet_link: coach.google_meet_link || "",
+        coach_status: coach.coach_status || "",
+      });
+    }, 0);
   };
 
   // Update coach
@@ -978,14 +980,7 @@ const AdminDashboard = () => {
               <Input placeholder="Nhập liên kết Google Meet" />
             </Form.Item>
           </Col>
-          <Col span={12}>
-            <Form.Item name="coach_status" label="Trạng thái huấn luyện viên">
-              <Select placeholder="Chọn trạng thái">
-                <Option value="active">Hoạt động</Option>
-                <Option value="inactive">Không hoạt động</Option>
-              </Select>
-            </Form.Item>
-          </Col>
+          {/* Đã xóa trường Trạng thái huấn luyện viên */}
         </Row>
       </FormModal>
 
@@ -1097,8 +1092,8 @@ const AdminDashboard = () => {
                 <Text>
                   {selectedCoach.registration_date
                     ? new Date(
-                        selectedCoach.registration_date
-                      ).toLocaleDateString()
+                      selectedCoach.registration_date
+                    ).toLocaleDateString()
                     : "N/A"}
                 </Text>
               </Col>
