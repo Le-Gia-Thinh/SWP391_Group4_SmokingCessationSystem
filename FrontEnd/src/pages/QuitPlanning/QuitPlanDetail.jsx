@@ -1,5 +1,5 @@
 // QuitPlanDetail.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import {
   Typography,
@@ -46,20 +46,35 @@ const QuitPlanDetail = () => {
   };
 
   const info = data && data.detailPlan ? data : fallback;
-  const detailPlan = info.detailPlan;
 
-  if (info.detailPlan?.[0]?.tasks) {
-    const tasksObj = info.detailPlan[0].tasks;
-    const taskArray = Object.keys(tasksObj).map((time) => {
-      return {
-        time,
-        behavior: "Thời điểm thường thèm thuốc", // Có thể tùy chỉnh mô tả hành vi
-        replacement: tasksObj[time].map((t) => t.task), // lấy danh sách task
-        rawDate: info.date,
-      };
-    });
-    info.detailPlan = taskArray; // Cập nhật lại detailPlan đã chuẩn hoá
-  }
+  // Transform API data structure to expected format
+  const detailPlan = useMemo(() => {
+    // If detailPlan has tasks object (from API), transform to array format
+    if (info.detailPlan?.tasks && typeof info.detailPlan.tasks === "object") {
+      const tasksObj = info.detailPlan.tasks;
+      return Object.keys(tasksObj).map((time) => {
+        return {
+          time,
+          behavior: "Thời điểm thường thèm thuốc", // Có thể tùy chỉnh mô tả hành vi
+          replacement: tasksObj[time], // lấy danh sách task từ API
+          rawDate: info.date,
+        };
+      });
+    }
+    // Legacy fallback for old data structure
+    else if (info.detailPlan?.[0]?.tasks) {
+      const tasksObj = info.detailPlan[0].tasks;
+      return Object.keys(tasksObj).map((time) => {
+        return {
+          time,
+          behavior: "Thời điểm thường thèm thuốc", // Có thể tùy chỉnh mô tả hành vi
+          replacement: tasksObj[time].map((t) => t.task), // lấy danh sách task
+          rawDate: info.date,
+        };
+      });
+    }
+    return info.detailPlan;
+  }, [info.detailPlan, info.date]);
 
   const planStartDate = location.state?.rawStartDate || "2025-06-17";
   const startDate = dayjs(planStartDate);
@@ -105,8 +120,8 @@ const QuitPlanDetail = () => {
       .then((res) => res.json())
       .then((result) => {
         const fallbackSelected = {};
-        if (Array.isArray(info.detailPlan)) {
-          info.detailPlan.forEach((_, idx) => {
+        if (Array.isArray(detailPlan)) {
+          detailPlan.forEach((_, idx) => {
             fallbackSelected[idx] = `P1_${idx}_0`;
           });
         }
@@ -121,7 +136,7 @@ const QuitPlanDetail = () => {
         Object.entries(fallbackSelected).forEach(([slotIdx, taskId]) => {
           const parts = taskId.split("_");
           const taskIdx = parseInt(parts[2]);
-          const taskList = info.detailPlan[slotIdx]?.replacement || [];
+          const taskList = detailPlan[slotIdx]?.replacement || [];
           const taskLabel = taskList[taskIdx];
           if (!taskLabel) delete fallbackSelected[slotIdx];
         });
@@ -146,7 +161,7 @@ const QuitPlanDetail = () => {
           setTaskDone(doneState);
         }
       });
-  }, [date]);
+  }, [date, detailPlan]);
 
   const handleCheckbox = async (idx) => {
     const updated = [...completed];
@@ -563,7 +578,7 @@ const QuitPlanDetail = () => {
         {Array.isArray(detailPlan) && detailPlan.length > 0 ? (
           <Table
             columns={columns}
-            dataSource={info.detailPlan.map((item, idx) => ({
+            dataSource={detailPlan.map((item, idx) => ({
               ...item,
               key: idx,
             }))}
@@ -588,9 +603,9 @@ const QuitPlanDetail = () => {
         <Divider orientation="left" plain>
           <CheckCircleTwoTone twoToneColor="#13c2c2" /> Chi tiết nhiệm vụ
         </Divider>
-        {Array.isArray(info.detailPlan) && info.detailPlan.length > 0 ? (
+        {Array.isArray(detailPlan) && detailPlan.length > 0 ? (
           <ul style={{ paddingLeft: 24 }}>
-            {info.detailPlan.map((item, timeSlotIdx) => (
+            {detailPlan.map((item, timeSlotIdx) => (
               <li key={timeSlotIdx} style={{ marginBottom: 16, fontSize: 16 }}>
                 <div style={{ fontWeight: 500, marginBottom: 4 }}>
                   {item.time}:

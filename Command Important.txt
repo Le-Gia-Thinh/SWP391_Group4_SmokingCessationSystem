@@ -77,9 +77,7 @@ npm install howler
 
 npm install chart.js react-chartjs-2 --legacy-peer-deps
 npm install bootstrap
-=======
-=======
->>>>>>> 343e78daba7bdc27b0041750b20f922a7932541d
+
 npm install bootstrap hoặc npm install bootstrap --save --legacy-peer-dep    
 npm i jquery
 	npm i owl.carousel
@@ -91,10 +89,8 @@ npm i jquery
  npm install wowjs animate.css (--legacy-peer-deps)
  npm install react-use --save --legacy-peer-dep 
  npm install react-parallax --save --legacy-peer-dep 
-<<<<<<< HEAD
->>>>>>> 9e774e0c8af50c9a61178c9864113bf5e2c092da
-=======
+
 
 npm install chart.js react-chartjs-2 --legacy-peer-deps
 npm install bootstrap
->>>>>>> 343e78daba7bdc27b0041750b20f922a7932541d
+npm install @tinymce/tinymce-react --legacy-peer-deps

@@ -1,15 +1,45 @@
 // 📁 PlanSetupModal.jsx
-import React, { useState, useEffect } from "react"; // 👈 THÊM useEffect
-import { Modal, DatePicker, InputNumber, Button, message } from "antd";
+import React, { useState, useEffect } from "react";
+import {
+  Modal,
+  DatePicker,
+  InputNumber,
+  Button,
+  message,
+  Typography,
+  Card,
+  Row,
+  Col,
+  Tooltip,
+} from "antd";
+import {
+  CalendarOutlined,
+  ClockCircleOutlined,
+  CheckCircleOutlined,
+  InfoCircleOutlined,
+} from "@ant-design/icons";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import "./PlanSetupModal.css";
+import "bootstrap/dist/css/bootstrap.min.css";
+
+const { Title, Text } = Typography;
 
 const PlanSetupModal = ({ userId, onPlanReady }) => {
   const [startDate, setStartDate] = useState(null);
   const [months, setMonths] = useState(null);
-  const [ftndLevel, setFtndLevel] = useState(null); //
+  const [ftndLevel, setFtndLevel] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
+
+  // Lock body scroll khi modal mở
+  useEffect(() => {
+    document.body.classList.add("modal-open");
+    return () => {
+      document.body.classList.remove("modal-open");
+    };
+  }, []);
 
   // 👇 THÊM: Gọi API lấy mức độ nghiện khi mở modal
   useEffect(() => {
@@ -49,19 +79,34 @@ const PlanSetupModal = ({ userId, onPlanReady }) => {
   };
 
   const handleSubmit = async () => {
-    if (!startDate || !months) return message.warning("Nhập đủ thông tin");
+    if (!startDate || !months) {
+      message.warning({
+        content: "Vui lòng nhập đủ thông tin",
+        icon: <InfoCircleOutlined style={{ color: "#faad14" }} />,
+      });
+      return;
+    }
 
+    setIsLoading(true);
     try {
       await axios.post("http://localhost:5000/api/quitplan/save", {
         user_id: userId,
         start_date: startDate.format("YYYY-MM-DD"),
         quit_months: months,
       });
-      message.success("Đã lưu kế hoạch thành công!");
+
+      message.success({
+        content: "Đã lưu kế hoạch thành công!",
+        icon: <CheckCircleOutlined style={{ color: "#52c41a" }} />,
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       onPlanReady({ startDate, months });
     } catch (err) {
       console.error("Lỗi lưu kế hoạch:", err);
       message.error("Không thể lưu kế hoạch");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -74,62 +119,85 @@ const PlanSetupModal = ({ userId, onPlanReady }) => {
   };
 
   return (
-    <Modal
-      open
-      title="Thiết lập kế hoạch cai nghiện"
-      footer={null}
-      closable={false}
-      centered
-      width={440}
-      styles={{ body: { padding: 32, borderRadius: 12 } }}
-    >
-      <div style={{ marginBottom: 18 }}>
-        <div style={{ fontWeight: 500, marginBottom: 6 }}>Ngày bắt đầu:</div>
-        <DatePicker
-          onChange={setStartDate}
-          style={{ width: "100%" }}
-          size="large"
-          disabledDate={(current) =>
-            current && current < new Date().setHours(0, 0, 0, 0)
-          }
-        />
+    <div className="planSetupModal-wrapper">
+      <div className="planSetupModal-container">
+        <Title level={2} className="planSetupModal-title">
+          Thiết lập kế hoạch cai nghiện
+        </Title>
+
+        <div className="planSetupModal-form-item">
+          <label className="planSetupModal-label">
+            <CalendarOutlined
+              style={{ marginRight: "8px", color: "#52c41a" }}
+            />
+            Ngày bắt đầu:
+          </label>
+          <DatePicker
+            onChange={setStartDate}
+            className="planSetupModal-datepicker"
+            size="large"
+            placeholder="Chọn ngày bắt đầu cai nghiện"
+            disabledDate={(current) =>
+              current && current < new Date().setHours(0, 0, 0, 0)
+            }
+          />
+        </div>
+
+        <div className="planSetupModal-form-item">
+          <label className="planSetupModal-label">
+            <ClockCircleOutlined
+              style={{ marginRight: "8px", color: "#52c41a" }}
+            />
+            Số tháng cai:
+            <Tooltip
+              title={`Dựa trên mức độ nghiện ${ftndLevel || "chưa xác định"}`}
+            >
+              <InfoCircleOutlined
+                style={{
+                  marginLeft: "4px",
+                  color: "#1890ff",
+                  fontSize: "12px",
+                }}
+              />
+            </Tooltip>
+          </label>
+          <InputNumber
+            placeholder={getPlaceholderByFTND(ftndLevel)}
+            value={months}
+            onChange={setMonths}
+            className="planSetupModal-input"
+            size="large"
+            min={1}
+            max={24}
+          />
+          {ftndLevel && (
+            <div className="planSetupModal-suggestion-text">
+              {getPlaceholderByFTND(ftndLevel)}
+            </div>
+          )}
+        </div>
+
+        <div className="planSetupModal-button-group d-flex justify-content-center gap-3 flex-wrap">
+          <Button
+            type="primary"
+            onClick={handleSubmit}
+            disabled={!startDate || !months}
+            loading={isLoading}
+            className="planSetupModal-submit-button"
+            icon={<CheckCircleOutlined />}
+          >
+            {isLoading ? "Đang lưu..." : "Lưu kế hoạch"}
+          </Button>
+          <Button
+            onClick={handleCancel}
+            className="planSetupModal-cancel-button"
+            disabled={isLoading}
+          >
+            Hủy
+          </Button>
+        </div>
       </div>
-      <div style={{ marginBottom: 18 }}>
-        <div style={{ fontWeight: 500, marginBottom: 6 }}>Số tháng cai:</div>
-        <InputNumber
-          placeholder={getPlaceholderByFTND(ftndLevel)} //
-          value={months}
-          onChange={setMonths}
-          style={{ width: "100%" }}
-          size="large"
-        />
-      </div>
-      <div
-        style={{
-          marginTop: 24,
-          display: "flex",
-          justifyContent: "center",
-          gap: 16,
-        }}
-      >
-        <Button
-          type="primary"
-          onClick={handleSubmit}
-          disabled={!startDate}
-          size="large"
-          style={{ minWidth: 120, fontWeight: 600, borderRadius: 8 }}
-        >
-          Lưu kế hoạch
-        </Button>
-        <Button
-          onClick={handleCancel}
-          size="large"
-          style={{ minWidth: 120, fontWeight: 600, borderRadius: 8 }}
-        >
-          Hủy
-        </Button>
-      </div>
-    </Modal>
+    </div>
   );
 };
 

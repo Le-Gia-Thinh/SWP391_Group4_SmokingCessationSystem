@@ -12,7 +12,6 @@ import {
 } from "antd";
 import axios from "axios";
 import dayjs from "dayjs";
-import tabStyles from "./AdminTabs.module.css";
 
 const { Option } = Select;
 
@@ -41,7 +40,9 @@ export default function AdminTaskManager() {
 
   const fetchPhases = async () => {
     try {
-      const res = await axios.get(`${baseURL}/api/admin/tasks/phases`, { headers });
+      const res = await axios.get(`${baseURL}/api/admin/tasks/phases`, {
+        headers,
+      });
       setPhases(res.data.data);
     } catch {
       message.error("Không thể tải giai đoạn");
@@ -64,7 +65,11 @@ export default function AdminTaskManager() {
         // Nếu sửa thì phải giữ lại task_id hiện tại
         values.task_id = modal.record.task_id;
         values.task_order = modal.record.task_order;
-        await axios.put(`${baseURL}/api/admin/tasks/${modal.record.id}`, values, { headers });
+        await axios.put(
+          `${baseURL}/api/admin/tasks/${modal.record.id}`,
+          values,
+          { headers }
+        );
         message.success("Đã cập nhật nhiệm vụ");
       } else {
         await axios.post(`${baseURL}/api/admin/tasks`, values, { headers });
@@ -89,34 +94,45 @@ export default function AdminTaskManager() {
   };
 
   return (
-    <div className={tabStyles.adminTabContainer}>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
+    <div className="adminTabContainer">
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginBottom: 16,
+        }}
+      >
         <h2>📌 Quản lý nhiệm vụ</h2>
-        <Button type="primary" onClick={() => openModal()}>
+        <Button
+          type="primary"
+          onClick={() => openModal()}
+          className="aum-action-btn aum-view-btn"
+          style={{ fontWeight: 600, fontSize: 16, minWidth: 140 }}
+        >
           + Thêm nhiệm vụ
         </Button>
       </div>
-        <Select
-            allowClear
-            placeholder="Lọc theo giai đoạn"
-            style={{ width: 180, marginBottom: 20 }}
-            onChange={(value) => setFilterPhase(value)}
-        >
-            {phases.map((p) => (
-                <Option key={p.phase_code} value={p.phase_code}>
-                    {p.phase_code} - {p.phase_name}
-                </Option>
-            ))}
-        </Select>
+      <Select
+        allowClear
+        placeholder="Lọc theo giai đoạn"
+        style={{ width: 280, marginBottom: 20 }}
+        onChange={(value) => setFilterPhase(value)}
+      >
+        {phases.map((p) => (
+          <Option key={p.phase_code} value={p.phase_code}>
+            {p.phase_code} - {p.phase_name}
+          </Option>
+        ))}
+      </Select>
       <Table
         rowKey="id"
         loading={loading}
         dataSource={
-        filterPhase
+          filterPhase
             ? tasks.filter((task) => task.phase_code === filterPhase)
             : tasks
         }
-        className={tabStyles.modernTable}
+        className="modernTable"
         pagination={{ pageSize: 10 }}
         columns={[
           { title: "Giai đoạn", dataIndex: "phase_code" },
@@ -126,16 +142,24 @@ export default function AdminTaskManager() {
           {
             title: "Ngày tạo",
             dataIndex: "created_at",
-            render: (date) => date ? dayjs(date).format("DD/MM/YYYY") : "—",
+            render: (date) => (date ? dayjs(date).format("DD/MM/YYYY") : "—"),
           },
           {
             title: "Hành động",
+            align: "center",
             render: (_, record) => (
-              <Space>
+              <Space
+                style={{
+                  justifyContent: "center",
+                  display: "flex",
+                  width: "100%",
+                }}
+              >
                 <Button
                   size="small"
                   onClick={() => openModal(record)}
-                  className={tabStyles.modernButtonDefault}
+                  className="aum-action-btn aum-edit-btn"
+                  style={{ minWidth: 70 }}
                 >
                   Sửa
                 </Button>
@@ -145,7 +169,14 @@ export default function AdminTaskManager() {
                   okText="Xác nhận"
                   cancelText="Hủy"
                 >
-                  <Button danger size="small">Xóa</Button>
+                  <Button
+                    danger
+                    size="small"
+                    className="aum-action-btn aum-delete-btn"
+                    style={{ minWidth: 70 }}
+                  >
+                    Xóa
+                  </Button>
                 </Popconfirm>
               </Space>
             ),
@@ -176,23 +207,23 @@ export default function AdminTaskManager() {
               ))}
             </Select>
           </Form.Item>
-              <Form.Item
-                name="time_slot"
-                label="Khung giờ"
-                rules={[{ required: true, message: "Vui lòng chọn khung giờ" }]}
-                disabled={modal.record !== null}
-                >
-                <Select placeholder="Chọn khung giờ">
-                    {Array.from({ length: 24 }, (_, i) => {
-                    const hour = i.toString().padStart(2, "0");
-                    return (
-                        <Option key={hour} value={`${hour}:00`}>
-                        {hour}:00
-                        </Option>
-                    );
-                    })}
-                </Select>
-                </Form.Item>
+          <Form.Item
+            name="time_slot"
+            label="Khung giờ"
+            rules={[{ required: true, message: "Vui lòng chọn khung giờ" }]}
+            disabled={modal.record !== null}
+          >
+            <Select placeholder="Chọn khung giờ">
+              {Array.from({ length: 24 }, (_, i) => {
+                const hour = i.toString().padStart(2, "0");
+                return (
+                  <Option key={hour} value={`${hour}:00`}>
+                    {hour}:00
+                  </Option>
+                );
+              })}
+            </Select>
+          </Form.Item>
           <Form.Item
             name="task_description"
             label="Nội dung nhiệm vụ"

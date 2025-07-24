@@ -341,6 +341,7 @@ export default function Navbar() {
                     user.role === "admin" ? "#ff4d4f" : "#52c41a",
                   cursor: "pointer",
                 }}
+                onClick={() => navigate("/profile")}
               />
               <Badge
                 count={badgeText}

@@ -70,8 +70,15 @@
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 .header-title {
@@ -79,7 +86,7 @@
   font-size: 2.5rem;
   font-weight: 700;
   margin-bottom: 10px;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .header-subtitle {
@@ -415,24 +422,49 @@
 
 /* Animations */
 @keyframes slideDown {
-  from { transform: translateY(-100%); }
-  to { transform: translateY(0); }
+  from {
+    transform: translateY(-100%);
+  }
+
+  to {
+    transform: translateY(0);
+  }
 }
 
 @keyframes bounceIn {
-  0% { transform: scale(0); }
-  50% { transform: scale(1.2); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(0);
+  }
+
+  50% {
+    transform: scale(1.2);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 
 @keyframes rotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .fade-in {
@@ -449,12 +481,12 @@
     margin: 0;
     padding: 24px;
   }
-  
+
   .packages-container {
     flex-direction: column;
     align-items: center;
   }
-  
+
   .package-card {
     max-width: 500px;
     width: 100%;
@@ -467,29 +499,29 @@
     padding: 16px;
     border-radius: 12px;
   }
-  
+
   .loading-container .text-center {
     margin: 10px;
     padding: 20px;
     border-radius: 12px;
   }
-  
+
   .checkout-content {
     padding: 0;
   }
-  
+
   .header-title {
     font-size: 2rem;
   }
-  
+
   .package-price {
     font-size: 2rem;
   }
-  
+
   .packages-container {
     gap: 15px;
   }
-  
+
   .package-card {
     min-width: 280px;
   }
@@ -499,11 +531,11 @@
   .header-title {
     font-size: 1.75rem;
   }
-  
+
   .package-price {
     font-size: 1.75rem;
   }
-  
+
   .continue-button {
     width: 100%;
     max-width: 300px;
