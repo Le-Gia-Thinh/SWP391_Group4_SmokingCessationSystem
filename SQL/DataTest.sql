@@ -23,7 +23,9 @@ VALUES
 ('member2', 'hashed_123456', N'Nguyễn Văn Khoa', 'member2@gmail.com', '0911111111', '1993-07-20', GETDATE(), 'member', 'active', N'High', 'local', NULL),
 ('member3', 'hashed_123456', N'Hoàng Văn Chung', 'mem3@gmail.com', '0922222222', '1992-02-02', GETDATE(), 'member', 'active', N'Medium', 'local', NULL),
 ('member4', 'hashed_123456', N'Phạm Thị Dung', 'mem4@gmail.com', '0933333333', '1991-11-11', GETDATE(), 'member', 'active', N'High', 'local', NULL),
-('member5', 'hashed_123456', N'Vũ Minh Anh', 'mem5@gmail.com', '0944444444', '1990-12-12', GETDATE(), 'member', 'active', N'Low', 'local', NULL);
+('member5', 'hashed_123456', N'Vũ Minh Anh', 'mem5@gmail.com', '0944444444', '1990-12-12', GETDATE(), 'member', 'active', N'Low', 'local', NULL),
+('member6', 'hashed_123456', N'Nguyễn Thị Thiên Huyền', 'member6@gmail.com', '0944444444', '1990-12-10', GETDATE(), 'member', 'active', N'Low', 'local', NULL),
+('member7', 'hashed_123456', N'Vũ Đào Hoa', 'member7@test.com', '0944444444', '1990-12-8', GETDATE(), 'member', 'active', N'Low', 'local', NULL);
 
 
 -- 2. COACH
@@ -387,3 +389,113 @@ FROM CUSTOMER WHERE username = 'member5';
 INSERT INTO DAILY_SMOKING_SUMMARY (user_id, date, total_cigarettes, relapsed)
 SELECT user_id, CAST(GETDATE() AS DATE), 0, 0
 FROM CUSTOMER WHERE username = 'member5';
+
+
+-- ================================================
+-- 21. SUBSCRIPTION & PAYMENT – Test cho member6 (4 gói)
+-- ================================================
+
+SET NOCOUNT ON;
+
+DECLARE @now     DATETIME = GETDATE();
+DECLARE @today   DATE = GETDATE();
+DECLARE @userId  INT;
+DECLARE @subId   INT;
+
+-- Lấy user_id từ username
+SELECT @userId = user_id FROM CUSTOMER WHERE username = 'member6';
+
+-- ─────────────────────────────────────────────
+-- (1) Tạo subscription 3 tháng – package_id = 3
+-- ─────────────────────────────────────────────
+INSERT INTO USER_SUBSCRIPTION
+    (user_id, package_id, start_date, end_date,
+     auto_renew, payment_status)
+VALUES
+    (@userId, 3, @today, DATEADD(DAY, 90, @today),
+     0, 'paid');
+
+SET @subId = SCOPE_IDENTITY();
+
+INSERT INTO PAYMENT
+    (subscription_id, amount, payment_date,
+     transaction_id, payment_method, payment_status,
+     note, order_code)
+VALUES
+    (@subId, 2690000, @today,
+     CONCAT('TEST_', NEWID()), 'redirect', 'paid',
+     N'Thanh toán gói Premium 3 tháng (test)',
+     100000 + ABS(CHECKSUM(NEWID())) % 900000);
+
+-- ─────────────────────────────────────────────
+-- (2) Tạo subscription 6 tháng – package_id = 4
+-- ─────────────────────────────────────────────
+DECLARE @sub6Id INT;
+
+INSERT INTO USER_SUBSCRIPTION
+    (user_id, package_id, start_date, end_date,
+     auto_renew, payment_status)
+VALUES
+    (@userId, 4, @today, DATEADD(DAY, 180, @today),
+     0, 'paid');
+
+SET @sub6Id = SCOPE_IDENTITY();
+
+INSERT INTO PAYMENT
+    (subscription_id, amount, payment_date,
+     order_code, transaction_id, payment_method,
+     payment_status, note)
+VALUES
+    (@sub6Id, 5490000, @today,
+     100000 + ABS(CHECKSUM(NEWID())) % 900000,
+     NEWID(), 'redirect', 'paid',
+     N'Thanh toán gói Premium 6 tháng (test)');
+
+-- ─────────────────────────────────────────────
+-- (3) Tạo subscription 10 ngày – package_id = 7
+-- ─────────────────────────────────────────────
+DECLARE @sub10Id INT;
+
+INSERT INTO USER_SUBSCRIPTION
+    (user_id, package_id, start_date, end_date,
+     auto_renew, payment_status)
+VALUES
+    (@userId, 1, @today, DATEADD(DAY, 10, @today),
+     0, 'paid');
+
+SET @sub10Id = SCOPE_IDENTITY();
+
+INSERT INTO PAYMENT
+    (subscription_id, amount, payment_date,
+     order_code, transaction_id, payment_method,
+     payment_status, note)
+VALUES
+    (@sub10Id, 10000, @today,
+     100000 + ABS(CHECKSUM(NEWID())) % 900000,
+     NEWID(), 'redirect', 'paid',
+     N'Thanh toán gói Test 10 ngày (test)');
+
+-- ─────────────────────────────────────────────
+-- (4) Tạo subscription 1 tháng đã dùng 5 ngày – package_id = 2
+-- ─────────────────────────────────────────────
+DECLARE @sub30Id INT;
+DECLARE @start DATE = DATEADD(DAY, -5, @today);
+DECLARE @end   DATE = DATEADD(DAY, 25, @today);
+
+INSERT INTO USER_SUBSCRIPTION
+    (user_id, package_id, start_date, end_date,
+     auto_renew, payment_status)
+VALUES
+    (@userId, 2, @start, @end, 0, 'paid');
+
+SET @sub30Id = SCOPE_IDENTITY();
+
+INSERT INTO PAYMENT
+    (subscription_id, amount, payment_date,
+     order_code, transaction_id, payment_method,
+     payment_status, note)
+VALUES
+    (@sub30Id, 99000, @start,
+     100000 + ABS(CHECKSUM(NEWID())) % 900000,
+     NEWID(), 'redirect', 'paid',
+     N'Thanh toán gói Premium 1 tháng (test còn 25 ngày)');
