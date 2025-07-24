@@ -406,13 +406,26 @@ const AdminDashboard = () => {
       title: "Huấn luyện viên",
       key: "coach",
       render: (_, record) => (
-        <Space>
+        <Space align="start">
           <Avatar size="large" style={{ backgroundColor: "#52c41a" }}>
             {record.full_name?.charAt(0).toUpperCase()}
           </Avatar>
           <div>
             <div style={{ fontWeight: "bold" }}>{record.full_name}</div>
-            <Text type="secondary">{record.email}</Text>
+            <Tooltip title={record.email}>
+              <Text
+                type="secondary"
+                style={{
+                  display: "block",
+                  maxWidth: 160,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {record.email}
+              </Text>
+            </Tooltip>
           </div>
         </Space>
       ),
@@ -421,7 +434,19 @@ const AdminDashboard = () => {
       title: "Chuyên môn",
       key: "specialization",
       render: (_, record) => (
-        <Text>{record.specialization || "Chưa cập nhật"}</Text>
+        <Tooltip title={record.specialization || "Chưa cập nhật"}>
+          <Text
+            style={{
+              display: "block",
+              maxWidth: 160,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {record.specialization || "Chưa cập nhật"}
+          </Text>
+        </Tooltip>
       ),
     },
     {
@@ -939,7 +964,7 @@ const AdminDashboard = () => {
 
         <Row gutter={16}>
           <Col span={12}>
-            <Form.Item name="phone_number" label="Số điện thoại">
+            <Form.Item name="phone_number" label="Số điện thoại" rules={[{ pattern: /^[0-9]{9,11}$/, message: "Số điện thoại không hợp lệ!" }]}>
               <Input placeholder="Nhập số điện thoại" />
             </Form.Item>
           </Col>
@@ -959,24 +984,24 @@ const AdminDashboard = () => {
 
         <Row gutter={16}>
           <Col span={12}>
-            <Form.Item name="specialization" label="Chuyên môn">
+            <Form.Item name="specialization" label="Chuyên môn" rules={[{ validator: (_, value) => { if (!value || value[0] === value[0].toUpperCase()) { return Promise.resolve(); } return Promise.reject("Vui lòng viết hoa chữ cái đầu tiên"); } }]}>
               <Input placeholder="Nhập chuyên môn" />
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item name="experience_years" label="Số năm kinh nghiệm">
+            <Form.Item name="experience_years" label="Số năm kinh nghiệm" rules={[{ validator: (_, value) => { if (!value || (Number.isInteger(Number(value)) && Number(value) >= 0)) { return Promise.resolve(); } return Promise.reject("Số năm kinh nghiệm phải là số nguyên không âm!"); } }]}>
               <Input type="number" placeholder="Nhập số năm kinh nghiệm" />
             </Form.Item>
           </Col>
         </Row>
 
-        <Form.Item name="bio" label="Tiểu sử">
+        <Form.Item name="bio" label="Tiểu sử" rules={[{ validator: (_, value) => { if (!value || value[0] === value[0].toUpperCase()) { return Promise.resolve(); } return Promise.reject("Vui lòng viết hoa chữ cái đầu tiên"); } }]}>
           <TextArea rows={3} placeholder="Nhập tiểu sử" />
         </Form.Item>
 
         <Row gutter={16}>
           <Col span={12}>
-            <Form.Item name="google_meet_link" label="Liên kết Google Meet">
+            <Form.Item name="google_meet_link" label="Liên kết Google Meet" rules={[{ type: "url", message: "Vui lòng nhập đúng định dạng URL (https://...)!", transform: (value) => (value ? value : undefined) }]}>
               <Input placeholder="Nhập liên kết Google Meet" />
             </Form.Item>
           </Col>
