@@ -17,7 +17,6 @@ import {
 import { DatePicker, Radio, Button, message, Spin, Layout } from "antd";
 import dayjs from "dayjs";
 import "bootstrap/dist/css/bootstrap.min.css";
-import Navbar from "../../layouts/Navbar";
 import "./RevenueStats.css";
 
 const { Content } = Layout;
@@ -284,6 +283,7 @@ const AdminStatDashboard = () => {
         return (
           <Line
             key={chartType}
+            redraw={true}
             data={{
               labels: revenueChart.labels?.map((d) => formatDateVN(d)) || [],
               datasets: [
@@ -334,6 +334,7 @@ const AdminStatDashboard = () => {
         return (
           <PolarArea
             key={chartType}
+            redraw={true}
             data={{
               ...chartData,
               datasets: [
@@ -365,6 +366,7 @@ const AdminStatDashboard = () => {
         return (
           <Radar
             key={chartType}
+            redraw={true}
             data={{
               labels: revenueChart.labels || [],
               datasets: [
@@ -410,6 +412,7 @@ const AdminStatDashboard = () => {
         return (
           <Doughnut
             key={chartType}
+            redraw={true}
             data={{
               ...chartData,
               datasets: [
@@ -445,7 +448,6 @@ const AdminStatDashboard = () => {
 
   return (
     <Layout style={{ minHeight: "100vh", backgroundColor: "#f8f9fa" }}>
-      <Navbar />
       <Content style={{ padding: "0" }}>
         <div className="container-fluid py-4">
           {/* Header */}
@@ -590,7 +592,7 @@ const AdminStatDashboard = () => {
                             disabledDate={(current) =>
                               current && current > dayjs().endOf("month")
                             }
-                            className="flex-fill"
+                            style={{ width: "140px" }}
                           />
                         )}
 
@@ -605,7 +607,7 @@ const AdminStatDashboard = () => {
                             disabledDate={(current) =>
                               current && current > dayjs().endOf("year")
                             }
-                            className="flex-fill"
+                            style={{ width: "120px" }}
                           />
                         )}
 

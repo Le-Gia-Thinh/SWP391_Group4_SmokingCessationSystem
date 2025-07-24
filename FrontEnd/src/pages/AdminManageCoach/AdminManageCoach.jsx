@@ -39,15 +39,14 @@ import {
   FilterOutlined,
   UndoOutlined,
 } from "@ant-design/icons";
-import Navbar from "../../layouts/Navbar";
 import StatisticCard from "../../components/ui/StatisticCard";
 import DataTable from "../../components/ui/DataTable";
 import FormModal from "../../components/ui/FormModal";
 import ActionButtonGroup from "../../components/ui/ActionButtonGroup";
-import "./AdminDashboard.css";
+import "./AdminManageCoach.css";
 import moment from "moment-timezone";
 
-const { Header, Content } = Layout;
+const { Content } = Layout;
 const { Title, Text } = Typography;
 const { Option } = Select;
 const { Search } = Input;
@@ -515,9 +514,6 @@ const AdminDashboard = () => {
 
   return (
     <Layout className="admin-dashboard">
-      <Header style={{ padding: 0, height: "auto" }}>
-        <Navbar />
-      </Header>
       <Content style={{ padding: "24px", minHeight: "calc(100vh - 64px)" }}>
         {/* Header */}
         <div style={{ marginBottom: "24px" }}>
@@ -1051,8 +1047,8 @@ const AdminDashboard = () => {
                 <Text>
                   {selectedCoach.registration_date
                     ? new Date(
-                      selectedCoach.registration_date
-                    ).toLocaleDateString()
+                        selectedCoach.registration_date
+                      ).toLocaleDateString()
                     : "N/A"}
                 </Text>
               </Col>

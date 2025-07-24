@@ -1,0 +1,963 @@
+/* Modern Admin Page Styles */
+.admin-page {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background: #f5f7fa;
+}
+
+/* ========== SIDEBAR STYLES ========== */
+.admin-sidebar {
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.admin-sidebar .ant-layout-sider-trigger {
+  background: linear-gradient(135deg, #5a67d8 0%, #667eea 100%);
+  color: white;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.admin-sidebar .ant-layout-sider-trigger:hover {
+  background: linear-gradient(135deg, #4c51bf 0%, #5a67d8 100%);
+  transform: translateX(2px);
+}
+
+/* Logo Styles */
+.admin-logo {
+  position: relative;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.logo-container {
+  padding: 24px 16px;
+  text-align: center;
+}
+
+.logo-full {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-icon {
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: white;
+  backdrop-filter: blur(10px);
+}
+
+.logo-text {
+  flex: 1;
+  text-align: left;
+}
+
+.logo-collapsed {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  margin: 0 auto;
+  backdrop-filter: blur(10px);
+}
+
+/* Menu Styles */
+.admin-menu {
+  padding: 0 16px;
+}
+
+.admin-menu .menu-item {
+  margin: 8px 0;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+  backdrop-filter: blur(10px);
+}
+
+.admin-menu .menu-item:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateX(4px);
+}
+
+.admin-menu .menu-item.ant-menu-item-selected {
+  background: rgba(255, 255, 255, 0.2) !important;
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.admin-menu .menu-item.logout-item {
+  color: #ff7875 !important;
+  margin-top: 16px;
+}
+
+.admin-menu .menu-item.logout-item:hover {
+  background: rgba(255, 120, 117, 0.1) !important;
+  border-color: rgba(255, 120, 117, 0.2);
+}
+
+.admin-menu .ant-menu-item-icon {
+  font-size: 16px;
+}
+
+/* ========== HEADER STYLES ========== */
+.admin-header {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 0 32px;
+  border-bottom: 1px solid rgba(232, 232, 232, 0.8);
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 280px;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+  height: 64px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.admin-page .ant-layout-sider-collapsed + .ant-layout .admin-header {
+  left: 80px;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
+}
+
+.header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+}
+
+.header-btn {
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.header-btn:hover {
+  background: #f0f2f5;
+  transform: translateY(-1px);
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.user-info:hover {
+  background: #f0f2f5;
+  transform: translateY(-1px);
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* ========== CONTENT STYLES ========== */
+.admin-content {
+  margin: 88px 32px 32px;
+  padding: 24px;
+  background: #f5f7fa;
+  min-height: calc(100vh - 120px);
+  border-radius: 16px 16px 0 0;
+  position: relative;
+  z-index: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: calc(100vh - 88px);
+  transition: all 0.3s ease;
+}
+
+/* ========== DASHBOARD STYLES ========== */
+.dashboard-container {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.dashboard-header {
+  margin-bottom: 24px;
+  padding: 20px 24px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e8e8e8;
+}
+
+.stats-row {
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  border-radius: 12px;
+  border: 1px solid #e8e8e8;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  border-color: #d9d9d9;
+}
+
+.stat-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+}
+
+.stat-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover .stat-icon {
+  transform: scale(1.05);
+}
+
+.stat-info {
+  flex: 1;
+}
+
+.stat-title {
+  font-size: 14px;
+  color: #8c8c8c;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.stat-value {
+  margin-bottom: 8px;
+}
+
+.stat-trend {
+  display: flex;
+  align-items: center;
+}
+
+.trend-indicator {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.trend-indicator.up {
+  color: #52c41a;
+}
+
+.trend-indicator.down {
+  color: #f5222d;
+}
+
+/* Card Headers */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 500;
+}
+
+/* Sales Card */
+.sales-card {
+  border-radius: 12px;
+  border: 1px solid #e8e8e8;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+}
+
+.sales-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.sales-table .ant-table-tbody > tr:hover > td {
+  background: #f8f9fa;
+}
+
+/* Performers Card */
+.performers-card {
+  border-radius: 12px;
+  border: 1px solid #e8e8e8;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+}
+
+.performers-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.performer-item {
+  transition: all 0.3s ease;
+  border-radius: 12px;
+  padding: 8px !important;
+  margin: 4px 0;
+}
+
+.performer-item:hover {
+  background: #f8f9fa;
+  transform: translateX(4px);
+}
+
+.performer-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.performer-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.growth-indicator {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Activities Card */
+.activities-card {
+  border-radius: 12px;
+  border: 1px solid #e8e8e8;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+}
+
+.activities-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.activity-item {
+  transition: all 0.3s ease;
+  border-radius: 8px;
+  padding: 12px !important;
+  margin: 4px 0;
+}
+
+.activity-item:hover {
+  background: #f8f9fa;
+  transform: translateX(2px);
+}
+
+.activity-info {
+  display: flex;
+  align-items: center;
+}
+
+.activity-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Quick Actions */
+.quick-actions-card {
+  border-radius: 12px;
+  border: 1px solid #e8e8e8;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+}
+
+.quick-actions-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.quick-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.action-btn {
+  height: 44px;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.action-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.2);
+}
+
+/* Page Headers */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0;
+}
+
+/* Settings */
+.settings-content {
+  margin-top: 16px;
+}
+
+.setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.setting-item:last-child {
+  border-bottom: none;
+}
+
+.setting-label {
+  flex: 1;
+}
+
+/* ========== ANIMATIONS ========== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Card animations */
+.admin-page .ant-card {
+  animation: slideInRight 0.4s ease-out;
+}
+
+.admin-page .ant-card:hover {
+  animation: none;
+}
+
+/* ========== RESPONSIVE DESIGN ========== */
+@media (max-width: 1200px) {
+  .admin-content {
+    margin: 88px 16px 16px;
+    padding: 16px;
+  }
+  
+  .dashboard-header {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-header {
+    left: 0 !important;
+    padding: 0 16px;
+    height: 56px;
+  }
+  
+  .admin-sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  
+  .admin-sidebar.ant-layout-sider-collapsed {
+    transform: translateX(-100%);
+  }
+  
+  .admin-page .ant-layout {
+    margin-left: 0 !important;
+  }
+  
+  .admin-content {
+    margin: 72px 8px 8px;
+    padding: 12px;
+    border-radius: 8px 8px 0 0;
+  }
+  
+  .header-content {
+    flex-direction: row;
+    gap: 8px;
+    height: 56px;
+    padding: 0;
+  }
+  
+  .header-left {
+    flex: 1;
+  }
+  
+  .header-left h3 {
+    font-size: 16px !important;
+  }
+  
+  .stats-row .ant-col {
+    margin-bottom: 12px;
+  }
+  
+  .stat-content {
+    flex-direction: row;
+    text-align: left;
+    gap: 12px;
+    padding: 12px;
+  }
+  
+  .page-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+  
+  .dashboard-header {
+    padding: 12px;
+  }
+}
+
+@media (max-width: 576px) {
+  .dashboard-header .ant-row {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .user-info {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .admin-header {
+    height: 48px;
+  }
+  
+  .admin-content {
+    margin: 64px 4px 4px;
+    padding: 8px;
+  }
+}
+
+/* ========== CHILD COMPONENT FIXES ========== */
+/* Ensure child components don't have conflicting styles */
+.admin-content .post-approval-container,
+.admin-content .schedule-management-container,
+.admin-content .users-container,
+.admin-content .tasks-container,
+.admin-content .notifications-container,
+.admin-content .settings-container {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+}
+
+/* Override any min-height that might cause issues */
+.admin-content .post-approval-container,
+.admin-content .schedule-management-container {
+  min-height: auto;
+}
+
+/* Ensure proper card spacing */
+.admin-content .ant-card {
+  margin-bottom: 16px;
+}
+
+.admin-content .ant-card:last-child {
+  margin-bottom: 0;
+}
+
+/* Fix for any components that might have fixed positioning */
+.admin-content * {
+  position: relative !important;
+}
+
+/* Reset positioning for all direct children */
+.admin-content > * {
+  position: relative !important;
+  z-index: 1 !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+}
+
+.admin-content .ant-modal,
+.admin-content .ant-dropdown,
+.admin-content .ant-tooltip {
+  position: fixed !important;
+}
+
+/* Đảm bảo modal, dropdown, tooltip vẫn hiển thị trên header */
+.ant-modal-root,
+.ant-dropdown,
+.ant-tooltip {
+  z-index: 1001 !important;
+}
+
+.ant-modal-wrap {
+  z-index: 1001 !important;
+}
+
+.ant-message {
+  z-index: 1002 !important;
+}
+
+.ant-notification {
+  z-index: 1002 !important;
+}
+
+/* Content wrapper to ensure proper spacing */
+.admin-content > div {
+  position: relative;
+  z-index: 2;
+}
+
+/* Fix for first child margin collapse */
+.admin-content > *:first-child {
+  margin-top: 0;
+}
+
+/* ========== CUSTOM SCROLLBAR ========== */
+.admin-sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.admin-sidebar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.admin-sidebar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+}
+
+.admin-sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* ========== BUTTON ENHANCEMENTS ========== */
+.admin-page .ant-btn {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.admin-page .ant-btn:hover {
+  transform: translateY(-1px);
+}
+
+.admin-page .ant-btn-primary {
+  background: linear-gradient(135deg, #1890ff 0%, #40a9ff 100%);
+  border: none;
+  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.3);
+}
+
+.admin-page .ant-btn-primary:hover {
+  background: linear-gradient(135deg, #40a9ff 0%, #1890ff 100%);
+  box-shadow: 0 4px 16px rgba(24, 144, 255, 0.4);
+}
+
+/* ========== INPUT ENHANCEMENTS ========== */
+.admin-page .ant-input,
+.admin-page .ant-select-selector {
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.admin-page .ant-input:focus,
+.admin-page .ant-select-selector:focus {
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+/* ========== TABLE ENHANCEMENTS ========== */
+.admin-page .ant-table {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.admin-page .ant-table-thead > tr > th {
+  background: #fafafa;
+  font-weight: 600;
+  color: #262626;
+  border-bottom: 2px solid #e8e8e8;
+}
+
+.admin-page .ant-table-tbody > tr > td {
+  transition: all 0.3s ease;
+}
+
+.admin-page .ant-table-tbody > tr:hover > td {
+  background: #f8f9fa;
+}
+
+/* ========== REVENUE STATS STYLES ========== */
+/* Chart Container */
+.chart-container {
+  position: relative;
+  padding: 20px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Stats Cards */
+.card {
+  transition: all 0.3s ease;
+  border-radius: 15px !important;
+  overflow: hidden;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+/* Header Styling */
+.text-primary {
+  color: #6366f1 !important;
+}
+
+.text-success {
+  color: #10b981 !important;
+}
+
+.text-info {
+  color: #06b6d4 !important;
+}
+
+.text-warning {
+  color: #f59e0b !important;
+}
+
+.text-danger {
+  color: #ef4444 !important;
+}
+
+.text-dark {
+  color: #1f2937 !important;
+}
+
+/* Badge Styling */
+.badge {
+  font-size: 0.875rem;
+  padding: 0.5rem 1rem;
+  border-radius: 25px;
+}
+
+/* Button Styling */
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+/* Radio Button Group */
+.ant-radio-group {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.ant-radio-button-wrapper {
+  border-radius: 0 !important;
+  border-color: #e5e7eb;
+  font-weight: 500;
+}
+
+.ant-radio-button-wrapper-checked {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: #667eea;
+}
+
+/* Date Picker */
+.ant-picker {
+  border-radius: 8px;
+  border-color: #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.ant-picker:hover {
+  border-color: #667eea;
+}
+
+/* Card Title */
+.card-title {
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+/* Loading Spinner */
+.ant-spin-dot {
+  color: #667eea;
+}
+
+/* Responsive for Revenue Stats */
+@media (max-width: 768px) {
+  .chart-container {
+    height: 300px !important;
+  }
+  
+  .card-body {
+    padding: 1rem;
+  }
+  
+  .fs-1 {
+    font-size: 2rem !important;
+  }
+  
+  h2 {
+    font-size: 1.5rem !important;
+  }
+}
+
+@media (max-width: 576px) {
+  .container-fluid {
+    padding: 1rem !important;
+  }
+  
+  .chart-container {
+    height: 250px !important;
+  }
+}
+
+/* ========== SCROLL BEHAVIOR ========== */
+.admin-content {
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: calc(100vh - 88px);
+}
+
+.admin-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.admin-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.admin-content::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.admin-content::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* ========== ADDITIONAL FIXES ========== */
+/* Ensure header has proper backdrop */
+.admin-header {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(232, 232, 232, 0.8);
+}
+
+/* Smooth transitions for content */
+.admin-content {
+  transition: all 0.3s ease;
+}
+
+/* Fix for mobile responsive */
+@media (max-width: 768px) {
+  .admin-content {
+    margin: 72px 8px 8px;
+    padding: 12px;
+    border-radius: 8px 8px 0 0;
+  }
+}
+
+/* ========== POST APPROVAL SPECIFIC FIXES ========== */
+/* Đảm bảo post-approval không bị đè lên header */
+.admin-content .post-approval-container {
+  position: relative !important;
+  z-index: 1 !important;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+}
+
+.admin-content .post-approval-header {
+  position: relative !important;
+  z-index: 1 !important;
+  margin-top: 0 !important;
+  padding-top: 24px !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+}
+
+.admin-content .post-approval-content {
+  position: relative !important;
+  z-index: 1 !important;
+  margin-top: 0 !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+}
+
+/* Tắt mọi animation có thể gây conflict */
+.admin-content .post-approval-container,
+.admin-content .post-approval-header,
+.admin-content .post-approval-content {
+  animation: none !important;
+  transform: none !important;
+  transition: none !important;
+}
+
+/* Đảm bảo header luôn ở trên cùng */
+.admin-header {
+  z-index: 1000 !important;
+}

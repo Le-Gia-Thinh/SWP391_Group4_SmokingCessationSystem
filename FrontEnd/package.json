@@ -12,6 +12,7 @@
   "dependencies": {
     "@ant-design/icons": "^6.0.0",
     "@paypal/react-paypal-js": "^8.8.3",
+    "@tinymce/tinymce-react": "^6.2.1",
     "animate.css": "^4.1.1",
     "antd": "^5.26.0",
     "aos": "^2.3.4",

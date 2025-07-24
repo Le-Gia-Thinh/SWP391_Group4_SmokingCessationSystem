@@ -45,3 +45,251 @@
 .ant-carousel .slick-slide>div {
     padding: 0 12px;
 }
+
+/* TinyMCE Custom Styling */
+.blog-section .tox-tinymce {
+    border-radius: 8px !important;
+    border: 1px solid #d9d9d9 !important;
+}
+
+.blog-section .tox-editor-header {
+    border-bottom: 1px solid #d9d9d9 !important;
+    border-radius: 8px 8px 0 0 !important;
+}
+
+.blog-section .tox-toolbar {
+    background: #fafafa !important;
+    border-bottom: 1px solid #e8e8e8 !important;
+}
+
+.blog-section .tox-toolbar__group {
+    border-right: 1px solid #e8e8e8 !important;
+}
+
+.blog-section .tox-tbtn {
+    border-radius: 4px !important;
+    margin: 2px !important;
+}
+
+.blog-section .tox-tbtn:hover {
+    background: #e6f7ff !important;
+    border-color: #91d5ff !important;
+}
+
+.blog-section .tox-tbtn--enabled,
+.blog-section .tox-tbtn--enabled:hover {
+    background: #1890ff !important;
+    border-color: #1890ff !important;
+    color: white !important;
+}
+
+.blog-section .tox-edit-area__iframe {
+    border-radius: 0 0 8px 8px !important;
+}
+
+.blog-section .tox-statusbar {
+    border-top: 1px solid #d9d9d9 !important;
+    border-radius: 0 0 8px 8px !important;
+    background: #fafafa !important;
+}
+
+/* Custom content styling inside editor */
+.blog-section .mce-content-body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+    font-size: 14px !important;
+    line-height: 1.6 !important;
+    color: #333 !important;
+    padding: 16px !important;
+}
+
+.blog-section .mce-content-body h1,
+.blog-section .mce-content-body h2,
+.blog-section .mce-content-body h3,
+.blog-section .mce-content-body h4,
+.blog-section .mce-content-body h5,
+.blog-section .mce-content-body h6 {
+    color: #389e0d !important;
+    margin-top: 24px !important;
+    margin-bottom: 16px !important;
+}
+
+.blog-section .mce-content-body p {
+    margin-bottom: 16px !important;
+}
+
+.blog-section .mce-content-body blockquote {
+    border-left: 4px solid #52c41a !important;
+    margin: 16px 0 !important;
+    padding: 8px 16px !important;
+    background: #f6ffed !important;
+    font-style: italic !important;
+}
+
+.blog-section .mce-content-body table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+    margin: 16px 0 !important;
+}
+
+.blog-section .mce-content-body table td,
+.blog-section .mce-content-body table th {
+    border: 1px solid #d9d9d9 !important;
+    padding: 8px 12px !important;
+}
+
+.blog-section .mce-content-body table th {
+    background: #fafafa !important;
+    font-weight: 600 !important;
+}
+
+/* Blog content display styling */
+.blog-content h1,
+.blog-content h2,
+.blog-content h3,
+.blog-content h4,
+.blog-content h5,
+.blog-content h6 {
+    color: #389e0d;
+    margin-top: 24px;
+    margin-bottom: 16px;
+}
+
+.blog-content p {
+    margin-bottom: 16px;
+    line-height: 1.6;
+}
+
+.blog-content blockquote {
+    border-left: 4px solid #52c41a;
+    margin: 16px 0;
+    padding: 8px 16px;
+    background: #f6ffed;
+    font-style: italic;
+}
+
+.blog-content table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 16px 0;
+}
+
+.blog-content table td,
+.blog-content table th {
+    border: 1px solid #d9d9d9;
+    padding: 8px 12px;
+}
+
+.blog-content table th {
+    background: #fafafa;
+    font-weight: 600;
+}
+
+.blog-content ul,
+.blog-content ol {
+    margin: 16px 0;
+    padding-left: 24px;
+}
+
+.blog-content li {
+    margin-bottom: 8px;
+}
+
+.blog-content a {
+    color: #1890ff;
+    text-decoration: none;
+}
+
+.blog-content a:hover {
+    color: #40a9ff;
+    text-decoration: underline;
+}
+
+.blog-content img {
+    max-width: 100%;
+    height: auto;
+    margin: 16px 0;
+    border-radius: 4px;
+}
+
+.blog-content code {
+    background: #f5f5f5;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+}
+
+.blog-content pre {
+    background: #f5f5f5;
+    padding: 16px;
+    border-radius: 6px;
+    overflow-x: auto;
+    margin: 16px 0;
+}
+
+.blog-content pre code {
+    background: none;
+    padding: 0;
+}
+
+/* Modal styling */
+.blog-section .ant-modal-content {
+    border-radius: 12px !important;
+}
+
+.blog-section .ant-modal-header {
+    border-radius: 12px 12px 0 0 !important;
+    background: linear-gradient(135deg, #52c41a 0%, #389e0d 100%) !important;
+}
+
+.blog-section .ant-modal-title {
+    color: white !important;
+    font-weight: 600 !important;
+}
+
+.blog-section .ant-modal-close {
+    color: white !important;
+}
+
+.blog-section .ant-modal-close:hover {
+    color: #f0f0f0 !important;
+}
+
+/* Hide TinyMCE promotional messages */
+.blog-section .tox-notification,
+.blog-section .tox-promotion,
+.blog-section .tox-notification--warning,
+.blog-section .tox-notification--info {
+    display: none !important;
+}
+
+.blog-section .tox-notification-container {
+    display: none !important;
+}
+
+/* Hide any finish setup messages */
+.blog-section .tox-dialog,
+.blog-section .tox-dialog__backdrop {
+    display: none !important;
+}
+
+/* Custom validation styling */
+.blog-section .ant-form-item-has-error .tox-tinymce {
+    border-color: #ff4d4f !important;
+}
+
+.blog-section .ant-form-item-has-error .tox-editor-header {
+    border-color: #ff4d4f !important;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .blog-section .tox-toolbar {
+        flex-wrap: wrap !important;
+    }
+    
+    .blog-section .ant-modal {
+        margin: 16px !important;
+        max-width: calc(100vw - 32px) !important;
+    }
+}
