@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import AdminStatDashboard from "../AdminManageCoach/RevenueStats";
 import AdminManageCoach from "../AdminManageCoach/AdminManageCoach";
 import PostApprovalContent from "../PostApproval/PostApprovalContent";
-import ScheduleManagementContent from "../ScheduleManagement/ScheduleManagementContent";
+import ScheduleManagement from "../ScheduleManagement/ScheduleManagement";
 import PackageCrudPage from "./PackageCrudPage";
 import AdminUserManager from "./AdminUserManager";
 import AdminTaskManager from "./AdminTaskManager";
@@ -33,9 +33,10 @@ import {
   FilterOutlined,
   ExportOutlined,
   ShoppingOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
 } from "@ant-design/icons";
 import "./AdminPage.css";
-import tabStyles from "./AdminTabs.module.css";
 
 const { Sider, Content, Header } = Layout;
 const { Title, Text } = Typography;
@@ -156,7 +157,7 @@ const AdminPage = () => {
         return <PostApprovalContent />;
 
       case "schedules":
-        return <ScheduleManagementContent />;
+        return <ScheduleManagement />;
 
       default:
         return (
@@ -177,7 +178,8 @@ const AdminPage = () => {
         collapsed={collapsed}
         onCollapse={setCollapsed}
         width={280}
-        className="admin-sidebar"
+        className="admin-sidebar admin-sidebar-enhanced"
+        trigger={null} // Hide default trigger
         style={{
           background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
           position: "fixed",
@@ -223,7 +225,7 @@ const AdminPage = () => {
           mode="inline"
           selectedKeys={[selectedKey]}
           onClick={handleMenuClick}
-          className="admin-menu"
+          className="admin-menu admin-menu-animated"
           style={{
             background: "transparent",
             borderRight: 0,
@@ -231,8 +233,15 @@ const AdminPage = () => {
             paddingBottom: "20px",
           }}
         >
-          {menuItems.map((item) => (
-            <Menu.Item key={item.key} icon={item.icon} className="menu-item">
+          {menuItems.map((item, index) => (
+            <Menu.Item
+              key={item.key}
+              icon={item.icon}
+              className="menu-item admin-menu-item-enhanced"
+              style={{
+                animationDelay: `${index * 0.1}s`,
+              }}
+            >
               {item.label}
             </Menu.Item>
           ))}
@@ -243,10 +252,34 @@ const AdminPage = () => {
             key="logout"
             icon={<LogoutOutlined />}
             onClick={handleLogout}
-            className="menu-item logout-item"
+            className="menu-item logout-item admin-logout-enhanced"
           >
             Đăng xuất
           </Menu.Item>
+
+          {/* Custom Collapse Button */}
+          <div className="admin-collapse-button-container">
+            <Button
+              type="text"
+              icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+              onClick={() => setCollapsed(!collapsed)}
+              className="admin-custom-collapse-btn"
+              style={{
+                width: "100%",
+                height: "48px",
+                color: "rgba(255,255,255,0.8)",
+                border: "1px solid rgba(255,255,255,0.2)",
+                borderRadius: "8px",
+                marginTop: "8px",
+                transition: "all 0.3s ease",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              {!collapsed && "Thu gọn"}
+            </Button>
+          </div>
         </Menu>
       </Sider>
 
@@ -264,9 +297,6 @@ const AdminPage = () => {
               <Title level={3} style={{ margin: 0, color: "#1890ff" }}>
                 {getCurrentTitle()}
               </Title>
-              <Text type="secondary" style={{ fontSize: "14px" }}>
-                Quản lý và điều hành hệ thống
-              </Text>
             </div>
 
             <div className="header-right">
@@ -323,7 +353,9 @@ const AdminPage = () => {
         </Header>
 
         {/* Main Content */}
-        <Content className="admin-content">{renderContent()}</Content>
+        <Content className="admin-content admin-content-animated">
+          {renderContent()}
+        </Content>
       </Layout>
     </Layout>
   );
