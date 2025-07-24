@@ -1246,22 +1246,172 @@
     font-size: 14px;
 }
 
-@media (max-width: 768px) {
-    .schedule-management-content {
-        padding: 16px;
-    }
+/* ===== ACHIEVEMENT MANAGEMENT STYLES ===== */
+.achievement-management-card {
+  border-radius: 16px !important;
+  box-shadow: 0 4px 24px rgba(102, 126, 234, 0.10) !important;
+  background: #fff !important;
+}
+.achievement-table-wrapper {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(102, 126, 234, 0.08);
+  padding: 0;
+  margin-bottom: 0;
+}
+.achievement-table {
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  box-shadow: none !important;
+}
+.achievement-table .ant-table-thead > tr > th {
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%) !important;
+  color: #fff !important;
+  font-weight: 600;
+  font-size: 15px;
+  text-align: center !important;
+  border-bottom: 2px solid #764ba2 !important;
+}
+.achievement-table .ant-table-tbody > tr > td {
+  text-align: center !important;
+  font-size: 15px;
+}
+.achievement-table .ant-table-tbody > tr {
+  transition: box-shadow 0.3s, background 0.3s;
+}
+.achievement-table .ant-table-tbody > tr:hover {
+  background: #f0f8ff !important;
+  box-shadow: 0 2px 12px rgba(102, 126, 234, 0.10);
+  transform: scale(1.01);
+  z-index: 2;
+}
+.achievement-add-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-weight: 600;
+  box-shadow: 0 2px 8px #764ba233;
+  transition: background 0.3s, box-shadow 0.3s, transform 0.2s;
+}
+.achievement-add-btn:hover {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%) !important;
+  box-shadow: 0 4px 16px #667eea33;
+  transform: scale(1.06);
+}
+.achievement-table .ant-btn {
+  border-radius: 8px !important;
+  font-weight: 500;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.achievement-table .ant-btn:hover {
+  transform: scale(1.12) rotate(-3deg);
+  box-shadow: 0 4px 16px #1677ff44;
+}
+.achievement-table .ant-btn[danger] {
+  background: linear-gradient(135deg, #ff4d4f 0%, #ffa39e 100%) !important;
+  color: #fff !important;
+  border: none !important;
+}
+.achievement-table .ant-btn[danger]:hover {
+  background: linear-gradient(135deg, #ffa39e 0%, #ff4d4f 100%) !important;
+}
+.achievement-modal .ant-modal-content {
+  border-radius: 16px;
+  box-shadow: 0 4px 24px #764ba244;
+  animation: adminFadeInUp 0.5s;
+}
+.achievement-modal .ant-modal-title {
+  font-weight: 700;
+  color: #764ba2;
+}
+.achievement-modal .ant-btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  border: none !important;
+  font-weight: 600;
+}
+.achievement-modal .ant-btn-primary:hover {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%) !important;
+}
 
-    .schedule-header {
-        padding: 16px;
-    }
+/* ===== ACHIEVEMENT PAGE ANIMATIONS & BUTTON EFFECTS ===== */
+@keyframes achievementFadeIn {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes achievementBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+@keyframes achievementHighlight {
+  0% { background: #fffbe6; }
+  100% { background: #fff; }
+}
+@keyframes achievementSlideIn {
+  from { opacity: 0; transform: translateX(-40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes achievementPulse {
+  0%, 100% { box-shadow: 0 0 0 0 #764ba244; }
+  50% { box-shadow: 0 0 16px 4px #764ba244; }
+}
 
-    .schedule-stats {
-        padding: 16px;
-    }
+.achievement-table-wrapper {
+  animation: achievementFadeIn 0.7s cubic-bezier(.4,2,.6,1) both;
+}
+.achievement-table .ant-table-tbody > tr {
+  animation: achievementSlideIn 0.5s cubic-bezier(.4,2,.6,1) both;
+}
+.achievement-table .ant-table-tbody > tr.achievement-row-highlight {
+  animation: achievementHighlight 1.2s;
+}
+.achievement-table .ant-table-tbody > tr:hover {
+  animation: achievementBounce 0.5s;
+  background: #f0f8ff !important;
+}
+.achievement-table .ant-table-thead > tr > th {
+  animation: achievementPulse 1.2s infinite alternate;
+}
 
-    .coach-info {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-    }
+/* Nút riêng cho trang thành tựu */
+.achievement-btn {
+  border-radius: 8px !important;
+  font-weight: 500;
+  transition: box-shadow 0.2s, transform 0.2s, background 0.3s;
+  background: linear-gradient(135deg, #e0e7ff 0%, #c4b5fd 100%) !important;
+  color: #4b2997 !important;
+  border: none !important;
+  box-shadow: 0 2px 8px #c4b5fd33;
+}
+.achievement-btn:hover {
+  background: linear-gradient(135deg, #c4b5fd 0%, #e0e7ff 100%) !important;
+  color: #764ba2 !important;
+  transform: scale(1.08) rotate(-2deg);
+  box-shadow: 0 4px 16px #764ba244;
+}
+.achievement-btn:active {
+  animation: achievementPulse 0.5s;
+  background: #ede9fe !important;
+}
+.achievement-btn-delete {
+  background: linear-gradient(135deg, #ffbaba 0%, #ff4d4f 100%) !important;
+  color: #fff !important;
+  border: none !important;
+  transition: background 0.3s, transform 0.2s;
+}
+.achievement-btn-delete:hover {
+  background: linear-gradient(135deg, #ff4d4f 0%, #ffbaba 100%) !important;
+  color: #fff !important;
+  transform: scale(1.12) rotate(-4deg);
+}
+.achievement-btn-edit {
+  background: linear-gradient(135deg, #a5b4fc 0%, #818cf8 100%) !important;
+  color: #fff !important;
+  border: none !important;
+  transition: background 0.3s, transform 0.2s;
+}
+.achievement-btn-edit:hover {
+  background: linear-gradient(135deg, #818cf8 0%, #a5b4fc 100%) !important;
+  color: #fff !important;
+  transform: scale(1.12) rotate(2deg);
 }
