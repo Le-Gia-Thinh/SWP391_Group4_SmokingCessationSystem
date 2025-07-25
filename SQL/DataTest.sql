@@ -2,6 +2,9 @@
 -- TEST DATA – SMOKING CESSATION
 -- ===============================
 
+-- xóa hết dữ liệu trong bảng USER_BEHAVIOR_TASK_LOG để tránh lỗi khi tạo mới
+  DELETE FROM USER_BEHAVIOR_TASK_LOG;
+
 -- 1. CUSTOMER
 INSERT INTO CUSTOMER (
     username, password_hash, full_name, email, phone_number, date_of_birth,
