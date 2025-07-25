@@ -36,6 +36,7 @@ export default function CoachChat() {
     const [coachLoading, setCoachLoading] = useState(false);
     const [sessionsLoading, setSessionsLoading] = useState(false);
     const [newMessage, setNewMessage] = useState("");
+    const [joinedThreadId, setJoinedThreadId] = useState(null);
     const messagesEndRef = useRef(null);
     const token = localStorage.getItem("token");
     const { user } = useAuth();
@@ -81,15 +82,25 @@ export default function CoachChat() {
         };
     }, [socket, selectedSession]);
 
-    // Join session room when session changes
+    // Join session room when session changes (theo thread_id, đúng với BE)
     useEffect(() => {
-        if (selectedSession && isConnected) {
-            if (selectedSession.thread_id) {
-                leaveSession(selectedSession.thread_id);
-            }
-            joinSession(selectedSession.thread_id);
-        }
-    }, [selectedSession, isConnected, joinSession, leaveSession]);
+        if (!socket || !joinedThreadId) return;
+        socket.emit('joinRoom', `chat-${joinedThreadId}`);
+        return () => {
+            socket.emit('leaveRoom', `chat-${joinedThreadId}`);
+        };
+    }, [socket, joinedThreadId]);
+
+    // Khi chọn session, set joinedThreadId
+    // When selecting a session, set joinedThreadId and fetch messages by thread_id
+    // When selecting a session, set joinedThreadId and fetch messages by partnerId (API cũ)
+    const handleSessionSelect = (thread) => {
+        setSelectedSession(thread);
+        setJoinedThreadId(thread.thread_id);
+        // partnerId là member_id nếu coach, hoặc coach_id nếu member
+        const partnerId = user?.role === 'coach' ? thread.member_id : thread.coach_id;
+        fetchCoachMessages(partnerId);
+    };
 
     // Fetch coaching sessions for coach
     const fetchChatThreads = async () => {
@@ -193,13 +204,6 @@ export default function CoachChat() {
                 message.error("Lỗi khi gửi tin nhắn");
             }
         }
-    };
-
-    // Handle session selection
-    const handleSessionSelect = (thread) => {
-        setSelectedSession(thread);
-        const partnerId = thread.member_id || thread.coach_id;
-        fetchCoachMessages(partnerId);
     };
 
     // Check if session is currently active
@@ -380,4 +384,4 @@ export default function CoachChat() {
             </div>
         </Content>
     );
-} 
+}

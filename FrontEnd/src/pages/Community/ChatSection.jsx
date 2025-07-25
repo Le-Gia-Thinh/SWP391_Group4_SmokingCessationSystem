@@ -47,6 +47,7 @@ export default function ChatSection({ token, socket, isConnected }) {
     const [coachMessages, setCoachMessages] = useState([]);
     const [coachLoading, setCoachLoading] = useState(false);
     const [sessionsLoading, setSessionsLoading] = useState(false);
+    const [joinedThreadId, setJoinedThreadId] = useState(null);
     const communityEndRef = useRef(null);
     const topicEndRef = useRef(null);
     const coachEndRef = useRef(null);
@@ -127,10 +128,10 @@ export default function ChatSection({ token, socket, isConnected }) {
     }, [socket, selectedCoach, selectedTopic]);
 
     // Join socket room khi chọn coach (nếu cần room theo coach)
+    // Join socket room khi chọn coach (theo thread_id, chuẩn backend)
     useEffect(() => {
-        if (!socket || !selectedCoach) return;
-        // Nếu backend dùng room theo coach_id
-        const threadRoom = `chat-coach-${selectedCoach.coach_id}`;
+        if (!socket || !selectedCoach || !selectedCoach.thread_id) return;
+        const threadRoom = `chat-${selectedCoach.thread_id}`;
         socket.emit('joinRoom', threadRoom);
         return () => {
             socket.emit('leaveRoom', threadRoom);
@@ -221,14 +222,15 @@ export default function ChatSection({ token, socket, isConnected }) {
         }
     };
     // ========== HANDLERS ========== 
-    // Gộp các phiên tư vấn theo coach_id
+    // Gộp các phiên tư vấn theo coach_id và lấy thread_id
     const groupedCoaches = Object.values(
         coachingSessions.reduce((acc, session) => {
             if (!acc[session.coach_id]) {
                 acc[session.coach_id] = {
                     coach_id: session.coach_id,
                     coach_name: session.coach_name,
-                    sessions: []
+                    sessions: [],
+                    thread_id: session.thread_id // lấy thread_id từ session
                 };
             }
             acc[session.coach_id].sessions.push(session);
@@ -236,10 +238,12 @@ export default function ChatSection({ token, socket, isConnected }) {
         }, {})
     );
 
-    // Khi chọn coach, lấy toàn bộ tin nhắn với coach đó
+    // Khi chọn coach, lấy toàn bộ tin nhắn với coach đó và join đúng room
+    // Khi chọn coach, lấy toàn bộ tin nhắn với coach đó bằng coach_id (API cũ) và join đúng room
     const handleCoachSelect = (coach) => {
         setSelectedCoach(coach);
         fetchCoachMessages(coach.coach_id);
+        setJoinedThreadId(coach.thread_id); // lưu thread_id để join room
     };
     const handleTopicSelect = (topic) => {
         setSelectedTopic(topic);
@@ -249,7 +253,7 @@ export default function ChatSection({ token, socket, isConnected }) {
         setActiveChatTab(key);
         setSelectedTopic(null);
         setTopicMessages([]);
-        setSelectedSession(null);
+        setSelectedCoach(null);
         setCoachMessages([]);
         if (key === "community") {
             fetchCommunityMessages();
@@ -750,4 +754,4 @@ export default function ChatSection({ token, socket, isConnected }) {
             </Modal>
         </div>
     );
-} 
+}
