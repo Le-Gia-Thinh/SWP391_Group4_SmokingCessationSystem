@@ -1,4 +1,3 @@
-
 // controllers/authController.js
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -41,7 +40,8 @@ const sendTokenWithUser = (res, user) => {
       id: user.user_id || user.id,
       email: user.email,
       name: user.full_name || user.name,
-      role: user.user_role || user.role
+      role: user.user_role || user.role,
+      coach_id: user.coach_id // Thêm coach_id vào response
     }
   });
 };
@@ -113,7 +113,6 @@ const register = async (req, res) => {
       name
     });
 
-
     res.status(201).json({
       success: true,
       token,
@@ -173,6 +172,18 @@ const login = async (req, res) => {
     if (!isMatch) {
       return res.status(400).json({ success: false, message: 'Email hoặc mật khẩu không đúng' });
     }
+
+    // Fix: Nếu user là coach, lấy coach_id
+    if (user.user_role === 'coach') {
+      const coachResult = await pool.request()
+        .input('user_id', sql.Int, user.user_id)
+        .query('SELECT coach_id FROM COACH WHERE user_id = @user_id');
+
+      if (coachResult.recordset.length > 0) {
+        user.coach_id = coachResult.recordset[0].coach_id;
+      }
+    }
+
     // Nếu đúng, trả token
     sendTokenWithUser(res, user);
   } catch (error) {
@@ -232,6 +243,7 @@ const googleSuccess = (req, res) => {
     return res.redirect(errorUrl);
   }
 };
+
 // Logout
 const logout = (req, res) => {
   console.log('Logout called');
@@ -248,11 +260,10 @@ const logout = (req, res) => {
       return res.json({ success: true, message: 'Đã đăng xuất thành công' });
     });
   } else {
-    // Nếu không có session (ví dụ user login bằng JWT-only), trả về thành công
-    return res.json({ success: true, message: 'Đã đăng xuất thành công' });
+    // Nếu không có session, trả về thông báo
+    return res.json({ success: false, message: 'Không có phiên đăng nhập' });
   }
 };
-
 
 module.exports = {
   register,

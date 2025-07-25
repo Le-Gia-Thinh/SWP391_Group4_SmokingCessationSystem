@@ -26,6 +26,7 @@
     "install": "^0.13.0",
     "jquery": "^3.7.1",
     "jwt-decode": "^4.0.0",
+    "lucide-react": "^0.525.0",
     "moment": "^2.30.1",
     "moment-timezone": "^0.6.0",
     "multer": "^2.0.1",
