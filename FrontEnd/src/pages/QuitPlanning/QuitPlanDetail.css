@@ -115,7 +115,7 @@
 .milestone-container {
   display: flex;
   gap: 12px;
-  justify-content: center;
+justify-content: center;
   overflow-x: auto;
   margin-top: 8px;
 }

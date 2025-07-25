@@ -141,8 +141,17 @@ const QuitPlanDetail = () => {
     )
       .then((res) => res.json())
       .then((result) => {
-        const fallbackSelected = {};
-        if (Array.isArray(detailPlan)) {
+        let fallbackSelected = {};
+        // Nếu có dữ liệu từ API thì ưu tiên, nếu không thì fallback slot 1
+        if (
+          result.success &&
+          Array.isArray(result.data) &&
+          result.data.length > 0
+        ) {
+          result.data.forEach(({ time_slot, task_id }) => {
+            fallbackSelected[time_slot] = task_id;
+          });
+        } else if (Array.isArray(detailPlan)) {
           detailPlan.forEach((item, idx) => {
             const phaseCode = currentPhaseCode || "P0";
             const timeStr = item.time.split(":")[0].padStart(2, "0");
@@ -150,16 +159,10 @@ const QuitPlanDetail = () => {
           });
         }
 
-        if (result.success && Array.isArray(result.data)) {
-          result.data.forEach(({ time_slot, task_id }) => {
-            fallbackSelected[time_slot] = task_id;
-          });
-        }
-
-        // Validate task
+        // Validate task: fix index lệch (taskIdx - 1)
         Object.entries(fallbackSelected).forEach(([slotIdx, taskId]) => {
           const parts = taskId.split("_");
-          const taskIdx = parseInt(parts[2]);
+          const taskIdx = parseInt(parts[2], 10) - 1;
           const taskList = detailPlan[slotIdx]?.replacement || [];
           const taskLabel = taskList[taskIdx];
           if (!taskLabel) delete fallbackSelected[slotIdx];
