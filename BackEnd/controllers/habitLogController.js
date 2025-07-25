@@ -105,6 +105,8 @@ const submitSingleLog = async (req, res) => {
           VALUES (@user_id, @log_date, @time_slot, @completed, @points_awarded);
       `);
 
+      await evaluateAndUnlockAchievements(userId);
+
     // Lấy toàn bộ completed trong ngày
     const logOfDay = await pool
       .request()
@@ -195,6 +197,8 @@ const submitSingleLog = async (req, res) => {
           VALUES (@user_id, @total_points, @current_level, GETDATE());
       `);
 
+      await evaluateAndUnlockAchievements(userId);
+
     res.json({ success: true, message: "Đã lưu hành vi" });
   } catch (err) {
     console.error("❌ Lỗi ghi hành vi đơn:", err);
@@ -263,6 +267,8 @@ const deleteHabitLogEntry = async (req, res) => {
           INSERT (user_id, total_points, current_level, last_updated)
           VALUES (@user_id, @total_points, @current_level, GETDATE());
       `);
+
+      await evaluateAndUnlockAchievements(userId);
 
     res.json({ success: true, message: "Đã bỏ tích hành vi và cập nhật điểm" });
   } catch (err) {
@@ -392,6 +398,8 @@ const deleteBehaviorTaskLogEntry = async (req, res) => {
           VALUES (@user_id, @total_points, @current_level, GETDATE());
       `);
 
+      await evaluateAndUnlockAchievements(userId);
+
     res.json({
       success: true,
       message: "Đã bỏ tích nhiệm vụ và cập nhật điểm",
@@ -436,6 +444,8 @@ const chooseBehaviorTask = async (req, res) => {
           INSERT (user_id, log_date, time_slot, task_id, is_completed)
           VALUES (@user_id, @log_date, @time_slot, @task_id, 0);
       `);
+
+      await evaluateAndUnlockAchievements(userId);
 
     res.json({ success: true, message: "Đã lưu lựa chọn nhiệm vụ" });
   } catch (err) {
@@ -601,7 +611,7 @@ const submitBehaviorTaskPoint = async (req, res) => {
           INSERT (user_id, total_points, current_level, last_updated)
           VALUES (@user_id, @total_points, @current_level, GETDATE());
       `);
-
+        await evaluateAndUnlockAchievements(userId);
     res.json({
       success: true,
       message: "Đã cập nhật điểm cho nhiệm vụ hành vi",
@@ -645,6 +655,8 @@ const submitBehaviorTaskCompletion = async (req, res) => {
           INSERT (user_id, log_date, time_slot, is_completed, task_id)
           VALUES (@user_id, @log_date, @time_slot, @is_completed, NULL);
       `);
+
+      await evaluateAndUnlockAchievements(userId);
 
     res.json({
       success: true,

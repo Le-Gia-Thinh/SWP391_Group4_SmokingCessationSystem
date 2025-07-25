@@ -1,5 +1,5 @@
 const { sql, dbConfig } = require("../config/database");
-
+const { evaluateAndUnlockAchievements } = require("../utils/achievementService");
 // POST: Ghi nhận số điếu thuốc cho 1 ngày
 const submitSingleSmokingSummary = async (req, res) => {
   const userId = req.user.id;
@@ -28,6 +28,8 @@ const submitSingleSmokingSummary = async (req, res) => {
           INSERT (user_id, date, total_cigarettes)
           VALUES (@user_id, @date, @total_cigarettes);
       `);
+
+      await evaluateAndUnlockAchievements(userId);
 
     res.json({ success: true, message: "Đã ghi nhận số điếu thuốc" });
   } catch (err) {
