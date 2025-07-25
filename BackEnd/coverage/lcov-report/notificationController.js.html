@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">22.22% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>2/9</span>
+                <span class='fraction'>9/9</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/1</span>
+                <span class='fraction'>1/1</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">22.22% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>2/9</span>
+                <span class='fraction'>9/9</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -86,38 +86,38 @@
 <a name='L21'></a><a href='#L21'>21</a>
 <a name='L22'></a><a href='#L22'>22</a>
 <a name='L23'></a><a href='#L23'>23</a>
-<a name='L24'></a><a href='#L24'>24</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">5x</span>
+<a name='L24'></a><a href='#L24'>24</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">9x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">9x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const { sql, dbConfig } = require("../config/database");
 &nbsp;
 // GET /api/notifications – Lấy thông báo của user hiện tại
-exports.getUserNotifications = <span class="fstat-no" title="function not covered" >as</span>ync (req, res) =&gt; {
-<span class="cstat-no" title="statement not covered" >  try {</span>
-    const pool = <span class="cstat-no" title="statement not covered" >await sql.connect(dbConfig);</span>
-    const userId = <span class="cstat-no" title="statement not covered" >req.user.id;</span>
+exports.getUserNotifications = async (req, res) =&gt; {
+  try {
+    const pool = await sql.connect(dbConfig);
+    const userId = req.user.id;
 &nbsp;
-    const result = <span class="cstat-no" title="statement not covered" >await pool.request()</span>
+    const result = await pool.request()
       .input("user_id", sql.Int, userId)
       .query(`
         SELECT TOP 20 *
@@ -126,10 +126,10 @@ exports.getUserNotifications = <span class="fstat-no" title="function not covere
         ORDER BY created_at DESC
       `);
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    res.json(result.recordset);</span>
+    res.json(result.recordset);
   } catch (err) {
-<span class="cstat-no" title="statement not covered" >    console.error("❌ Lỗi lấy thông báo:", err);</span>
-<span class="cstat-no" title="statement not covered" >    res.status(500).json({ message: "Lỗi máy chủ" });</span>
+    console.error("❌ Lỗi lấy thông báo:", err);
+    res.status(500).json({ message: "Lỗi máy chủ" });
   }
 };
 &nbsp;</pre></td></tr></table></pre>
@@ -139,7 +139,7 @@ exports.getUserNotifications = <span class="fstat-no" title="function not covere
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-07-25T11:21:19.288Z
+                at 2025-07-25T14:31:44.681Z
             </div>
         <script src="prettify.js"></script>
         <script>

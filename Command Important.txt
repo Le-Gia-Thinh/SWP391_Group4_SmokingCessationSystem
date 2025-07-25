@@ -96,8 +96,9 @@ npm install bootstrap
 npm install @tinymce/tinymce-react --legacy-peer-deps
 npm install lucide-react  --legacy-peer-deps        
 
-
+RUN TEST (22/7)
 npm install --save-dev sinon --legacy-peer-deps
+
 (request → route → controller → database → response)
 npm install --save-dev chai supertest   --legacy-peer-deps
 npm install --save-dev jest supertest --legacy-peer-deps

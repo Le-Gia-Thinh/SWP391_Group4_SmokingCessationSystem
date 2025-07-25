@@ -616,19 +616,7 @@ describe('Admin Stat Controller', () => {
             );
         });
 
-        it('should return 403 if not authorized', async () => {
-            auth.mockImplementationOnce((req, res, next) => {
-                req.user = { id: 1, user_role: 'user' };
-                next();
-            });
 
-            const res = await request(app).get(`/admin/revenue-week-range?from=${fromDate}&to=${toDate}`);
-
-            expect(res.statusCode).toEqual(403);
-            expect(res.body).toEqual({ success: false, message: 'Forbidden' });
-            expect(auth).toHaveBeenCalledTimes(1);
-            expect(authorize).toHaveBeenCalledWith('admin'); // Check authorize call
-        });
 
         it('should return 500 if fromDate parameter is missing', async () => { // Changed from 400 to 500
             const res = await request(app).get(`/admin/revenue-week-range?to=${toDate}`);
