@@ -43,7 +43,7 @@ export default function ChatSection({ token, socket, isConnected }) {
     const [topicsLoading, setTopicsLoading] = useState(false);
     // Coach chat states
     const [coachingSessions, setCoachingSessions] = useState([]);
-    const [selectedSession, setSelectedSession] = useState(null);
+    const [selectedCoach, setSelectedCoach] = useState(null);
     const [coachMessages, setCoachMessages] = useState([]);
     const [coachLoading, setCoachLoading] = useState(false);
     const [sessionsLoading, setSessionsLoading] = useState(false);
@@ -92,7 +92,8 @@ export default function ChatSection({ token, socket, isConnected }) {
         if (!socket) return;
         // Listen for guided chat messages (coach-member)
         socket.on('receiveGuidedMessage', (messageData) => {
-            if (selectedSession && messageData.thread_id === selectedSession.session_id) {
+            // Chỉ cần check nếu đã chọn coach
+            if (selectedCoach) {
                 setCoachMessages(prev => [...prev, {
                     message_id: Date.now(),
                     thread_id: messageData.thread_id,
@@ -123,19 +124,18 @@ export default function ChatSection({ token, socket, isConnected }) {
             socket.off('communityMessage');
             socket.off('topicMessage');
         };
-    }, [socket, selectedSession, selectedTopic]);
+    }, [socket, selectedCoach, selectedTopic]);
 
-    // Join socket room khi chọn phiên tư vấn
+    // Join socket room khi chọn coach (nếu cần room theo coach)
     useEffect(() => {
-        if (!socket || !selectedSession) return;
-        // Lấy thread_id từ backend (cần fetch lại hoặc mapping)
-        // Ở đây ta giả định thread_id = selectedSession.session_id (nếu không đúng, cần sửa lại mapping)
-        const threadRoom = `chat-${selectedSession.session_id}`;
+        if (!socket || !selectedCoach) return;
+        // Nếu backend dùng room theo coach_id
+        const threadRoom = `chat-coach-${selectedCoach.coach_id}`;
         socket.emit('joinRoom', threadRoom);
         return () => {
             socket.emit('leaveRoom', threadRoom);
         };
-    }, [socket, selectedSession]);
+    }, [socket, selectedCoach]);
 
     // ========== API FUNCTIONS ==========
     const fetchCoachingSessions = async () => {
@@ -220,17 +220,26 @@ export default function ChatSection({ token, socket, isConnected }) {
             setChatLoading(false);
         }
     };
-    // ========== HANDLERS ==========
-    const handleSessionSelect = (session) => {
-        setSelectedSession(session);
-        if (!user) return;
-        if (user.role === 'coach') {
-            console.log('Chọn phiên (coach):', session);
-            fetchCoachMessages(session.member_id);
-        } else if (user.role === 'member') {
-            console.log('Chọn phiên (member):', session);
-            fetchCoachMessages(session.coach_id);
-        }
+    // ========== HANDLERS ========== 
+    // Gộp các phiên tư vấn theo coach_id
+    const groupedCoaches = Object.values(
+        coachingSessions.reduce((acc, session) => {
+            if (!acc[session.coach_id]) {
+                acc[session.coach_id] = {
+                    coach_id: session.coach_id,
+                    coach_name: session.coach_name,
+                    sessions: []
+                };
+            }
+            acc[session.coach_id].sessions.push(session);
+            return acc;
+        }, {})
+    );
+
+    // Khi chọn coach, lấy toàn bộ tin nhắn với coach đó
+    const handleCoachSelect = (coach) => {
+        setSelectedCoach(coach);
+        fetchCoachMessages(coach.coach_id);
     };
     const handleTopicSelect = (topic) => {
         setSelectedTopic(topic);
@@ -306,30 +315,31 @@ export default function ChatSection({ token, socket, isConnected }) {
             message.error("Vui lòng nhập nội dung tin nhắn!");
             return;
         }
-        if (!selectedSession) {
-            message.error("Vui lòng chọn phiên tư vấn!");
+        if (!selectedCoach) {
+            message.error("Vui lòng chọn coach!");
             return;
         }
         try {
             const formData = new FormData();
             formData.append('message', newMessage);
-            // Xác định recipient_id là người còn lại trong thread
+            // Xác định recipient_id là coach_id hoặc member_id
             let recipientId;
             if (!user) {
                 message.error("Không xác định được người dùng hiện tại");
                 return;
             }
             if (user.role === 'coach') {
-                recipientId = selectedSession.member_id;
+                // Nếu là coach, gửi cho member đầu tiên trong danh sách sessions
+                recipientId = selectedCoach.sessions[0]?.member_id;
             } else if (user.role === 'member') {
-                recipientId = selectedSession.coach_id;
+                recipientId = selectedCoach.coach_id;
             } else {
                 message.error("Vai trò không hợp lệ");
                 return;
             }
             formData.append('recipient_id', recipientId);
             // Thêm log để debug
-            console.log('recipient_id:', recipientId, 'message:', newMessage, 'selectedSession:', selectedSession, 'user:', user);
+            console.log('recipient_id:', recipientId, 'message:', newMessage, 'selectedCoach:', selectedCoach, 'user:', user);
             for (let pair of formData.entries()) {
                 console.log('formData', pair[0] + ': ' + pair[1]);
             }
@@ -612,33 +622,25 @@ export default function ChatSection({ token, socket, isConnected }) {
                             <div className="topics-section">
                                 <div className="sessions-sidebar">
                                     <div className="sessions-header">
-                                        <Title level={5}>Phiên Tư Vấn</Title>
+                                        <Title level={5}>Coach đã từng chat</Title>
                                     </div>
                                     <div className="sessions-list">
                                         {sessionsLoading ? (
                                             <Spin />
-                                        ) : coachingSessions.length === 0 ? (
-                                            <Empty description="Chưa có phiên tư vấn nào" />
+                                        ) : groupedCoaches.length === 0 ? (
+                                            <Empty description="Chưa từng chat với coach nào" />
                                         ) : (
                                             <List
-                                                dataSource={coachingSessions}
-                                                renderItem={(session) => (
+                                                dataSource={groupedCoaches}
+                                                renderItem={(coach) => (
                                                     <List.Item
-                                                        className={`session-item ${selectedSession?.session_id === session.session_id ? 'selected' : ''}`}
-                                                        onClick={() => handleSessionSelect(session)}
+                                                        className={`session-item ${selectedCoach?.coach_id === coach.coach_id ? 'selected' : ''}`}
+                                                        onClick={() => handleCoachSelect(coach)}
                                                     >
                                                         <div>
                                                             <Text strong>
-                                                                {session.coach_name || `Coach ${session.coach_id}`}
+                                                                {coach.coach_name || `Coach ${coach.coach_id}`}
                                                             </Text>
-                                                            <br />
-                                                            <Text type="secondary">
-                                                                {formatSessionTime(session.scheduled_time)}
-                                                            </Text>
-                                                            <br />
-                                                            <Tag color={isSessionActive(session) ? 'green' : 'default'}>
-                                                                {isSessionActive(session) ? 'Đang hoạt động' : 'Không hoạt động'}
-                                                            </Tag>
                                                         </div>
                                                     </List.Item>
                                                 )}
@@ -647,18 +649,12 @@ export default function ChatSection({ token, socket, isConnected }) {
                                     </div>
                                 </div>
                                 <div className="topic-chat">
-                                    {selectedSession ? (
+                                    {selectedCoach ? (
                                         <>
                                             <div className="session-header">
                                                 <Title level={4}>
-                                                    {selectedSession.coach_name || `Coach ${selectedSession.coach_id}`}
+                                                    {selectedCoach.coach_name || `Coach ${selectedCoach.coach_id}`}
                                                 </Title>
-                                                <Text type="secondary">
-                                                    {formatSessionTime(selectedSession.scheduled_time)} - {selectedSession.duration_minutes} phút
-                                                </Text>
-                                                <Tag color={isSessionActive(selectedSession) ? 'green' : 'red'}>
-                                                    {isSessionActive(selectedSession) ? '🟢 Có thể chat' : '🔴 Không thể chat'}
-                                                </Tag>
                                             </div>
                                             <div className="messages-container">
                                                 {coachLoading ? (
@@ -668,7 +664,7 @@ export default function ChatSection({ token, socket, isConnected }) {
                                                 ) : (
                                                     <List
                                                         dataSource={coachMessages}
-                                                        locale={{ emptyText: 'Chưa có tin nhắn nào trong phiên này. Hãy bắt đầu cuộc trò chuyện!' }}
+                                                        locale={{ emptyText: 'Chưa có tin nhắn nào với coach này. Hãy bắt đầu cuộc trò chuyện!' }}
                                                         renderItem={(msg) => (
                                                             <List.Item className="message-item">
                                                                 <div className="message-content">
@@ -714,7 +710,7 @@ export default function ChatSection({ token, socket, isConnected }) {
                                         </>
                                     ) : (
                                         <div className="no-topic-selected">
-                                            <Empty description="Chọn phiên tư vấn để bắt đầu chat" />
+                                            <Empty description="Chọn coach để bắt đầu chat" />
                                         </div>
                                     )}
                                 </div>
