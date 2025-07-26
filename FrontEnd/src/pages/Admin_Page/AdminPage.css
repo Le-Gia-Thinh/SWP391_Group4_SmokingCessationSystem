@@ -1,449 +1,177 @@
-/* Modern Admin Page Styles */
-.admin-page {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  background: #f5f7fa;
+/* ===== CUSTOM HEIGHT FOR LARGE SEARCH ===== */
+.admin-search-large .ant-input-affix-wrapper,
+.admin-search-large .ant-input-affix-wrapper-focused {
+  min-height: 48px !important;
+  height: 48px !important;
+  font-size: 17px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
 }
 
-/* ========== SIDEBAR STYLES ========== */
-.admin-sidebar {
-  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
+.admin-search-large .ant-input {
+  min-height: 44px !important;
+  height: 44px !important;
+  font-size: 17px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+/* ===== CUSTOM SEARCH INPUT ===== */
+
+.admin-page .ant-input-affix-wrapper,
+.admin-page .ant-input-affix-wrapper-focused {
+  border-radius: 999px !important;
+  border: 2.5px solid #4d7cff !important;
+  box-shadow: none !important;
+  background: #fff !important;
+  transition: border-color 0.3s, box-shadow 0.3s;
 }
 
-.admin-sidebar .ant-layout-sider-trigger {
-  background: linear-gradient(135deg, #5a67d8 0%, #667eea 100%);
-  color: white;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
+.admin-page .ant-input-affix-wrapper:focus,
+.admin-page .ant-input-affix-wrapper-focused {
+  border-color: #4d7cff !important;
+  box-shadow: 0 0 0 2px #4d7cff33 !important;
 }
 
-.admin-sidebar .ant-layout-sider-trigger:hover {
-  background: linear-gradient(135deg, #4c51bf 0%, #5a67d8 100%);
-  transform: translateX(2px);
+.admin-page .ant-input {
+  border-radius: 999px !important;
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  outline: none !important;
 }
 
-/* Logo Styles */
-.admin-logo {
-  position: relative;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+.admin-page .ant-input:focus {
+  box-shadow: none !important;
+  outline: none !important;
+}
+/* ===== COACH TABLE CUSTOM ===== */
+.admin-dashboard .ant-table {
+  width: 100% !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  box-shadow: 0 2px 16px rgba(102, 126, 234, 0.10) !important;
+  background: #fff;
 }
 
-.logo-container {
-  padding: 24px 16px;
-  text-align: center;
+.admin-dashboard .ant-table-thead > tr > th {
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%) !important;
+  color: #fff !important;
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #764ba2 !important;
+  text-align: center !important;
 }
 
-.logo-full {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.admin-dashboard .ant-table-tbody > tr > td {
+  text-align: center !important;
+  font-size: 15px;
 }
 
-.logo-icon {
-  width: 40px;
-  height: 40px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  color: white;
-  backdrop-filter: blur(10px);
-}
-
-.logo-text {
-  flex: 1;
-  text-align: left;
-}
-
-.logo-collapsed {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 40px;
-  height: 40px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
+.admin-dashboard .ant-table-tbody > tr > td .ant-tag {
   margin: 0 auto;
-  backdrop-filter: blur(10px);
 }
 
-/* Menu Styles */
-.admin-menu {
-  padding: 0 16px;
+.admin-dashboard .ant-table-tbody > tr {
+  transition: box-shadow 0.3s, background 0.3s;
+}
+.admin-dashboard .ant-table-tbody > tr:hover {
+  background: #f0f8ff !important;
+  box-shadow: 0 2px 12px rgba(102, 126, 234, 0.10);
+  transform: scale(1.01);
+  z-index: 2;
 }
 
-.admin-menu .menu-item {
-  margin: 8px 0;
-  border-radius: 12px;
-  transition: all 0.3s ease;
-  border: 1px solid transparent;
-  backdrop-filter: blur(10px);
+.admin-dashboard .ant-table-tbody > tr > td .ant-avatar {
+  margin: 0 auto;
 }
 
-.admin-menu .menu-item:hover {
-  background: rgba(255, 255, 255, 0.15) !important;
-  border-color: rgba(255, 255, 255, 0.2);
-  transform: translateX(4px);
+.admin-dashboard .ant-table-tbody > tr > td .ant-space {
+  justify-content: center !important;
+  width: 100%;
 }
 
-.admin-menu .menu-item.ant-menu-item-selected {
-  background: rgba(255, 255, 255, 0.2) !important;
-  border-color: rgba(255, 255, 255, 0.3);
-  transform: translateX(4px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+.admin-dashboard .ant-table-pagination {
+  justify-content: center !important;
 }
 
-.admin-menu .menu-item.logout-item {
-  color: #ff7875 !important;
-  margin-top: 16px;
+/* Phân biệt nút xem/sửa/xóa/khôi phục */
+.aum-view-btn {
+  background: linear-gradient(135deg, #36d1c4 0%, #5b86e5 100%) !important;
+  color: #fff !important;
+  border: none !important;
 }
-
-.admin-menu .menu-item.logout-item:hover {
-  background: rgba(255, 120, 117, 0.1) !important;
-  border-color: rgba(255, 120, 117, 0.2);
+.aum-view-btn:hover {
+  background: linear-gradient(135deg, #5b86e5 0%, #36d1c4 100%) !important;
 }
-
-.admin-menu .ant-menu-item-icon {
-  font-size: 16px;
+.aum-edit-btn {
+  background: linear-gradient(135deg, #1677ff 0%, #69c0ff 100%) !important;
+  color: #fff !important;
+  border: none !important;
 }
-
-/* ========== HEADER STYLES ========== */
-.admin-header {
-  background: rgba(255, 255, 255, 0.95);
-  padding: 0 32px;
-  border-bottom: 1px solid rgba(232, 232, 232, 0.8);
-  position: fixed;
-  top: 0;
-  right: 0;
-  left: 280px;
-  z-index: 1000;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  transition: all 0.3s ease;
-  height: 64px;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+.aum-edit-btn:hover {
+  background: linear-gradient(135deg, #69c0ff 0%, #1677ff 100%) !important;
 }
-
-.admin-page .ant-layout-sider-collapsed + .ant-layout .admin-header {
-  left: 80px;
+.aum-unlock-btn {
+  background: linear-gradient(135deg, #52c41a 0%, #b7eb8f 100%) !important;
+  color: #fff !important;
+  border: none !important;
 }
-
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 100%;
+.aum-unlock-btn:hover {
+  background: linear-gradient(135deg, #b7eb8f 0%, #52c41a 100%) !important;
 }
-
-.header-left {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+.aum-delete-btn {
+  background: linear-gradient(135deg, #ff4d4f 0%, #ffa39e 100%) !important;
+  color: #fff !important;
+  border: none !important;
 }
-
-.header-right {
-  display: flex;
-  align-items: center;
+.aum-delete-btn:hover {
+  background: linear-gradient(135deg, #ffa39e 0%, #ff4d4f 100%) !important;
 }
-
-.header-btn {
-  border-radius: 8px;
-  transition: all 0.3s ease;
+/* ===== CUSTOM ACTION BUTTONS FOR ADMIN USER MANAGER ===== */
+.aum-action-btn {
+  transition: box-shadow 0.2s, transform 0.2s;
 }
-
-.header-btn:hover {
-  background: #f0f2f5;
-  transform: translateY(-1px);
+.aum-action-btn:hover {
+  transform: scale(1.12) rotate(-3deg);
+  box-shadow: 0 4px 16px #1677ff44;
 }
-
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 12px;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.3s ease;
+.aum-edit-btn {
+  background: linear-gradient(135deg, #1677ff 0%, #69c0ff 100%) !important;
+  color: #fff !important;
+  border: none !important;
 }
-
-.user-info:hover {
-  background: #f0f2f5;
-  transform: translateY(-1px);
+.aum-edit-btn:hover {
+  background: linear-gradient(135deg, #69c0ff 0%, #1677ff 100%) !important;
 }
-
-.user-details {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+.aum-unlock-btn {
+  background: linear-gradient(135deg, #52c41a 0%, #b7eb8f 100%) !important;
+  color: #fff !important;
+  border: none !important;
 }
-
-/* ========== CONTENT STYLES ========== */
-.admin-content {
-  margin: 88px 32px 32px;
-  padding: 24px;
-  background: #f5f7fa;
-  min-height: calc(100vh - 120px);
-  border-radius: 16px 16px 0 0;
-  position: relative;
-  z-index: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  max-height: calc(100vh - 88px);
-  transition: all 0.3s ease;
+.aum-unlock-btn:hover {
+  background: linear-gradient(135deg, #b7eb8f 0%, #52c41a 100%) !important;
 }
-
-/* ========== DASHBOARD STYLES ========== */
-.dashboard-container {
-  animation: fadeInUp 0.6s ease-out;
+.aum-lock-btn {
+  background: linear-gradient(135deg, #faad14 0%, #ffe58f 100%) !important;
+  color: #fff !important;
+  border: none !important;
 }
-
-.dashboard-header {
-  margin-bottom: 24px;
-  padding: 20px 24px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  border: 1px solid #e8e8e8;
+.aum-lock-btn:hover {
+  background: linear-gradient(135deg, #ffe58f 0%, #faad14 100%) !important;
 }
-
-.stats-row {
-  margin-bottom: 24px;
+.aum-delete-btn {
+  background: linear-gradient(135deg, #ff4d4f 0%, #ffa39e 100%) !important;
+  color: #fff !important;
+  border: none !important;
 }
-
-.stat-card {
-  border-radius: 12px;
-  border: 1px solid #e8e8e8;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  transition: all 0.3s ease;
-  overflow: hidden;
+.aum-delete-btn:hover {
+  background: linear-gradient(135deg, #ffa39e 0%, #ff4d4f 100%) !important;
 }
+/* ===== ADMIN PAGE MASTER CSS - NO GLOBAL CONFLICTS ===== */
 
-.stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  border-color: #d9d9d9;
-}
-
-.stat-content {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 16px;
-}
-
-.stat-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-}
-
-.stat-card:hover .stat-icon {
-  transform: scale(1.05);
-}
-
-.stat-info {
-  flex: 1;
-}
-
-.stat-title {
-  font-size: 14px;
-  color: #8c8c8c;
-  margin-bottom: 4px;
-  display: block;
-}
-
-.stat-value {
-  margin-bottom: 8px;
-}
-
-.stat-trend {
-  display: flex;
-  align-items: center;
-}
-
-.trend-indicator {
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.trend-indicator.up {
-  color: #52c41a;
-}
-
-.trend-indicator.down {
-  color: #f5222d;
-}
-
-/* Card Headers */
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-weight: 500;
-}
-
-/* Sales Card */
-.sales-card {
-  border-radius: 12px;
-  border: 1px solid #e8e8e8;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  transition: all 0.3s ease;
-}
-
-.sales-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.sales-table .ant-table-tbody > tr:hover > td {
-  background: #f8f9fa;
-}
-
-/* Performers Card */
-.performers-card {
-  border-radius: 12px;
-  border: 1px solid #e8e8e8;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  transition: all 0.3s ease;
-}
-
-.performers-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.performer-item {
-  transition: all 0.3s ease;
-  border-radius: 12px;
-  padding: 8px !important;
-  margin: 4px 0;
-}
-
-.performer-item:hover {
-  background: #f8f9fa;
-  transform: translateX(4px);
-}
-
-.performer-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 4px;
-}
-
-.performer-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.growth-indicator {
-  font-size: 12px;
-  font-weight: 500;
-}
-
-/* Activities Card */
-.activities-card {
-  border-radius: 12px;
-  border: 1px solid #e8e8e8;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  transition: all 0.3s ease;
-}
-
-.activities-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.activity-item {
-  transition: all 0.3s ease;
-  border-radius: 8px;
-  padding: 12px !important;
-  margin: 4px 0;
-}
-
-.activity-item:hover {
-  background: #f8f9fa;
-  transform: translateX(2px);
-}
-
-.activity-info {
-  display: flex;
-  align-items: center;
-}
-
-.activity-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-/* Quick Actions */
-.quick-actions-card {
-  border-radius: 12px;
-  border: 1px solid #e8e8e8;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  transition: all 0.3s ease;
-}
-
-.quick-actions-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.quick-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.action-btn {
-  height: 44px;
-  border-radius: 8px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-.action-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.2);
-}
-
-/* Page Headers */
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0;
-}
-
-/* Settings */
-.settings-content {
-  margin-top: 16px;
-}
-
-.setting-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 0;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.setting-item:last-child {
-  border-bottom: none;
-}
-
-.setting-label {
-  flex: 1;
-}
-
-/* ========== ANIMATIONS ========== */
-@keyframes fadeInUp {
+/* ===== ENHANCED ANIMATIONS & EFFECTS ===== */
+@keyframes adminFadeInUp {
   from {
     opacity: 0;
     transform: translateY(20px);
@@ -454,10 +182,10 @@
   }
 }
 
-@keyframes slideInRight {
+@keyframes adminSlideInLeft {
   from {
     opacity: 0;
-    transform: translateX(20px);
+    transform: translateX(-30px);
   }
   to {
     opacity: 1;
@@ -465,499 +193,1225 @@
   }
 }
 
-/* Card animations */
-.admin-page .ant-card {
-  animation: slideInRight 0.4s ease-out;
-}
-
-.admin-page .ant-card:hover {
-  animation: none;
-}
-
-/* ========== RESPONSIVE DESIGN ========== */
-@media (max-width: 1200px) {
-  .admin-content {
-    margin: 88px 16px 16px;
-    padding: 16px;
+@keyframes adminPulse {
+  0%, 100% {
+    transform: scale(1);
   }
-  
-  .dashboard-header {
-    padding: 16px;
+  50% {
+    transform: scale(1.05);
   }
 }
 
-@media (max-width: 768px) {
-  .admin-header {
-    left: 0 !important;
-    padding: 0 16px;
-    height: 56px;
+@keyframes adminGlow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(24, 144, 255, 0.3);
   }
-  
-  .admin-sidebar {
-    transform: translateX(-100%);
-    transition: transform 0.3s ease;
-  }
-  
-  .admin-sidebar.ant-layout-sider-collapsed {
-    transform: translateX(-100%);
-  }
-  
-  .admin-page .ant-layout {
-    margin-left: 0 !important;
-  }
-  
-  .admin-content {
-    margin: 72px 8px 8px;
-    padding: 12px;
-    border-radius: 8px 8px 0 0;
-  }
-  
-  .header-content {
-    flex-direction: row;
-    gap: 8px;
-    height: 56px;
-    padding: 0;
-  }
-  
-  .header-left {
-    flex: 1;
-  }
-  
-  .header-left h3 {
-    font-size: 16px !important;
-  }
-  
-  .stats-row .ant-col {
-    margin-bottom: 12px;
-  }
-  
-  .stat-content {
-    flex-direction: row;
-    text-align: left;
-    gap: 12px;
-    padding: 12px;
-  }
-  
-  .page-header {
-    flex-direction: column;
-    gap: 12px;
-    align-items: stretch;
-  }
-  
-  .dashboard-header {
-    padding: 12px;
+  50% {
+    box-shadow: 0 0 20px rgba(24, 144, 255, 0.6);
   }
 }
 
-@media (max-width: 576px) {
-  .dashboard-header .ant-row {
-    flex-direction: column;
-    gap: 16px;
+@keyframes adminBounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
   }
-  
-  .user-info {
-    flex-direction: column;
-    gap: 8px;
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
   }
-  
-  .admin-header {
-    height: 48px;
+  70% {
+    transform: scale(0.9);
   }
-  
-  .admin-content {
-    margin: 64px 4px 4px;
-    padding: 8px;
+  100% {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
-/* ========== CHILD COMPONENT FIXES ========== */
-/* Ensure child components don't have conflicting styles */
-.admin-content .post-approval-container,
-.admin-content .schedule-management-container,
-.admin-content .users-container,
-.admin-content .tasks-container,
-.admin-content .notifications-container,
-.admin-content .settings-container {
-  margin: 0;
-  padding: 0;
-  background: transparent;
+@keyframes adminShake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+  20%, 40%, 60%, 80% { transform: translateX(2px); }
 }
 
-/* Override any min-height that might cause issues */
-.admin-content .post-approval-container,
-.admin-content .schedule-management-container {
-  min-height: auto;
+@keyframes adminRotateIn {
+  from {
+    opacity: 0;
+    transform: rotate(-180deg);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(0deg);
+  }
 }
 
-/* Ensure proper card spacing */
-.admin-content .ant-card {
-  margin-bottom: 16px;
+/* Enhanced Sidebar */
+.admin-page .admin-sidebar-enhanced {
+  animation: adminSlideInLeft 0.5s ease-out;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
-.admin-content .ant-card:last-child {
-  margin-bottom: 0;
+.admin-page .admin-sidebar-enhanced.ant-layout-sider-collapsed {
+  animation: adminPulse 0.3s ease;
 }
 
-/* Fix for any components that might have fixed positioning */
-.admin-content * {
-  position: relative !important;
+/* Enhanced Menu Items */
+.admin-page .admin-menu-animated {
+  animation: adminFadeInUp 0.6s ease-out;
 }
 
-/* Reset positioning for all direct children */
-.admin-content > * {
-  position: relative !important;
-  z-index: 1 !important;
-  top: auto !important;
-  left: auto !important;
-  right: auto !important;
-  bottom: auto !important;
-}
-
-.admin-content .ant-modal,
-.admin-content .ant-dropdown,
-.admin-content .ant-tooltip {
-  position: fixed !important;
-}
-
-/* Đảm bảo modal, dropdown, tooltip vẫn hiển thị trên header */
-.ant-modal-root,
-.ant-dropdown,
-.ant-tooltip {
-  z-index: 1001 !important;
-}
-
-.ant-modal-wrap {
-  z-index: 1001 !important;
-}
-
-.ant-message {
-  z-index: 1002 !important;
-}
-
-.ant-notification {
-  z-index: 1002 !important;
-}
-
-/* Content wrapper to ensure proper spacing */
-.admin-content > div {
+.admin-page .admin-menu-item-enhanced {
+  animation: adminFadeInUp 0.4s ease-out both;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   position: relative;
-  z-index: 2;
-}
-
-/* Fix for first child margin collapse */
-.admin-content > *:first-child {
-  margin-top: 0;
-}
-
-/* ========== CUSTOM SCROLLBAR ========== */
-.admin-sidebar::-webkit-scrollbar {
-  width: 4px;
-}
-
-.admin-sidebar::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.admin-sidebar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 2px;
-}
-
-.admin-sidebar::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.5);
-}
-
-/* ========== BUTTON ENHANCEMENTS ========== */
-.admin-page .ant-btn {
-  border-radius: 8px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-.admin-page .ant-btn:hover {
-  transform: translateY(-1px);
-}
-
-.admin-page .ant-btn-primary {
-  background: linear-gradient(135deg, #1890ff 0%, #40a9ff 100%);
-  border: none;
-  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.3);
-}
-
-.admin-page .ant-btn-primary:hover {
-  background: linear-gradient(135deg, #40a9ff 0%, #1890ff 100%);
-  box-shadow: 0 4px 16px rgba(24, 144, 255, 0.4);
-}
-
-/* ========== INPUT ENHANCEMENTS ========== */
-.admin-page .ant-input,
-.admin-page .ant-select-selector {
-  border-radius: 8px;
-  transition: all 0.3s ease;
-}
-
-.admin-page .ant-input:focus,
-.admin-page .ant-select-selector:focus {
-  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
-}
-
-/* ========== TABLE ENHANCEMENTS ========== */
-.admin-page .ant-table {
-  border-radius: 12px;
   overflow: hidden;
 }
 
-.admin-page .ant-table-thead > tr > th {
-  background: #fafafa;
-  font-weight: 600;
-  color: #262626;
-  border-bottom: 2px solid #e8e8e8;
+.admin-page .admin-menu-item-enhanced::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, rgba(255,255,255,0.1), rgba(255,255,255,0.2));
+  transition: width 0.3s ease;
+  z-index: 0;
 }
 
-.admin-page .ant-table-tbody > tr > td {
-  transition: all 0.3s ease;
+.admin-page .admin-menu-item-enhanced:hover::before {
+  width: 100%;
 }
 
-.admin-page .ant-table-tbody > tr:hover > td {
-  background: #f8f9fa;
+.admin-page .admin-menu-item-enhanced:hover {
+  animation: adminGlow 1s infinite alternate;
+  transform: translateX(8px) scale(1.02) !important;
+  box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2) !important;
 }
 
-/* ========== REVENUE STATS STYLES ========== */
-/* Chart Container */
-.chart-container {
+.admin-page .admin-menu-item-enhanced:active {
+  animation: adminBounceIn 0.3s ease;
+}
+
+/* Enhanced Logout Button */
+.admin-page .admin-logout-enhanced {
+  animation: adminRotateIn 0.6s ease-out;
+  transition: all 0.3s ease !important;
+}
+
+.admin-page .admin-logout-enhanced:hover {
+  animation: adminShake 0.5s ease-in-out;
+  background: rgba(255, 87, 87, 0.3) !important;
+  transform: scale(1.05) !important;
+}
+
+/* Custom Collapse Button */
+.admin-page .admin-collapse-button-container {
+  padding: 0 12px;
+  margin-top: 8px;
+}
+
+.admin-page .admin-custom-collapse-btn {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   position: relative;
-  padding: 20px;
-  border-radius: 12px;
-  background: #fff;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.admin-page .admin-custom-collapse-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+  transition: all 0.3s ease;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.admin-page .admin-custom-collapse-btn:hover::before {
+  width: 100px;
+  height: 100px;
+}
+
+.admin-page .admin-custom-collapse-btn:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  animation: adminGlow 1.5s infinite alternate;
+}
+
+.admin-page .admin-custom-collapse-btn:active {
+  animation: adminBounceIn 0.2s ease;
+}
+
+/* ===== ENHANCED COLLAPSE BUTTON ANIMATIONS ===== */
+@keyframes adminCollapseRotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(180deg);
+  }
+}
+
+@keyframes adminCollapseSlide {
+  0% {
+    transform: translateX(-10px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes adminCollapseFlip {
+  0% {
+    transform: scaleX(1);
+  }
+  50% {
+    transform: scaleX(0);
+  }
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+/* Enhanced Collapse Button with unique animations */
+.admin-page .admin-custom-collapse-btn .anticon {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: adminCollapseSlide 0.3s ease-out;
+}
+
+.admin-page .admin-custom-collapse-btn:hover .anticon {
+  animation: adminCollapseFlip 0.6s ease-in-out;
+  color: #fff !important;
+}
+
+.admin-page .admin-custom-collapse-btn:active .anticon {
+  animation: adminCollapseRotate 0.3s ease;
+}
+
+/* Special glow effect for collapse button */
+.admin-page .admin-custom-collapse-btn:hover {
+  background: rgba(102, 126, 234, 0.2) !important;
+  border-color: rgba(102, 126, 234, 0.5) !important;
+  box-shadow: 0 0 15px rgba(102, 126, 234, 0.3), 
+              0 4px 12px rgba(0, 0, 0, 0.2) !important;
+  transform: translateY(-2px) scale(1.02);
+}
+
+/* Different animation when collapsed vs expanded */
+.admin-page .ant-layout-sider-collapsed .admin-custom-collapse-btn {
+  animation: adminBounceIn 0.5s ease-out;
+}
+
+.admin-page .ant-layout-sider:not(.ant-layout-sider-collapsed) .admin-custom-collapse-btn {
+  animation: adminSlideInLeft 0.5s ease-out;
+}
+
+/* Main container scope to prevent global conflicts */
+.admin-page {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+/* ===== SIDEBAR STYLING ===== */
+.admin-page .admin-sidebar {
+  position: fixed !important;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 1000;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+  border-right: none;
+}
+
+.admin-page .admin-sidebar .ant-layout-sider-children {
+  background: transparent;
+}
+
+/* Logo styling */
+.admin-page .admin-logo {
+  padding: 20px 16px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 10px;
+}
+
+.admin-page .logo-container {
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* Stats Cards */
-.card {
-  transition: all 0.3s ease;
-  border-radius: 15px !important;
-  overflow: hidden;
+.admin-page .logo-full {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+.admin-page .logo-icon {
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: #fff;
+  backdrop-filter: blur(10px);
 }
 
-.card-body {
-  padding: 1.5rem;
-}
-
-/* Header Styling */
-.text-primary {
-  color: #6366f1 !important;
-}
-
-.text-success {
-  color: #10b981 !important;
-}
-
-.text-info {
-  color: #06b6d4 !important;
-}
-
-.text-warning {
-  color: #f59e0b !important;
-}
-
-.text-danger {
-  color: #ef4444 !important;
-}
-
-.text-dark {
-  color: #1f2937 !important;
-}
-
-/* Badge Styling */
-.badge {
-  font-size: 0.875rem;
-  padding: 0.5rem 1rem;
-  border-radius: 25px;
-}
-
-/* Button Styling */
-.btn-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border: none;
-  border-radius: 8px;
-  padding: 10px 20px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-}
-
-/* Radio Button Group */
-.ant-radio-group {
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.ant-radio-button-wrapper {
-  border-radius: 0 !important;
-  border-color: #e5e7eb;
-  font-weight: 500;
-}
-
-.ant-radio-button-wrapper-checked {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-color: #667eea;
-}
-
-/* Date Picker */
-.ant-picker {
-  border-radius: 8px;
-  border-color: #e5e7eb;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.ant-picker:hover {
-  border-color: #667eea;
-}
-
-/* Card Title */
-.card-title {
+.admin-page .logo-text h4 {
+  color: #fff !important;
+  margin: 0;
   font-weight: 600;
-  margin-bottom: 1rem;
+  letter-spacing: 0.5px;
 }
 
-/* Loading Spinner */
-.ant-spin-dot {
-  color: #667eea;
+.admin-page .logo-collapsed {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-/* Responsive for Revenue Stats */
-@media (max-width: 768px) {
-  .chart-container {
-    height: 300px !important;
-  }
-  
-  .card-body {
-    padding: 1rem;
-  }
-  
-  .fs-1 {
-    font-size: 2rem !important;
-  }
-  
-  h2 {
-    font-size: 1.5rem !important;
-  }
+/* Menu styling */
+.admin-page .admin-menu {
+  background: transparent !important;
+  border-right: 0 !important;
+  padding: 0 12px;
 }
 
-@media (max-width: 576px) {
-  .container-fluid {
-    padding: 1rem !important;
-  }
-  
-  .chart-container {
-    height: 250px !important;
-  }
+.admin-page .admin-menu .ant-menu-item {
+  border-radius: 8px !important;
+  margin: 4px 0 !important;
+  height: 48px !important;
+  line-height: 48px !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  backdrop-filter: blur(5px);
 }
 
-/* ========== SCROLL BEHAVIOR ========== */
-.admin-content {
-  overflow-y: auto;
+.admin-page .admin-menu .ant-menu-item:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #fff !important;
+  transform: translateX(5px);
+}
+
+.admin-page .admin-menu .ant-menu-item-selected {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1)) !important;
+  color: #fff !important;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transform: translateX(5px);
+}
+
+.admin-page .admin-menu .ant-menu-item-selected::after {
+  display: none;
+}
+
+.admin-page .admin-menu .ant-menu-item .anticon {
+  font-size: 16px;
+  margin-right: 12px;
+}
+
+.admin-page .admin-menu .ant-menu-divider {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  margin: 16px 0 !important;
+}
+
+.admin-page .admin-menu .logout-item {
+  margin-top: auto !important;
+  background: rgba(255, 87, 87, 0.1) !important;
+  border: 1px solid rgba(255, 87, 87, 0.2) !important;
+}
+
+.admin-page .admin-menu .logout-item:hover {
+  background: rgba(255, 87, 87, 0.2) !important;
+  color: #fff !important;
+}
+
+/* ===== HEADER STYLING ===== */
+.admin-page .admin-header {
+  background: #fff !important;
+  padding: 0 24px !important;
+  height: 80px !important;
+  line-height: 80px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border-bottom: 1px solid #f0f0f0;
+  position: sticky;
+  top: 0;
+  z-index: 999;
+  animation: adminFadeInUp 0.5s ease-out;
+  transition: all 0.3s ease;
+}
+
+.admin-page .admin-header:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%) !important;
+}
+
+.admin-page .header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
+  animation: adminSlideInLeft 0.6s ease-out;
+}
+
+.admin-page .header-left h3 {
+  color: #1890ff !important;
+  margin: 0 !important;
+  font-weight: 600;
+  font-size: 24px;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.admin-page .header-left h3:hover {
+  animation: adminPulse 0.6s ease;
+  text-shadow: 0 0 10px rgba(24, 144, 255, 0.3);
+}
+
+.admin-page .header-right .user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-page .header-right .user-info::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(24, 144, 255, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.admin-page .header-right .user-info:hover::before {
+  left: 100%;
+}
+
+.admin-page .header-right .user-info:hover {
+  background: #f0f8ff;
+  transform: scale(1.05);
+  box-shadow: 0 4px 15px rgba(24, 144, 255, 0.2);
+  animation: adminGlow 1s infinite alternate;
+}
+
+.admin-page .header-right .user-details span {
+  display: block;
+  line-height: 1.2;
+}
+
+/* ===== CONTENT AREA ===== */
+.admin-page .admin-content {
+  padding: 24px !important;
+  background: transparent !important;
+  min-height: calc(100vh - 80px) !important;
   overflow-x: hidden;
-  max-height: calc(100vh - 88px);
+  animation: adminFadeInUp 0.7s ease-out;
 }
 
-.admin-content::-webkit-scrollbar {
+/* ===== ENHANCED CONTENT ANIMATION ===== */
+.admin-page .admin-content-animated {
+  animation: adminFadeInUp 0.7s ease-out;
+  transition: all 0.3s ease;
+}
+
+.admin-page .admin-content-animated > * {
+  animation: adminSlideInLeft 0.6s ease-out;
+}
+
+/* ===== CARD STYLING ===== */
+.admin-page .ant-card {
+  border-radius: 12px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.95) !important;
+  animation: adminBounceIn 0.6s ease-out;
+  position: relative;
+  overflow: hidden;
+  transform: translateZ(0);
+}
+
+.admin-page .ant-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  transition: left 0.6s ease;
+  z-index: 1;
+}
+
+.admin-page .ant-card:hover::before {
+  left: 100%;
+}
+
+.admin-page .ant-card:hover {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12) !important;
+  transform: translateY(-2px) translateZ(0);
+  border-color: rgba(102, 126, 234, 0.3) !important;
+}
+
+.admin-page .ant-card:active {
+  transform: translateY(-1px) scale(0.998) translateZ(0);
+  transition: all 0.15s ease;
+}
+
+.admin-page .ant-card-head {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+  background: linear-gradient(135deg, #f8fafc, #f1f5f9) !important;
+  border-radius: 12px 12px 0 0 !important;
+}
+
+.admin-page .ant-card-head-title {
+  font-weight: 600 !important;
+  color: #2d3748 !important;
+  font-size: 18px;
+}
+
+.admin-page .ant-card-body {
+  padding: 24px !important;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ===== TABLE STYLING ===== */
+
+/* Hiệu ứng cho bảng Ant Design trong admin-page, tránh global */
+.admin-page .ant-table {
+  border-radius: 10px !important;
+  overflow: hidden !important;
+  box-shadow: 0 2px 16px rgba(102, 126, 234, 0.10) !important;
+  animation: adminTableFadeIn 0.7s cubic-bezier(0.4,0,0.2,1);
+  background: #fff;
+}
+
+.admin-page .ant-table-thead > tr > th {
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%) !important;
+  color: #fff !important;
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #764ba2 !important;
+  transition: background 0.3s, color 0.3s;
+  position: relative;
+  z-index: 1;
+}
+
+.admin-page .ant-table-thead > tr > th:hover {
+  background: linear-gradient(90deg, #764ba2 0%, #667eea 100%) !important;
+  color: #ffe066 !important;
+  cursor: pointer;
+}
+
+.admin-page .ant-table-tbody > tr {
+  transition: box-shadow 0.3s, background 0.3s;
+}
+
+.admin-page .ant-table-tbody > tr:hover {
+  background: #f0f8ff !important;
+  box-shadow: 0 2px 12px rgba(102, 126, 234, 0.10);
+  transform: scale(1.01);
+  z-index: 2;
+}
+
+.admin-page .ant-table-tbody > tr.selected-row {
+  background: #e6e6fa !important;
+  animation: adminTableRowPulse 0.7s;
+}
+
+.admin-page .ant-table-tbody > tr > td {
+  transition: background 0.3s, color 0.3s;
+  font-size: 14px;
+}
+
+.admin-page .ant-table-tbody > tr > td.editing {
+  background: #fffbe6 !important;
+  color: #a67c00 !important;
+  animation: adminTableCellEdit 0.5s;
+}
+
+@keyframes adminTableFadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes adminTableRowPulse {
+  0% { box-shadow: 0 0 0 0 rgba(102,126,234,0.2); }
+  70% { box-shadow: 0 0 0 8px rgba(102,126,234,0.05); }
+  100% { box-shadow: 0 0 0 0 rgba(102,126,234,0.0); }
+}
+
+@keyframes adminTableCellEdit {
+  0% { background: #ffe066; }
+  100% { background: #fffbe6; }
+}
+
+
+/* ===== ENHANCED BUTTON EFFECTS ===== */
+.admin-page .ant-btn {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px !important;
+}
+
+.admin-page .ant-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+  transition: all 0.3s ease;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.admin-page .ant-btn:hover::before {
+  width: 200px;
+  height: 200px;
+}
+
+.admin-page .ant-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15) !important;
+  animation: adminGlow 1s infinite alternate;
+}
+
+.admin-page .ant-btn:active {
+  animation: adminBounceIn 0.2s ease;
+}
+
+.admin-page .ant-btn-primary {
+  background: linear-gradient(135deg, #667eea, #764ba2) !important;
+  border: none !important;
+}
+
+.admin-page .ant-btn-primary:hover {
+  background: linear-gradient(135deg, #764ba2, #667eea) !important;
+  animation: adminPulse 0.6s ease infinite alternate;
+}
+
+/* ===== ENHANCED MODAL EFFECTS ===== */
+.admin-page .ant-modal {
+  animation: adminBounceIn 0.5s ease-out;
+}
+
+.admin-page .ant-modal-content {
+  border-radius: 12px !important;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
+}
+
+.admin-page .ant-modal-header {
+  background: linear-gradient(135deg, #667eea, #764ba2) !important;
+  border-bottom: none !important;
+}
+
+.admin-page .ant-modal-title {
+  color: #fff !important;
+  font-weight: 600 !important;
+}
+
+/* ===== ENHANCED NOTIFICATION EFFECTS ===== */
+.admin-page .ant-notification {
+  animation: adminSlideInLeft 0.5s ease-out;
+}
+
+.admin-page .ant-notification-notice {
+  border-radius: 12px !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15) !important;
+  animation: adminBounceIn 0.6s ease-out;
+}
+
+/* ===== ENHANCED DROPDOWN EFFECTS ===== */
+.admin-page .ant-dropdown {
+  animation: adminFadeInUp 0.3s ease-out;
+}
+
+.admin-page .ant-dropdown-menu {
+  border-radius: 8px !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15) !important;
+  animation: adminBounceIn 0.4s ease-out;
+}
+
+.admin-page .ant-dropdown-menu-item {
+  transition: all 0.3s ease !important;
+}
+
+.admin-page .ant-dropdown-menu-item:hover {
+  background: linear-gradient(135deg, #f0f8ff, #e6f3ff) !important;
+  transform: translateX(4px);
+  animation: adminGlow 1s infinite alternate;
+}
+
+/* ===== SCROLL BAR STYLING ===== */
+.admin-page *::-webkit-scrollbar {
   width: 6px;
+  height: 6px;
 }
 
-.admin-content::-webkit-scrollbar-track {
+.admin-page *::-webkit-scrollbar-track {
   background: #f1f1f1;
   border-radius: 3px;
 }
 
-.admin-content::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
+.admin-page *::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #667eea, #764ba2);
   border-radius: 3px;
 }
 
-.admin-content::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
+.admin-page *::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #5a67d8, #6b46c1);
 }
 
-/* ========== ADDITIONAL FIXES ========== */
-/* Ensure header has proper backdrop */
-.admin-header {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(232, 232, 232, 0.8);
+/* ===== SPECIAL EFFECTS ===== */
+.admin-page .glass-effect {
+  background: rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
 }
 
-/* Smooth transitions for content */
-.admin-content {
-  transition: all 0.3s ease;
+.admin-page .glow-effect {
+  box-shadow: 0 0 20px rgba(102, 126, 234, 0.3) !important;
 }
 
-/* Fix for mobile responsive */
-@media (max-width: 768px) {
-  .admin-content {
-    margin: 72px 8px 8px;
-    padding: 12px;
-    border-radius: 8px 8px 0 0;
+.admin-page .hover-lift:hover {
+  transform: translateY(-4px) !important;
+  transition: all 0.3s ease !important;
+}
+
+/* ===== DARK MODE SUPPORT (OPTIONAL) ===== */
+.admin-page.dark-mode {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
+}
+
+.admin-page.dark-mode .ant-card {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
+}
+
+.admin-page.dark-mode .ant-table-thead > tr > th {
+  background: linear-gradient(135deg, #4a5568, #2d3748) !important;
+}
+
+/* ===== ACCESSIBILITY ===== */
+.admin-page *:focus {
+  outline: 2px solid #667eea !important;
+  outline-offset: 2px !important;
+}
+
+.admin-page .ant-btn:focus {
+  z-index: 1 !important;
+}
+
+/* ===== PERFORMANCE OPTIMIZATIONS ===== */
+.admin-page * {
+  will-change: auto !important;
+}
+
+.admin-page .ant-table-tbody {
+  transform: translateZ(0) !important;
+}
+
+.admin-page .admin-sidebar {
+  transform: translateZ(0) !important;
+}
+
+.admin-page * {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.admin-page .admin-menu-item-enhanced,
+.admin-page .admin-custom-collapse-btn,
+.admin-page .ant-card {
+  will-change: transform, opacity;
+}
+
+/* ===== ACCESSIBILITY ENHANCEMENTS ===== */
+@media (prefers-reduced-motion: reduce) {
+  .admin-page * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 
-/* ========== POST APPROVAL SPECIFIC FIXES ========== */
-/* Đảm bảo post-approval không bị đè lên header */
-.admin-content .post-approval-container {
-  position: relative !important;
-  z-index: 1 !important;
-  margin-top: 0 !important;
-  padding-top: 0 !important;
-  top: auto !important;
-  left: auto !important;
-  right: auto !important;
-  bottom: auto !important;
+/* ===== RESPONSIVE ENHANCEMENTS ===== */
+@media (max-width: 768px) {
+  .admin-page .admin-menu-item-enhanced {
+    animation-duration: 0.2s;
+  }
+  
+  .admin-page .admin-custom-collapse-btn {
+    animation-duration: 0.2s;
+  }
+  
+  .admin-page .ant-card {
+    animation-duration: 0.3s;
+  }
 }
 
-.admin-content .post-approval-header {
-  position: relative !important;
-  z-index: 1 !important;
-  margin-top: 0 !important;
-  padding-top: 24px !important;
-  top: auto !important;
-  left: auto !important;
-  right: auto !important;
-  bottom: auto !important;
+/* ===== ADVANCED COLLAPSE BUTTON EFFECTS ===== */
+@keyframes adminCollapseWave {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-3px);
+  }
+  75% {
+    transform: translateX(3px);
+  }
 }
 
-.admin-content .post-approval-content {
-  position: relative !important;
-  z-index: 1 !important;
-  margin-top: 0 !important;
-  top: auto !important;
-  left: auto !important;
-  right: auto !important;
-  bottom: auto !important;
+@keyframes adminCollapseIconSwap {
+  0% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+  50% {
+    opacity: 0;
+    transform: scale(0.8) rotate(90deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
 }
 
-/* Tắt mọi animation có thể gây conflict */
-.admin-content .post-approval-container,
-.admin-content .post-approval-header,
-.admin-content .post-approval-content {
-  animation: none !important;
-  transform: none !important;
-  transition: none !important;
+/* Collapse button with gradient border */
+.admin-page .admin-custom-collapse-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 2px;
+  background: linear-gradient(45deg, #667eea, #764ba2, #667eea);
+  border-radius: 8px;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: xor;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
-/* Đảm bảo header luôn ở trên cùng */
-.admin-header {
-  z-index: 1000 !important;
+.admin-page .admin-custom-collapse-btn:hover::after {
+  opacity: 1;
+  animation: adminCollapseWave 2s infinite;
+}
+
+/* Icon transition effects */
+.admin-page .admin-custom-collapse-btn .anticon {
+  position: relative;
+  z-index: 2;
+}
+
+.admin-page .admin-sidebar-enhanced .admin-custom-collapse-btn .anticon {
+  animation: adminCollapseIconSwap 0.5s ease-in-out;
+}
+
+/* Ripple effect on click */
+.admin-page .admin-custom-collapse-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-page .admin-custom-collapse-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: radial-gradient(circle, rgba(102, 126, 234, 0.4) 0%, transparent 70%);
+  transition: all 0.4s ease;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+}
+
+.admin-page .admin-custom-collapse-btn:active::before {
+  width: 120px;
+  height: 120px;
+}
+
+/* Text fade animation */
+.admin-page .admin-custom-collapse-btn .ant-btn-content {
+  transition: all 0.3s ease;
+}
+
+.admin-page .ant-layout-sider-collapsed .admin-custom-collapse-btn .ant-btn-content {
+  opacity: 0;
+  transform: translateX(-10px);
+}
+
+/* Hover state with multiple effects */
+.admin-page .admin-custom-collapse-btn:hover {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.15)) !important;
+  border-color: rgba(102, 126, 234, 0.6) !important;
+  box-shadow: 
+    0 0 20px rgba(102, 126, 234, 0.4),
+    0 8px 25px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  transform: translateY(-3px) scale(1.03);
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+}
+
+/* Focus state for accessibility */
+.admin-page .admin-custom-collapse-btn:focus {
+  outline: none !important;
+  box-shadow: 
+    0 0 0 3px rgba(102, 126, 234, 0.3),
+    0 0 20px rgba(102, 126, 234, 0.4) !important;
+}
+
+/* Schedule Management Styles (moved from ScheduleManagement.css) */
+.schedule-management-container {
+    background-color: transparent;
+    animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.schedule-management-content {
+    padding: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    border: 1px solid #e8e8e8;
+}
+
+.schedule-management-header {
+    margin-bottom: 24px;
+    padding: 24px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    border: 1px solid #e8e8e8;
+}
+
+.schedule-management-header .ant-statistic-title {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.schedule-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 24px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+}
+
+.schedule-stats {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 24px;
+}
+
+.schedule-table {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.coach-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.coach-avatar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.coach-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.coach-name {
+    font-weight: 600;
+    color: #262626;
+}
+
+.coach-email {
+    color: #8c8c8c;
+    font-size: 12px;
+}
+
+.schedule-modal {
+    border-radius: 8px;
+}
+
+.schedule-form-section {
+    background: #fafafa;
+    padding: 16px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+}
+
+.pattern-config {
+    background: #f6ffed;
+    border: 1px solid #b7eb8f;
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.specific-schedule {
+    background: #fff7e6;
+    border: 1px solid #ffd591;
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.status-tag {
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.status-available {
+    background: #f6ffed;
+    color: #52c41a;
+    border: 1px solid #b7eb8f;
+}
+
+.status-unavailable {
+    background: #fff2e8;
+    color: #fa8c16;
+    border: 1px solid #ffd591;
+}
+
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+}
+
+.loading-text {
+    margin-top: 16px;
+    color: #8c8c8c;
+    font-size: 14px;
+}
+
+/* ===== ACHIEVEMENT MANAGEMENT STYLES ===== */
+.achievement-management-card {
+  border-radius: 16px !important;
+  box-shadow: 0 4px 24px rgba(102, 126, 234, 0.10) !important;
+  background: #fff !important;
+}
+.achievement-table-wrapper {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(102, 126, 234, 0.08);
+  padding: 0;
+  margin-bottom: 0;
+}
+.achievement-table {
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  box-shadow: none !important;
+}
+.achievement-table .ant-table-thead > tr > th {
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%) !important;
+  color: #fff !important;
+  font-weight: 600;
+  font-size: 15px;
+  text-align: center !important;
+  border-bottom: 2px solid #764ba2 !important;
+}
+.achievement-table .ant-table-tbody > tr > td {
+  text-align: center !important;
+  font-size: 15px;
+}
+.achievement-table .ant-table-tbody > tr {
+  transition: box-shadow 0.3s, background 0.3s;
+}
+.achievement-table .ant-table-tbody > tr:hover {
+  background: #f0f8ff !important;
+  box-shadow: 0 2px 12px rgba(102, 126, 234, 0.10);
+  transform: scale(1.01);
+  z-index: 2;
+}
+.achievement-add-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-weight: 600;
+  box-shadow: 0 2px 8px #764ba233;
+  transition: background 0.3s, box-shadow 0.3s, transform 0.2s;
+}
+.achievement-add-btn:hover {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%) !important;
+  box-shadow: 0 4px 16px #667eea33;
+  transform: scale(1.06);
+}
+.achievement-table .ant-btn {
+  border-radius: 8px !important;
+  font-weight: 500;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.achievement-table .ant-btn:hover {
+  transform: scale(1.12) rotate(-3deg);
+  box-shadow: 0 4px 16px #1677ff44;
+}
+.achievement-table .ant-btn[danger] {
+  background: linear-gradient(135deg, #ff4d4f 0%, #ffa39e 100%) !important;
+  color: #fff !important;
+  border: none !important;
+}
+.achievement-table .ant-btn[danger]:hover {
+  background: linear-gradient(135deg, #ffa39e 0%, #ff4d4f 100%) !important;
+}
+.achievement-modal .ant-modal-content {
+  border-radius: 16px;
+  box-shadow: 0 4px 24px #764ba244;
+  animation: adminFadeInUp 0.5s;
+}
+.achievement-modal .ant-modal-title {
+  font-weight: 700;
+  color: #764ba2;
+}
+.achievement-modal .ant-btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  border: none !important;
+  font-weight: 600;
+}
+.achievement-modal .ant-btn-primary:hover {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%) !important;
+}
+
+/* ===== ACHIEVEMENT PAGE ANIMATIONS & BUTTON EFFECTS ===== */
+@keyframes achievementFadeIn {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes achievementBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+@keyframes achievementHighlight {
+  0% { background: #fffbe6; }
+  100% { background: #fff; }
+}
+@keyframes achievementSlideIn {
+  from { opacity: 0; transform: translateX(-40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes achievementPulse {
+  0%, 100% { box-shadow: 0 0 0 0 #764ba244; }
+  50% { box-shadow: 0 0 16px 4px #764ba244; }
+}
+
+.achievement-table-wrapper {
+  animation: achievementFadeIn 0.7s cubic-bezier(.4,2,.6,1) both;
+}
+.achievement-table .ant-table-tbody > tr {
+  animation: achievementSlideIn 0.5s cubic-bezier(.4,2,.6,1) both;
+}
+.achievement-table .ant-table-tbody > tr.achievement-row-highlight {
+  animation: achievementHighlight 1.2s;
+}
+.achievement-table .ant-table-tbody > tr:hover {
+  animation: achievementBounce 0.5s;
+  background: #f0f8ff !important;
+}
+.achievement-table .ant-table-thead > tr > th {
+  animation: achievementPulse 1.2s infinite alternate;
+}
+
+/* Nút riêng cho trang thành tựu */
+.achievement-btn {
+  border-radius: 8px !important;
+  font-weight: 500;
+  transition: box-shadow 0.2s, transform 0.2s, background 0.3s;
+  background: linear-gradient(135deg, #e0e7ff 0%, #c4b5fd 100%) !important;
+  color: #4b2997 !important;
+  border: none !important;
+  box-shadow: 0 2px 8px #c4b5fd33;
+}
+.achievement-btn:hover {
+  background: linear-gradient(135deg, #c4b5fd 0%, #e0e7ff 100%) !important;
+  color: #764ba2 !important;
+  transform: scale(1.08) rotate(-2deg);
+  box-shadow: 0 4px 16px #764ba244;
+}
+.achievement-btn:active {
+  animation: achievementPulse 0.5s;
+  background: #ede9fe !important;
+}
+.achievement-btn-delete {
+  background: linear-gradient(135deg, #ffbaba 0%, #ff4d4f 100%) !important;
+  color: #fff !important;
+  border: none !important;
+  transition: background 0.3s, transform 0.2s;
+}
+.achievement-btn-delete:hover {
+  background: linear-gradient(135deg, #ff4d4f 0%, #ffbaba 100%) !important;
+  color: #fff !important;
+  transform: scale(1.12) rotate(-4deg);
+}
+.achievement-btn-edit {
+  background: linear-gradient(135deg, #a5b4fc 0%, #818cf8 100%) !important;
+  color: #fff !important;
+  border: none !important;
+  transition: background 0.3s, transform 0.2s;
+}
+.achievement-btn-edit:hover {
+  background: linear-gradient(135deg, #818cf8 0%, #a5b4fc 100%) !important;
+  color: #fff !important;
+  transform: scale(1.12) rotate(2deg);
 }

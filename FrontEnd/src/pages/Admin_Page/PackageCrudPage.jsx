@@ -12,7 +12,6 @@ import {
   Popconfirm,
 } from "antd";
 import axios from "axios";
-import tabStyles from "./AdminTabs.module.css";
 
 export default function PackageCrudPage() {
   const [data, setData] = useState([]);
@@ -110,19 +109,20 @@ export default function PackageCrudPage() {
   };
 
   return (
-    <div className={tabStyles.adminTabContainer}>
+    <div className="adminTabContainer">
       <div style={{ marginBottom: 24 }}>
         <Button
           type="primary"
           onClick={() => openModal(null)}
-          className={`${tabStyles.modernButton} ${tabStyles.modernButtonPrimary}`}
+          className="aum-action-btn aum-view-btn"
+          style={{ fontWeight: 600, fontSize: 16, minWidth: 140 }}
         >
           Thêm gói mới
         </Button>
       </div>
       <Table
         rowKey="package_id"
-        className={tabStyles.modernTable}
+        className="ant-table admin-page"
         dataSource={data}
         columns={[
           { title: "Tên gói", dataIndex: "package_name", key: "package_name" },
@@ -160,11 +160,19 @@ export default function PackageCrudPage() {
           {
             title: "Hành động",
             key: "action",
+            align: "center",
             render: (_, record) => (
-              <Space>
+              <Space
+                style={{
+                  justifyContent: "center",
+                  display: "flex",
+                  width: "100%",
+                }}
+              >
                 <Button
                   onClick={() => openModal(record)}
-                  className={`${tabStyles.modernTableButton} ${tabStyles.modernButtonDefault}`}
+                  className="aum-action-btn aum-edit-btn"
+                  style={{ minWidth: 90 }}
                 >
                   Chỉnh sửa
                 </Button>
@@ -187,7 +195,8 @@ export default function PackageCrudPage() {
                 >
                   <Button
                     danger
-                    className={`${tabStyles.modernTableButton} ${tabStyles.modernButtonDanger}`}
+                    className="aum-action-btn aum-delete-btn"
+                    style={{ minWidth: 70 }}
                   >
                     Xóa
                   </Button>
@@ -196,6 +205,11 @@ export default function PackageCrudPage() {
             ),
           },
         ]}
+        pagination={{ pageSize: 8 }}
+        style={{
+          borderRadius: 12,
+          boxShadow: "0 2px 16px rgba(102, 126, 234, 0.10)",
+        }}
       />
 
       <Modal
@@ -207,15 +221,18 @@ export default function PackageCrudPage() {
         }}
         onOk={() => form.validateFields().then(save)}
         destroyOnHidden
-        className={tabStyles.modernModal}
+        className="modernModal admin-page"
+        style={{ borderRadius: 16 }}
+        okButtonProps={{ className: "aum-action-btn aum-edit-btn" }}
+        cancelButtonProps={{ className: "aum-action-btn aum-delete-btn" }}
       >
-        <Form form={form} layout="vertical" className={tabStyles.modernForm}>
+        <Form form={form} layout="vertical" className="modernForm">
           <Form.Item
             name="package_name"
             label="Tên gói"
             rules={[{ validator: validateUniqueName }]}
           >
-            <Input />
+            <Input className="aum-action-btn" />
           </Form.Item>
 
           <Form.Item
@@ -233,7 +250,12 @@ export default function PackageCrudPage() {
               },
             ]}
           >
-            <InputNumber style={{ width: "100%" }} step={0.01} precision={2} />
+            <InputNumber
+              style={{ width: "100%" }}
+              step={0.01}
+              precision={2}
+              className="aum-action-btn"
+            />
           </Form.Item>
 
           <Form.Item
@@ -251,7 +273,7 @@ export default function PackageCrudPage() {
               },
             ]}
           >
-            <InputNumber style={{ width: "100%" }} />
+            <InputNumber style={{ width: "100%" }} className="aum-action-btn" />
           </Form.Item>
 
           <Form.Item
@@ -259,21 +281,21 @@ export default function PackageCrudPage() {
             label="Cho phép coach"
             valuePropName="checked"
           >
-            <Switch />
+            <Switch className="aum-action-btn" />
           </Form.Item>
           <Form.Item
             name="community_access"
             label="Truy cập cộng đồng"
             valuePropName="checked"
           >
-            <Switch />
+            <Switch className="aum-action-btn" />
           </Form.Item>
           <Form.Item
             name="premium_content"
             label="Nội dung Premium"
             valuePropName="checked"
           >
-            <Switch />
+            <Switch className="aum-action-btn" />
           </Form.Item>
 
           <Form.Item
@@ -281,7 +303,7 @@ export default function PackageCrudPage() {
             label="Mô tả"
             rules={[{ required: true, message: "Vui lòng nhập mô tả" }]}
           >
-            <Input.TextArea />
+            <Input.TextArea className="aum-action-btn" />
           </Form.Item>
         </Form>
       </Modal>

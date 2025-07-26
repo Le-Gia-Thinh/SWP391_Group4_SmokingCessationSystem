@@ -17,7 +17,6 @@ import {
 import { DatePicker, Radio, Button, message, Spin, Layout } from "antd";
 import dayjs from "dayjs";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "./RevenueStats.css";
 
 const { Content } = Layout;
 

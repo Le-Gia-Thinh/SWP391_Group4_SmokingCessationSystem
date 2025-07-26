@@ -43,7 +43,6 @@ import StatisticCard from "../../components/ui/StatisticCard";
 import DataTable from "../../components/ui/DataTable";
 import FormModal from "../../components/ui/FormModal";
 import ActionButtonGroup from "../../components/ui/ActionButtonGroup";
-import "./AdminManageCoach.css";
 import moment from "moment-timezone";
 
 const { Content } = Layout;
@@ -438,12 +437,43 @@ const AdminDashboard = () => {
       title: "Trạng thái",
       key: "status",
       render: (_, record) => {
-        const color = record.account_status === "active" ? "green" : "orange";
+        // Hiệu ứng giống AdminUserManager
+        const statusConfig = {
+          active: {
+            color: "success",
+            text: "Hoạt động",
+            gradient: "linear-gradient(135deg, #52c41a 0%, #73d13d 100%)",
+            icon: "🟢",
+          },
+          inactive: {
+            color: "warning",
+            text: "Không hoạt động",
+            gradient: "linear-gradient(135deg, #faad14 0%, #ffc53d 100%)",
+            icon: "🟡",
+          },
+        };
+        const config = statusConfig[record.account_status] || {
+          color: "default",
+          text: record.account_status,
+          gradient: "linear-gradient(135deg, #d9d9d9 0%, #f0f0f0 100%)",
+          icon: "⚪",
+        };
         return (
-          <Tag color={color} style={{ textTransform: "capitalize" }}>
-            {record.account_status === "active"
-              ? "Hoạt động"
-              : "Không hoạt động"}
+          <Tag
+            className="px-3 py-1 rounded-pill fw-bold position-relative"
+            style={{
+              background: config.gradient,
+              border: "none",
+              color: "white",
+              fontSize: "11px",
+              textTransform: "uppercase",
+              letterSpacing: "0.5px",
+              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+              animation: "pulse 2s infinite",
+            }}
+          >
+            <span className="me-1">{config.icon}</span>
+            {config.text}
           </Tag>
         );
       },
@@ -463,19 +493,25 @@ const AdminDashboard = () => {
       title: "Hành động",
       key: "actions",
       render: (_, record) => (
-        <Space>
+        <Space className="d-flex justify-content-center">
           <Tooltip title="Xem chi tiết">
             <Button
-              type="text"
+              type="primary"
+              size="middle"
+              shape="circle"
               icon={<EyeOutlined />}
               onClick={() => handleViewCoach(record)}
+              className="aum-action-btn aum-view-btn"
             />
           </Tooltip>
           <Tooltip title="Chỉnh sửa">
             <Button
-              type="text"
+              type="primary"
+              size="middle"
+              shape="circle"
               icon={<EditOutlined />}
               onClick={() => handleEditCoach(record)}
+              className="aum-action-btn aum-edit-btn"
             />
           </Tooltip>
           {record.account_status === "active" ? (
@@ -487,7 +523,14 @@ const AdminDashboard = () => {
               cancelText="Không"
             >
               <Tooltip title="Vô hiệu hóa">
-                <Button type="text" icon={<DeleteOutlined />} danger />
+                <Button
+                  danger
+                  type="primary"
+                  size="middle"
+                  shape="circle"
+                  icon={<DeleteOutlined />}
+                  className="aum-action-btn aum-delete-btn"
+                />
               </Tooltip>
             </Popconfirm>
           ) : (
@@ -500,9 +543,11 @@ const AdminDashboard = () => {
             >
               <Tooltip title="Khôi phục">
                 <Button
-                  type="text"
+                  type="primary"
+                  size="middle"
+                  shape="circle"
                   icon={<UndoOutlined />}
-                  style={{ color: "#52c41a" }}
+                  className="aum-action-btn aum-unlock-btn"
                 />
               </Tooltip>
             </Popconfirm>
@@ -513,14 +558,24 @@ const AdminDashboard = () => {
   ];
 
   return (
-    <Layout className="admin-dashboard">
-      <Content style={{ padding: "24px", minHeight: "calc(100vh - 64px)" }}>
+    <Layout className="admin-dashboard" style={{ background: "none" }}>
+      <Content style={{ padding: 0, minHeight: "calc(100vh - 64px)" }}>
         {/* Header */}
-        <div style={{ marginBottom: "24px" }}>
-          <Title level={2} style={{ margin: 0, color: "#52c41a" }}>
+        <div
+          style={{ marginBottom: "24px", width: "100%", background: "none" }}
+        >
+          <Title
+            level={2}
+            style={{ margin: 0, color: "#52c41a", textAlign: "center" }}
+          >
             Quản lý huấn luyện viên
           </Title>
-          <Text type="secondary">Tạo và quản lý tài khoản huấn luyện viên</Text>
+          <Text
+            type="secondary"
+            style={{ display: "block", textAlign: "center" }}
+          >
+            Tạo và quản lý tài khoản huấn luyện viên
+          </Text>
         </div>
 
         {/* Statistics */}
@@ -564,16 +619,17 @@ const AdminDashboard = () => {
         {/* Search and Filter Controls */}
         <div className="filter-controls" style={{ marginBottom: "16px" }}>
           <Row gutter={[16, 16]} align="middle">
-            <Col xs={24} sm={12} md={8}>
+            <Col xs={24} sm={12} md={12} lg={8} xl={7} xxl={6} style={{ minWidth: 320, maxWidth: 520 }}>
               <Search
-                placeholder="Tìm kiếm theo tên, email, số điện thoại hoặc chuyên môn"
+                placeholder="Tìm kiếm"
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
                 allowClear
-                style={{ width: "100%" }}
+                className="admin-search-large"
+                style={{ width: "100%", minWidth: 220, maxWidth: 520, height: 48 }}
               />
             </Col>
-            <Col xs={24} sm={12} md={4}>
+            <Col xs={24} sm={12} md={8} lg={4} xl={3} xxl={3} style={{ minWidth: 180, maxWidth: 260 }}>
               <Select
                 placeholder="Lọc theo trạng thái"
                 value={statusFilter}
@@ -586,22 +642,6 @@ const AdminDashboard = () => {
                 <Option value="inactive">Không hoạt động</Option>
               </Select>
             </Col>
-            <Col xs={24} sm={12} md={4}>
-              <Button
-                icon={<FilterOutlined />}
-                onClick={clearFilters}
-                className="clear-filters-btn"
-                style={{ width: "100%" }}
-              >
-                Xóa bộ lọc
-              </Button>
-            </Col>
-            <Col xs={24} sm={12} md={4}>
-              <div className="results-counter">
-                Hiển thị {filteredCoaches.length} trong tổng số {coaches.length}{" "}
-                huấn luyện viên
-              </div>
-            </Col>
           </Row>
         </div>
 
@@ -612,36 +652,46 @@ const AdminDashboard = () => {
             if (key === "coach-violations") setCoachBadgeCount(0);
             if (key === "member-no-shows") setMemberBadgeCount(0);
           }}
+          tabBarStyle={{ margin: 0, padding: 0 }}
         >
           <Tabs.TabPane tab={<span>Quản lý HLV</span>} key="coaches">
-            <DataTable
-              title="Danh sách huấn luyện viên"
-              columns={columns}
-              dataSource={filteredCoaches}
-              loading={loading}
-              rowKey="coach_id"
-              extra={
-                <Space>
-                  <Button
-                    icon={<ReloadOutlined />}
-                    onClick={loadCoaches}
-                    loading={loading}
-                  >
-                    Làm mới
-                  </Button>
-                  <Button
-                    type="primary"
-                    icon={<PlusOutlined />}
-                    onClick={() => {
-                      setCreateCoachModal(true);
-                      coachForm.setFieldsValue({ password: "Coach@123" });
-                    }}
-                  >
-                    Tạo huấn luyện viên
-                  </Button>
-                </Space>
-              }
-            />
+            <div
+              style={{ width: "100%", overflowX: "auto", background: "none" }}
+            >
+              <DataTable
+                title="Danh sách huấn luyện viên"
+                columns={columns}
+                dataSource={filteredCoaches}
+                loading={loading}
+                rowKey="coach_id"
+                extra={
+                  <Space>
+                    <Button
+                      icon={<ReloadOutlined />}
+                      onClick={loadCoaches}
+                      loading={loading}
+                    >
+                      Làm mới
+                    </Button>
+                    <Button
+                      type="primary"
+                      icon={<PlusOutlined />}
+                      onClick={() => {
+                        setCreateCoachModal(true);
+                        coachForm.setFieldsValue({ password: "Coach@123" });
+                      }}
+                    >
+                      Tạo huấn luyện viên
+                    </Button>
+                  </Space>
+                }
+                tableProps={{
+                  style: { width: "100%" },
+                  pagination: { position: ["bottomCenter"] },
+                  rowClassName: () => "admin-table-row-center",
+                }}
+              />
+            </div>
           </Tabs.TabPane>
           <Tabs.TabPane
             tab={

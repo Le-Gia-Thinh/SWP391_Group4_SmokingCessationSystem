@@ -353,6 +353,9 @@ DROP TABLE IF EXISTS phases;
 
 ALTER TABLE phases
 ADD phase_code VARCHAR(10);
+
+go
+ALTER TABLE phases
 UPDATE phases SET phase_code = 'P1' WHERE phase_order = 1;
 UPDATE phases SET phase_code = 'P2' WHERE phase_order = 2;
 UPDATE phases SET phase_code = 'P3' WHERE phase_order = 3;
