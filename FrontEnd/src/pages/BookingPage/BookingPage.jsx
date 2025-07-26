@@ -50,6 +50,7 @@ const BookingPage = () => {
     weeklyCount: 0,
     maxAllowed: 3,
   });
+  const [selectedTimeFrame, setSelectedTimeFrame] = useState(null);
 
   useEffect(() => {
     loadCoaches();
@@ -138,7 +139,7 @@ const BookingPage = () => {
     } else {
       setAvailableCoaches([]);
     }
-  }, [selectedDate]);
+  }, [selectedDate, selectedTimeFrame]);
 
   const loadAvailableSchedules = async () => {
     try {
@@ -163,7 +164,7 @@ const BookingPage = () => {
 
           // Filter schedules for selected date and check time constraints
           const now = moment();
-          const daySchedules = schedules.filter((schedule) => {
+          let daySchedules = schedules.filter((schedule) => {
             const scheduleDate = moment
               .parseZone(schedule.start_time)
               .format("YYYY-MM-DD");
@@ -176,6 +177,24 @@ const BookingPage = () => {
               diffInMinutes >= 60
             ); // Chặn đặt lịch trong vòng 1 tiếng
           });
+
+          // Lọc thêm theo khung giờ nếu có
+          if (selectedTimeFrame) {
+            daySchedules = daySchedules.filter((schedule) => {
+              const hour = moment.parseZone(schedule.start_time).hour();
+              
+              switch (selectedTimeFrame) {
+                case "morning":
+                  return hour >= 8 && hour < 12;
+                case "afternoon":
+                  return hour >= 13 && hour < 17;
+                case "evening":
+                  return hour >= 18 && hour < 21;
+                default:
+                  return true;
+              }
+            });
+          }
 
           if (daySchedules.length > 0) {
             availableCoachesWithSchedules.push({
@@ -200,6 +219,10 @@ const BookingPage = () => {
 
   const handleDateChange = (date) => {
     setSelectedDate(date);
+  };
+  
+  const handleTimeFrameChange = (value) => {
+    setSelectedTimeFrame(value);
   };
 
   const formatTimeSlot = (schedule) => {
@@ -329,18 +352,9 @@ const BookingPage = () => {
                 📅 Hành trình cai nghiện thuốc lá của bạn
               </div>
               <p className="booking-header-subtitle">
-                Chọn ngày và chọn từ các huấn luyện viên có sẵn để đặt lịch huấn
-                luyện bỏ thuốc lá.
+                Chọn ngày và thời gian phù hợp để đặt lịch với các huấn luyện viên chuyên nghiệp. Chúng tôi sẽ hỗ trợ bạn trong hành trình cai thuốc lá thành công.
               </p>
             </div>
-
-            <Title level={2} style={{ display: "none" }}>
-              Đặt lịch huấn luyện
-            </Title>
-            <Text type="secondary" style={{ display: "none" }}>
-              Chọn ngày và chọn từ các huấn luyện viên có sẵn để đặt lịch huấn
-              luyện bỏ thuốc lá.
-            </Text>
 
             {/* Hiển thị thống kê đặt lịch của user */}
             <Alert
@@ -356,237 +370,217 @@ const BookingPage = () => {
             />
 
             <Card style={{ marginTop: 24 }}>
-              <div
-                className="date-selection"
-                style={{ maxWidth: 350, margin: "0 auto", marginBottom: 32 }}
-              >
-                <Title level={4}>
-                  <CalendarOutlined /> Chọn ngày
-                </Title>
-                <DatePicker
-                  style={{ width: "100%" }}
-                  placeholder="Chọn một ngày"
-                  onChange={handleDateChange}
-                  disabledDate={(current) =>
-                    current && current < moment().startOf("day")
-                  }
-                />
-              </div>
-              <div className="coaches-section-below">
-                <Title
-                  level={4}
-                  style={{ textAlign: "center", marginBottom: 24 }}
-                >
-                  <UserOutlined /> Huấn luyện viên có sẵn
-                </Title>
-                {selectedDate ? (
-                  availableCoaches.length > 0 ? (
-                    <Row gutter={[24, 24]} justify="center">
-                      {availableCoaches.map((coach) => (
-                        <Col
-                          xs={24}
-                          sm={12}
-                          md={8}
-                          key={coach.coach_id}
-                          style={{ display: "flex", justifyContent: "center" }}
+              <Row gutter={[24, 24]}>
+                {/* Left Side - Date Selection */}
+                <Col xs={24} md={8}>
+                  <div className="booking-left-panel">
+                    <div className="date-selection">
+                      <Title level={4}>
+                        <CalendarOutlined /> Chọn lịch hẹn
+                      </Title>
+                      <p className="date-selection-subtitle">Vui lòng chọn ngày và khung giờ để xem các huấn luyện viên có sẵn</p>
+                      
+                      <div className="date-selection-field">
+                        <div className="field-label">Chọn ngày</div>
+                        <DatePicker
+                          style={{ width: "100%" }}
+                          placeholder="Chọn một ngày"
+                          onChange={handleDateChange}
+                          disabledDate={(current) =>
+                            current && current < moment().startOf("day")
+                          }
+                        />
+                      </div>
+                      
+                      <div className="time-selection-field">
+                        <div className="field-label">Chọn khung giờ</div>
+                        <Select
+                          placeholder="Tất cả khung giờ"
+                          style={{ width: "100%" }}
+                          disabled={!selectedDate}
+                          onChange={handleTimeFrameChange}
+                          allowClear
                         >
-                          <Card className="coach-card improved-coach-card">
-                            <div className="coach-header improved-coach-header">
-                              <Avatar
-                                size={72}
-                                icon={<UserOutlined />}
-                                className="improved-coach-avatar"
-                              />
-                            </div>
-                            <div
-                              className="coach-info improved-coach-info"
-                              style={{
-                                alignItems: "center",
-                                textAlign: "center",
-                              }}
-                            >
-                              <Title
-                                level={5}
-                                style={{
-                                  marginBottom: 0,
-                                  color: "#189c38",
-                                  fontWeight: 700,
-                                }}
-                              >
-                                {coach.name}
-                              </Title>
-                              <Text
-                                type="secondary"
-                                style={{ color: "#189c38", fontWeight: 500 }}
-                              >
-                                {coach.specialization}
-                              </Text>
-                              <div className="coach-stats improved-coach-stats">
-                                <Rate
-                                  disabled
-                                  defaultValue={coach.rating}
-                                  style={{ color: "#52c41a" }}
-                                />
-                                <Text
-                                  type="secondary"
-                                  style={{ marginLeft: 8 }}
-                                >
-                                  ({coach.totalSessions} buổi)
-                                </Text>
-                              </div>
-                            </div>
-                            <div
-                              className="coach-bio improved-coach-bio"
-                              style={{
-                                textAlign: "center",
-                                margin: "10px 0",
-                                color: "#333",
-                                fontSize: 14,
-                              }}
-                            >
-                              <Text>{coach.bio}</Text>
-                            </div>
-                            <div className="available-slots improved-available-slots">
-                              <Title
-                                level={5}
-                                style={{
-                                  color: "#189c38",
-                                  marginBottom: 8,
-                                  fontSize: 15,
-                                }}
-                              >
-                                <ClockCircleOutlined /> Khung giờ có sẵn
-                              </Title>
-                              <div className="slots-grid improved-slots-grid">
-                                {coach.availableSchedules.map((schedule) => {
-                                  const slot = formatTimeSlot(schedule);
-                                  const isDisabled =
-                                    userBookingStats.weeklyCount >=
-                                    userBookingStats.maxAllowed;
-                                  return (
-                                    <Button
-                                      key={schedule.schedule_id}
-                                      type="primary"
-                                      size="small"
-                                      disabled={isDisabled}
-                                      onClick={() =>
-                                        handleSelectSlotForBooking(
-                                          coach,
-                                          schedule
-                                        )
-                                      }
-                                      style={{
-                                        margin: "4px",
-                                        background: isDisabled
-                                          ? "#d9d9d9"
-                                          : "#52c41a",
-                                        borderColor: isDisabled
-                                          ? "#d9d9d9"
-                                          : "#52c41a",
-                                        fontWeight: 600,
-                                        fontSize: 15,
-                                        borderRadius: 8,
-                                      }}
-                                    >
-                                      {slot.time} - {slot.endTime}
-                                    </Button>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          </Card>
-                        </Col>
-                      ))}
-                    </Row>
-                  ) : (
-                    <div
-                      className="no-availability"
-                      style={{ textAlign: "center", margin: "32px 0" }}
-                    >
-                      <Text type="secondary">
-                        Không có huấn luyện viên nào có sẵn cho ngày đã chọn.
-                        Vui lòng thử ngày khác.
-                      </Text>
+                          <Option value="morning">Buổi sáng (8:00 - 12:00)</Option>
+                          <Option value="afternoon">Buổi chiều (13:00 - 17:00)</Option>
+                          <Option value="evening">Buổi tối (18:00 - 21:00)</Option>
+                        </Select>
+                      </div>
                     </div>
-                  )
-                ) : (
-                  <div
-                    className="select-date-prompt"
-                    style={{ textAlign: "center", margin: "32px 0" }}
-                  >
-                    <Text type="secondary">
-                      Vui lòng chọn ngày để xem các huấn luyện viên và khung giờ
-                      có sẵn.
-                    </Text>
                   </div>
-                )}
-              </div>
+                </Col>
+
+                {/* Right Side - Available Coaches */}
+                <Col xs={24} md={16}>
+                  <div className="coaches-section">
+                    <Title level={4}>
+                      <UserOutlined /> Huấn luyện viên có sẵn
+                    </Title>
+                    <div className="coach-availability-subtitle">
+                      {selectedDate ? 
+                        `${availableCoaches.length} huấn luyện viên đang có sẵn vào ngày ${selectedDate.format('DD/MM/YYYY')}` : 
+                        'Vui lòng chọn ngày ở bên trái để xem các huấn luyện viên có sẵn'}
+                    </div>
+                    
+                    {selectedDate ? (
+                      availableCoaches.length > 0 ? (
+                        <div className="coach-list">
+                          {availableCoaches.map((coach) => (
+                            <Card className="coach-card-horizontal" key={coach.coach_id}>
+                              <div className="coach-card-content">
+                                <div className="coach-card-left">
+                                  <Avatar
+                                    size={80}
+                                    icon={<UserOutlined />}
+                                    style={{ backgroundColor: "#189c38" }}
+                                  />
+                                </div>
+                                <div className="coach-card-middle">
+                                  <div className="coach-name">{coach.name}</div>
+                                  <div className="coach-specialization">{coach.specialization}</div>
+                                </div>
+                                <div className="coach-card-right">
+                                  <div className="coach-slot-info">
+                                    <div className="slot-title">
+                                      <ClockCircleOutlined /> Slot tiếp theo:
+                                    </div>
+                                    <div className="available-slots">
+                                      {coach.availableSchedules.map((schedule) => {
+                                        const slot = formatTimeSlot(schedule);
+                                        const isDisabled =
+                                          userBookingStats.weeklyCount >=
+                                          userBookingStats.maxAllowed;
+                                        return (
+                                          <Button
+                                            key={schedule.schedule_id}
+                                            type="primary"
+                                            disabled={isDisabled}
+                                            onClick={() =>
+                                              handleSelectSlotForBooking(
+                                                coach,
+                                                schedule
+                                              )
+                                            }
+                                            style={{
+                                              margin: "4px",
+                                              background: isDisabled
+                                                ? "#d9d9d9"
+                                                : "#52c41a",
+                                              borderColor: isDisabled
+                                                ? "#d9d9d9"
+                                                : "#52c41a",
+                                              borderRadius: 8,
+                                            }}
+                                          >
+                                            {slot.time} - {slot.endTime}
+                                          </Button>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                  <Button
+                                    className="view-profile-btn"
+                                    style={{ marginTop: 8 }}
+                                  >
+                                    Xem hồ sơ
+                                  </Button>
+                                </div>
+                              </div>
+                            </Card>
+                          ))}
+                        </div>
+                      ) : (
+                        <div
+                          className="no-availability"
+                          style={{ textAlign: "center", margin: "32px 0" }}
+                        >
+                          <Text type="secondary">
+                            Không có huấn luyện viên nào có sẵn cho ngày đã chọn.
+                            Vui lòng thử ngày khác.
+                          </Text>
+                        </div>
+                      )
+                    ) : (
+                      <div
+                        className="select-date-prompt"
+                        style={{ textAlign: "center", margin: "32px 0" }}
+                      >
+                        <Text type="secondary">
+                          Vui lòng chọn ngày ở bên trái để xem danh sách huấn luyện viên và khung giờ có sẵn.
+                        </Text>
+                      </div>
+                    )}
+                  </div>
+                </Col>
+              </Row>
             </Card>
           </div>
 
           {/* Booking Modal */}
           <FormModal
-            title="Đặt lịch hẹn"
+            title="Xác nhận đặt lịch hẹn"
             visible={isModalVisible}
             onCancel={handleCancel}
             onSubmit={handleBookingSubmit}
             form={bookingForm}
             loading={loading}
-            width={600}
+            width={650}
+            okText="Đặt lịch ngay"
+            cancelText="Hủy"
           >
             {selectedCoach && selectedSlot && (
               <>
-                <div style={{ marginBottom: 16 }}>
-                  <h4>Thông tin huấn luyện viên</h4>
-                  <div
-                    style={{ display: "flex", alignItems: "center", gap: 12 }}
-                  >
-                    <Avatar size={48} icon={<UserOutlined />} />
-                    <div>
-                      <div style={{ fontWeight: "bold" }}>
-                        {selectedCoach.name}
-                      </div>
-                      <div style={{ color: "#666" }}>
-                        {selectedCoach.specialization}
-                      </div>
-                      <Rate
-                        disabled
-                        defaultValue={selectedCoach.rating}
-                        style={{ fontSize: 14 }}
-                      />
+                <div className="booking-modal-content">
+                  <div className="booking-modal-header">
+                    <div className="booking-modal-title">Buổi tư vấn với huấn luyện viên</div>
+                    <div className="booking-modal-subtitle">Vui lòng xác nhận thông tin đặt lịch của bạn</div>
+                  </div>
+                  
+                  <div className="booking-modal-coach-info">
+                    <Avatar size={64} icon={<UserOutlined />} style={{ backgroundColor: "#189c38" }} />
+                    <div className="booking-modal-coach-details">
+                      <div className="booking-modal-coach-name">{selectedCoach.name}</div>
+                      <div className="booking-modal-coach-specialization">{selectedCoach.specialization}</div>
                     </div>
                   </div>
-                </div>
 
-                <div style={{ marginBottom: 16 }}>
-                  <h4>Chi tiết buổi học</h4>
-                  <div
-                    style={{
-                      background: "#f6ffed",
-                      padding: 12,
-                      borderRadius: 6,
-                    }}
-                  >
-                    <div>
-                      <strong>Ngày:</strong>{" "}
-                      {selectedDate?.format("DD/MM/YYYY")}
-                    </div>
-                    <div>
-                      <strong>Thời gian:</strong> {selectedSlot.time} -{" "}
-                      {selectedSlot.endTime}
-                    </div>
-                    <div>
-                      <strong>Thời lượng:</strong> {selectedSlot.duration} phút
+                  <div className="booking-modal-details">
+                    <div className="booking-modal-details-title">Chi tiết buổi tư vấn</div>
+                    <div className="booking-modal-details-grid">
+                      <div className="booking-modal-details-item">
+                        <div className="booking-modal-details-label">Ngày</div>
+                        <div className="booking-modal-details-value">
+                          <CalendarOutlined /> {selectedDate?.format("DD/MM/YYYY")}
+                        </div>
+                      </div>
+                      <div className="booking-modal-details-item">
+                        <div className="booking-modal-details-label">Thời gian</div>
+                        <div className="booking-modal-details-value">
+                          <ClockCircleOutlined /> {selectedSlot.time} - {selectedSlot.endTime}
+                        </div>
+                      </div>
+                      <div className="booking-modal-details-item">
+                        <div className="booking-modal-details-label">Thời lượng</div>
+                        <div className="booking-modal-details-value">{selectedSlot.duration} phút</div>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <Form.Item name="notes" label="Ghi chú bổ sung (Tùy chọn)">
-                  <Input.TextArea
-                    rows={4}
-                    placeholder="Bất kỳ mối quan tâm cụ thể hoặc chủ đề nào bạn muốn thảo luận..."
+                  <Alert
+                    message="Lưu ý quan trọng"
+                    description="Vui lòng đặt lịch trước ít nhất 1 giờ. Bạn có thể hủy lịch hẹn trước 24 giờ mà không mất phí. Huấn luyện viên sẽ xác nhận lịch hẹn trong vòng 2 giờ."
+                    type="info"
+                    showIcon
+                    style={{ marginBottom: 16, marginTop: 16 }}
                   />
-                </Form.Item>
+
+                  <Form.Item name="notes" label="Ghi chú bổ sung (Tùy chọn)">
+                    <Input.TextArea
+                      rows={3}
+                      placeholder="Bất kỳ mối quan tâm cụ thể hoặc chủ đề nào bạn muốn thảo luận..."
+                    />
+                  </Form.Item>
+                </div>
               </>
             )}
           </FormModal>
