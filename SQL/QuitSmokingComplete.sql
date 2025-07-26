@@ -561,6 +561,8 @@ CREATE TABLE USER_BEHAVIOR_TASK_LOG (
 
     UNIQUE(user_id, log_date, time_slot) -- Mỗi user chỉ chọn 1 task/slot/ngày
 );
+-- xóa hết dữ liệu trong bảng USER_BEHAVIOR_TASK_LOG để tránh lỗi khi tạo mới
+  DELETE FROM USER_BEHAVIOR_TASK_LOG;
 
 -- 35. DIRECT_CHAT_THREAD: Quản lí từng box chat
 CREATE TABLE DIRECT_CHAT_THREAD (

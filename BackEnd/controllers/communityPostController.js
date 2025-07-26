@@ -1,5 +1,6 @@
 // controllers/communityPostController.js
 const { sql, dbConfig } = require('../config/database');
+const { evaluateAndUnlockAchievements } = require("../utils/achievementService");
 
 exports.createPost = async (req, res) => {
   try {
@@ -15,7 +16,7 @@ exports.createPost = async (req, res) => {
         INSERT INTO COMMUNITY_POST (user_id, title, content, created_at)
         VALUES (@user_id, @title, @content, GETDATE())
       `);
-
+    await evaluateAndUnlockAchievements(userId);
     res.status(201).json({ success: true, message: 'Tạo bài viết thành công' });
   } catch (err) {
     console.error(err);

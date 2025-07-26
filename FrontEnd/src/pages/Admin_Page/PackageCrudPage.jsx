@@ -221,7 +221,7 @@ export default function PackageCrudPage() {
         }}
         onOk={() => form.validateFields().then(save)}
         destroyOnHidden
-        className="modernModal admin-page"
+        className="modernModal"
         style={{ borderRadius: 16 }}
         okButtonProps={{ className: "aum-action-btn aum-edit-btn" }}
         cancelButtonProps={{ className: "aum-action-btn aum-delete-btn" }}
