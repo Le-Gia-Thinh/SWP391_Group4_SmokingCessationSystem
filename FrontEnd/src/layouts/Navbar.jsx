@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Layout, Menu, Button, Avatar, Space, Badge, Drawer } from "antd";
+import { Layout, Menu, Button, Avatar, Space, Badge, Drawer, Dropdown} from "antd";
 import {
   UserOutlined,
   LogoutOutlined,
@@ -60,37 +60,44 @@ export default function Navbar() {
 
   // Kiểm tra FTND trước khi navigate đến QuitPlanCalendar
   const checkFTNDBeforeNavigation = async () => {
+    console.log("🔍 Checking FTND before navigation...");
+
     if (!user?.id) {
       // User chưa đăng nhập -> yêu cầu đăng nhập trước
+      console.log("❌ User chưa đăng nhập, chuyển đến login");
       navigate("/login");
       return;
     }
 
     try {
       const token = localStorage.getItem("token");
+      console.log("📡 Calling FTND API for user:", user.id);
 
       const response = await axios.get(
         `http://localhost:5000/api/customer/ftnd-level/${user.id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
+      console.log("📊 FTND API response:", response.data);
 
       if (response.data.ftnd_level) {
         // Đã có FTND test -> cho phép vào QuitPlanCalendar
-
+        console.log("✅ FTND có rồi, chuyển đến QuitPlanCalendar");
         navigate("/QuitPlanCalendar");
       } else {
         // Chưa có FTND test -> chuyển đến FTND test
+        console.log("⚠️ Chưa có FTND, chuyển đến FtndTest");
         navigate("/FtndTest");
       }
     } catch (error) {
       console.error("❌ Lỗi kiểm tra FTND:", error);
       // Nếu có lỗi, vẫn chuyển đến FTND test để user làm
-
+      console.log("🔄 Có lỗi, chuyển đến FtndTest");
       navigate("/FtndTest");
     }
   };
   const getMenuItems = () => {
+
     if (!user) {
       // Chưa đăng nhập -> chỉ hiển thị trang chủ và đăng nhập
       return [
@@ -275,26 +282,21 @@ export default function Navbar() {
         ? `Premium ${remainingDays} ngày`
         : `Premium ${Math.floor(remainingDays / 30)} tháng`
       : user?.role === "admin"
-      ? "Quản trị viên"
-      : user?.role === "coach"
-      ? "Huấn luyện viên"
-      : "Thành viên";
+        ? "Quản trị viên"
+        : user?.role === "coach"
+          ? "Huấn luyện viên"
+          : "Thành viên";
   const badgeColor =
     remainingDays && remainingDays > 0
       ? "#52c41a"
       : user?.role === "admin"
-      ? "#ff4d4f"
-      : "#52c41a";
+        ? "#ff4d4f"
+        : "#52c41a";
 
   return (
     <Header className="navbar">
       <div className="navbar-content">
         <div className="navbar-logo" onClick={() => navigate("/")}>
-          <img
-            src="/logo.jpg"
-            alt="Logo"
-            style={{ height: 32, marginRight: 8, verticalAlign: "middle" }}
-          />
           <span className="logo-text">QuitSmoking</span>
         </div>
 
@@ -332,15 +334,20 @@ export default function Navbar() {
                 }
                 onClick={() => navigate("/notifications")}
               />
+              <Dropdown
+              overlay={<UserDropdownMenu navigate={navigate} onLogout={handleLogout} />}
+              trigger={["hover"]}
+              placement="bottomRight"
+            >
               <Avatar
-                icon={<UserOutlined />}
+                src={user.avatar_url}
                 style={{
-                  backgroundColor:
-                    user.role === "admin" ? "#ff4d4f" : "#52c41a",
+                  backgroundColor: user.role === "admin" ? "#ff4d4f" : "#52c41a",
                   cursor: "pointer",
                 }}
-                onClick={() => navigate("/profile")}
+                icon={!user.avatar_url && <UserOutlined />}
               />
+            </Dropdown>
               <Badge
                 count={badgeText}
                 style={{ backgroundColor: badgeColor }}

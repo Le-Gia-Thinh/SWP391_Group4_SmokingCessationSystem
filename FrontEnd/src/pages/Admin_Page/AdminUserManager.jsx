@@ -435,7 +435,7 @@ export default function AdminUserManager() {
                         className="aum-action-btn aum-edit-btn"
                         style={{
                           boxShadow: "0 2px 8px #1677ff33",
-                          transition: "transform 0.2s",
+                        
                           marginRight: 8,
                         }}
                       />

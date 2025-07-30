@@ -116,7 +116,7 @@ export default function BlogSection({ token }) {
               <Title level={4} style={{ color: "#52c41a" }}>
                 Bài Viết Nổi Bật
               </Title>
-              <Carousel autoplay dots={true}>
+              <Carousel className="blog-carousel" autoplay dots={true}>
                 {featuredBlogs.map((item) => (
                   <div key={item.post_id}>
                     <Badge.Ribbon text="Nổi bật" color="green">

@@ -89,9 +89,9 @@ export default function CommunityPage() {
     return (
         <Layout className="community-page">
             <Navbar />
-            <Content className="community-content">
-                <div className="community-container">
-                    <Card className="community-card">
+            <Content className="community-content-page">
+                <div className="community-container-page">
+                    <Card className="community-card-page">
                         <Tabs
                             activeKey={activeMainTab}
                             onChange={handleMainTabChange}

@@ -63,7 +63,6 @@ function App() {
               path="/auth/google/redirect"
               element={<GoogleRedirectHandler />}
             />
-            <Route path="/book-coach" element={<BookingPage />} />
             <Route path="/FtndTest" element={<FtndTest />} />
             <Route path="/QuitPlanCalendar" element={<QuitPlanCalendar />} />
             <Route
@@ -72,29 +71,51 @@ function App() {
             />
             <Route path="/RankingBoard" element={<RankingBoard />} />
             <Route path="/profile" element={<Profile />} />
-            <Route path="/user/stats" element={<UserProgressStats />} />
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/checkout" element={<CheckoutPage />} />
-            {/* <Route path="/blog" element={<BlogList />} />
-            <Route path="/chat" element={<ChatPage />} /> */}
             <Route path="/payment-success" element={<PaymentSuccess />} />
-            <Route path="/community" element={<CommunityPage />} />
+
 
             {/* Protected routes - Member Bookings */}
+            {/* PREMIUM-ONLY */}
+            <Route path="/community"
+              element={
+                <ProtectedRoute requireAuth={true} requirePremium={true}>
+                  <CommunityPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/book-coach"
+              element={
+                <ProtectedRoute requireAuth={true} allowedRoles={["member"]} requirePremium={true}>
+                  <BookingPage />
+                </ProtectedRoute>}
+            />
             <Route
               path="/my-bookings"
               element={
-                <ProtectedRoute allowedRoles={["member"]}>
+                <ProtectedRoute allowedRoles={["member"]} requirePremium={true}>
                   <MemberBookings />
                 </ProtectedRoute>
               }
             />
+            <Route path="/user/stats"
+              element={
+                <ProtectedRoute requireAuth={true} requirePremium={true}>
+                  <UserProgressStats />
+                </ProtectedRoute>
+              }
+            />
+
+
+
+
 
             {/* Protected routes - Coach Dashboard */}
             <Route
               path="/coach-dashboard"
               element={
-                <ProtectedRoute allowedRoles={["coach"]}>
+                <ProtectedRoute allowedRoles={["coach"]} >
                   <CoachDashboard />
                 </ProtectedRoute>
               }

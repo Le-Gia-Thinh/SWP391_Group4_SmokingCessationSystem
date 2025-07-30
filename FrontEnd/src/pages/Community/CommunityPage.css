@@ -4,21 +4,21 @@
     background: linear-gradient(135deg, #f4fff6 0%, #e8f5e8 100%);
 }
 
-.community-content {
+.community-content-page {
     display: flex;
     flex-direction: column;
     height: 100vh;
     min-height: 0;
 }
 
-.community-container {
+.community-container-page {
     flex: 1;
     display: flex;
     flex-direction: column;
     min-height: 0;
 }
 
-.community-card {
+.community-card-page {
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -33,7 +33,7 @@
 
 /* Responsive Design, Tab Styles, Empty State Styles, Form Modal Styles, Scrollbar Styles, ... giữ lại nếu dùng chung */
 @media (max-width: 768px) {
-    .community-content {
+    .community-content-page {
         padding: 16px;
     }
 

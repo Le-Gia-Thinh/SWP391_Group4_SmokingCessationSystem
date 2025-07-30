@@ -445,7 +445,7 @@ export default function ChatSection({ token, socket, isConnected }) {
                                         <List
                                             dataSource={communityMessages}
                                             renderItem={(msg) => (
-                                                <List.Item className="message-item">
+                                                <List.Item className="chat-message-item">
                                                     <div className="message-content">
                                                         <div className="message-header">
                                                             <Avatar icon={<UserOutlined />} />
@@ -551,7 +551,7 @@ export default function ChatSection({ token, socket, isConnected }) {
                                                     <List
                                                         dataSource={topicMessages}
                                                         renderItem={(msg) => (
-                                                            <List.Item className="message-item">
+                                                            <List.Item className="chat-message-item">
                                                                 <div className="message-content">
                                                                     <div className="message-header">
                                                                         <Avatar icon={<UserOutlined />} />
@@ -670,7 +670,7 @@ export default function ChatSection({ token, socket, isConnected }) {
                                                         dataSource={coachMessages}
                                                         locale={{ emptyText: 'Chưa có tin nhắn nào trong phiên này. Hãy bắt đầu cuộc trò chuyện!' }}
                                                         renderItem={(msg) => (
-                                                            <List.Item className="message-item">
+                                                            <List.Item className="chat-message-item">
                                                                 <div className="message-content">
                                                                     <div className="message-header">
                                                                         <Avatar icon={<UserOutlined />} />
