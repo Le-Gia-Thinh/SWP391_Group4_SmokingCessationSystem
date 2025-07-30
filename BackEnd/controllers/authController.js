@@ -83,6 +83,14 @@ const register = async (req, res) => {
       return res.status(400).json({ message: 'Email đã được sử dụng' });
     }
 
+    const checkPhone = await pool.request()
+      .input('phone_number', sql.VarChar, phone_number)
+      .query('SELECT * FROM CUSTOMER WHERE phone_number = @phone_number');
+
+    if (checkPhone.recordset.length > 0) {
+      return res.status(400).json({ message: 'Số điện thoại đã được sử dụng' }); 
+    }
+
     // Mã hóa mật khẩu
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
