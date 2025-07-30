@@ -64,7 +64,7 @@ const RoadmapCarousel = ({ roadmapItems }) => {
                     style={{ maxWidth: 500 }}
                 >
                     <h1 className="display-6 section-title bg-white text-center text-primary px-3">Roadmap</h1>
-                    <p className="text-primary fs-5 mb-5">We Translate Your Dream Into Reality</p>
+                    <p className="text-primary fs-5 mb-5">Chúng tôi sẽ luôn đồng hành cùng bạn</p>
                 </div>
 
                 <div ref={carouselRef} className="owl-carousel roadmap-carousel aos-item" data-aos="fade-up" data-aos-delay="1000">

@@ -2,6 +2,9 @@
 -- TEST DATA – SMOKING CESSATION
 -- ===============================
 
+-- xóa hết dữ liệu trong bảng USER_BEHAVIOR_TASK_LOG để tránh lỗi khi tạo mới
+  DELETE FROM USER_BEHAVIOR_TASK_LOG;
+
 -- 1. CUSTOMER
 INSERT INTO CUSTOMER (
     username, password_hash, full_name, email, phone_number, date_of_birth,
@@ -338,7 +341,7 @@ SELECT 2, user_id, N'Mỗi sáng mình uống nước chanh ấm và đọc 10 p
 FROM CUSTOMER WHERE username = 'member4';
 
 
--- 17. ACHIEVEMENT
+-- 17. ACHIEVEMENTv- xong
 INSERT INTO ACHIEVEMENT (title, description, badge_image, achievement_type, difficulty_level, phase, check_code)
 VALUES
 (N'Hoàn thành FTND', N'“Biết mình biết ta, trăm trận trăm thắng.”', NULL, 'milestone', 1, 1, 'ftnd_submitted'),
@@ -369,7 +372,7 @@ VALUES
 (N'Mỗi mốc giờ một lựa chọn', N'“Bạn đã thử đủ mọi cách phù hợp với bản thân.”', NULL, 'daily', 4, 4, 'tried_all_slots');
 
 
--- 18. USER_ACHIEVEMENT
+-- 18. USER_ACHIEVEMENT - xong
 INSERT INTO USER_ACHIEVEMENT (user_id, achievement_id, earned_date, is_shared)
 SELECT user_id, 1, GETDATE(), 1
 FROM CUSTOMER WHERE username = 'member2';
@@ -389,6 +392,9 @@ FROM CUSTOMER WHERE username = 'member5';
 INSERT INTO DAILY_SMOKING_SUMMARY (user_id, date, total_cigarettes, relapsed)
 SELECT user_id, CAST(GETDATE() AS DATE), 0, 0
 FROM CUSTOMER WHERE username = 'member5';
+
+
+
 
 
 -- ================================================

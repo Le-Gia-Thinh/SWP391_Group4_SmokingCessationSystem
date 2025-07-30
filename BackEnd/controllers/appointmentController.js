@@ -1,5 +1,6 @@
 // controllers/appointmentController.js
 const { sql, dbConfig } = require('../config/database');
+const { evaluateAndUnlockAchievements } = require('../utils/achievementService');
 
 // Member đặt lịch
 exports.bookAppointment = async (req, res) => {
@@ -26,6 +27,7 @@ exports.bookAppointment = async (req, res) => {
           AND session_status IN ('pending', 'accepted', 'completed')
       `);
 
+      await evaluateAndUnlockAchievements(userId);
     const sessionCount = countResult.recordset[0].session_count;
     if (sessionCount >= 3) {
       return res.status(400).json({

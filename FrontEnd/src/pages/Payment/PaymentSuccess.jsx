@@ -8,7 +8,7 @@ const PaymentSuccess = () => {
     useEffect(() => {
         const timeout = setTimeout(() => {
             navigate('/home');
-        }, 3000); // Chuyển hướng sau 3 giây
+        }, 1000);
 
         return () => clearTimeout(timeout);
     }, []);

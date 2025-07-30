@@ -259,7 +259,6 @@ const CheckoutPage = () => {
             {activeTab === "buy" && (
               loading ? (
                 <>
-                  <Navbar />
                   <div className="checkout-page">
                     <div className="loading-container">
                       <div className="text-center">
@@ -278,7 +277,6 @@ const CheckoutPage = () => {
                 </>
               ) : packages.length === 0 ? (
                 <>
-                  <Navbar />
                   <div className="checkout-page">
                     <div className="loading-container">
                       <div className="text-center">

@@ -29,10 +29,10 @@
     gap: 20px;
 }
 
-.message-item {
+.chat-section .chat-message-item {
     padding: 12px 0;
     border-bottom: 1px solid #f0f0f0;
-    animation: fadeIn 0.3s ease-in;
+    animation: chatFadeIn 0.3s ease-in;
 }
 
 .message-item:last-child {
@@ -176,14 +176,14 @@
     flex-direction: column;
 }
 
-@keyframes fadeIn {
+@keyframes chatFadeIn {
     from {
         opacity: 0;
-        transform: translateY(10px);
+        transform: translateY(10px)
     }
 
     to {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateY(0)
     }
 }

@@ -12,7 +12,7 @@ const checkFunctions = {
     const result = await pool.request().input("user_id", sql.Int, userId)
       .query(`
         SELECT COUNT(*) AS count FROM COMMUNITY_POST
-        WHERE user_id = @user_id AND created_at >= DATEADD(DAY, -6, CAST(GETDATE() AdS DATE))
+        WHERE user_id = @user_id AND created_at >= DATEADD(DAY, -6, CAST(GETDATE() AS DATE))
       `);
     return result.recordset[0].count >= 5;
   },
@@ -104,26 +104,18 @@ const checkFunctions = {
   },
 
   clean_7_days: async (pool, userId) => {
-    const result = await pool.request().input("user_id", sql.Int, userId)
-      .query(`
-        WITH Streaks AS (
-          SELECT 
-            date,
-            ROW_NUMBER() OVER (ORDER BY date) -
-            ROW_NUMBER() OVER (PARTITION BY total_cigarettes ORDER BY date) AS grp
-          FROM DAILY_SMOKING_SUMMARY
-          WHERE user_id = @user_id AND total_cigarettes = 0 AND date <= CAST(GETDATE() AS DATE)
-        )
-        SELECT COUNT(*) AS streak
-        FROM (
-          SELECT COUNT(*) AS streak_length
-          FROM Streaks
-          GROUP BY grp
-          HAVING COUNT(*) >= 7
-        ) AS ValidStreaks
-      `);
-    return result.recordset.length > 0;
-  },
+  const result = await pool.request()
+    .input("user_id", sql.Int, userId)
+    .query(`
+      SELECT COUNT(*) AS clean_days
+      FROM DAILY_SMOKING_SUMMARY
+      WHERE user_id = @user_id 
+        AND total_cigarettes = 0 
+        AND date <= CAST(GETDATE() AS DATE)
+    `);
+
+  return result.recordset[0].clean_days >= 7;
+},
 
   clean_15_days: async (pool, userId) => {
     const result = await pool.request().input("user_id", sql.Int, userId)
@@ -197,6 +189,7 @@ const checkFunctions = {
   },
 };
 
+// Hàm kiểm tra và mở khóa thành tựu
 exports.evaluateAndUnlockAchievements = async (userId) => {
   const pool = await sql.connect(dbConfig);
   const achievements = await pool.request()
@@ -230,7 +223,7 @@ async function grantIfNotExist(pool, userId, achievementId) {
     const { title, description } = info.recordset[0];
     const content = `🏆 Bạn vừa đạt thành tựu: ${title}! ${description}`;
 
-    // ✅ 3. Gửi thông báo lên bảng NOTIFICATION
+    // Gửi thông báo cho người dùng
     await pool.request()
       .input("user_id", sql.Int, userId)
       .input("title", sql.NVarChar, "🎉 Thành tựu mới")
@@ -243,4 +236,6 @@ async function grantIfNotExist(pool, userId, achievementId) {
         VALUES (@user_id, @title, @content, @notification_type, @created_at, @is_read)
       `);
   }
+
+  
 }

@@ -15,6 +15,7 @@
   padding-top: 0 !important;
   padding-bottom: 0 !important;
 }
+
 /* ===== CUSTOM SEARCH INPUT ===== */
 
 .admin-page .ant-input-affix-wrapper,
@@ -44,6 +45,7 @@
   box-shadow: none !important;
   outline: none !important;
 }
+
 /* ===== COACH TABLE CUSTOM ===== */
 .admin-dashboard .ant-table {
   width: 100% !important;
@@ -53,7 +55,7 @@
   background: #fff;
 }
 
-.admin-dashboard .ant-table-thead > tr > th {
+.admin-dashboard .ant-table-thead>tr>th {
   background: linear-gradient(90deg, #667eea 0%, #764ba2 100%) !important;
   color: #fff !important;
   font-weight: 600;
@@ -63,30 +65,31 @@
   text-align: center !important;
 }
 
-.admin-dashboard .ant-table-tbody > tr > td {
+.admin-dashboard .ant-table-tbody>tr>td {
   text-align: center !important;
   font-size: 15px;
 }
 
-.admin-dashboard .ant-table-tbody > tr > td .ant-tag {
+.admin-dashboard .ant-table-tbody>tr>td .ant-tag {
   margin: 0 auto;
 }
 
-.admin-dashboard .ant-table-tbody > tr {
+.admin-dashboard .ant-table-tbody>tr {
   transition: box-shadow 0.3s, background 0.3s;
 }
-.admin-dashboard .ant-table-tbody > tr:hover {
+
+.admin-dashboard .ant-table-tbody>tr:hover {
   background: #f0f8ff !important;
   box-shadow: 0 2px 12px rgba(102, 126, 234, 0.10);
   transform: scale(1.01);
   z-index: 2;
 }
 
-.admin-dashboard .ant-table-tbody > tr > td .ant-avatar {
+.admin-dashboard .ant-table-tbody>tr>td .ant-avatar {
   margin: 0 auto;
 }
 
-.admin-dashboard .ant-table-tbody > tr > td .ant-space {
+.admin-dashboard .ant-table-tbody>tr>td .ant-space {
   justify-content: center !important;
   width: 100%;
 }
@@ -101,73 +104,91 @@
   color: #fff !important;
   border: none !important;
 }
+
 .aum-view-btn:hover {
   background: linear-gradient(135deg, #5b86e5 0%, #36d1c4 100%) !important;
 }
+
 .aum-edit-btn {
   background: linear-gradient(135deg, #1677ff 0%, #69c0ff 100%) !important;
   color: #fff !important;
   border: none !important;
 }
+
 .aum-edit-btn:hover {
   background: linear-gradient(135deg, #69c0ff 0%, #1677ff 100%) !important;
 }
+
 .aum-unlock-btn {
   background: linear-gradient(135deg, #52c41a 0%, #b7eb8f 100%) !important;
   color: #fff !important;
   border: none !important;
 }
+
 .aum-unlock-btn:hover {
   background: linear-gradient(135deg, #b7eb8f 0%, #52c41a 100%) !important;
 }
+
 .aum-delete-btn {
   background: linear-gradient(135deg, #ff4d4f 0%, #ffa39e 100%) !important;
   color: #fff !important;
   border: none !important;
 }
+
 .aum-delete-btn:hover {
   background: linear-gradient(135deg, #ffa39e 0%, #ff4d4f 100%) !important;
 }
+
 /* ===== CUSTOM ACTION BUTTONS FOR ADMIN USER MANAGER ===== */
 .aum-action-btn {
   transition: box-shadow 0.2s, transform 0.2s;
 }
+
 .aum-action-btn:hover {
   transform: scale(1.12) rotate(-3deg);
   box-shadow: 0 4px 16px #1677ff44;
 }
+
 .aum-edit-btn {
   background: linear-gradient(135deg, #1677ff 0%, #69c0ff 100%) !important;
   color: #fff !important;
   border: none !important;
 }
+
 .aum-edit-btn:hover {
   background: linear-gradient(135deg, #69c0ff 0%, #1677ff 100%) !important;
 }
+
 .aum-unlock-btn {
   background: linear-gradient(135deg, #52c41a 0%, #b7eb8f 100%) !important;
   color: #fff !important;
   border: none !important;
 }
+
 .aum-unlock-btn:hover {
   background: linear-gradient(135deg, #b7eb8f 0%, #52c41a 100%) !important;
 }
+
 .aum-lock-btn {
   background: linear-gradient(135deg, #faad14 0%, #ffe58f 100%) !important;
   color: #fff !important;
   border: none !important;
 }
+
 .aum-lock-btn:hover {
   background: linear-gradient(135deg, #ffe58f 0%, #faad14 100%) !important;
 }
+
 .aum-delete-btn {
   background: linear-gradient(135deg, #ff4d4f 0%, #ffa39e 100%) !important;
   color: #fff !important;
   border: none !important;
 }
+
 .aum-delete-btn:hover {
   background: linear-gradient(135deg, #ffa39e 0%, #ff4d4f 100%) !important;
 }
+
 /* ===== ADMIN PAGE MASTER CSS - NO GLOBAL CONFLICTS ===== */
 
 /* ===== ENHANCED ANIMATIONS & EFFECTS ===== */
@@ -176,6 +197,7 @@
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -187,6 +209,7 @@
     opacity: 0;
     transform: translateX(-30px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -194,18 +217,24 @@
 }
 
 @keyframes adminPulse {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.05);
   }
 }
 
 @keyframes adminGlow {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow: 0 0 5px rgba(24, 144, 255, 0.3);
   }
+
   50% {
     box-shadow: 0 0 20px rgba(24, 144, 255, 0.6);
   }
@@ -216,13 +245,16 @@
     opacity: 0;
     transform: scale(0.3);
   }
+
   50% {
     opacity: 1;
     transform: scale(1.05);
   }
+
   70% {
     transform: scale(0.9);
   }
+
   100% {
     opacity: 1;
     transform: scale(1);
@@ -230,9 +262,26 @@
 }
 
 @keyframes adminShake {
-  0%, 100% { transform: translateX(0); }
-  10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
-  20%, 40%, 60%, 80% { transform: translateX(2px); }
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-2px);
+  }
+
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(2px);
+  }
 }
 
 @keyframes adminRotateIn {
@@ -240,6 +289,7 @@
     opacity: 0;
     transform: rotate(-180deg);
   }
+
   to {
     opacity: 1;
     transform: rotate(0deg);
@@ -275,7 +325,7 @@
   top: 0;
   height: 100%;
   width: 0;
-  background: linear-gradient(90deg, rgba(255,255,255,0.1), rgba(255,255,255,0.2));
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.2));
   transition: width 0.3s ease;
   z-index: 0;
 }
@@ -325,7 +375,7 @@
   left: 50%;
   width: 0;
   height: 0;
-  background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
   transition: all 0.3s ease;
   border-radius: 50%;
   transform: translate(-50%, -50%);
@@ -352,6 +402,7 @@
   0% {
     transform: rotate(0deg);
   }
+
   100% {
     transform: rotate(180deg);
   }
@@ -362,6 +413,7 @@
     transform: translateX(-10px);
     opacity: 0;
   }
+
   100% {
     transform: translateX(0);
     opacity: 1;
@@ -372,9 +424,11 @@
   0% {
     transform: scaleX(1);
   }
+
   50% {
     transform: scaleX(0);
   }
+
   100% {
     transform: scaleX(1);
   }
@@ -399,8 +453,8 @@
 .admin-page .admin-custom-collapse-btn:hover {
   background: rgba(102, 126, 234, 0.2) !important;
   border-color: rgba(102, 126, 234, 0.5) !important;
-  box-shadow: 0 0 15px rgba(102, 126, 234, 0.3), 
-              0 4px 12px rgba(0, 0, 0, 0.2) !important;
+  box-shadow: 0 0 15px rgba(102, 126, 234, 0.3),
+    0 4px 12px rgba(0, 0, 0, 0.2) !important;
   transform: translateY(-2px) scale(1.02);
 }
 
@@ -637,7 +691,7 @@
   transition: all 0.3s ease;
 }
 
-.admin-page .admin-content-animated > * {
+.admin-page .admin-content-animated>* {
   animation: adminSlideInLeft 0.6s ease-out;
 }
 
@@ -708,11 +762,11 @@
   border-radius: 10px !important;
   overflow: hidden !important;
   box-shadow: 0 2px 16px rgba(102, 126, 234, 0.10) !important;
-  animation: adminTableFadeIn 0.7s cubic-bezier(0.4,0,0.2,1);
+  animation: adminTableFadeIn 0.7s cubic-bezier(0.4, 0, 0.2, 1);
   background: #fff;
 }
 
-.admin-page .ant-table-thead > tr > th {
+.admin-page .ant-table-thead>tr>th {
   background: linear-gradient(90deg, #667eea 0%, #764ba2 100%) !important;
   color: #fff !important;
   font-weight: 600;
@@ -724,53 +778,73 @@
   z-index: 1;
 }
 
-.admin-page .ant-table-thead > tr > th:hover {
+.admin-page .ant-table-thead>tr>th:hover {
   background: linear-gradient(90deg, #764ba2 0%, #667eea 100%) !important;
   color: #ffe066 !important;
   cursor: pointer;
 }
 
-.admin-page .ant-table-tbody > tr {
+.admin-page .ant-table-tbody>tr {
   transition: box-shadow 0.3s, background 0.3s;
 }
 
-.admin-page .ant-table-tbody > tr:hover {
+.admin-page .ant-table-tbody>tr:hover {
   background: #f0f8ff !important;
   box-shadow: 0 2px 12px rgba(102, 126, 234, 0.10);
   transform: scale(1.01);
   z-index: 2;
 }
 
-.admin-page .ant-table-tbody > tr.selected-row {
+.admin-page .ant-table-tbody>tr.selected-row {
   background: #e6e6fa !important;
   animation: adminTableRowPulse 0.7s;
 }
 
-.admin-page .ant-table-tbody > tr > td {
+.admin-page .ant-table-tbody>tr>td {
   transition: background 0.3s, color 0.3s;
   font-size: 14px;
 }
 
-.admin-page .ant-table-tbody > tr > td.editing {
+.admin-page .ant-table-tbody>tr>td.editing {
   background: #fffbe6 !important;
   color: #a67c00 !important;
   animation: adminTableCellEdit 0.5s;
 }
 
 @keyframes adminTableFadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes adminTableRowPulse {
-  0% { box-shadow: 0 0 0 0 rgba(102,126,234,0.2); }
-  70% { box-shadow: 0 0 0 8px rgba(102,126,234,0.05); }
-  100% { box-shadow: 0 0 0 0 rgba(102,126,234,0.0); }
+  0% {
+    box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.2);
+  }
+
+  70% {
+    box-shadow: 0 0 0 8px rgba(102, 126, 234, 0.05);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.0);
+  }
 }
 
 @keyframes adminTableCellEdit {
-  0% { background: #ffe066; }
-  100% { background: #fffbe6; }
+  0% {
+    background: #ffe066;
+  }
+
+  100% {
+    background: #fffbe6;
+  }
 }
 
 
@@ -789,7 +863,7 @@
   left: 50%;
   width: 0;
   height: 0;
-  background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
   transition: all 0.3s ease;
   border-radius: 50%;
   transform: translate(-50%, -50%);
@@ -919,7 +993,7 @@
   color: #fff !important;
 }
 
-.admin-page.dark-mode .ant-table-thead > tr > th {
+.admin-page.dark-mode .ant-table-thead>tr>th {
   background: linear-gradient(135deg, #4a5568, #2d3748) !important;
 }
 
@@ -971,11 +1045,11 @@
   .admin-page .admin-menu-item-enhanced {
     animation-duration: 0.2s;
   }
-  
+
   .admin-page .admin-custom-collapse-btn {
     animation-duration: 0.2s;
   }
-  
+
   .admin-page .ant-card {
     animation-duration: 0.3s;
   }
@@ -983,12 +1057,16 @@
 
 /* ===== ADVANCED COLLAPSE BUTTON EFFECTS ===== */
 @keyframes adminCollapseWave {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateX(0);
   }
+
   25% {
     transform: translateX(-3px);
   }
+
   75% {
     transform: translateX(3px);
   }
@@ -999,10 +1077,12 @@
     opacity: 1;
     transform: scale(1) rotate(0deg);
   }
+
   50% {
     opacity: 0;
     transform: scale(0.8) rotate(90deg);
   }
+
   100% {
     opacity: 1;
     transform: scale(1) rotate(0deg);
@@ -1077,7 +1157,7 @@
 .admin-page .admin-custom-collapse-btn:hover {
   background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.15)) !important;
   border-color: rgba(102, 126, 234, 0.6) !important;
-  box-shadow: 
+  box-shadow:
     0 0 20px rgba(102, 126, 234, 0.4),
     0 8px 25px rgba(0, 0, 0, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
@@ -1088,162 +1168,163 @@
 /* Focus state for accessibility */
 .admin-page .admin-custom-collapse-btn:focus {
   outline: none !important;
-  box-shadow: 
+  box-shadow:
     0 0 0 3px rgba(102, 126, 234, 0.3),
     0 0 20px rgba(102, 126, 234, 0.4) !important;
 }
 
 /* Schedule Management Styles (moved from ScheduleManagement.css) */
 .schedule-management-container {
-    background-color: transparent;
-    animation: fadeInUp 0.6s ease-out;
+  background-color: transparent;
+  animation: fadeInUp 0.6s ease-out;
 }
 
 @keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .schedule-management-content {
-    padding: 24px;
-    max-width: 1200px;
-    margin: 0 auto;
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-    border: 1px solid #e8e8e8;
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e8e8e8;
 }
 
 .schedule-management-header {
-    margin-bottom: 24px;
-    padding: 24px;
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-    border: 1px solid #e8e8e8;
+  margin-bottom: 24px;
+  padding: 24px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e8e8e8;
 }
 
 .schedule-management-header .ant-statistic-title {
-    color: #666;
-    font-size: 14px;
-    margin-bottom: 8px;
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 8px;
 }
 
 .schedule-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 24px;
-    border-radius: 8px;
-    margin-bottom: 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 24px;
+  border-radius: 8px;
+  margin-bottom: 24px;
 }
 
 .schedule-stats {
-    background: white;
-    border-radius: 8px;
-    padding: 20px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    margin-bottom: 24px;
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 24px;
 }
 
 .schedule-table {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .coach-info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .coach-avatar {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 .coach-details {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
 .coach-name {
-    font-weight: 600;
-    color: #262626;
+  font-weight: 600;
+  color: #262626;
 }
 
 .coach-email {
-    color: #8c8c8c;
-    font-size: 12px;
+  color: #8c8c8c;
+  font-size: 12px;
 }
 
 .schedule-modal {
-    border-radius: 8px;
+  border-radius: 8px;
 }
 
 .schedule-form-section {
-    background: #fafafa;
-    padding: 16px;
-    border-radius: 6px;
-    margin-bottom: 16px;
+  background: #fafafa;
+  padding: 16px;
+  border-radius: 6px;
+  margin-bottom: 16px;
 }
 
 .pattern-config {
-    background: #f6ffed;
-    border: 1px solid #b7eb8f;
-    border-radius: 6px;
-    padding: 16px;
-    margin-bottom: 16px;
+  background: #f6ffed;
+  border: 1px solid #b7eb8f;
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 16px;
 }
 
 .specific-schedule {
-    background: #fff7e6;
-    border: 1px solid #ffd591;
-    border-radius: 6px;
-    padding: 16px;
-    margin-bottom: 16px;
+  background: #fff7e6;
+  border: 1px solid #ffd591;
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 16px;
 }
 
 .action-buttons {
-    display: flex;
-    gap: 8px;
-    justify-content: flex-end;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
 }
 
 .status-tag {
-    border-radius: 4px;
-    font-weight: 500;
+  border-radius: 4px;
+  font-weight: 500;
 }
 
 .status-available {
-    background: #f6ffed;
-    color: #52c41a;
-    border: 1px solid #b7eb8f;
+  background: #f6ffed;
+  color: #52c41a;
+  border: 1px solid #b7eb8f;
 }
 
 .status-unavailable {
-    background: #fff2e8;
-    color: #fa8c16;
-    border: 1px solid #ffd591;
+  background: #fff2e8;
+  color: #fa8c16;
+  border: 1px solid #ffd591;
 }
 
 .loading-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
 }
 
 .loading-text {
-    margin-top: 16px;
-    color: #8c8c8c;
-    font-size: 14px;
+  margin-top: 16px;
+  color: #8c8c8c;
+  font-size: 14px;
 }
 
 /* ===== ACHIEVEMENT MANAGEMENT STYLES ===== */
@@ -1252,6 +1333,7 @@
   box-shadow: 0 4px 24px rgba(102, 126, 234, 0.10) !important;
   background: #fff !important;
 }
+
 .achievement-table-wrapper {
   background: #fff;
   border-radius: 16px;
@@ -1259,12 +1341,14 @@
   padding: 0;
   margin-bottom: 0;
 }
+
 .achievement-table {
   border-radius: 16px !important;
   overflow: hidden !important;
   box-shadow: none !important;
 }
-.achievement-table .ant-table-thead > tr > th {
+
+.achievement-table .ant-table-thead>tr>th {
   background: linear-gradient(90deg, #667eea 0%, #764ba2 100%) !important;
   color: #fff !important;
   font-weight: 600;
@@ -1272,19 +1356,23 @@
   text-align: center !important;
   border-bottom: 2px solid #764ba2 !important;
 }
-.achievement-table .ant-table-tbody > tr > td {
+
+.achievement-table .ant-table-tbody>tr>td {
   text-align: center !important;
   font-size: 15px;
 }
-.achievement-table .ant-table-tbody > tr {
+
+.achievement-table .ant-table-tbody>tr {
   transition: box-shadow 0.3s, background 0.3s;
 }
-.achievement-table .ant-table-tbody > tr:hover {
+
+.achievement-table .ant-table-tbody>tr:hover {
   background: #f0f8ff !important;
   box-shadow: 0 2px 12px rgba(102, 126, 234, 0.10);
   transform: scale(1.01);
   z-index: 2;
 }
+
 .achievement-add-btn {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
   color: #fff !important;
@@ -1294,82 +1382,132 @@
   box-shadow: 0 2px 8px #764ba233;
   transition: background 0.3s, box-shadow 0.3s, transform 0.2s;
 }
+
 .achievement-add-btn:hover {
   background: linear-gradient(135deg, #764ba2 0%, #667eea 100%) !important;
   box-shadow: 0 4px 16px #667eea33;
   transform: scale(1.06);
 }
+
 .achievement-table .ant-btn {
   border-radius: 8px !important;
   font-weight: 500;
   transition: box-shadow 0.2s, transform 0.2s;
 }
+
 .achievement-table .ant-btn:hover {
   transform: scale(1.12) rotate(-3deg);
   box-shadow: 0 4px 16px #1677ff44;
 }
+
 .achievement-table .ant-btn[danger] {
   background: linear-gradient(135deg, #ff4d4f 0%, #ffa39e 100%) !important;
   color: #fff !important;
   border: none !important;
 }
+
 .achievement-table .ant-btn[danger]:hover {
   background: linear-gradient(135deg, #ffa39e 0%, #ff4d4f 100%) !important;
 }
+
 .achievement-modal .ant-modal-content {
   border-radius: 16px;
   box-shadow: 0 4px 24px #764ba244;
   animation: adminFadeInUp 0.5s;
 }
+
 .achievement-modal .ant-modal-title {
   font-weight: 700;
   color: #764ba2;
 }
+
 .achievement-modal .ant-btn-primary {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
   border: none !important;
   font-weight: 600;
 }
+
 .achievement-modal .ant-btn-primary:hover {
   background: linear-gradient(135deg, #764ba2 0%, #667eea 100%) !important;
 }
 
 /* ===== ACHIEVEMENT PAGE ANIMATIONS & BUTTON EFFECTS ===== */
 @keyframes achievementFadeIn {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
+
 @keyframes achievementBounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
 }
+
 @keyframes achievementHighlight {
-  0% { background: #fffbe6; }
-  100% { background: #fff; }
+  0% {
+    background: #fffbe6;
+  }
+
+  100% {
+    background: #fff;
+  }
 }
+
 @keyframes achievementSlideIn {
-  from { opacity: 0; transform: translateX(-40px); }
-  to { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
+
 @keyframes achievementPulse {
-  0%, 100% { box-shadow: 0 0 0 0 #764ba244; }
-  50% { box-shadow: 0 0 16px 4px #764ba244; }
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 #764ba244;
+  }
+
+  50% {
+    box-shadow: 0 0 16px 4px #764ba244;
+  }
 }
 
 .achievement-table-wrapper {
-  animation: achievementFadeIn 0.7s cubic-bezier(.4,2,.6,1) both;
+  animation: achievementFadeIn 0.7s cubic-bezier(.4, 2, .6, 1) both;
 }
-.achievement-table .ant-table-tbody > tr {
-  animation: achievementSlideIn 0.5s cubic-bezier(.4,2,.6,1) both;
+
+.achievement-table .ant-table-tbody>tr {
+  animation: achievementSlideIn 0.5s cubic-bezier(.4, 2, .6, 1) both;
 }
-.achievement-table .ant-table-tbody > tr.achievement-row-highlight {
+
+.achievement-table .ant-table-tbody>tr.achievement-row-highlight {
   animation: achievementHighlight 1.2s;
 }
-.achievement-table .ant-table-tbody > tr:hover {
+
+.achievement-table .ant-table-tbody>tr:hover {
   animation: achievementBounce 0.5s;
   background: #f0f8ff !important;
 }
-.achievement-table .ant-table-thead > tr > th {
+
+.achievement-table .ant-table-thead>tr>th {
   animation: achievementPulse 1.2s infinite alternate;
 }
 
@@ -1383,33 +1521,39 @@
   border: none !important;
   box-shadow: 0 2px 8px #c4b5fd33;
 }
+
 .achievement-btn:hover {
   background: linear-gradient(135deg, #c4b5fd 0%, #e0e7ff 100%) !important;
   color: #764ba2 !important;
   transform: scale(1.08) rotate(-2deg);
   box-shadow: 0 4px 16px #764ba244;
 }
+
 .achievement-btn:active {
   animation: achievementPulse 0.5s;
   background: #ede9fe !important;
 }
+
 .achievement-btn-delete {
   background: linear-gradient(135deg, #ffbaba 0%, #ff4d4f 100%) !important;
   color: #fff !important;
   border: none !important;
   transition: background 0.3s, transform 0.2s;
 }
+
 .achievement-btn-delete:hover {
   background: linear-gradient(135deg, #ff4d4f 0%, #ffbaba 100%) !important;
   color: #fff !important;
   transform: scale(1.12) rotate(-4deg);
 }
+
 .achievement-btn-edit {
   background: linear-gradient(135deg, #a5b4fc 0%, #818cf8 100%) !important;
   color: #fff !important;
   border: none !important;
   transition: background 0.3s, transform 0.2s;
 }
+
 .achievement-btn-edit:hover {
   background: linear-gradient(135deg, #818cf8 0%, #a5b4fc 100%) !important;
   color: #fff !important;

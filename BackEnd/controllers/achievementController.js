@@ -6,7 +6,7 @@ exports.getAllAchievements = async (req, res) => {
   try {
     const pool = await sql.connect(dbConfig);
     const result = await pool.request().query(`
-      SELECT achievement_id, title, description, badge_image,
+      SELECT achievement_id, title, description,
              achievement_type, difficulty_level, phase
       FROM ACHIEVEMENT
       ORDER BY phase, difficulty_level
@@ -55,7 +55,7 @@ exports.getAchievementById = async (req, res) => {
     const result = await pool.request()
       .input("id", sql.Int, id)
       .query(`
-        SELECT achievement_id, title, description, badge_image,
+        SELECT achievement_id, title, description,
                achievement_type, difficulty_level, phase, check_code
         FROM ACHIEVEMENT
         WHERE achievement_id = @id
@@ -75,32 +75,27 @@ exports.createAchievement = async (req, res) => {
   let {
     title,
     description,
-    badge_image,
     achievement_type,
     difficulty_level,
     phase,
     check_code
   } = req.body;
 
-  // nếu badge_image rỗng hoặc chỉ khoảng trắng → để null
-  badge_image = badge_image?.trim() || null;
-
   try {
     const pool = await sql.connect(dbConfig);
     const result = await pool.request()
       .input("title", sql.NVarChar, title)
       .input("description", sql.NVarChar, description)
-      .input("badge_image", sql.NVarChar, badge_image)
       .input("achievement_type", sql.NVarChar, achievement_type)
       .input("difficulty_level", sql.Int, difficulty_level)
       .input("phase", sql.Int, phase)
       .input("check_code", sql.NVarChar, check_code)
       .query(`
         INSERT INTO ACHIEVEMENT
-          (title, description, badge_image, achievement_type,
+          (title, description, achievement_type,
            difficulty_level, phase, check_code)
         VALUES
-          (@title, @description, @badge_image, @achievement_type,
+          (@title, @description, @achievement_type,
            @difficulty_level, @phase, @check_code);
         SELECT SCOPE_IDENTITY() AS achievement_id;
       `);
@@ -117,15 +112,12 @@ exports.updateAchievement = async (req, res) => {
   let {
     title,
     description,
-    badge_image,
     achievement_type,
     difficulty_level,
     phase,
     check_code
   } = req.body;
 
-  // xử lý badge_image tương tự
-  badge_image = badge_image?.trim() || null;
 
   try {
     const pool = await sql.connect(dbConfig);
@@ -133,7 +125,6 @@ exports.updateAchievement = async (req, res) => {
       .input("id", sql.Int, id)
       .input("title", sql.NVarChar, title)
       .input("description", sql.NVarChar, description)
-      .input("badge_image", sql.NVarChar, badge_image)
       .input("achievement_type", sql.NVarChar, achievement_type)
       .input("difficulty_level", sql.Int, difficulty_level)
       .input("phase", sql.Int, phase)
@@ -142,7 +133,6 @@ exports.updateAchievement = async (req, res) => {
         UPDATE ACHIEVEMENT
         SET title=@title,
             description=@description,
-            badge_image=@badge_image,
             achievement_type=@achievement_type,
             difficulty_level=@difficulty_level,
             phase=@phase,

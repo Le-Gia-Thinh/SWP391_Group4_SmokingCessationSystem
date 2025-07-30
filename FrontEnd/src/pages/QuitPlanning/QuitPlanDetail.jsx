@@ -34,6 +34,17 @@ const QuitPlanDetail = () => {
   const [taskDone, setTaskDone] = useState(Array(9).fill(false));
   const [selectedTask, setSelectedTask] = useState({}); // { [timeSlotIdx]: taskId }
   const [showCelebration, setShowCelebration] = useState(false);
+  const [phases, setPhases] = useState([]); // List of phases from backend
+  // Fetch phases from backend for mapping week number to phase_code
+  useEffect(() => {
+    fetch("http://localhost:5000/api/admin/tasks/main-phases")
+      .then((res) => res.json())
+      .then((result) => {
+        if (result.success && Array.isArray(result.data)) {
+          setPhases(result.data);
+        }
+      });
+  }, []);
 
   const fallback = {
     date,
@@ -80,10 +91,21 @@ const QuitPlanDetail = () => {
   const startDate = dayjs(planStartDate);
 
   let weekNumber = "Không xác định";
+  let currentPhaseCode = undefined;
   if (info.date && startDate.isValid()) {
     const selectedDate = dayjs(info.date, "DD/MM/YYYY");
     const diffDays = selectedDate.diff(startDate, "day");
     weekNumber = Math.floor(diffDays / 7) + 1;
+    // Map weekNumber to phase_code using phases from backend
+    if (phases.length > 0) {
+      // Find the phase whose range includes the current day
+      const currentPhase = phases.find((p) => {
+        if (!Array.isArray(p.range)) return false;
+        const [start, end] = p.range;
+        return diffDays + 1 >= start && diffDays + 1 <= end;
+      });
+      currentPhaseCode = currentPhase ? currentPhase.phase_code : undefined;
+    }
   }
 
   useEffect(() => {
@@ -121,8 +143,10 @@ const QuitPlanDetail = () => {
       .then((result) => {
         const fallbackSelected = {};
         if (Array.isArray(detailPlan)) {
-          detailPlan.forEach((_, idx) => {
-            fallbackSelected[idx] = `P1_${idx}_0`;
+          detailPlan.forEach((item, idx) => {
+            const phaseCode = currentPhaseCode || "P0";
+            const timeStr = item.time.split(":")[0].padStart(2, "0");
+            fallbackSelected[idx] = `${phaseCode}_${timeStr}_1`;
           });
         }
 
@@ -187,7 +211,6 @@ const QuitPlanDetail = () => {
           date: formattedDate,
           timeSlot: idx,
           completed: newState,
-          points: newState ? 1 : 0,
         }),
       });
 
@@ -198,10 +221,34 @@ const QuitPlanDetail = () => {
     }
   };
   const handleTaskDoneCheckbox = async (idx) => {
-    if (!selectedTask[idx]) {
-      message.warning("⚠️ Vui lòng chọn nhiệm vụ trước khi xác nhận đã làm.");
-      return;
+    // Nếu chưa chọn nhiệm vụ thì tự động chọn slot 1 (nhiệm vụ đầu tiên)
+    let taskId = selectedTask[idx];
+    if (!taskId) {
+      // Use phase code from backend mapping
+      let phaseCode = currentPhaseCode || "P0";
+      const timeStr =
+        detailPlan[idx]?.time?.split(":")[0]?.padStart(2, "0") || "00";
+      // Mặc định chọn slot 1
+      taskId = `${phaseCode}_${timeStr}_1`;
+      setSelectedTask((prev) => ({ ...prev, [idx]: taskId }));
     }
+
+    // Log dữ liệu gửi lên choose-task và complete-task
+    console.log("[choose-task] body:", {
+      date: dayjs(date, ["DD-MM-YYYY", "DD/MM/YYYY", "YYYY-MM-DD"]).format(
+        "YYYY-MM-DD"
+      ),
+      timeSlot: idx,
+      taskId: taskId,
+    });
+
+    console.log("[complete-task] body:", {
+      date: dayjs(date, ["DD-MM-YYYY", "DD/MM/YYYY", "YYYY-MM-DD"]).format(
+        "YYYY-MM-DD"
+      ),
+      timeSlot: idx,
+      completed: !taskDone[idx],
+    });
 
     const updated = [...taskDone];
     const newState = !updated[idx];
@@ -216,6 +263,7 @@ const QuitPlanDetail = () => {
     ]).format("YYYY-MM-DD");
 
     try {
+      // Luôn lưu nhiệm vụ đã chọn trước (giữ nguyên logic)
       await fetch("http://localhost:5000/api/habit-log/choose-task", {
         method: "POST",
         headers: {
@@ -225,13 +273,26 @@ const QuitPlanDetail = () => {
         body: JSON.stringify({
           date: formattedDate,
           timeSlot: idx,
-          taskId: selectedTask[idx],
+          taskId: taskId,
         }),
       });
 
-      // 👉 Gọi thêm API cộng điểm khi người dùng đánh dấu đã hoàn thành nhiệm vụ
+      // Gọi API tick/bỏ tick nhiệm vụ
+      await fetch("http://localhost:5000/api/habit-log/complete-task", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          date: formattedDate,
+          timeSlot: idx,
+          completed: newState,
+        }),
+      });
+
+      // Nếu tích thì cộng điểm, nếu bỏ tích thì xóa điểm
       if (newState) {
-        // 👉 Nếu người dùng tích vào checkbox
         await fetch("http://localhost:5000/api/habit-log/submit-task-points", {
           method: "POST",
           headers: {
@@ -241,11 +302,10 @@ const QuitPlanDetail = () => {
           body: JSON.stringify({
             date: formattedDate,
             timeSlot: idx,
-            taskId: selectedTask[idx],
+            taskId: taskId,
           }),
         });
       } else {
-        // 👈 Nếu người dùng bỏ tích → gọi API xoá điểm nhiệm vụ
         await fetch("http://localhost:5000/api/habit-log/delete-task-log", {
           method: "POST",
           headers: {
@@ -353,12 +413,29 @@ const QuitPlanDetail = () => {
           ? [record.replacement]
           : [];
 
+        // Use phase code from backend mapping
+        let phaseCode = currentPhaseCode || "P0";
+        const timeStr = record.time.split(":")[0].padStart(2, "0");
+        const selectedId = selectedTask[index];
+        let displayValue = selectedId;
+        if (!selectedId && tasks.length > 0) {
+          displayValue = `${phaseCode}_${timeStr}_1`;
+        }
+
+        // Hiển thị label nhiệm vụ đã chọn hoặc mặc định slot 1
+        let label = tasks[0] || "Chọn 1 nhiệm vụ";
+        if (displayValue) {
+          const parts = displayValue.split("_");
+          const idx = parseInt(parts[2], 10) - 1;
+          if (tasks[idx]) label = tasks[idx];
+        }
+
         return (
           <Select
-            value={selectedTask[index]}
+            value={label}
             onChange={(value) => handleSelectTask(index, value)}
-            placeholder="Chọn 1 nhiệm vụ"
-            disabled={isPast} // ✅ Khóa nếu ngày đã qua
+            placeholder={label}
+            disabled={isPast}
             style={{
               width: "100%",
               whiteSpace: "normal",
@@ -369,7 +446,7 @@ const QuitPlanDetail = () => {
             listHeight={300}
           >
             {tasks.map((task, taskIdx) => {
-              const taskId = `P1_${index}_${taskIdx}`;
+              const taskId = `${phaseCode}_${timeStr}_${taskIdx + 1}`;
               return (
                 <Select.Option key={taskId} value={taskId}>
                   {task}
@@ -620,7 +697,10 @@ const QuitPlanDetail = () => {
                     ? item.replacement
                     : [item.replacement]
                   ).map((task, taskIdx) => {
-                    const taskId = `P1_${timeSlotIdx}_${taskIdx}`;
+                    // Sử dụng currentPhaseCode để tạo taskId đúng chuẩn
+                    const phaseCode = currentPhaseCode || "P0";
+                    const timeStr = item.time.split(":")[0].padStart(2, "0");
+                    const taskId = `${phaseCode}_${timeStr}_${taskIdx + 1}`;
                     const recordDate = dayjs(item.rawDate, [
                       "DD/MM/YYYY",
                       "DD-MM-YYYY",

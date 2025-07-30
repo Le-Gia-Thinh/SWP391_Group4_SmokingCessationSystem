@@ -1,4 +1,3 @@
-// src/pages/Admin_Page/AchievementCrudPage.jsx
 import React, { useState, useEffect } from "react";
 import {
   Table,
@@ -13,6 +12,7 @@ import {
   Card,
 } from "antd";
 import axios from "axios";
+
 
 export default function AchievementCrudPage() {
   const [data, setData] = useState([]);
@@ -46,7 +46,6 @@ export default function AchievementCrudPage() {
       record || {
         title: "",
         description: "",
-        badge_image: "",
         achievement_type: "",
         difficulty_level: 1,
         phase: 1,
@@ -179,9 +178,6 @@ export default function AchievementCrudPage() {
             rules={[{ required: true, message: "Vui lòng nhập mô tả" }]}
           >
             <Input.TextArea rows={3} />
-          </Form.Item>
-          <Form.Item name="badge_image" label="URL Badge">
-            <Input />
           </Form.Item>
           <Form.Item
             name="achievement_type"
