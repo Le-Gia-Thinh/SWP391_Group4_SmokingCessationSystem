@@ -13,6 +13,9 @@ import {
   Badge,
   Layout,
   Tooltip,
+  Modal,
+  Divider,
+  Timeline,
 
 } from "antd";
 import {
@@ -26,6 +29,17 @@ import {
   RightOutlined,
   LeftOutlined,
   ExperimentOutlined, TeamOutlined,
+  HeartOutlined,
+  CalendarOutlined,
+  MessageOutlined,
+  BookOutlined,
+  TrophyOutlined,
+  CloseOutlined,
+  CheckCircleOutlined,
+  StarOutlined,
+  UserOutlined,
+  BulbOutlined,
+  SafetyOutlined,
 } from "@ant-design/icons";
 import {
   FaSkullCrossbones,
@@ -310,7 +324,64 @@ const makeArrow = (dir, timerRef) => {
     </span>
   );
 };
+const modalFeatures = [
+  {
+    icon: <HeartOutlined style={{ fontSize: 24, color: '#ff4d4f' }} />,
+    title: 'Cai Nghiện Thuốc Lá',
+    subtitle: 'Phương pháp khoa học',
+    description: 'Hệ thống hỗ trợ cai nghiện toàn diện với các phương pháp được chứng minh hiệu quả, từ giảm dần đến dừng ngay lập tức, phù hợp với mọi mức độ nghiện.',
+    highlights: [
+      'Theo dõi tiến trình cai nghiện từng ngày',
+      'Phương pháp cá nhân hóa theo mức độ nghiện',
+      'Hỗ trợ vượt qua cơn thèm thuốc',
+      'Thống kê sức khỏe được cải thiện'
+    ]
+  },
+  {
+    icon: <CalendarOutlined style={{ fontSize: 24, color: '#52c41a' }} />,
+    title: 'Kế Hoạch Cá Nhân Hóa',
+    subtitle: 'Thiết kế riêng cho bạn',
+    description: 'Mỗi người có một hành trình cai nghiện khác nhau. Chúng tôi tạo ra kế hoạch riêng biệt dựa trên thói quen, mức độ nghiện và mục tiêu cá nhân của bạn.',
+    highlights: [
+      'Đánh giá mức độ nghiện ban đầu',
+      'Lên lịch giảm thuốc theo tuần',
+      'Đề xuất hoạt động thay thế',
+      'Điều chỉnh kế hoạch linh hoạt'
+    ]
+  },
+  {
+    icon: <BookOutlined style={{ fontSize: 24, color: '#1890ff' }} />,
+    title: 'Book Coach - Tư Vấn Chuyên Gia',
+    subtitle: 'Đồng hành 1:1',
+    description: 'Đặt lịch tư vấn trực tiếp với các chuyên gia tâm lý và bác sĩ có kinh nghiệm trong lĩnh vực cai nghiện thuốc lá, nhận được lời khuyên cá nhân hóa.',
+    highlights: [
+      'Chuyên gia có chứng chỉ quốc tế',
+      'Tư vấn online hoặc offline',
+      'Theo dõi tiến trình định kỳ',
+      'Hỗ trợ tâm lý khi gặp khó khăn'
+    ]
+  },
+  {
+    icon: <MessageOutlined style={{ fontSize: 24, color: '#722ed1' }} />,
+    title: 'Trò Chuyện Cộng Đồng',
+    subtitle: 'Kết nối & chia sẻ',
+    description: 'Tham gia cộng đồng hàng nghìn người đang cùng hành trình bỏ thuốc. Chia sẻ kinh nghiệm, nhận động lực và hỗ trợ lẫn nhau mỗi ngày.',
+    highlights: [
+      'Forum thảo luận theo chủ đề',
+      'Nhóm chat theo khu vực',
+      'Chia sẻ thành công & thất bại',
+      'Tìm bạn đồng hành cùng mục tiêu'
+    ]
+  }
+];
 
+const successSteps = [
+  { title: 'Đánh giá ban đầu', description: 'Xác định mức độ nghiện và động lực', status: 'finish' },
+  { title: 'Tạo kế hoạch', description: 'Lên lịch cai nghiện cá nhân hóa', status: 'finish' },
+  { title: 'Bắt đầu hành trình', description: 'Thực hiện kế hoạch với sự hỗ trợ', status: 'process' },
+  { title: 'Theo dõi tiến trình', description: 'Ghi nhận thành tựu từng ngày', status: 'wait' },
+  { title: 'Thành công', description: 'Hoàn thành mục tiêu bỏ thuốc', status: 'wait' }
+];
 
 /* ===== TRANG CHÍNH ===== */
 const HomePage = () => {
@@ -378,7 +449,8 @@ const HomePage = () => {
   const [activeMethod, setActiveMethod] = useState(0);
   const [activeSuccess, setActiveSuccess] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
-
+  const [showFeatureModal, setShowFeatureModal] = useState(false);
+  const [activeFeature, setActiveFeature] = useState(0);
   useEffect(() => {
     setIsVisible(true);
 
@@ -762,7 +834,20 @@ const HomePage = () => {
                 </Col>
               </Row>
 
-              <Button size="large" type="primary" className="mt-4 rounded-pill">
+              <Button
+                size="large"
+                type="primary"
+                className="mt-4 rounded-pill"
+                onClick={() => setShowFeatureModal(true)}
+                style={{
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  border: 'none',
+                  padding: '8px 32px',
+                  height: 'auto',
+                  fontSize: '16px',
+                  fontWeight: '600'
+                }}
+              >
                 Tìm Hiểu Thêm
               </Button>
             </Col>
@@ -1672,6 +1757,224 @@ const HomePage = () => {
           </Space>
         </div>
       </Footer>
+
+
+
+      {/* Feature Introduction Modal */}
+      <Modal
+        visible={showFeatureModal}
+        onCancel={() => setShowFeatureModal(false)}
+        footer={null}
+        width={1000}
+        centered
+        closeIcon={<CloseOutlined style={{ fontSize: 18, color: '#fff' }} />}
+        styles={{
+          header: {
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            borderRadius: '8px 8px 0 0',
+            padding: '20px 24px'
+          },
+          body: {
+            padding: 0,
+            background: '#f8fafc'
+          }
+        }}
+        title={
+          <div style={{ color: '#fff', textAlign: 'center' }}>
+            <Title level={2} style={{ color: '#fff', margin: 0, fontSize: '28px' }}>
+              🚭 Khám Phá Hệ Thống Hỗ Trợ Bỏ Thuốc Toàn Diện
+            </Title>
+            <Text style={{ color: '#e6f7ff', fontSize: '16px' }}>
+              Hành trình khỏe mạnh bắt đầu từ những bước đi đầu tiên
+            </Text>
+          </div>
+        }
+      >
+        <div style={{ padding: '24px' }}>
+          {/* Hero Section */}
+          <div style={{
+            textAlign: 'center',
+            marginBottom: '32px',
+            padding: '24px',
+            background: 'linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%)',
+            borderRadius: '12px'
+          }}>
+            <Title level={3} style={{ color: '#1565c0', marginBottom: '16px' }}>
+              Tại sao chọn hệ thống của chúng tôi?
+            </Title>
+            <Paragraph style={{ fontSize: '16px', color: '#37474f', maxWidth: '800px', margin: '0 auto' }}>
+              Với hơn <strong>5 năm kinh nghiệm</strong> và <strong>hàng nghìn người thành công</strong> bỏ thuốc,
+              chúng tôi đã phát triển một hệ sinh thái hoàn chỉnh để đồng hành cùng bạn từ những ngày đầu khó khăn
+              cho đến khi hoàn toàn tự do khỏi thuốc lá.
+            </Paragraph>
+
+            <Row gutter={[16, 16]} style={{ marginTop: '20px' }} justify="center">
+              <Col>
+                <Badge count="5+" style={{ backgroundColor: '#52c41a' }}>
+                  <div style={{ padding: '8px 16px', background: '#fff', borderRadius: '8px', minWidth: '80px' }}>
+                    <Text strong>Năm kinh nghiệm</Text>
+                  </div>
+                </Badge>
+              </Col>
+              <Col>
+                <Badge count="1000+" style={{ backgroundColor: '#1890ff' }}>
+                  <div style={{ padding: '8px 16px', background: '#fff', borderRadius: '8px', minWidth: '80px' }}>
+                    <Text strong>Người thành công</Text>
+                  </div>
+                </Badge>
+              </Col>
+              <Col>
+                <Badge count="95%" style={{ backgroundColor: '#722ed1' }}>
+                  <div style={{ padding: '8px 16px', background: '#fff', borderRadius: '8px', minWidth: '80px' }}>
+                    <Text strong>Tỷ lệ thành công</Text>
+                  </div>
+                </Badge>
+              </Col>
+            </Row>
+          </div>
+
+          {/* Features Grid */}
+          <Row gutter={[24, 24]} style={{ marginBottom: '32px' }}>
+            {modalFeatures.map((feature, index) => (
+              <Col xs={24} md={12} key={index}>
+                <Card
+                  hoverable
+                  style={{
+                    height: '100%',
+                    border: activeFeature === index ? '2px solid #1890ff' : '1px solid #e8e8e8',
+                    borderRadius: '12px',
+                    background: activeFeature === index ? '#f6ffed' : '#fff',
+                    transition: 'all 0.3s ease',
+                    cursor: 'pointer'
+                  }}
+                  onClick={() => setActiveFeature(index)}
+                  
+                  bodyStyle={{ padding: 0, background: '#f8fafc' }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
+                    <div style={{
+                      padding: '12px',
+                      background: activeFeature === index ? '#fff' : '#f5f5f5',
+                      borderRadius: '8px',
+                      flexShrink: 0
+                    }}>
+                      {feature.icon}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <Title level={4} style={{ margin: '0 0 4px 0', color: '#262626' }}>
+                        {feature.title}
+                      </Title>
+                      <Text type="secondary" style={{ fontSize: '14px' }}>
+                        {feature.subtitle}
+                      </Text>
+                      <Paragraph style={{
+                        margin: '12px 0 16px 0',
+                        fontSize: '14px',
+                        color: '#595959'
+                      }}>
+                        {feature.description}
+                      </Paragraph>
+                      <div>
+                        {feature.highlights.map((highlight, idx) => (
+                          <div key={idx} style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            marginBottom: '6px'
+                          }}>
+                            <CheckCircleOutlined style={{ color: '#52c41a', fontSize: '12px' }} />
+                            <Text style={{ fontSize: '13px', color: '#666' }}>
+                              {highlight}
+                            </Text>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              </Col>
+            ))}
+          </Row>
+
+          <Divider style={{ margin: '32px 0' }} />
+
+          {/* Process Timeline */}
+          <div style={{
+            padding: '24px',
+            background: '#fff',
+            borderRadius: '12px',
+            border: '1px solid #e8e8e8'
+          }}>
+            <Title level={4} style={{ textAlign: 'center', marginBottom: '24px', color: '#1565c0' }}>
+              <TrophyOutlined style={{ marginRight: '8px', color: '#faad14' }} />
+              Hành Trình Thành Công Của Bạn
+            </Title>
+            <Timeline
+              items={successSteps.map((step, index) => ({
+                color: step.status === 'finish' ? '#52c41a' :
+                  step.status === 'process' ? '#1890ff' : '#d9d9d9',
+                children: (
+                  <div>
+                    <Text strong style={{ fontSize: '16px' }}>{step.title}</Text>
+                    <br />
+                    <Text type="secondary">{step.description}</Text>
+                  </div>
+                )
+              }))}
+              style={{ paddingLeft: '24px' }}
+            />
+          </div>
+
+          {/* Call to Action */}
+          <div style={{
+            textAlign: 'center',
+            marginTop: '24px',
+            padding: '24px',
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            borderRadius: '12px',
+            color: '#fff'
+          }}>
+            <Title level={3} style={{ color: '#fff', marginBottom: '12px' }}>
+              Sẵn sàng bắt đầu hành trình thay đổi cuộc đời?
+            </Title>
+            <Paragraph style={{ color: '#e6f7ff', fontSize: '16px', marginBottom: '20px' }}>
+              Hàng nghìn người đã thành công - Bạn cũng có thể làm được!
+            </Paragraph>
+            <Space size="middle">
+              <Button
+                type="primary"
+                size="large"
+                style={{
+                  background: '#fff',
+                  color: '#667eea',
+                  border: 'none',
+                  fontWeight: '600'
+                }}
+                onClick={() => {
+                  setShowFeatureModal(false);
+                  // Navigate to sign up or start journey page
+                }}
+              >
+                Bắt Đầu Ngay
+              </Button>
+              <Button
+                size="large"
+                style={{
+                  background: 'transparent',
+                  color: '#fff',
+                  borderColor: '#fff'
+                }}
+                onClick={() => {
+                  setShowFeatureModal(false);
+                  // Navigate to consultation page
+                }}
+              >
+                Tư Vấn Miễn Phí
+              </Button>
+            </Space>
+          </div>
+        </div>
+      </Modal>
     </Layout>
   );
 };
