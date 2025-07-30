@@ -104,26 +104,18 @@ const checkFunctions = {
   },
 
   clean_7_days: async (pool, userId) => {
-    const result = await pool.request().input("user_id", sql.Int, userId)
-      .query(`
-        WITH Streaks AS (
-          SELECT 
-            date,
-            ROW_NUMBER() OVER (ORDER BY date) -
-            ROW_NUMBER() OVER (PARTITION BY total_cigarettes ORDER BY date) AS grp
-          FROM DAILY_SMOKING_SUMMARY
-          WHERE user_id = @user_id AND total_cigarettes = 0 AND date <= CAST(GETDATE() AS DATE)
-        )
-        SELECT COUNT(*) AS streak
-        FROM (
-          SELECT COUNT(*) AS streak_length
-          FROM Streaks
-          GROUP BY grp
-          HAVING COUNT(*) >= 7
-        ) AS ValidStreaks
-      `);
-    return result.recordset.length > 0;
-  },
+  const result = await pool.request()
+    .input("user_id", sql.Int, userId)
+    .query(`
+      SELECT COUNT(*) AS clean_days
+      FROM DAILY_SMOKING_SUMMARY
+      WHERE user_id = @user_id 
+        AND total_cigarettes = 0 
+        AND date <= CAST(GETDATE() AS DATE)
+    `);
+
+  return result.recordset[0].clean_days >= 7;
+},
 
   clean_15_days: async (pool, userId) => {
     const result = await pool.request().input("user_id", sql.Int, userId)

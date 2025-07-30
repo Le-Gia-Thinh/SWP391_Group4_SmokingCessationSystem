@@ -25,14 +25,11 @@ const memberRoutes = require("./routes/member");
 const customerRoutes = require("./routes/customer");
 const userRoutes = require("./routes/user");
 const userScoreRoutes = require("./routes/userScore");
-
 const paymentRoutes = require("./routes/payment");
 const subscriptionRoutes = require("./routes/subscription");
-
 const ftndRoutes = require("./routes/ftnd");
 const quitPlanRoutes = require("./routes/quitPlan");
 const commentRoutes = require("./routes/comment");
-
 const achievementRoutes = require("./routes/achievementRoutes");
 const notificationRoutes = require("./routes/notification");
 const taskRoutes = require("./routes/taskRoutes.js");
@@ -41,7 +38,7 @@ const server = http.createServer(app);
 const chatRoutes = require("./routes/chat");
 const adminMemberRoutes = require("./routes/adminMemberRoutes");
 
-// 1) CORS: bắt buộc phải cho phép credentials (cookie) và origin chạy React (5173 / 3000)
+// 5. CORS: Cho phép React truy cập API với cookie
 app.use(
   cors({
     origin: ["http://localhost:5173", "http://localhost:3000"],
@@ -50,25 +47,17 @@ app.use(
   })
 );
 
-// 2) Middleware parse body JSON / URL-encoded
+// 6. Body Parser Middleware (JSON + URL-encoded)
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const io = new Server(server, {
-  cors: {
-    origin: ["http://localhost:5173", "http://localhost:3000"],
-    methods: ["GET", "POST"],
-    credentials: true,
-  },
-});
-
-// Gắn io vào req để sử dụng trong controller
+// 7. Đính io vào request để dùng trong controller
 app.use((req, res, next) => {
   req.io = io;
   next();
 });
 
-// Socket.IO lắng nghe kết nối
+// 8. Cấu hình Socket.IO
 io.on("connection", (socket) => {
   console.log("📡 Client connected:", socket.id);
 
@@ -82,19 +71,11 @@ io.on("connection", (socket) => {
   });
 });
 
-// 2.1) Serve file chat uploads
+// 9. Phục vụ file tĩnh (ảnh chat)
 const path = require("path");
 app.use("/uploads/chat", express.static(path.join(__dirname, "uploads/chat")));
 
-// 3) Check FTND: Mức độ nghiện
-app.use("/api/ftnd", ftndRoutes);
-app.use("/api/quitplan", quitPlanRoutes);
-app.use("/api/customer", customerRoutes);
-
-// 4) User Score (lấy và update)
-app.use("/api/user-score", userScoreRoutes);
-
-// 5) Session middleware (phải nằm trước passport.session())
+// 10. Middleware session (trước passport.session)
 app.use(
   session({
     secret: process.env.JWT_SECRET || "fallback_secret",
@@ -107,78 +88,77 @@ app.use(
   })
 );
 
-// 6) Passport init & session
+// 11. Passport Middleware
 app.use(passport.initialize());
 app.use(passport.session());
 
-// 7) Auth & Role
-app.use("/api/auth", authRoutes);
-app.use("/api/role", roleRoutes);
-
-// 8) Admin / Coach / Member
-app.use("/api/admin", adminRoutes);
-app.use("/api/coach", coachRoutes);
-app.use("/api/member", memberRoutes);
-
-// 9) Appointment & Schedule
-app.use("/api/appointment", appointmentRoutes);
-app.use("/api/schedule", scheduleRoutes);
-
-// 10) Community & Comment & Chat
-app.use("/api/community", communityRoutes);
-app.use("/api/comment", commentRoutes);
-app.use("/api/community-chat", communityChatRoutes);
-app.use("/api/topic-chat", topicChatRoutes);
-
-// 11) Habit Log & Smoking Summary
-app.use("/api/habit-log", habitLogRoutes);
-app.use("/api/smoking-summary", smokingSummaryRoutes);
-
-// 12) User Profile
-app.use("/api/user", userRoutes);
-
-// 13) Payment
-app.use("/api/payment", paymentRoutes);
-app.use("/api/subscriptions", subscriptionRoutes);
-
-// 14) Root test endpoint
-app.get("/", (req, res) => {
-  res.json({ success: true, message: "Auth API đang hoạt động!" });
-});
-
-// 15) Middleware log request (debug)
-// 15.1) Xử lí thành tựu
-app.use("/api/achievement", achievementRoutes);
-// Xử lí thông báo
-app.use("/api/notification", notificationRoutes);
-// Task routes
-app.use("/api/admin/tasks", taskRoutes);
-
-// 16) Middleware log request
+// 12. Middleware log request (debug)
 app.use((req, res, next) => {
   console.log(`📥 [INCOMING REQUEST] ${req.method} ${req.originalUrl}`);
   next();
 });
 
-// 16) Global error handler
-app.use((err, req, res, next) => {
-  console.error("Unhandled error:", err);
-  res
-    .status(500)
-    .json({ success: false, message: "Lỗi server không xác định" });
+// 13. ROUTES
+// 13.1 Auth & Role
+app.use("/api/auth", require("./routes/auth"));
+app.use("/api/role", require("./routes/roleTestRoutes"));
+
+// 13.2 User & Profile
+app.use("/api/user", require("./routes/user"));
+app.use("/api/user-score", require("./routes/userScore"));
+
+// 13.3 FTND - Kế hoạch cai thuốc - Khách hàng
+app.use("/api/ftnd", require("./routes/ftnd"));
+app.use("/api/quitplan", require("./routes/quitPlan"));
+app.use("/api/customer", require("./routes/customer"));
+
+// 13.4 Coach - Member - Admin
+app.use("/api/coach", require("./routes/coach"));
+app.use("/api/member", require("./routes/member"));
+app.use("/api/admin", require("./routes/admin"));
+app.use("/api/admin/members", require("./routes/adminMemberRoutes"));
+
+// 13.5 Lịch hẹn & thời gian biểu
+app.use("/api/appointment", require("./routes/appointment"));
+app.use("/api/schedule", require("./routes/schedule"));
+
+// 13.6 Cộng đồng - Chat - Bình luận
+app.use("/api/community", require("./routes/community"));
+app.use("/api/community-chat", require("./routes/communityChat"));
+app.use("/api/topic-chat", require("./routes/topicChat"));
+app.use("/api/chat", require("./routes/chat"));
+app.use("/api/comment", require("./routes/comment"));
+
+// 13.7 Nhật ký thói quen & Thống kê hút thuốc
+app.use("/api/habit-log", require("./routes/habitLogRoutes"));
+app.use("/api/smoking-summary", require("./routes/smokingSummaryRoutes"));
+
+// 13.8 Thanh toán
+app.use("/api/payment", require("./routes/payment"));
+app.use("/api/subscriptions", require("./routes/subscription"));
+
+// 13.9 Thành tựu & Thông báo & Nhiệm vụ
+app.use("/api/achievement", require("./routes/achievementRoutes"));
+app.use("/api/notification", require("./routes/notification"));
+app.use("/api/admin/tasks", require("./routes/taskRoutes"));
+
+// 14. Root endpoint test
+app.get("/", (req, res) => {
+  res.json({ success: true, message: "Auth API đang hoạt động!" });
 });
 
-// 17) Admin Member Routes
-app.use("/api/admin/members", adminMemberRoutes);
+// 15. Middleware xử lý lỗi
+app.use((err, req, res, next) => {
+  console.error("Unhandled error:", err);
+  res.status(500).json({ success: false, message: "Lỗi server không xác định" });
+});
 
-// 19. Chat coach.member
-app.use("/api/chat", chatRoutes);
-
-// 20) 404 handler
+// 16. 404 Handler cho các route không tồn tại
 app.use("*", (req, res) => {
   res.status(404).json({ success: false, message: "Endpoint không tồn tại" });
 });
 
+// 17. Khởi chạy server
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`✅ Server + Socket.IO chạy tại port ${PORT}`);
