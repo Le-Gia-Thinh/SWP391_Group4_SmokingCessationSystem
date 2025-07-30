@@ -21,10 +21,24 @@ export default function AdminTaskManager() {
   const [loading, setLoading] = useState(false);
   const [modal, setModal] = useState({ visible: false, record: null });
   const [form] = Form.useForm();
+
   const token = localStorage.getItem("token");
   const headers = { Authorization: `Bearer ${token}` };
   const baseURL = import.meta.env.VITE_API_URL || "";
   const [filterPhase, setFilterPhase] = useState(null);
+  const [pageSize, setPageSize] = useState(10);
+
+  // Allow scroll background when modal is open
+  useEffect(() => {
+    if (modal.visible) {
+      document.body.style.overflow = "unset";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [modal.visible]);
 
   const fetchTasks = async () => {
     setLoading(true);
@@ -133,7 +147,13 @@ export default function AdminTaskManager() {
             : tasks
         }
         className="modernTable"
-        pagination={{ pageSize: 10 }}
+        // pagination={{
+        //   showSizeChanger: true,
+        //   pageSize: pageSize,
+        //   position: ["bottomCenter"],
+        //   onShowSizeChange: (current, size) => setPageSize(size),
+        // }}
+        pagination={{ pageSize: 10, showSizeChanger: false }}
         columns={[
           { title: "Giai đoạn", dataIndex: "phase_code" },
           { title: "Khung giờ", dataIndex: "time_slot" },
@@ -192,6 +212,18 @@ export default function AdminTaskManager() {
           form.resetFields();
         }}
         onOk={() => form.validateFields().then(saveTask)}
+        style={{
+          top: "50%",
+          transform: "translateY(-50%)",
+          maxWidth: "95vw",
+          borderRadius: 16,
+          padding: 0,
+        }}
+        styles={{
+          padding: 24,
+          maxHeight: "80vh",
+          overflowY: "auto",
+        }}
       >
         <Form form={form} layout="vertical">
           <Form.Item

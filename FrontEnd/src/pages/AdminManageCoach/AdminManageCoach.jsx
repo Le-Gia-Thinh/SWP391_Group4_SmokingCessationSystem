@@ -70,6 +70,20 @@ const AdminDashboard = () => {
   const [memberBadgeCount, setMemberBadgeCount] = useState(0);
   const [activeTab, setActiveTab] = useState("coaches");
 
+  // Cho phép background scroll khi modal mở
+  useEffect(() => {
+    const anyModalOpen =
+      createCoachModal || editCoachModal || viewCoachModal || credentialsModal;
+    if (anyModalOpen) {
+      document.body.style.overflow = "unset";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [createCoachModal, editCoachModal, viewCoachModal, credentialsModal]);
+
   // Search and filter states
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -619,17 +633,38 @@ const AdminDashboard = () => {
         {/* Search and Filter Controls */}
         <div className="filter-controls" style={{ marginBottom: "16px" }}>
           <Row gutter={[16, 16]} align="middle">
-            <Col xs={24} sm={12} md={12} lg={8} xl={7} xxl={6} style={{ minWidth: 320, maxWidth: 520 }}>
+            <Col
+              xs={24}
+              sm={12}
+              md={12}
+              lg={8}
+              xl={7}
+              xxl={6}
+              style={{ minWidth: 320, maxWidth: 520 }}
+            >
               <Search
                 placeholder="Tìm kiếm"
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
                 allowClear
                 className="admin-search-large"
-                style={{ width: "100%", minWidth: 220, maxWidth: 520, height: 48 }}
+                style={{
+                  width: "100%",
+                  minWidth: 220,
+                  maxWidth: 520,
+                  height: 48,
+                }}
               />
             </Col>
-            <Col xs={24} sm={12} md={8} lg={4} xl={3} xxl={3} style={{ minWidth: 180, maxWidth: 260 }}>
+            <Col
+              xs={24}
+              sm={12}
+              md={8}
+              lg={4}
+              xl={3}
+              xxl={3}
+              style={{ minWidth: 180, maxWidth: 260 }}
+            >
               <Select
                 placeholder="Lọc theo trạng thái"
                 value={statusFilter}
@@ -687,7 +722,11 @@ const AdminDashboard = () => {
                 }
                 tableProps={{
                   style: { width: "100%" },
-                  pagination: { position: ["bottomCenter"] },
+                  pagination: {
+                    position: ["bottomCenter"],
+                    pageSize: 10,
+                    showSizeChanger: false,
+                  },
                   rowClassName: () => "admin-table-row-center",
                 }}
               />
@@ -741,7 +780,7 @@ const AdminDashboard = () => {
                     render: (v) => (v ? new Date(v).toLocaleString() : ""),
                   },
                 ]}
-                pagination={{ pageSize: 10 }}
+                pagination={{ pageSize: 10, showSizeChanger: false }}
               />
             </Card>
           </Tabs.TabPane>
@@ -795,7 +834,7 @@ const AdminDashboard = () => {
                       v ? moment.parseZone(v).format("HH:mm DD/MM/YYYY") : "",
                   },
                 ]}
-                pagination={{ pageSize: 10 }}
+                pagination={{ pageSize: 10, showSizeChanger: false }}
               />
             </Card>
           </Tabs.TabPane>
@@ -811,6 +850,8 @@ const AdminDashboard = () => {
         form={coachForm}
         loading={loading}
         width={700}
+        centered
+        style={{ top: "35%", transform: "translateY(-35%)" }}
       >
         <Row gutter={16}>
           <Col span={12}>
@@ -908,6 +949,8 @@ const AdminDashboard = () => {
         form={editForm}
         loading={loading}
         width={700}
+        centered
+        style={{ top: "35%", transform: "translateY(-35%)" }}
       >
         <Row gutter={16}>
           <Col span={12}>
@@ -1009,6 +1052,8 @@ const AdminDashboard = () => {
           </Button>,
         ]}
         width={600}
+        centered
+        style={{ top: "35%", transform: "translateY(-35%)" }}
       >
         {selectedCoach && (
           <div>
@@ -1158,7 +1203,21 @@ const AdminDashboard = () => {
           </Button>,
         ]}
         width={500}
-        centered
+        className="admin-user-manager-modal"
+        style={{
+          top: "50%",
+          transform: "translateY(-50%)",
+          maxWidth: "95vw",
+          padding: 0,
+        }}
+        styles={{
+          padding: 24,
+          maxHeight: "80vh",
+          overflowY: "auto",
+        }}
+        afterOpenChange={(open) => {
+          document.body.style.overflow = open ? "unset" : "";
+        }}
       >
         {newCoachCredentials && (
           <div style={{ textAlign: "center" }}>
@@ -1177,7 +1236,6 @@ const AdminDashboard = () => {
               >
                 📋 Thông tin đăng nhập tài khoản
               </Title>
-
               <Space
                 direction="vertical"
                 size="large"
@@ -1215,7 +1273,6 @@ const AdminDashboard = () => {
                     }}
                   />
                 </div>
-
                 {/* Email */}
                 <div
                   style={{
@@ -1250,7 +1307,6 @@ const AdminDashboard = () => {
                     }}
                   />
                 </div>
-
                 {/* Password */}
                 <div
                   style={{
@@ -1289,7 +1345,6 @@ const AdminDashboard = () => {
                 </div>
               </Space>
             </div>
-
             <div
               style={{
                 background: "#fff7e6",

@@ -94,9 +94,9 @@
   width: 100%;
 }
 
-.admin-dashboard .ant-table-pagination {
+/* .admin-dashboard .ant-table-pagination {
   justify-content: center !important;
-}
+} */
 
 /* Phân biệt nút xem/sửa/xóa/khôi phục */
 .aum-view-btn {

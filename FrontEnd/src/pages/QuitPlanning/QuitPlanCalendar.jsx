@@ -309,7 +309,6 @@ const QuitPlan = () => {
     setStartDate(dayjs(startDate));
     setMonths(months);
     setShowModal(false);
-    
   };
 
   const handleResetPlan = async () => {
@@ -653,14 +652,30 @@ const QuitPlan = () => {
                 Mức độ nghiện hiện tại: <b>{ftndLevel}</b>
               </span>
             }
-            description={
-              <span>
-                <b>Hãy tuân thủ kế hoạch</b> để đạt hiệu quả tốt nhất!
-                <Tag color="success" style={{ marginLeft: 8 }}>
-                  Đang thực hiện
-                </Tag>
-              </span>
-            }
+            description={(() => {
+              // Tính ngày kết thúc
+              const endDate = startDate
+                ? startDate.clone().add(months * 30 - 1, "day")
+                : null;
+              const now = dayjs();
+              const isFinished =
+                animatedPercent >= 100 ||
+                (endDate && now.isAfter(endDate, "day"));
+              return (
+                <span>
+                  <b>Hãy tuân thủ kế hoạch</b> để đạt hiệu quả tốt nhất!
+                  {isFinished ? (
+                    <Tag color="gold" style={{ marginLeft: 8 }}>
+                      Hoàn thành
+                    </Tag>
+                  ) : (
+                    <Tag color="success" style={{ marginLeft: 8 }}>
+                      Đang thực hiện
+                    </Tag>
+                  )}
+                </span>
+              );
+            })()}
             type="info"
             showIcon
             style={{ marginBottom: 16, textAlign: "center" }}

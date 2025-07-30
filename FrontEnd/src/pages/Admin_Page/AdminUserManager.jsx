@@ -46,6 +46,18 @@ export default function AdminUserManager() {
   const [filteredMembers, setFilteredMembers] = useState([]);
   const [form] = Form.useForm();
 
+  // Cho phép scroll background khi modal mở
+  useEffect(() => {
+    if (modal.visible) {
+      document.body.style.overflow = "unset";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [modal.visible]);
+
   const token = localStorage.getItem("token");
   const headers = useMemo(
     () => ({
@@ -435,7 +447,7 @@ export default function AdminUserManager() {
                         className="aum-action-btn aum-edit-btn"
                         style={{
                           boxShadow: "0 2px 8px #1677ff33",
-                        
+
                           marginRight: 8,
                         }}
                       />
@@ -528,6 +540,17 @@ export default function AdminUserManager() {
         cancelText="Hủy"
         width={600}
         className="admin-user-manager-modal"
+        style={{
+          top: "50%",
+          transform: "translateY(-50%)",
+          maxWidth: "95vw",
+          padding: 0,
+        }}
+        styles={{
+          padding: 24,
+          maxHeight: "80vh",
+          overflowY: "auto",
+        }}
         okButtonProps={{
           className:
             "admin-user-manager-action-btn admin-user-manager-edit-btn px-4",
