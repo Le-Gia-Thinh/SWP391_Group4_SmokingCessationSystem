@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Layout, Menu, Button, Avatar, Space, Badge, Drawer } from "antd";
+import { Layout, Menu, Button, Avatar, Space, Badge, Drawer, Dropdown} from "antd";
 import {
   UserOutlined,
   LogoutOutlined,
@@ -334,15 +334,20 @@ export default function Navbar() {
                 }
                 onClick={() => navigate("/notifications")}
               />
+              <Dropdown
+              overlay={<UserDropdownMenu navigate={navigate} onLogout={handleLogout} />}
+              trigger={["hover"]}
+              placement="bottomRight"
+            >
               <Avatar
-                icon={<UserOutlined />}
+                src={user.avatar_url}
                 style={{
-                  backgroundColor:
-                    user.role === "admin" ? "#ff4d4f" : "#52c41a",
+                  backgroundColor: user.role === "admin" ? "#ff4d4f" : "#52c41a",
                   cursor: "pointer",
                 }}
-                onClick={() => navigate("/profile")}
+                icon={!user.avatar_url && <UserOutlined />}
               />
+            </Dropdown>
               <Badge
                 count={badgeText}
                 style={{ backgroundColor: badgeColor }}
