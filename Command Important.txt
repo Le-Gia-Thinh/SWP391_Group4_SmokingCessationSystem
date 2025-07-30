@@ -94,3 +94,5 @@ npm i jquery
 npm install chart.js react-chartjs-2 --legacy-peer-deps
 npm install bootstrap
 npm install @tinymce/tinymce-react --legacy-peer-deps
+
+

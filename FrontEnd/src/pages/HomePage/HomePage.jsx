@@ -9,12 +9,11 @@ import {
   Card,
   List,
   Space,
-  Divider,
   Carousel,
   Badge,
   Layout,
   Tooltip,
-  Avatar,
+
 } from "antd";
 import {
   CheckOutlined,
@@ -1440,9 +1439,6 @@ const HomePage = () => {
           </div>
         </div>
       </section>
-
-
-      {/* ---------- PROFILE ---------- */}
       {/* ---------- PROFILE ---------- */}
       <section className="profile-section scroll-section" data-reveal="up">
         <div className="container">

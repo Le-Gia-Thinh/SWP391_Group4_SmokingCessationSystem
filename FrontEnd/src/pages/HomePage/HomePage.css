@@ -1737,7 +1737,7 @@
       }
     }
 
-    @keyframes pulse {
+    @keyframes heartPulse {
       0% {
         box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
       }
@@ -2303,7 +2303,7 @@
       transform: translateY(-5px) scale(1.01);
       box-shadow:
         0 20px 60px rgba(0, 0, 0, 0.3),
-        0 0 30px rgba(164, 215, 138, 0.2);
+        0 0 30px rgba(82, 196, 26, 0.2);
       background: rgba(255, 255, 255, 0.15);
     }
 
@@ -2408,7 +2408,7 @@
       position: relative;
       transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       box-shadow:
-        0 10px 30px rgba(129, 210, 89, 0.4),
+        0 10px 30px rgba(150, 227, 111, 0.4),
         inset 0 2px 0 rgba(255, 255, 255, 0.3);
       animation: modernIconPulse 2s ease-in-out infinite;
     }
@@ -2658,7 +2658,7 @@
       transform: translate(-50%, -50%);
       border: 3px solid rgba(76, 175, 80, 0.6);
       border-radius: 50%;
-      animation: pulse 2s ease-out infinite;
+      animation: heartPulse 2s ease-out infinite;
     }
 
     .pulse-ring {
@@ -2897,7 +2897,7 @@
       }
     }
 
-    @keyframes pulse {
+    @keyframes heartPulse {
       0% {
         transform: translate(-50%, -50%) scale(0.8);
         opacity: 1;

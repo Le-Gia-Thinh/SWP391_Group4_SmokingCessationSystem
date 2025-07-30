@@ -70,14 +70,14 @@ const FTNDTest = () => {
     console.log("📤 FTND sending:", {
       user_id: user.id,
       level,
-      q4_value: parseInt(values.q4),
+      frequency: parseInt(values.q4),
     });
 
     try {
       await axios.post("http://localhost:5000/api/ftnd/result", {
         user_id: user.id,
         level,
-        q4_value: parseInt(values.q4),
+        frequency: parseInt(values.q4),
       });
 
       notification.success({
