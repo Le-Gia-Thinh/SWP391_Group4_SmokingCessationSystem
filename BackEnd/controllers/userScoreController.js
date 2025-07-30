@@ -58,46 +58,10 @@ const getRanking = async (req, res) => {
 
   } catch (err) {
     console.error("❌ Lỗi lấy bảng xếp hạng:", err);
-
-    // Trả về dữ liệu mẫu nếu database lỗi
-    const mockData = [
-      {
-        rank: 1,
-        user_id: 1,
-        full_name: "Nguyễn Văn Thành",
-        avatar_url: null,
-        total_points: 850,
-        current_level: "Advanced",
-        progress_to_next: 75,
-        last_updated: new Date().toISOString()
-      },
-      {
-        rank: 2,
-        user_id: 2,
-        full_name: "Trần Thị Hương",
-        avatar_url: null,
-        total_points: 720,
-        current_level: "Advanced",
-        progress_to_next: 45,
-        last_updated: new Date().toISOString()
-      },
-      {
-        rank: 3,
-        user_id: 3,
-        full_name: "Lê Minh Tâm",
-        avatar_url: null,
-        total_points: 650,
-        current_level: "Intermediate",
-        progress_to_next: 85,
-        last_updated: new Date().toISOString()
-      }
-    ];
-
     res.json({
       success: true,
       data: mockData,
       total: mockData.length,
-      isMockData: true,
       error: "Sử dụng dữ liệu mẫu do lỗi database",
       timestamp: new Date().toISOString()
     });
@@ -120,7 +84,7 @@ const getMyRanking = async (req, res) => {
 
     const pool = await sql.connect(dbConfig);
 
-    // Lấy thông tin ranking của user cụ thể
+    // Lấy thông tin người dùng và thứ hạng
     const result = await pool.request()
       .input('user_id', sql.Int, userId)
       .query(`
@@ -228,7 +192,7 @@ const updateUserScore = async (req, res) => {
       `);
 
     const months = planResult.recordset[0]?.month_quit || 1;
-    const totalSlots = months * 30 * 9; // Tổng số slot trong kế hoạch
+    const totalSlots = months * 30 * 9;
     const pointPerSlot = parseFloat((100 / totalSlots).toFixed(3));
     const totalPoints = parseFloat((completedCount * pointPerSlot).toFixed(3));
 

@@ -11,6 +11,7 @@ import {
 import axios from "axios";
 import Navbar from "../../layouts/Navbar";
 import "./UserProgressStats.css";
+import dayjs from "dayjs";
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
@@ -223,7 +224,9 @@ const UserProgressStats = () => {
                           </div>
                           <div className="savings-summary-text">
                             <strong>Ngày bắt đầu cai:</strong>{" "}
-                            {savings.startDate || "Chưa cập nhật"}
+                            {savings.startDate
+                              ? dayjs(savings.startDate).format("DD/MM/YYYY")
+                              : "Chưa cập nhật"}
                             <br />
                             <br />
                             Chúc mừng bạn đã kiên trì trong hành trình bỏ thuốc

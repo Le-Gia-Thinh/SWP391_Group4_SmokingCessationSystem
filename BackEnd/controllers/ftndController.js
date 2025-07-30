@@ -60,6 +60,7 @@ exports.submitFTNDResult = async (req, res) => {
   }
 };
 
+// Lấy cấp độ FTND của user
 exports.getFtndLevel = async (req, res) => {
   try {
     await poolConnect;
