@@ -131,7 +131,7 @@ VALUES
         user_id INT NULL,                                      -- Cho phép NULL để tránh lỗi cascade
         package_id INT NOT NULL,                               -- FK: Gói đã đăng ký
         start_date DATETIME2(0) NOT NULL,                      -- Ngày bắt đầu (đầy đủ thời gian, chính xác đến giây)
-        end_date DATETIME2(0) NOT NULL,                        -- Ngày kết thúc (đầy đủ thời gian, chính xác đến giây)
+        end_date DATETIME2(0) NULL,                            -- Ngày kết thúc (đầy đủ thời gian, chính xác đến giây)
         auto_renew BIT DEFAULT 0,                              -- Có tự gia hạn hay không (1: Có, 0: Không)
         payment_status NVARCHAR(20) CHECK (payment_status IN (
             'pending', 'paid', 'failed', 'expired'
@@ -1156,110 +1156,128 @@ VALUES
 
 
 -- ================================================
--- 21. SUBSCRIPTION & PAYMENT – Test cho member6 (4 gói)
+-- 21. SUBSCRIPTION & PAYMENT – Test cho member6, 8, 9, 10, 11
 -- ================================================
 
 SET NOCOUNT ON;
 
-DECLARE @now     DATETIME = GETDATE();
-DECLARE @today   DATE = GETDATE();
-DECLARE @userId  INT;
-DECLARE @subId   INT;
+DECLARE 
+    @now     DATETIME = GETDATE(),
+    @today   DATE     = GETDATE(),
+    @userId  INT,
+    @subId   INT,
+    @sub6Id  INT,
+    @sub10Id INT,
+    @sub30Id INT,
+    @start   DATE,
+    @end     DATE;
 
--- Lấy user_id từ username
+-- ░░░ MEMBER6 ░░░
 SELECT @userId = user_id FROM CUSTOMER WHERE username = 'member6';
 
--- ─────────────────────────────────────────────
--- (1) Tạo subscription 3 tháng – package_id = 3
--- ─────────────────────────────────────────────
-INSERT INTO USER_SUBSCRIPTION
-    (user_id, package_id, start_date, end_date,
-     auto_renew, payment_status)
-VALUES
-    (@userId, 3, @today, DATEADD(DAY, 90, @today),
-     0, 'paid');
-
+-- Gói 3 tháng
+INSERT INTO USER_SUBSCRIPTION (user_id, package_id, start_date, end_date, auto_renew, payment_status)
+VALUES (@userId, 3, @today, DATEADD(DAY, 90, @today), 0, 'paid');
 SET @subId = SCOPE_IDENTITY();
+INSERT INTO PAYMENT (subscription_id, amount, payment_date, transaction_id, payment_method, payment_status, note, order_code)
+VALUES (@subId, 2690000, @today, CONCAT('TEST_', NEWID()), 'redirect', 'paid', N'Thanh toán gói Premium 3 tháng (test)', 100000 + ABS(CHECKSUM(NEWID())) % 900000);
 
-INSERT INTO PAYMENT
-    (subscription_id, amount, payment_date,
-     transaction_id, payment_method, payment_status,
-     note, order_code)
-VALUES
-    (@subId, 2690000, @today,
-     CONCAT('TEST_', NEWID()), 'redirect', 'paid',
-     N'Thanh toán gói Premium 3 tháng (test)',
-     100000 + ABS(CHECKSUM(NEWID())) % 900000);
-
--- ─────────────────────────────────────────────
--- (2) Tạo subscription 6 tháng – package_id = 4
--- ─────────────────────────────────────────────
-DECLARE @sub6Id INT;
-
-INSERT INTO USER_SUBSCRIPTION
-    (user_id, package_id, start_date, end_date,
-     auto_renew, payment_status)
-VALUES
-    (@userId, 4, @today, DATEADD(DAY, 180, @today),
-     0, 'paid');
-
+-- Gói 6 tháng
+INSERT INTO USER_SUBSCRIPTION (user_id, package_id, start_date, end_date, auto_renew, payment_status)
+VALUES (@userId, 4, @today, DATEADD(DAY, 180, @today), 0, 'paid');
 SET @sub6Id = SCOPE_IDENTITY();
+INSERT INTO PAYMENT (subscription_id, amount, payment_date, order_code, transaction_id, payment_method, payment_status, note)
+VALUES (@sub6Id, 5490000, @today, 100000 + ABS(CHECKSUM(NEWID())) % 900000, NEWID(), 'redirect', 'paid', N'Thanh toán gói Premium 6 tháng (test)');
 
-INSERT INTO PAYMENT
-    (subscription_id, amount, payment_date,
-     order_code, transaction_id, payment_method,
-     payment_status, note)
-VALUES
-    (@sub6Id, 5490000, @today,
-     100000 + ABS(CHECKSUM(NEWID())) % 900000,
-     NEWID(), 'redirect', 'paid',
-     N'Thanh toán gói Premium 6 tháng (test)');
-
--- ─────────────────────────────────────────────
--- (3) Tạo subscription 10 ngày – package_id = 7
--- ─────────────────────────────────────────────
-DECLARE @sub10Id INT;
-
-INSERT INTO USER_SUBSCRIPTION
-    (user_id, package_id, start_date, end_date,
-     auto_renew, payment_status)
-VALUES
-    (@userId, 1, @today, DATEADD(DAY, 10, @today),
-     0, 'paid');
-
+-- Gói 10 ngày
+INSERT INTO USER_SUBSCRIPTION (user_id, package_id, start_date, end_date, auto_renew, payment_status)
+VALUES (@userId, 1, @today, DATEADD(DAY, 10, @today), 0, 'paid');
 SET @sub10Id = SCOPE_IDENTITY();
+INSERT INTO PAYMENT (subscription_id, amount, payment_date, order_code, transaction_id, payment_method, payment_status, note)
+VALUES (@sub10Id, 10000, @today, 100000 + ABS(CHECKSUM(NEWID())) % 900000, NEWID(), 'redirect', 'paid', N'Thanh toán gói Test 10 ngày (test)');
 
-INSERT INTO PAYMENT
-    (subscription_id, amount, payment_date,
-     order_code, transaction_id, payment_method,
-     payment_status, note)
-VALUES
-    (@sub10Id, 10000, @today,
-     100000 + ABS(CHECKSUM(NEWID())) % 900000,
-     NEWID(), 'redirect', 'paid',
-     N'Thanh toán gói Test 10 ngày (test)');
-
--- ─────────────────────────────────────────────
--- (4) Tạo subscription 1 tháng đã dùng 5 ngày – package_id = 2
--- ─────────────────────────────────────────────
-DECLARE @sub30Id INT;
-DECLARE @start DATE = DATEADD(DAY, -5, @today);
-DECLARE @end   DATE = DATEADD(DAY, 25, @today);
-
-INSERT INTO USER_SUBSCRIPTION
-    (user_id, package_id, start_date, end_date,
-     auto_renew, payment_status)
-VALUES
-    (@userId, 2, @start, @end, 0, 'paid');
-
+-- Gói 1 tháng đã dùng 5 ngày
+SET @start = DATEADD(DAY, -5, @today);
+SET @end = DATEADD(DAY, 25, @today);
+INSERT INTO USER_SUBSCRIPTION (user_id, package_id, start_date, end_date, auto_renew, payment_status)
+VALUES (@userId, 2, @start, @end, 0, 'paid');
 SET @sub30Id = SCOPE_IDENTITY();
+INSERT INTO PAYMENT (subscription_id, amount, payment_date, order_code, transaction_id, payment_method, payment_status, note)
+VALUES (@sub30Id, 99000, @start, 100000 + ABS(CHECKSUM(NEWID())) % 900000, NEWID(), 'redirect', 'paid', N'Thanh toán gói Premium 1 tháng (test còn 25 ngày)');
 
-INSERT INTO PAYMENT
-    (subscription_id, amount, payment_date,
-     order_code, transaction_id, payment_method,
-     payment_status, note)
-VALUES
-    (@sub30Id, 99000, @start,
-     100000 + ABS(CHECKSUM(NEWID())) % 900000,
-     NEWID(), 'redirect', 'paid',
-     N'Thanh toán gói Premium 1 tháng (test còn 25 ngày)');
+
+
+-- ░░░ MEMBER8 & 9: 2 gói liên tục ░░░
+DECLARE @members_continuous TABLE (username NVARCHAR(50));
+INSERT INTO @members_continuous VALUES ('member8'), ('member9');
+
+DECLARE cur1 CURSOR FOR SELECT username FROM @members_continuous;
+DECLARE @username1 NVARCHAR(50);
+OPEN cur1;
+FETCH NEXT FROM cur1 INTO @username1;
+
+WHILE @@FETCH_STATUS = 0
+BEGIN
+    DECLARE @startA DATE, @endA DATE, @startB DATE, @endB DATE, @subIdA INT, @subIdB INT;
+    SELECT @userId = user_id FROM CUSTOMER WHERE username = @username1;
+
+    -- Gói 1: 1 tháng
+    SET @startA = @today;
+    SET @endA = DATEADD(DAY, 30, @startA);
+    INSERT INTO USER_SUBSCRIPTION (user_id, package_id, start_date, end_date, auto_renew, payment_status)
+    VALUES (@userId, 3, @startA, @endA, 0, 'paid');
+    SET @subIdA = SCOPE_IDENTITY();
+    INSERT INTO PAYMENT (subscription_id, amount, payment_date, transaction_id, payment_method, payment_status, note, order_code)
+    VALUES (@subIdA, 99000, @startA, NEWID(), 'momo', 'paid', N'Mua gói Premium 1 tháng', 100000 + ABS(CHECKSUM(NEWID())) % 900000);
+
+    -- Gói 2: 6 tháng nối tiếp
+    SET @startB = @endA;
+    SET @endB = DATEADD(DAY, 180, @startB);
+    INSERT INTO USER_SUBSCRIPTION (user_id, package_id, start_date, end_date, auto_renew, payment_status)
+    VALUES (@userId, 4, @startB, @endB, 0, 'paid');
+    SET @subIdB = SCOPE_IDENTITY();
+    INSERT INTO PAYMENT (subscription_id, amount, payment_date, transaction_id, payment_method, payment_status, note, order_code)
+    VALUES (@subIdB, 549000, @startB, NEWID(), 'zalo', 'paid', N'Mua gói Premium 6 tháng', 100000 + ABS(CHECKSUM(NEWID())) % 900000);
+
+    FETCH NEXT FROM cur1 INTO @username1;
+END
+CLOSE cur1;
+DEALLOCATE cur1;
+
+
+-- ░░░ MEMBER10 & 11: Cách nhau 15 ngày ░░░
+DECLARE @members_gap TABLE (username NVARCHAR(50));
+INSERT INTO @members_gap VALUES ('member10'), ('member11');
+
+DECLARE cur2 CURSOR FOR SELECT username FROM @members_gap;
+DECLARE @username2 NVARCHAR(50);
+OPEN cur2;
+FETCH NEXT FROM cur2 INTO @username2;
+
+WHILE @@FETCH_STATUS = 0
+BEGIN
+    DECLARE @startX DATE, @endX DATE, @startY DATE, @endY DATE, @subIdX INT, @subIdY INT;
+    SELECT @userId = user_id FROM CUSTOMER WHERE username = @username2;
+
+    -- Gói 1: Test 10 ngày
+    SET @startX = DATEADD(DAY, -20, @today);
+    SET @endX = DATEADD(DAY, 10, @startX);
+    INSERT INTO USER_SUBSCRIPTION (user_id, package_id, start_date, end_date, auto_renew, payment_status)
+    VALUES (@userId, 1, @startX, @endX, 0, 'paid');
+    SET @subIdX = SCOPE_IDENTITY();
+    INSERT INTO PAYMENT (subscription_id, amount, payment_date, transaction_id, payment_method, payment_status, note, order_code)
+    VALUES (@subIdX, 10000, @startX, NEWID(), 'bank', 'paid', N'Mua gói Test 10 ngày', 100000 + ABS(CHECKSUM(NEWID())) % 900000);
+
+    -- Gói 2: Sau 15 ngày
+    SET @startY = DATEADD(DAY, 15, @endX);
+    SET @endY = DATEADD(DAY, 30, @startY);
+    INSERT INTO USER_SUBSCRIPTION (user_id, package_id, start_date, end_date, auto_renew, payment_status)
+    VALUES (@userId, 3, @startY, @endY, 0, 'paid');
+    SET @subIdY = SCOPE_IDENTITY();
+    INSERT INTO PAYMENT (subscription_id, amount, payment_date, transaction_id, payment_method, payment_status, note, order_code)
+    VALUES (@subIdY, 99000, @startY, NEWID(), 'credit', 'paid', N'Mua gói Premium 1 tháng (delay 15 ngày)', 100000 + ABS(CHECKSUM(NEWID())) % 900000);
+
+    FETCH NEXT FROM cur2 INTO @username2;
+END
+CLOSE cur2;
+DEALLOCATE cur2;
