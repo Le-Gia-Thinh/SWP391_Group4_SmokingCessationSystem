@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState , useEffect } from "react";
 import {
   Form,
   Radio,
@@ -29,7 +29,9 @@ const FTNDTest = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const totalQuestions = 6;
-
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   // Theo dõi tiến độ form
   const handleValuesChange = () => {
     const values = form.getFieldsValue();

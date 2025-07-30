@@ -225,7 +225,7 @@
       backdrop-filter: blur(5px) saturate(180%);
       -webkit-backdrop-filter: blur(5px) saturate(180%);
       margin: 20px;
-      padding: 35px;
+      padding: 15px;
       transition: transform 0.5s ease, opacity 0.5s ease;
       transform: translateY(100%);
       position: absolute;
@@ -233,6 +233,7 @@
       left: 0;
       right: 0;
       opacity: 0;
+
     }
 
     /* khi hover */
@@ -241,18 +242,16 @@
       opacity: 1;
     }
 
-    /* kiểu text trong overlay */
     .artists-hover p strong {
-      color: #fff;
-      /* thay vì var chưa được định nghĩa */
+      color: #1c55be;
       display: inline-block;
-      min-width: 100px;
+      min-width: 120px;
       margin-right: 10px;
+
     }
 
     .artists-hover p a {
       color: #EE5007;
-      /* var(--secondary-color) */
     }
 
     .artists-hover p a:hover {
@@ -260,11 +259,11 @@
     }
 
     .artists-hover hr {
-      margin: 1.5rem 0;
+      margin: 0.5rem 0;
       border-color: rgba(255, 255, 255, 0.5);
     }
 
-    /* custom-list sẽ giãn cách các item đều */
+
     .custom-list {
       list-style: none;
       padding: 0;
@@ -2897,7 +2896,7 @@
       }
     }
 
-    @keyframes heartPulse {
+    @keyframes pulse {
       0% {
         transform: translate(-50%, -50%) scale(0.8);
         opacity: 1;
@@ -3526,18 +3525,31 @@
       object-fit: cover;
     }
 
-    /* Footer */
+    /* Enhanced Footer Styles */
     .footer-section {
       background: linear-gradient(120deg, #e6fff6 0%, #d6f5e8 100%) !important;
-      border-top-left-radius: 24px;
-      border-top-right-radius: 24px;
-      box-shadow: 0 -2px 12px 0 rgba(56, 249, 215, 0.06);
-      padding: 24px 0 12px 0;
+      border-top-left-radius: 32px;
+      border-top-right-radius: 32px;
+      box-shadow: 0 -4px 20px 0 rgba(56, 249, 215, 0.08);
+      padding: 32px 0 16px 0;
       color: #222;
-      animation: fadeInFooter 0.7s cubic-bezier(0.23, 1, 0.32, 1);
+      animation: fadeInFooter 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+      position: relative;
+      overflow: hidden;
     }
 
-    @keyframes footerFadeIn {
+    .footer-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #38cfcf, transparent);
+      opacity: 0.6;
+    }
+
+    @keyframes fadeInFooter {
       from {
         opacity: 0;
         transform: translateY(40px);
@@ -3549,7 +3561,33 @@
       }
     }
 
-    @keyframes fadeInFooter {
+    .footer-section .container {
+      padding: 40px 24px 24px 24px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .footer-logo {
+      height: 80px;
+      border-radius: 24px;
+      margin-bottom: 12px;
+      box-shadow: 0 4px 16px rgba(56, 207, 207, 0.15);
+      transition: transform 0.3s ease;
+    }
+
+    .footer-logo:hover {
+      transform: scale(1.05);
+    }
+
+    .footer-brand {
+      animation: fadeInUp 0.6s ease-out 0.2s both;
+    }
+
+    .footer-content {
+      animation: fadeInUp 0.6s ease-out 0.4s both;
+    }
+
+    @keyframes fadeInUp {
       from {
         opacity: 0;
         transform: translateY(30px);
@@ -3561,76 +3599,155 @@
       }
     }
 
-    .footer-section .container {
-      padding-top: 32px;
-      padding-bottom: 16px;
+    /* Service Links Hover Effects */
+    .footer-service-link {
+      border-radius: 12px !important;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      position: relative;
+      overflow: hidden;
     }
 
-    .footer-logo {
-      height: 72px;
-      border-radius: 20px;
-      margin-bottom: 8px;
+    .footer-service-link::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(56, 207, 207, 0.1), transparent);
+      transition: left 0.5s ease;
     }
 
-    .footer-links .ant-btn-link {
-      color: #222 !important;
-      font-weight: 500;
-      font-size: 16px;
-      margin: 0 10px;
-      padding: 0 4px;
-      background: none;
-      transition: color 0.2s, border-bottom 0.2s;
+    .footer-service-link:hover::before {
+      left: 100%;
     }
 
-    .footer-links .ant-btn-link.active,
-    .footer-links .ant-btn-link:hover {
+    .footer-service-link:hover {
       color: #38cfcf !important;
-      border-bottom: 2px solid #38cfcf;
-      background: none;
-      font-weight: 500;
-      box-shadow: none;
-      text-decoration: none;
+      background: rgba(56, 207, 207, 0.08) !important;
+      transform: translateX(8px);
+      box-shadow: 0 4px 12px rgba(56, 207, 207, 0.15);
     }
 
-    .footer-legal .ant-btn-link {
-      color: #666 !important;
-      font-size: 14px;
-      margin: 0 6px;
-      padding: 0 2px;
-    }
-
-    .social-icon {
-      font-size: 24px !important;
-      margin: 0 6px;
-      transition: transform 0.2s, filter 0.2s;
-      cursor: pointer;
-    }
-
-    .social-icon:hover {
-      transform: scale(1.18);
-      filter: brightness(1.4);
-    }
-
+    /* Social Media Buttons */
     .social-btn {
-      transition: transform 0.2s, filter 0.2s;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 2px solid transparent;
+      background: rgba(56, 207, 207, 0.1) !important;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .social-btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: radial-gradient(circle, rgba(56, 207, 207, 0.3) 0%, transparent 70%);
+      transition: all 0.4s ease;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+    }
+
+    .social-btn:hover::before {
+      width: 100px;
+      height: 100px;
     }
 
     .social-btn:hover {
-      transform: scale(1.18);
-      filter: brightness(1.4);
+      transform: translateY(-4px) scale(1.1);
       background: #38cfcf !important;
-      /* Nền xanh nhạt khi hover */
+      border-color: #38cfcf;
+      box-shadow: 0 8px 20px rgba(56, 207, 207, 0.3);
     }
 
     .social-btn:hover .anticon {
       color: #fff !important;
-      /* Icon chuyển sang trắng */
-      transition: color 0.2s;
+      transform: scale(1.1);
+      transition: all 0.3s ease;
     }
 
-    /* Nếu muốn icon luôn ở giữa nút tròn */
     .social-btn .anticon {
       vertical-align: middle;
+      transition: all 0.3s ease;
+      z-index: 1;
+      position: relative;
+    }
+
+    /* Contact Info Styling */
+    .footer-section .ant-space-item {
+      transition: transform 0.2s ease;
+    }
+
+    .footer-section .ant-space:hover .ant-space-item {
+      transform: translateX(2px);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .footer-section {
+        border-radius: 24px 24px 0 0;
+        padding: 24px 0 12px 0;
+      }
+
+      .footer-section .container {
+        padding: 24px 16px 16px 16px;
+      }
+
+      .footer-logo {
+        height: 64px;
+      }
+
+      .footer-content .ant-col {
+        margin-bottom: 32px;
+      }
+
+      .social-btn {
+        margin: 0 4px;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .footer-header {
+        margin-bottom: 32px !important;
+      }
+
+      .footer-content {
+        text-align: center;
+      }
+
+      .footer-service-link {
+        justify-content: center !important;
+        text-align: center !important;
+      }
+    }
+
+    /* Smooth Scrolling for Footer Links */
+    .footer-section a {
+      scroll-behavior: smooth;
+    }
+
+    /* Accessibility Improvements */
+    .footer-section button:focus,
+    .footer-section a:focus {
+      outline: 2px solid #38cfcf;
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+
+    /* Print Styles */
+    @media print {
+      .footer-section {
+        background: #f9f9f9 !important;
+        box-shadow: none;
+        border-top: 2px solid #ddd;
+      }
+
+      .social-btn {
+        display: none;
+      }
     }
 
     .ranking-section {

@@ -90,7 +90,7 @@
 }
 
 .admin-dashboard .ant-table-tbody>tr>td .ant-space {
-  justify-content: center !important;
+  justify-content: left !important;
   width: 100%;
 }
 

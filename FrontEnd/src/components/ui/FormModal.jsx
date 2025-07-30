@@ -56,7 +56,6 @@ const FormModal = ({
             <Form
                 form={form}
                 layout="vertical"
-                preserve={false}
             >
                 {children}
             </Form>
