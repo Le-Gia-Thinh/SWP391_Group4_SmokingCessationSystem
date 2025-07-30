@@ -229,6 +229,5 @@ app.use("*", (req, res) => {
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`✅ Server + Socket.IO chạy tại port ${PORT}`);
-  console.log(`🔗 Google URL: http://localhost:${PORT}/api/auth/google`);
 });
 
