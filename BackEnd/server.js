@@ -41,7 +41,13 @@ const server = http.createServer(app);
 const chatRoutes = require("./routes/chat");
 const adminMemberRoutes = require("./routes/adminMemberRoutes");
 
-// 1) CORS: bắt buộc phải cho phép credentials (cookie) và origin chạy React (5173 / 3000)
+// ✅ 1) MIDDLEWARE LOG REQUEST - ĐẶT Ở ĐẦU
+app.use((req, res, next) => {
+  console.log(`📥 [INCOMING REQUEST] ${req.method} ${req.originalUrl}`);
+  next();
+});
+
+// 2) CORS: bắt buộc phải cho phép credentials (cookie) và origin chạy React (5173 / 3000)
 app.use(
   cors({
     origin: ["http://localhost:5173", "http://localhost:3000"],
@@ -50,7 +56,7 @@ app.use(
   })
 );
 
-// 2) Middleware parse body JSON / URL-encoded
+// 3) Middleware parse body JSON / URL-encoded
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -82,19 +88,19 @@ io.on("connection", (socket) => {
   });
 });
 
-// 2.1) Serve file chat uploads
+// 4) Serve file chat uploads
 const path = require("path");
 app.use("/uploads/chat", express.static(path.join(__dirname, "uploads/chat")));
 
-// 3) Check FTND: Mức độ nghiện
+// 5) Check FTND: Mức độ nghiện
 app.use("/api/ftnd", ftndRoutes);
 app.use("/api/quitplan", quitPlanRoutes);
 app.use("/api/customer", customerRoutes);
 
-// 4) User Score (lấy và update)
+// 6) User Score (lấy và update)
 app.use("/api/user-score", userScoreRoutes);
 
-// 5) Session middleware (phải nằm trước passport.session())
+// 7) Session middleware (phải nằm trước passport.session())
 app.use(
   session({
     secret: process.env.JWT_SECRET || "fallback_secret",
@@ -107,75 +113,67 @@ app.use(
   })
 );
 
-// 6) Passport init & session
+// 8) Passport init & session
 app.use(passport.initialize());
 app.use(passport.session());
 
-// 7) Auth & Role
+// 9) Auth & Role
 app.use("/api/auth", authRoutes);
 app.use("/api/role", roleRoutes);
 
-// 8) Admin / Coach / Member
+// 10) Admin / Coach / Member
 app.use("/api/admin", adminRoutes);
 app.use("/api/coach", coachRoutes);
 app.use("/api/member", memberRoutes);
 
-// 9) Appointment & Schedule
+// 11) Appointment & Schedule
 app.use("/api/appointment", appointmentRoutes);
 app.use("/api/schedule", scheduleRoutes);
 
-// 10) Community & Comment & Chat
+// 12) Community & Comment & Chat
 app.use("/api/community", communityRoutes);
 app.use("/api/comment", commentRoutes);
 app.use("/api/community-chat", communityChatRoutes);
 app.use("/api/topic-chat", topicChatRoutes);
 
-// 11) Habit Log & Smoking Summary
+// 13) Habit Log & Smoking Summary
 app.use("/api/habit-log", habitLogRoutes);
 app.use("/api/smoking-summary", smokingSummaryRoutes);
 
-// 12) User Profile
+// 14) User Profile
 app.use("/api/user", userRoutes);
 
-// 13) Payment
+// 15) Payment
 app.use("/api/payment", paymentRoutes);
 app.use("/api/subscriptions", subscriptionRoutes);
 
-// 14) Root test endpoint
+// 16) Achievement & Notification & Tasks
+app.use("/api/achievement", achievementRoutes);
+app.use("/api/notification", notificationRoutes);
+app.use("/api/admin/tasks", taskRoutes);
+
+// 17) Admin Member Routes
+app.use("/api/admin/members", adminMemberRoutes);
+
+// 18) Chat coach.member
+app.use("/api/chat", chatRoutes);
+
+// 19) Root test endpoint
 app.get("/", (req, res) => {
   res.json({ success: true, message: "Auth API đang hoạt động!" });
 });
 
-// 15) Middleware log request (debug)
-// 15.1) Xử lí thành tựu
-app.use("/api/achievement", achievementRoutes);
-// Xử lí thông báo
-app.use("/api/notification", notificationRoutes);
-// Task routes
-app.use("/api/admin/tasks", taskRoutes);
-
-// 16) Middleware log request
-app.use((req, res, next) => {
-  console.log(`📥 [INCOMING REQUEST] ${req.method} ${req.originalUrl}`);
-  next();
-});
-
-// 16) Global error handler
+// 20) Global error handler
 app.use((err, req, res, next) => {
-  console.error("Unhandled error:", err);
+  console.error("❗ Unhandled error:", err);
   res
     .status(500)
     .json({ success: false, message: "Lỗi server không xác định" });
 });
 
-// 17) Admin Member Routes
-app.use("/api/admin/members", adminMemberRoutes);
-
-// 19. Chat coach.member
-app.use("/api/chat", chatRoutes);
-
-// 20) 404 handler
+// 21) 404 handler - PHẢI Ở CUỐI CÙNG
 app.use("*", (req, res) => {
+  console.log(`❌ 404 - Route not found: ${req.method} ${req.originalUrl}`);
   res.status(404).json({ success: false, message: "Endpoint không tồn tại" });
 });
 
