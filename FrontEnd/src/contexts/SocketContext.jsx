@@ -14,43 +14,72 @@ export const useSocket = () => {
 export const SocketProvider = ({ children }) => {
     const [socket, setSocket] = useState(null);
     const [isConnected, setIsConnected] = useState(false);
+    const [activeRooms, setActiveRooms] = useState([]);
 
     useEffect(() => {
-        // Tạo Socket.IO connection
+        // Tạo Socket.IO connection với cấu hình tối ưu hơn
         const newSocket = io('http://localhost:5000', {
             transports: ['websocket', 'polling'],
-            withCredentials: true
+            withCredentials: true,
+            reconnection: true,         // Cho phép kết nối lại
+            reconnectionAttempts: 5,    // Số lần thử kết nối lại
+            reconnectionDelay: 1000,    // Độ trễ giữa các lần thử (milliseconds)
+            timeout: 20000              // Timeout cho việc kết nối (milliseconds)
         });
 
         // Connection events
         newSocket.on('connect', () => {
-            console.log('🔗 Socket.IO connected:', newSocket.id);
             setIsConnected(true);
+            
+            // Khi kết nối lại, cần join lại tất cả các room đã join trước đó
+            if (activeRooms.length > 0) {
+                activeRooms.forEach(room => {
+                    newSocket.emit('joinRoom', room);
+                });
+            }
         });
 
         newSocket.on('disconnect', () => {
-            console.log('❌ Socket.IO disconnected');
             setIsConnected(false);
         });
 
         newSocket.on('connect_error', (error) => {
-            console.error('❌ Socket.IO connection error:', error);
             setIsConnected(false);
         });
+        
+        // Lắng nghe ping để xác nhận kết nối đang hoạt động
+        newSocket.on('pong', (data) => {
+            // Nhận pong từ server
+        });
+        
+        // Gửi ping định kỳ để giữ kết nối
+        const pingInterval = setInterval(() => {
+            if (newSocket.connected) {
+                newSocket.emit('ping', { ts: new Date().toISOString() });
+            }
+        }, 30000); // Mỗi 30 giây
 
         setSocket(newSocket);
 
         // Cleanup khi component unmount
         return () => {
+            clearInterval(pingInterval);
             newSocket.close();
         };
-    }, []);
+    }, [activeRooms]);
 
     // Join session room
     const joinSession = (sessionId) => {
         if (socket && sessionId) {
             socket.emit('joinSession', sessionId);
-            console.log(`👥 Joined session room: ${sessionId}`);
+            
+            // Track active rooms
+            setActiveRooms(prev => {
+                if (!prev.includes(sessionId)) {
+                    return [...prev, sessionId];
+                }
+                return prev;
+            });
         }
     };
 
@@ -58,7 +87,44 @@ export const SocketProvider = ({ children }) => {
     const leaveSession = (sessionId) => {
         if (socket && sessionId) {
             socket.emit('leaveSession', sessionId);
-            console.log(`👋 Left session room: ${sessionId}`);
+            
+            // Remove from active rooms
+            setActiveRooms(prev => prev.filter(room => room !== sessionId));
+        }
+    };
+    
+    // Join chat room
+    const joinRoom = (roomId) => {
+        if (socket && roomId) {
+            socket.emit('joinRoom', roomId);
+            
+            // Track active rooms
+            setActiveRooms(prev => {
+                if (!prev.includes(roomId)) {
+                    return [...prev, roomId];
+                }
+                return prev;
+            });
+            
+            // Force join nếu kết nối đã sẵn sàng để đảm bảo join thành công
+            if (socket.connected) {
+                socket.emit('forceJoinRoom', roomId);
+            }
+            
+            // Lắng nghe sự kiện join thành công
+            socket.on('joinSuccess', (data) => {
+                // Đã join thành công
+            });
+        }
+    };
+    
+    // Leave chat room
+    const leaveRoom = (roomId) => {
+        if (socket && roomId) {
+            socket.emit('leaveRoom', roomId);
+            
+            // Remove from active rooms
+            setActiveRooms(prev => prev.filter(room => room !== roomId));
         }
     };
 
@@ -66,7 +132,10 @@ export const SocketProvider = ({ children }) => {
         socket,
         isConnected,
         joinSession,
-        leaveSession
+        leaveSession,
+        joinRoom,
+        leaveRoom,
+        activeRooms
     };
 
     return (

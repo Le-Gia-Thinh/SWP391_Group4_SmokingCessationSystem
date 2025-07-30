@@ -70,15 +70,50 @@ app.use((req, res, next) => {
 
 // Socket.IO lắng nghe kết nối
 io.on("connection", (socket) => {
-  console.log("📡 Client connected:", socket.id);
-
+  // Join session room (phiên tư vấn)
   socket.on("joinSession", (sessionId) => {
     socket.join(sessionId);
-    console.log(`👥 Joined room session ${sessionId}`);
+  });
+
+  // Leave session room
+  socket.on("leaveSession", (sessionId) => {
+    socket.leave(sessionId);
+  });
+
+  // Join chat room (theo thread_id)
+  socket.on("joinRoom", (roomId) => {
+    socket.join(roomId);
+    // Gửi thông báo tới phòng khi có người tham gia
+    socket.to(roomId).emit("userJoined", { id: socket.id, room: roomId });
+  });
+
+  // Leave chat room
+  socket.on("leaveRoom", (roomId) => {
+    socket.leave(roomId);
+    // Gửi thông báo tới phòng khi có người rời đi
+    socket.to(roomId).emit("userLeft", { id: socket.id, room: roomId });
+  });
+
+  // Debug: Liệt kê các phòng mà socket hiện đang tham gia
+  socket.on("getRooms", () => {
+    const rooms = Array.from(socket.rooms).filter(room => room !== socket.id);
+    socket.emit("roomsList", rooms);
+  });
+  
+  // Ping-pong để duy trì kết nối
+  socket.on("ping", (data) => {
+    socket.emit("pong", { ts: new Date().toISOString(), serverAck: true });
+  });
+  
+  // Xử lý join/leave room
+  socket.on('forceJoinRoom', (roomId) => {
+    socket.join(roomId);
+    // Gửi thông báo tới phòng khi có người tham gia
+    socket.emit('joinSuccess', { id: socket.id, room: roomId });
   });
 
   socket.on("disconnect", () => {
-    console.log("❌ Client disconnected:", socket.id);
+    // Client đã ngắt kết nối
   });
 });
 
@@ -156,7 +191,6 @@ app.use("/api/admin/tasks", taskRoutes);
 
 // 16) Middleware log request
 app.use((req, res, next) => {
-  console.log(`📥 [INCOMING REQUEST] ${req.method} ${req.originalUrl}`);
   next();
 });
 
@@ -182,5 +216,4 @@ app.use("*", (req, res) => {
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`✅ Server + Socket.IO chạy tại port ${PORT}`);
-  console.log(`🔗 Google URL: http://localhost:${PORT}/api/auth/google`);
 });
