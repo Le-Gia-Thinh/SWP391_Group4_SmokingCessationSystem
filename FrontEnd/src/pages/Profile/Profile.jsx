@@ -10,6 +10,7 @@ import {
   Button,
   message,
   Row,
+  App,
   Col,
   Layout,
 } from "antd";
@@ -23,11 +24,10 @@ const { Title, Text } = Typography;
 const { Content } = Layout;
 
 const ProfilePage = () => {
-  const { user, setUser } = useAuth();
+  const { user, setUser, refreshUser } = useAuth();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-
   // Handle back navigation
   const handleGoBack = () => {
     window.history.back();
@@ -46,9 +46,12 @@ const ProfilePage = () => {
     }
   }, [user, form]);
 
+  const { message: messageApi } = App.useApp();
+
   const onFinish = async (values) => {
     try {
       setLoading(true);
+
       const res = await fetch("http://localhost:5000/api/user/profile", {
         method: "PUT",
         headers: {
@@ -62,25 +65,45 @@ const ProfilePage = () => {
       });
 
       const data = await res.json();
-      if (!res.ok || !data.success)
+
+      if (!res.ok || !data.success) {
         throw new Error(data.message || "Cập nhật thất bại");
+      }
 
-      message.success("🎉 Cập nhật hồ sơ thành công!");
+      // ✅ Sử dụng messageApi
+      messageApi.success("🎉 Cập nhật hồ sơ thành công!");
 
-      const refreshed = await fetch("http://localhost:5000/api/user/me", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-      const updatedUser = await refreshed.json();
-      setUser({ ...updatedUser, role: updatedUser.user_role });
+      // Cập nhật user state
+      setUser(prevUser => ({
+        ...prevUser,
+        ...values,
+        date_of_birth: values.date_of_birth?.format("YYYY-MM-DD"),
+      }));
+
+      // Refresh từ server
+      try {
+        const refreshRes = await fetch("http://localhost:5000/api/user/me", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+
+        if (refreshRes.ok) {
+          const refreshData = await refreshRes.json();
+          setUser({ ...refreshData, role: refreshData.user_role });
+          localStorage.setItem("user", JSON.stringify(refreshData));
+        }
+      } catch (refreshError) {
+        console.error("Error refreshing user data:", refreshError);
+      }
+
     } catch (err) {
-      message.error("❌ Lỗi khi cập nhật hồ sơ: " + err.message);
+      console.error("Error updating profile:", err);
+      messageApi.error("❌ Lỗi khi cập nhật hồ sơ: " + err.message);
     } finally {
       setLoading(false);
     }
   };
-
   if (!user) {
     return (
       <div
@@ -165,8 +188,8 @@ const ProfilePage = () => {
                         user.role === "admin"
                           ? "red"
                           : user.role === "coach"
-                          ? "blue"
-                          : "green"
+                            ? "blue"
+                            : "green"
                       }
                       style={{
                         fontSize: "14px",
