@@ -86,7 +86,6 @@ exports.submitFTNDResult = async (req, res) => {
 
     res.json({ success: true, message: "Đã cập nhật ftnd_level" });
   } catch (err) {
-    console.error("Lỗi cập nhật FTND:", err);
     res.status(500).json({ message: "Lỗi server" });
   }
 };

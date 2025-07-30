@@ -684,50 +684,61 @@ const QuitPlanDetail = () => {
           <CheckCircleTwoTone twoToneColor="#13c2c2" /> Chi tiết nhiệm vụ
         </Divider>
         {Array.isArray(detailPlan) && detailPlan.length > 0 ? (
-          <ul style={{ paddingLeft: 24 }}>
-            {detailPlan.map((item, timeSlotIdx) => (
-              <li key={timeSlotIdx} style={{ marginBottom: 16, fontSize: 16 }}>
-                <div style={{ fontWeight: 500, marginBottom: 4 }}>
-                  {item.time}:
-                </div>
-                <Radio.Group
-                  value={selectedTask[timeSlotIdx]}
-                  onChange={(e) =>
-                    handleSelectTask(timeSlotIdx, e.target.value)
-                  }
-                >
-                  {(Array.isArray(item.replacement)
-                    ? item.replacement
-                    : [item.replacement]
-                  ).map((task, taskIdx) => {
-                    // Sử dụng currentPhaseCode để tạo taskId đúng chuẩn
-                    const phaseCode = currentPhaseCode || "P0";
-                    const timeStr = item.time.split(":")[0].padStart(2, "0");
-                    const taskId = `${phaseCode}_${timeStr}_${taskIdx + 1}`;
-                    const recordDate = dayjs(item.rawDate, [
-                      "DD/MM/YYYY",
-                      "DD-MM-YYYY",
-                      "YYYY-MM-DD",
-                    ]).startOf("day");
-                    const today = dayjs().startOf("day");
-                    const isPast = recordDate.isBefore(today); // ✅ kiểm tra quá khứ
-
-                    return (
-                      <Radio.Button
-                        key={taskId}
-                        value={taskId}
-                        disabled={isPast} // ✅ Khóa nếu quá ngày
-                        style={{ display: "block", marginBottom: 4 }}
-                      >
-                        <Tag color="magenta" style={{ fontSize: 15 }}>
-                          {task}
-                        </Tag>
-                      </Radio.Button>
-                    );
-                  })}
-                </Radio.Group>
-              </li>
-            ))}
+          <ul className="quitplan-task-list">
+            {detailPlan.map((item, timeSlotIdx) => {
+              // Tính toán taskId mặc định nếu chưa chọn
+              const phaseCode = currentPhaseCode || "P0";
+              const timeStr = item.time.split(":")[0].padStart(2, "0");
+              const tasks = Array.isArray(item.replacement)
+                ? item.replacement
+                : [item.replacement];
+              const selectedId =
+                selectedTask[timeSlotIdx] || `${phaseCode}_${timeStr}_1`;
+              return (
+                <li key={timeSlotIdx} className="quitplan-task-item">
+                  <div className="quitplan-task-time">{item.time}:</div>
+                  <Radio.Group
+                    value={selectedId}
+                    onChange={(e) =>
+                      handleSelectTask(timeSlotIdx, e.target.value)
+                    }
+                    className="quitplan-radio-group"
+                  >
+                    {tasks.map((task, taskIdx) => {
+                      const taskId = `${phaseCode}_${timeStr}_${taskIdx + 1}`;
+                      const recordDate = dayjs(item.rawDate, [
+                        "DD/MM/YYYY",
+                        "DD-MM-YYYY",
+                        "YYYY-MM-DD",
+                      ]).startOf("day");
+                      const today = dayjs().startOf("day");
+                      const isPast = recordDate.isBefore(today);
+                      // Highlight nếu được chọn
+                      const isSelected = selectedId === taskId;
+                      return (
+                        <Radio.Button
+                          key={taskId}
+                          value={taskId}
+                          disabled={isPast}
+                          className={
+                            isSelected
+                              ? "quitplan-radio-btn selected"
+                              : "quitplan-radio-btn"
+                          }
+                        >
+                          <Tag
+                            color={isSelected ? "blue" : "magenta"}
+                            style={{ fontSize: 15 }}
+                          >
+                            {task}
+                          </Tag>
+                        </Radio.Button>
+                      );
+                    })}
+                  </Radio.Group>
+                </li>
+              );
+            })}
           </ul>
         ) : (
           <Paragraph type="secondary" italic>

@@ -214,14 +214,21 @@ export default function AdminTaskManager() {
             disabled={modal.record !== null}
           >
             <Select placeholder="Chọn khung giờ">
-              {Array.from({ length: 24 }, (_, i) => {
-                const hour = i.toString().padStart(2, "0");
-                return (
-                  <Option key={hour} value={`${hour}:00`}>
-                    {hour}:00
-                  </Option>
-                );
-              })}
+              {[
+                "07:00",
+                "08:00",
+                "10:00",
+                "12:00",
+                "14:00",
+                "16:00",
+                "18:00",
+                "20:00",
+                "22:00",
+              ].map((slot) => (
+                <Option key={slot} value={slot}>
+                  {slot}
+                </Option>
+              ))}
             </Select>
           </Form.Item>
           <Form.Item

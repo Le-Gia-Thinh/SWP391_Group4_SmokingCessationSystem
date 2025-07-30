@@ -1,4 +1,4 @@
-/* ✅ Layout chuẩn, thu gọn như các trang khác */
+/* /* ✅ Layout chuẩn, thu gọn như các trang khác
 body {
   margin: 0;
   padding: 0;
@@ -159,4 +159,4 @@ tr.highlighted td {
     flex-direction: column !important;
     gap: 16px !important;
   }
-}
+}  

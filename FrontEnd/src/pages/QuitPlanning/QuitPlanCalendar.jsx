@@ -127,7 +127,6 @@ const QuitPlan = () => {
         if (phasesData.success && behaviorPhasesData.success) {
           setPhases(phasesData.data);
           setBehaviorPlanPhases(behaviorPhasesData.data);
-          console.log("✅ API phases loaded successfully");
         } else {
           throw new Error("API returned error response");
         }
@@ -695,8 +694,8 @@ const QuitPlan = () => {
                 width: "100%", // Thêm width 100%
                 padding: 32,
               }}
-              bodyStyle={{ padding: 0, width: "100%" }}
-              bordered={false}
+              styles={{ padding: 0, width: "100%" }}
+              variant={false}
             >
               <div
                 style={{
@@ -829,8 +828,8 @@ const QuitPlan = () => {
                 flexDirection: "column",
                 justifyContent: "center",
               }}
-              bodyStyle={{ padding: 0, width: "100%" }}
-              bordered={false}
+              styles={{ padding: 0, width: "100%" }}
+              variant={false}
             >
               <div
                 style={{
