@@ -1,15 +1,18 @@
 import React from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import AccessDenied from "./AccessDenied";
+import PremiumConfirmationModal from "./PremiumConfirmationModal";
 
 const ProtectedRoute = ({
   children,
   allowedRoles = [],
   redirectTo = "/login",
   requireAuth = true,
+  requirePremium = false,
 }) => {
-  const { user, loading, hasRole } = useAuth();
+  const { user, loading, hasRole, isPremium } = useAuth();
+  const navigate = useNavigate();
 
   // Show loading while checking authentication
   if (loading) {
@@ -37,6 +40,31 @@ const ProtectedRoute = ({
         requiredRole={allowedRoles.join(" or ")}
         currentRole={user?.role}
       />
+    );
+  }
+
+  // Check for premium requirement
+  if (requirePremium && user.role === "member" && !isPremium) {
+    return (
+      <>
+        <PremiumConfirmationModal
+          visible={true}
+          onConfirm={() => {
+            navigate("/checkout");
+          }}
+          onCancel={() => {
+            // Navigate back to home page or previous safe page
+            navigate("/", { replace: true });
+          }}
+        />
+        {/* Show a loading state while modal is displayed */}
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Đang kiểm tra quyền truy cập...</p>
+          </div>
+        </div>
+      </>
     );
   }
 

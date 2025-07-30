@@ -70,23 +70,29 @@ import RankingSection from "../../components/RankingSection";
 import bg2 from "../../assets/img/carousel-bg-2.jpg";
 import car1 from "../../assets/img/carousel-1.jpeg";
 import car2 from "../../assets/img/carousel-2.png";
-import testi1 from "../../assets/img/carousel-bg-2.jpg";
-import testi2 from "../../assets/img/carousel-bg-2.jpg";
-import testi3 from "../../assets/img/carousel-bg-2.jpg";
-import testi4 from "../../assets/img/carousel-bg-2.jpg";
+import testi1 from "../../assets/img/anh1.jpg";
+import testi2 from "../../assets/img/anh5.jpg";
+import testi3 from "../../assets/img/anh2.jpg";
+import testi4 from "../../assets/img/anh3.jpg";
+import quitSupportImg from "../../assets/img/smokingsupport.jpg";
+import therapySessionImg from "../../assets/img/theory.jpg";
+import breathingImg from "../../assets/img/thien.jpg";
+
 /* ---------- ASSETS CHO 2 KHỐI MỚI ---------- */
-import about1 from "../../assets/img/carousel-bg-2.jpg";
-import about2 from "../../assets/img/carousel-bg-2.jpg";
-import about3 from "../../assets/img/carousel-bg-2.jpg";
-import bannerImg from "../../assets/img/banner.jpg";
+import about1 from "../../assets/img/quit-smoking-illustration_23-2148683677.jpg";
+import about2 from "../../assets/img/OIP.jpg";
+import about3 from "../../assets/img/OIP_2.jpg";
 import bannerImg1 from '../../assets/img/banner-1.jpg';
 import bannerImg2 from '../../assets/img/banner-2.jpg';
-
-import service1 from '../../assets/img/service-1.jpg';
-import service2 from '../../assets/img/service-2.jpg';
-import service3 from '../../assets/img/service-3.jpg';
+import banner4 from '../../assets/img/banner4.jpeg';
+import service1 from '../../assets/img/mau-lap-ke-hoach-cong-viec-ca-nhan-7-.png';
+import service1_2 from '../../assets/img/phan-mem-lap-ke-hoach-ca-nhan_1.jpg';
+import service2 from '../../assets/img/theodoitientrinh2.jpg';
+import service2_2 from '../../assets/img/theodoitientrinh.jpg';
+import service3 from '../../assets/img/hotrochuyengia.png';
+import service3_2 from '../../assets/img/hotrochuyengiabanner.png';
 import { Parallax } from 'react-parallax';
-import { FaStar, FaUsers, FaCheck, FaMugHot } from "react-icons/fa";  // Đảm bảo thêm dòng này
+import { FaStar, FaUsers, FaCheck, FaMugHot } from "react-icons/fa";
 
 import "animate.css/animate.min.css";
 import AOS from 'aos';
@@ -117,7 +123,7 @@ const getAnimCls = (name) => `animate__animated animate__${name}`;
 const heroSlides = [
   {
     isVideo: true,
-    video: videoList[0], // nền video toàn màn cho slide 1
+    video: videoList[0],
     tag: "// Smoking Cessation //",
     title: "Bỏ Thuốc Lá",
     img: car1,
@@ -140,68 +146,53 @@ const roadmapItems = [
   { title: "1 năm", desc: "Nguy cơ tim mạch giảm 50%" },
   { title: "5–10 năm", desc: "Nguy cơ ung thư phổi giảm đáng kể" },
 ];
-
-const benefits = [
-  "Cải thiện sức khỏe thể chất",
-  "Sức khỏe tinh thần tốt hơn",
-  "Tăng tuổi thọ",
-  "Quản lý cân nặng",
-  "Tăng sự tự tin",
-  "Giảm căng thẳng",
-];
-
 const testimonials = [
   {
-    date: "20 May",
+    date: "12 Tháng 3",
     img: testi1,
-    name: "Client Name",
-    job: "Profession",
-    text: "Tempor erat elitr rebum at clita. Diam dolor diam ipsum sit diam amet diam et eos. Clita erat ipsum et lorem et sit.",
+    name: "Nguyễn Minh Tú",
+    job: "Giáo viên Tiểu học",
+    text: "Tôi đã hút thuốc hơn 15 năm. Nhờ sự hỗ trợ từ chuyên gia tại BookCoach, tôi đã bỏ thuốc được 6 tháng và cảm thấy khỏe mạnh hơn bao giờ hết.",
   },
   {
-    date: "28 May",
+    date: "25 Tháng 4",
     img: testi2,
-    name: "Client Name",
-    job: "Profession",
-    text: "Tempor erat elitr rebum at clita. Diam dolor diam ipsum sit diam amet diam et eos. Clita erat ipsum et lorem et sit.",
+    name: "Lê Quang Huy",
+    job: "Nhân viên văn phòng",
+    text: "Không ngờ mình có thể từ bỏ thuốc nhờ những buổi tư vấn tâm lý kết hợp thiền và thở. Chương trình thật sự hiệu quả và rất dễ tiếp cận.",
   },
   {
-    date: "30 May",
+    date: "08 Tháng 5",
     img: testi3,
-    name: "Client Name",
-    job: "Profession",
-    text: "Tempor erat elitr rebum at clita. Diam dolor diam ipsum sit diam amet diam et eos. Clita erat ipsum et lorem et sit.",
+    name: "Trần Hồng Nhung",
+    job: "Nhà thiết kế",
+    text: "Tôi từng thử nhiều cách để bỏ thuốc nhưng thất bại. Nhờ có người đồng hành và theo sát tiến trình, lần này tôi đã làm được!",
   },
   {
-    date: "31 May",
+    date: "20 Tháng 6",
     img: testi4,
-    name: "Client Name",
-    job: "Profession",
-    text: "Tempor erat elitr rebum at clita. Diam dolor diam ipsum sit diam amet diam et eos. Clita erat ipsum et lorem et sit.",
+    name: "Phạm Tuấn Kiệt",
+    job: "Sinh viên Đại học",
+    text: "Sau 3 tuần tham gia chương trình, tôi đã giảm đáng kể số lượng thuốc hút mỗi ngày. Tôi cảm thấy bản thân kiểm soát được cơn thèm thuốc.",
   },
-];
-const counters = [
-  { icon: FaClock, num: 7, label: "Ngày Không Hút" },
-  { icon: FaSkullCrossbones, num: 0, label: "Mức Độc Tố" },
-  { icon: FaMoneyBillWave, num: 10000000, label: "Tiết Kiệm (₫)" },
-  { icon: FaAward, num: 5, label: "Huy Hiệu Đạt Được" }  // <-- thêm mục này
 ];
 
-const categoryFeatures = [
-  "Giảm nguy cơ ung thư và bệnh tim mạch",
-  "Cải thiện chức năng phổi và hô hấp",
-  "Giảm căng thẳng, lo âu",
-  "Tiết kiệm chi phí hàng tháng",
-  "Làm gương cho gia đình",
+const counters = [
+  { icon: FaClock, num: 7, label: "Ngày Không Hút Trở Lại" },
+  { icon: FaSkullCrossbones, num: 0, label: "Mức Độc Tố" },
+  { icon: FaMoneyBillWave, num: 10000000, label: "Tiết Kiệm (₫)" },
+  { icon: FaAward, num: 30, label: "Huy Hiệu và Thành Tựu Để Đạt Được" }
 ];
+
 const expertQualifications = [
-  "Chuyên gia dinh dưỡng đã đăng ký với Viện Dinh dưỡng và Chế độ ăn",
-  "Hơn 5 năm kinh nghiệm trong lĩnh vực",
-  "Chuyên về quản lý cân nặng, phòng ngừa bệnh mãn tính và dinh dưỡng thể thao",
-  "Thành thạo trong việc phát triển công thức và kế hoạch bữa ăn",
-  "Đam mê giúp mọi người sống khỏe mạnh, trọn vẹn",
-  "Cam kết cập nhật những nghiên cứu và xu hướng mới nhất trong dinh dưỡng",
+  "Chuyên gia được đào tạo trong lĩnh vực cai nghiện thuốc lá và tâm lý hành vi",
+  "Hơn 5 năm kinh nghiệm tư vấn bỏ thuốc thành công cho nhiều nhóm đối tượng",
+  "Thành thạo các liệu pháp hành vi nhận thức (CBT), thư giãn, và hỗ trợ tinh thần",
+  "Có chứng chỉ hỗ trợ điều trị nghiện từ các tổ chức y tế uy tín",
+  "Cam kết đồng hành 1:1 và xây dựng lộ trình bỏ thuốc cá nhân hóa",
+  "Thường xuyên cập nhật các phương pháp và công nghệ mới trong hỗ trợ cai nghiện",
 ];
+
 
 
 const footerLinks = [
@@ -221,30 +212,12 @@ const legalLinks = [
   "Chính sách cookie",
   "Hỗ trợ",
 ];
-const rankingData = [
-  {
-    title: "Mission & Engagement",
-    description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin enim neque, varius ut lorem eget, blandit venenatis felis."
-  },
-  {
-    title: "Spread Global Awareness",
-    description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin enim neque, varius ut lorem eget, blandit venenatis felis."
-  },
-  {
-    title: "Organize Grant Funding",
-    description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin enim neque, varius ut lorem eget, blandit venenatis felis."
-  },
-  {
-    title: "Ignite Sustainable Impact",
-    description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin enim neque, varius ut lorem eget, blandit venenatis felis."
-  }
-];
 const quitMethods = [
   {
     id: 'gradual',
     title: 'Giảm Dần Từng Bước',
     icon: <TrendingUp className="method-icon" />,
-    description: 'Phương pháp khoa học giảm từ từ số điếu thuốc mỗi ngày',
+    description: 'Phương pháp khoa học giảm dần số điếu thuốc mỗi ngày',
     features: [
       'Lên lịch giảm 20% mỗi tuần',
       'Thay thế thói quen hút thuốc',
@@ -322,7 +295,6 @@ const successStories = [
     method: 'Hỗ trợ y tế'
   }
 ];
-/* 🔹 ARROW COMPONENTS: tự clear timer rồi gọi onClick từ Slick 🔹 */
 const makeArrow = (dir, timerRef) => {
   const IconComp = dir === "prev" ? LeftOutlined : RightOutlined;
   const slickClass = dir === "prev" ? "slick-prev" : "slick-next";
@@ -345,8 +317,6 @@ const makeArrow = (dir, timerRef) => {
 const HomePage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  /* ---- refs ---- */
-  /* ---- refs ---- */
   const upgradeTimer = useRef(null);
   const slideTimerRef = useRef(null);
   const carouselRef = useRef(null);
@@ -388,13 +358,13 @@ const HomePage = () => {
       ([entry]) => {
         if (entry.isIntersecting) setInViewWhyus(true);
       },
-      { threshold: 0.5 } // Kích hoạt khi 50% phần tử xuất hiện
+      { threshold: 0.5 }
     );
     const expObserver = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) setInViewExp(true);
       },
-      { threshold: 0.5 } // Kích hoạt khi 50% phần tử xuất hiện
+      { threshold: 0.5 }
     );
     if (aboutRef.current) aboutObserver.observe(aboutRef.current);
     if (whyusRef.current) whyusObserver.observe(whyusRef.current);
@@ -749,7 +719,7 @@ const HomePage = () => {
             <Col xs={24} lg={12} className="about-left">
               <div className="about-grid">
                 <div className="about-exp-box" onAnimationEnd={handleAnimationEnd}>
-                  <h1>{inViewAbout && <CountUp start={0} end={25} duration={5} />}</h1>
+                  <h1>{inViewAbout && <CountUp start={0} end={5} duration={10} />}</h1>
                   <small className="fs-5 fw-bold">Năm Hỗ Trợ Bỏ Thuốc</small>
                 </div>
                 <div className="about-img-container">
@@ -767,7 +737,7 @@ const HomePage = () => {
             <Col xs={24} lg={12}>
               <p className="section-title bg-white text-start text-primary pe-3">Về Chúng Tôi</p>
               <Title level={2} className="mb-4"> Cam Kết Hỗ Trợ Bỏ Thuốc Thành Công </Title>
-              <Paragraph>  Với hơn 5 năm đồng hành cùng hàng ngàn người, HealthyQuit cung cấp
+              <Paragraph>  Với hơn 5 năm đồng hành cùng hàng ngàn người, chúng tôi cung cấp
                 kế hoạch cá nhân hóa, lời khuyên chuyên gia và cộng đồng chia sẻ để
                 giúp bạn bỏ thuốc vĩnh viễn.</Paragraph>
 
@@ -866,7 +836,7 @@ const HomePage = () => {
 
 
 
-      <Parallax bgImage={bannerImg} strength={500}>
+      <Parallax bgImage={banner4} strength={500}>
         <div className="custom-banner">
           <div className="container">
             <div className="row g-4">
@@ -944,7 +914,7 @@ const HomePage = () => {
               >
                 <div className="service-item d-flex h-100">
                   <div className="service-img">
-                    <img className="img-fluid" src={service1} alt="Kế hoạch" />
+                    <img className="img-fluid" src={service1_2} alt="Kế hoạch" />
                   </div>
                   <div className="service-text p-5 pt-0">
                     <div className="service-icon">
@@ -971,7 +941,7 @@ const HomePage = () => {
               >
                 <div className="service-item d-flex h-100">
                   <div className="service-img">
-                    <img className="img-fluid" src={service2} alt="Theo dõi" />
+                    <img className="img-fluid" src={service2_2} alt="Theo dõi" />
                   </div>
                   <div className="service-text p-5 pt-0">
                     <div className="service-icon">
@@ -998,7 +968,7 @@ const HomePage = () => {
               >
                 <div className="service-item d-flex h-100">
                   <div className="service-img">
-                    <img className="img-fluid" src={service3} alt="Hỗ trợ" />
+                    <img className="img-fluid" src={service3_2} alt="Hỗ trợ" />
                   </div>
                   <div className="service-text p-5 pt-0">
                     <div className="service-icon">
@@ -1026,129 +996,131 @@ const HomePage = () => {
 
       <div className="quit-smoking-sections">
         {/* Methods Section */}
-        <section className={`methods-section ${isVisible ? 'fade-in' : ''}`}>
-          <div className="quit-smoking-sections-container">
-            <div className="quit-smoking-section-header">
-              <div className="quit-smoking-sections-badge">
-                <Leaf className="badge-icon" />
-                <span>Phương Pháp Hiệu Quả</span>
-              </div>
-              <h2 className="quit-smoking-sections-title">
-                Chọn Phương Pháp <span className="highlight">Phù Hợp</span> Với Bạn
-              </h2>
-              <p className="quit-smoking-sections-subtitle">
-                Mỗi người có một hành trình khác nhau. Hãy tìm phương pháp tốt nhất cho bản thân để thoát khỏi tệ nạn thuốc lá.
-              </p>
-            </div>
-
-            <div className="methods-container">
-              <div className="methods-tabs">
-                {quitMethods.map((method, index) => (
-                  <button
-                    key={method.id}
-                    className={`method-tab ${index === activeMethod ? 'active' : ''}`}
-                    onClick={() => setActiveMethod(index)}
-                    style={{ '--method-color': method.color }}
-                  >
-                    <div className="method-tab-icon">
-                      {method.icon}
-                    </div>
-                    <span className="method-tab-title">{method.title}</span>
-                    <div className="method-tab-duration">{method.duration}</div>
-                    <div className="method-tab-rate">{method.successRate}% thành công</div>
-                  </button>
-                ))}
+        <section className="methods-section">
+          <div className={`methods-section-inner ${isVisible ? 'fade-in' : ''}`}>
+            <div className="quit-smoking-sections-container">
+              <div className="quit-smoking-section-header">
+                <div className="quit-smoking-sections-badge">
+                  <Leaf className="badge-icon" />
+                  <span>Phương Pháp Hiệu Quả</span>
+                </div>
+                <h2 className="quit-smoking-sections-title">
+                  Chọn Phương Pháp <span className="highlight">Phù Hợp</span> Với Bạn
+                </h2>
+                <p className="quit-smoking-sections-subtitle">
+                  Mỗi người có một hành trình khác nhau. Hãy tìm phương pháp tốt nhất cho bản thân để thoát khỏi tệ nạn thuốc lá.
+                </p>
               </div>
 
-              <div className="method-content">
-                <div className="method-card">
-                  <div className="method-header">
-                    <div
-                      className="method-icon-large"
-                      style={{
-                        background: `linear-gradient(135deg, ${quitMethods[activeMethod].color}20, ${quitMethods[activeMethod].color}40)`,
-                        color: quitMethods[activeMethod].color
-                      }}
+              <div className="methods-container">
+                <div className="methods-tabs">
+                  {quitMethods.map((method, index) => (
+                    <button
+                      key={method.id}
+                      className={`method-tab ${index === activeMethod ? 'active' : ''}`}
+                      onClick={() => setActiveMethod(index)}
+                      style={{ '--method-color': method.color }}
                     >
-                      {quitMethods[activeMethod].icon}
-                    </div>
-                    <div className="method-info">
-                      <h3>{quitMethods[activeMethod].title}</h3>
-                      <p>{quitMethods[activeMethod].description}</p>
-                      <div className="method-badges">
-                        <div className="method-badge">
-                          <Clock className="badge-icon-small" />
-                          {quitMethods[activeMethod].duration}
-                        </div>
-                        <div className="method-badge success-rate">
-                          <Activity className="badge-icon-small" />
-                          {quitMethods[activeMethod].successRate}% thành công
+                      <div className="method-tab-icon">
+                        {method.icon}
+                      </div>
+                      <span className="method-tab-title">{method.title}</span>
+                      <div className="method-tab-duration">{method.duration}</div>
+                      <div className="method-tab-rate">{method.successRate}% thành công</div>
+                    </button>
+                  ))}
+                </div>
+
+                <div className="method-content">
+                  <div className="method-card">
+                    <div className="method-header">
+                      <div
+                        className="method-icon-large"
+                        style={{
+                          background: `linear-gradient(135deg, ${quitMethods[activeMethod].color}20, ${quitMethods[activeMethod].color}40)`,
+                          color: quitMethods[activeMethod].color
+                        }}
+                      >
+                        {quitMethods[activeMethod].icon}
+                      </div>
+                      <div className="method-info">
+                        <h3>{quitMethods[activeMethod].title}</h3>
+                        <p>{quitMethods[activeMethod].description}</p>
+                        <div className="method-badges">
+                          <div className="method-badge">
+                            <Clock className="badge-icon-small" />
+                            {quitMethods[activeMethod].duration}
+                          </div>
+                          <div className="method-badge success-rate">
+                            <Activity className="badge-icon-small" />
+                            {quitMethods[activeMethod].successRate}% thành công
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="method-features">
-                    <h4>
-                      <Wind className="section-icon" />
-                      Các bước thực hiện:
-                    </h4>
-                    <div className="features-grid">
-                      {quitMethods[activeMethod].features.map((feature, idx) => (
-                        <div key={idx} className="feature-item" style={{ animationDelay: `${idx * 0.1}s` }}>
-                          <CheckCircle className="feature-check" />
-                          <span>{feature}</span>
-                        </div>
-                      ))}
+                    <div className="method-features">
+                      <h4>
+                        <Wind className="section-icon" />
+                        Các bước thực hiện:
+                      </h4>
+                      <div className="features-grid">
+                        {quitMethods[activeMethod].features.map((feature, idx) => (
+                          <div key={idx} className="feature-item" style={{ animationDelay: `${idx * 0.1}s` }}>
+                            <CheckCircle className="feature-check" />
+                            <span>{feature}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="method-actions">
+                      <button className="btn-primary">
+                        <Target className="btn-icon" />
+                        Bắt Đầu Phương Pháp Này
+                      </button>
+                      <button className="btn-secondary">
+                        <BookOpen className="btn-icon" />
+                        Tìm Hiểu Thêm
+                      </button>
                     </div>
                   </div>
 
-                  <div className="method-actions">
-                    <button className="btn-primary">
-                      <Target className="btn-icon" />
-                      Bắt Đầu Phương Pháp Này
-                    </button>
-                    <button className="btn-secondary">
-                      <BookOpen className="btn-icon" />
-                      Tìm Hiểu Thêm
-                    </button>
-                  </div>
-                </div>
-
-                <div className="method-visual">
-                  <div className="progress-circle">
-                    <svg width="220" height="220" viewBox="0 0 220 220">
-                      <defs>
-                        <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                          <stop offset="0%" style={{ stopColor: quitMethods[activeMethod].color, stopOpacity: 1 }} />
-                          <stop offset="100%" style={{ stopColor: quitMethods[activeMethod].color, stopOpacity: 0.6 }} />
-                        </linearGradient>
-                      </defs>
-                      <circle
-                        cx="110"
-                        cy="110"
-                        r="90"
-                        fill="none"
-                        stroke="#e0f2fe"
-                        strokeWidth="12"
-                      />
-                      <circle
-                        cx="110"
-                        cy="110"
-                        r="90"
-                        fill="none"
-                        stroke="url(#progressGradient)"
-                        strokeWidth="12"
-                        strokeLinecap="round"
-                        strokeDasharray="565.2"
-                        strokeDashoffset={565.2 - (565.2 * quitMethods[activeMethod].successRate) / 100}
-                        className="progress-stroke"
-                      />
-                    </svg>
-                    <div className="progress-content">
-                      <div className="progress-number">{quitMethods[activeMethod].successRate}%</div>
-                      <div className="progress-label">Tỷ lệ thành công</div>
-                      <Leaf className="progress-leaf" />
+                  <div className="method-visual">
+                    <div className="progress-circle">
+                      <svg width="220" height="220" viewBox="0 0 220 220">
+                        <defs>
+                          <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style={{ stopColor: quitMethods[activeMethod].color, stopOpacity: 1 }} />
+                            <stop offset="100%" style={{ stopColor: quitMethods[activeMethod].color, stopOpacity: 0.6 }} />
+                          </linearGradient>
+                        </defs>
+                        <circle
+                          cx="110"
+                          cy="110"
+                          r="90"
+                          fill="none"
+                          stroke="#e0f2fe"
+                          strokeWidth="12"
+                        />
+                        <circle
+                          cx="110"
+                          cy="110"
+                          r="90"
+                          fill="none"
+                          stroke="url(#progressGradient)"
+                          strokeWidth="12"
+                          strokeLinecap="round"
+                          strokeDasharray="565.2"
+                          strokeDashoffset={565.2 - (565.2 * quitMethods[activeMethod].successRate) / 100}
+                          className="progress-stroke"
+                        />
+                      </svg>
+                      <div className="progress-content">
+                        <div className="progress-number">{quitMethods[activeMethod].successRate}%</div>
+                        <div className="progress-label">Tỷ lệ thành công</div>
+                        <Leaf className="progress-leaf" />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1309,61 +1281,60 @@ const HomePage = () => {
         </section>
       </div>
 
-
       <section className="experience-section bg-img py-5 mb-5" ref={expRef}>
-        <div className="container py-5 ">
+        <div className="experience-container container py-5">
           <Row gutter={[32, 32]}>
             <Col lg={6} md={12}>
-              <div className="d-flex">
-                <div className="bg-primary border-inner d-flex align-items-center justify-content-center mb-3" style={{ width: "60px", height: "60px" }}>
-                  <FaStar className="text-white" />
+              <div className="stat-item">
+                <div className="stat-icon">
+                  <FaStar />
                 </div>
-                <div className="ps-4">
-                  <h6 className="text-primary text-uppercase">Our Experience</h6>
-                  <h1 className="display-5 text-white mb-0">
-                    {inViewExp && <CountUp start={0} end={123456} duration={5} />}
+                <div className="stat-content">
+                  <h6 className="stat-label">Buổi tư vấn đã thực hiện</h6>
+                  <h1 className="stat-number">
+                    {inViewExp && <CountUp start={0} end={3820} duration={4} />}
                   </h1>
                 </div>
               </div>
             </Col>
 
             <Col lg={6} md={12}>
-              <div className="d-flex">
-                <div className="bg-primary border-inner d-flex align-items-center justify-content-center mb-3" style={{ width: "60px", height: "60px" }}>
-                  <FaUsers className="text-white" />
+              <div className="stat-item">
+                <div className="stat-icon">
+                  <FaUsers />
                 </div>
-                <div className="ps-4">
-                  <h6 className="text-primary text-uppercase">Cake Specialist</h6>
-                  <h1 className="display-5 text-white mb-0">
-                    {inViewExp && <CountUp start={0} end={123456} duration={5} />}
+                <div className="stat-content">
+                  <h6 className="stat-label">Coach chuyên môn</h6>
+                  <h1 className="stat-number">
+                    {inViewExp && <CountUp start={0} end={128} duration={4} />}
                   </h1>
                 </div>
               </div>
             </Col>
 
             <Col lg={6} md={12}>
-              <div className="d-flex">
-                <div className="bg-primary border-inner d-flex align-items-center justify-content-center mb-3" style={{ width: "60px", height: "60px" }}>
-                  <FaCheck className="text-white" />
+              <div className="stat-item">
+                <div className="stat-icon">
+                  <FaCheck />
                 </div>
-                <div className="ps-4">
-                  <h6 className="text-primary text-uppercase">Complete Project</h6>
-                  <h1 className="display-5 text-white mb-0">
-                    {inViewExp && <CountUp start={0} end={123456} duration={5} />}
+                <div className="stat-content">
+                  <h6 className="stat-label">Nâng cấp Premium thành công</h6>
+                  <h1 className="stat-number">
+                    {inViewExp && <CountUp start={0} end={964} duration={4} />}
                   </h1>
                 </div>
               </div>
             </Col>
 
             <Col lg={6} md={12}>
-              <div className="d-flex">
-                <div className="bg-primary border-inner d-flex align-items-center justify-content-center mb-3" style={{ width: "60px", height: "60px" }}>
-                  <FaMugHot className="text-white" />
+              <div className="stat-item">
+                <div className="stat-icon">
+                  <FaMugHot />
                 </div>
-                <div className="ps-4">
-                  <h6 className="text-primary text-uppercase">Happy Clients</h6>
-                  <h1 className="display-5 text-white mb-0">
-                    {inViewExp && <CountUp start={0} end={123456} duration={5} />}
+                <div className="stat-content">
+                  <h6 className="stat-label">Khách hàng hài lòng</h6>
+                  <h1 className="stat-number">
+                    {inViewExp && <CountUp start={0} end={1472} duration={4} />}
                   </h1>
                 </div>
               </div>
@@ -1372,24 +1343,26 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* ---------- MEET ARTISTS (3/4 ảnh + 1/4 list) ---------- */}
-      <section className="artists-section section-padding  scroll-section" data-reveal="up" id="section_3">
+
+      {/* ---------- MEET COACHES ---------- */}
+      <section className="artists-section section-padding scroll-section" data-reveal="up" id="section_3">
         <div className="container">
 
           {/* Row A: Title */}
           <div className="row justify-content-center">
-            <div className="text-center  mx-auto " data-aos="fade-up" data-aos-delay="100" style={{ maxWidth: "500px" }}>
-              <h2 className="section-title bg-white text-center text-primary px-3 ">Meet Artists</h2>
+            <div className="text-center mx-auto" data-aos="fade-up" data-aos-delay="100" style={{ maxWidth: "500px" }}>
+              <h2 className="section-title bg-white text-center text-primary px-3">Gặp các huán luyện viên tiêu biểu</h2>
             </div>
           </div>
 
           {/* Row B: 3/4 ảnh & 1/4 list */}
           <div className="row gx-4 gy-4 align-items-start">
 
-            {/* —— 3/4 màn: giữ nguyên tất cả ảnh + hover info —— */}
+            {/* —— 3/4 ảnh —— */}
             <div className="col-lg-9 col-12">
               <div className="row g-4">
-                {/* ảnh lớn */}
+
+                {/* Coach 1 - lớn */}
                 <div className="col-lg-5 col-12">
                   <div className="artists-thumb">
                     <div className="artists-image-wrap">
@@ -1400,19 +1373,18 @@ const HomePage = () => {
                       />
                     </div>
                     <div className="artists-hover">
-                      <p><strong>Name:</strong> Madona</p>
-                      <p><strong>Birthdate:</strong> August 16, 1958</p>
-                      <p><strong>Music:</strong> Pop, R&amp;B</p>
+                      <p><strong>Tên:</strong> Lê Gia Thịnh</p>
+                      <p><strong>Kinh nghiệm:</strong> 7 năm đồng hành cùng người bỏ thuốc</p>
+                      <p><strong>Chuyên môn:</strong> Tư vấn tâm lý, thiền & kiểm soát cảm xúc</p>
                       <hr />
-                      <p className="mb-0">
-                        <strong>Youtube Channel:</strong>
-                        <a href="#">Madona Official</a>
-                      </p>
+                      <p className="mb-0"><strong>Phương châm:</strong> "Cai thuốc là thay đổi cuộc sống"</p>
                     </div>
                   </div>
                 </div>
-                {/* hai ảnh nhỏ xếp dọc */}
+
+                {/* Coach 2 & 3 - nhỏ */}
                 <div className="col-lg-5 col-12 d-flex flex-column">
+                  {/* Coach 2 */}
                   <div className="artists-thumb mb-4">
                     <div className="artists-image-wrap">
                       <img
@@ -1422,16 +1394,15 @@ const HomePage = () => {
                       />
                     </div>
                     <div className="artists-hover">
-                      <p><strong>Name:</strong> Rihana</p>
-                      <p><strong>Birthdate:</strong> Feb 20, 1988</p>
-                      <p><strong>Music:</strong> Country</p>
+                      <p><strong>Tên:</strong> Nghiêm Tuân Anh</p>
+                      <p><strong>Kinh nghiệm:</strong> 5 năm hỗ trợ trị liệu hành vi</p>
+                      <p><strong>Chuyên môn:</strong> CBT, quản lý stress, kỹ thuật thư giãn</p>
                       <hr />
-                      <p className="mb-0">
-                        <strong>Youtube Channel:</strong>
-                        <a href="#">Rihana Official</a>
-                      </p>
+                      <p className="mb-0"><strong>Phương châm:</strong> "Kiên trì là chìa khóa thành công"</p>
                     </div>
                   </div>
+
+                  {/* Coach 3 */}
                   <div className="artists-thumb">
                     <div className="artists-image-wrap">
                       <img
@@ -1441,30 +1412,28 @@ const HomePage = () => {
                       />
                     </div>
                     <div className="artists-hover">
-                      <p><strong>Name:</strong> Bruno Bros</p>
-                      <p><strong>Birthdate:</strong> October 8, 1985</p>
-                      <p><strong>Music:</strong> Pop</p>
+                      <p><strong>Tên:</strong> Nguyễn Quốc Bảo</p>
+                      <p><strong>Kinh nghiệm:</strong> 8 năm đào tạo & hướng dẫn bỏ thuốc</p>
+                      <p><strong>Chuyên môn:</strong> Coaching 1:1, động lực cá nhân hóa</p>
                       <hr />
-                      <p className="mb-0">
-                        <strong>Youtube Channel:</strong>
-                        <a href="#">Bruno Official</a>
-                      </p>
+                      <p className="mb-0"><strong>Phương châm:</strong> "Bạn xứng đáng với một cuộc sống không khói thuốc"</p>
                     </div>
                   </div>
                 </div>
+
               </div>
             </div>
 
-            {/* —— 1/4 màn: YOUR CUSTOM LIST —— */}
+            {/* —— 1/4 list —— */}
             <div className="col-lg-3 col-12">
               <ul className="custom-list h-100 d-flex flex-column justify-content-evenly">
-                <li><i className="bi bi-check-circle-fill me-2"></i> Tính năng A</li>
-                <li><i className="bi bi-check-circle-fill me-2"></i> Tính năng B</li>
-                <li><i className="bi bi-check-circle-fill me-2"></i> Tính năng C</li>
-                <li><i className="bi bi-check-circle-fill me-2"></i> Tính năng D</li>
-                <li><i className="bi bi-check-circle-fill me-2"></i> Tính năng E</li>
-                <li><i className="bi bi-check-circle-fill me-2"></i> Tính năng F</li>
-                <li><i className="bi bi-check-circle-fill me-2"></i> Tính năng G</li>
+                <li><i className="bi bi-check-circle-fill me-2"></i> Thân thiện và luôn lắng nghe</li>
+                <li><i className="bi bi-check-circle-fill me-2"></i> Kỹ năng tư vấn tâm lý vững vàng</li>
+                <li><i className="bi bi-check-circle-fill me-2"></i> Hiểu rõ hành vi nghiện</li>
+                <li><i className="bi bi-check-circle-fill me-2"></i> Hỗ trợ từng bước tiến bộ</li>
+                <li><i className="bi bi-check-circle-fill me-2"></i> Luôn đồng hành 1:1</li>
+                <li><i className="bi bi-check-circle-fill me-2"></i> Được cấp chứng chỉ chuyên môn</li>
+                <li><i className="bi bi-check-circle-fill me-2"></i> Cam kết bảo mật & tôn trọng</li>
               </ul>
             </div>
 
@@ -1474,10 +1443,11 @@ const HomePage = () => {
 
 
       {/* ---------- PROFILE ---------- */}
+      {/* ---------- PROFILE ---------- */}
       <section className="profile-section scroll-section" data-reveal="up">
         <div className="container">
           <div className="profile-header">
-            <Badge.Ribbon text="Nhận điều tốt nhất" color="green">
+            <Badge.Ribbon text="Đồng hành cùng hành trình bỏ thuốc" color="green">
               <Card className="profile-info-card">
                 <Title level={2} style={{ margin: 0, color: "white" }}>
                   Hồ sơ chuyên gia
@@ -1489,13 +1459,10 @@ const HomePage = () => {
           <Row gutter={[48, 32]} align="top">
             <Col xs={24} lg={14}>
               <Space direction="vertical" size="large">
-                <Paragraph>
-                  Đội ngũ chuyên gia dinh dưỡng của chúng tôi ở đây để giúp bạn
-                  đạt được mục tiêu sức khỏe và thể chất. Các chuyên gia dinh
-                  dưỡng của chúng tôi là những chuyên gia được đào tạo cao và có
-                  trình độ với sự hiểu biết sâu sắc về khoa học đằng sau dinh
-                  dưỡng và cách nó có thể tác động đến cơ thể và tâm trí của
-                  bạn.
+                <Paragraph className="profile-p">
+                  Chúng tôi tự hào mang đến đội ngũ chuyên gia tâm lý, huấn luyện viên hành vi và cố vấn sức khỏe chuyên sâu
+                  trong lĩnh vực hỗ trợ cai nghiện thuốc lá. Với sự thấu hiểu và đồng hành sát sao, họ sẽ giúp bạn vượt qua
+                  cơn thèm thuốc, kiểm soát cảm xúc và từng bước xây dựng một cuộc sống lành mạnh, không khói thuốc.
                 </Paragraph>
                 <List
                   dataSource={expertQualifications}
@@ -1513,7 +1480,7 @@ const HomePage = () => {
 
             <Col xs={24} lg={10}>
               <Carousel autoplay className="profile-carousel scroll-section">
-                {[meditationImg, healthyEatingImg, fitnessImg].map((img, i) => (
+                {[quitSupportImg, therapySessionImg, breathingImg].map((img, i) => (
                   <div key={i}>
                     <img
                       src={img}
@@ -1532,9 +1499,16 @@ const HomePage = () => {
       <section className="testimonial-section scroll-section">
         <div className="container-xxl py-5">
           <div className="container">
-            <div className="text-center  mx-auto " data-aos="fade-up" data-aos-delay="100" style={{ maxWidth: "500px" }}>
-              <h6 className="section-title bg-white text-center text-primary px-3">Testimonial </h6>
-              <h1 className="mb-5">Our Clients Say!</h1>
+            <div
+              className="text-center mx-auto"
+              data-aos="fade-up"
+              data-aos-delay="100"
+              style={{ maxWidth: "500px" }}
+            >
+              <h6 className="section-title bg-white text-center text-primary px-3">
+                Câu chuyện thành công
+              </h6>
+              <h1 className="mb-5">Người thật – Trải nghiệm thật</h1>
             </div>
 
             <Carousel
@@ -1548,9 +1522,8 @@ const HomePage = () => {
               responsive={[{ breakpoint: 991, settings: { slidesToShow: 1 } }]}
             >
               {testimonials.map((t, idx) => (
-
                 <div key={idx} className="testimonial-item text-center px-3">
-                  <Badge.Ribbon text={t.date} color=" red" placement="end"></Badge.Ribbon>
+                  <Badge.Ribbon text={t.date} color="red" placement="end" />
                   <img
                     className="bg-light rounded-circle p-2 mx-auto mb-3"
                     src={t.img}
@@ -1573,6 +1546,7 @@ const HomePage = () => {
           </div>
         </div>
       </section>
+
 
 
       <RankingSection />

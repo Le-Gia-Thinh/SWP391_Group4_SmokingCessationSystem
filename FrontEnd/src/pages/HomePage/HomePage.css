@@ -790,7 +790,7 @@
     }
 
     .highlight {
-      background: linear-gradient(135deg, #10b981, #3b82f6);
+      background: linear-gradient(298deg, #e26745, #810fdc);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -804,7 +804,7 @@
       left: 0;
       right: 0;
       height: 3px;
-      background: linear-gradient(135deg, #10b981, #3b82f6);
+      background: linear-gradient(135deg, #0f06ad, #3b82f6);
       border-radius: 2px;
       opacity: 0.3;
     }
@@ -821,11 +821,21 @@
     .methods-section {
       background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 50%, #e6fffa 100%);
       padding: 120px 0;
-      opacity: 1;
-      transform: translateY(30px);
-      transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
       overflow: hidden;
+    }
+
+    .methods-section-inner {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 1s cubic-bezier(0.4, 0, 0.2, 1),
+        transform 1s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Khi in-view, bật lên */
+    .methods-section-inner.fade-in {
+      opacity: 1;
+      transform: translateY(0);
     }
 
     .methods-section::before {
@@ -889,12 +899,16 @@
     }
 
     .method-tab.active {
-      background: linear-gradient(135deg, var(--method-color), var(--method-color)dd);
-      color: white;
+      background: linear-gradient(135deg, #04e99c, #0958d8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+
       transform: translateY(-8px) scale(1.02);
       border-color: var(--method-color);
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
     }
+
 
     .method-tab-icon {
       margin-bottom: 20px;
@@ -916,14 +930,20 @@
 
     .method-tab-duration {
       font-size: 0.9rem;
-      opacity: 0.8;
+      opacity: 2;
       margin-bottom: 8px;
+      background: linear-gradient(320deg, #240302, #ec0707);
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
     .method-tab-rate {
       font-size: 0.85rem;
-      font-weight: 600;
-      opacity: 0.9;
+      font-weight: 800;
+      opacity: 6;
+      background: linear-gradient(290deg, #b5d8d7, #012010);
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
     .method-content {
@@ -977,6 +997,7 @@
       color: #0f172a;
       margin-bottom: 12px;
       line-height: 1.3;
+
     }
 
     .method-info p {
@@ -984,6 +1005,7 @@
       font-size: 1.1rem;
       margin-bottom: 20px;
       line-height: 1.6;
+      text-wrap: nowrap;
     }
 
     .method-badges {
@@ -1383,6 +1405,7 @@
       background: rgba(16, 185, 129, 0.05);
       border-radius: 20px;
       border-left: 4px solid #10b981;
+      height: 160px;
     }
 
     .quote-mark {
@@ -1833,6 +1856,10 @@
       .progress-number {
         font-size: 2rem;
       }
+
+      .story-quote {
+        height: auto;
+      }
     }
 
     /* Dark mode support */
@@ -2276,7 +2303,7 @@
       transform: translateY(-5px) scale(1.01);
       box-shadow:
         0 20px 60px rgba(0, 0, 0, 0.3),
-        0 0 30px rgba(82, 196, 26, 0.2);
+        0 0 30px rgba(164, 215, 138, 0.2);
       background: rgba(255, 255, 255, 0.15);
     }
 
@@ -2354,15 +2381,22 @@
     }
 
     .profile-section .ant-list-item .ant-typography {
-      color: #ffffff;
+      color: #000261;
       font-weight: 500;
+    }
+
+    .profile-p {
+      color: #661935 !important;
+      font-size: 20px;
+
     }
 
     /* Modern Check Icons */
     .check-icon {
       width: 55px;
+
       height: 55px;
-      background: linear-gradient(135deg, #52c41a, #73d13d, #95de64);
+      background: linear-gradient(135deg, #049691, #e3ee90, #76158a);
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -2374,7 +2408,7 @@
       position: relative;
       transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       box-shadow:
-        0 10px 30px rgba(82, 196, 26, 0.4),
+        0 10px 30px rgba(129, 210, 89, 0.4),
         inset 0 2px 0 rgba(255, 255, 255, 0.3);
       animation: modernIconPulse 2s ease-in-out infinite;
     }
@@ -2986,7 +3020,7 @@
       text-transform: uppercase;
       font-weight: 800;
       font-size: 20px;
-
+      text-wrap: nowrap;
     }
 
     .section-title::before {
@@ -3080,9 +3114,9 @@
     /* Ảnh */
     .about-img {
       width: 100%;
-      height: auto;
-      /* Đảm bảo ảnh có chiều cao tự động để không bị méo */
-      object-fit: cover;
+      height: 240px;
+
+      object-fit: fill;
       border-radius: 8px;
       box-shadow: 0 0 45px rgba(0, 0, 0, 0.07);
       z-index: 1;
@@ -3169,7 +3203,6 @@
 
     @media (max-width:992px) {
 
-      /* xếp dọc trên mobile */
       .about-left {
         margin-bottom: 40px;
       }
@@ -3180,60 +3213,83 @@
     }
 
 
-
-
     .experience-section {
-      background-color: #f9f9f9;
-      background-size: cover;
-      background-position: center;
-    }
-
-    .bg-img {
       background-image: url('../../assets/img/banner.jpg');
       background-size: cover;
       background-position: center;
+      background-repeat: no-repeat;
+      padding-top: 100px;
+      padding-bottom: 100px;
+      min-height: 400px;
+      position: relative;
     }
 
-    .bg-primary {
-      background-color: #D81324;
+    .experience-section::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.3);
+      /* lớp phủ tối 30% */
+      z-index: 0;
     }
 
-    .border-inner {
-      border: 10px double #071618df;
+    .experience-section {
+      background-attachment: fixed;
 
     }
 
-    .container.py-5 {
-      background: #bae7ff;
+
+    .experience-container {
+      position: relative;
+      z-index: 1;
+      /* đẩy nội dung lên trên lớp overlay */
     }
 
-    .text-primary {
-      color: #D81324;
+
+    .experience-container {
+      background: linear-gradient(135deg, #cceeff, #e6f7ff);
+      border-radius: 20px;
+      padding: 60px 40px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
     }
 
-    .display-5 {
-      font-size: 3rem;
-      font-weight: bold;
+    .stat-item {
+      display: flex;
+      align-items: center;
     }
 
-    .ps-4 {
-      padding-left: 1.5rem;
-    }
-
-    .mb-0 {
-      margin-bottom: 0;
-    }
-
-    .text-white {
+    .stat-icon {
+      background: linear-gradient(145deg, #dfc3c3, #56e3c2);
+      border-radius: 12px;
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+      border: 6px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
       color: white;
+      font-size: 1.5rem;
     }
 
-    .text-uppercase {
+    .stat-content {
+      padding-left: 1.25rem;
+    }
+
+    .stat-label {
+      color: #1e40af;
       text-transform: uppercase;
+      font-weight: 600;
+      margin: 0;
+      font-size: 0.9rem;
     }
 
-    .text-center {
-      text-align: center;
+    .stat-number {
+      font-size: 3.2rem;
+      font-weight: bold;
+      color: #fff;
+      margin: 0;
     }
 
 
@@ -3296,6 +3352,15 @@
     /* BANNER  */
     .custom-banner {
       padding-top: 15px;
+    }
+
+    .banner-img {
+      width: 120%;
+      height: 300px !important;
+      object-fit: cover;
+      object-position: center;
+      border-radius: 8px !important;
+      box-shadow: 0 0 45px rgba(183, 223, 164, 0.1);
     }
 
     .react-parallax-content {
@@ -3702,12 +3767,12 @@
 
     .ranking-title:hover {
       transform: translateX(15px) translateY(-5px);
-      box-shadow: 0 15px 40px rgba(34, 197, 94, 0.25);
-      border-color: rgba(34, 197, 94, 0.3);
+      box-shadow: 0 15px 40px rgba(149, 231, 179, 0.25);
+      border-color: rgba(177, 247, 203, 0.3);
     }
 
     .ranking-title.active {
-      background: linear-gradient(135deg, #16a34a, #0d9488);
+      background: linear-gradient(135deg, #86d9e2, #ecd4b1);
       color: white;
       transform: translateX(25px) scale(1.03);
       box-shadow: 0 20px 50px rgba(34, 197, 94, 0.4);
@@ -3766,10 +3831,11 @@
       font-weight: 600 !important;
       margin-bottom: 8px !important;
       transition: color 0.3s ease;
+      color: #0ebe83 !important;
     }
 
     .ranking-title.active .ranking-item-title {
-      color: white !important;
+      color: rgb(216, 15, 15) !important;
     }
 
     .ranking-stats {
@@ -3793,12 +3859,32 @@
     }
 
     .ranking-title.active .stat-badge {
-      background: rgba(255, 255, 255, 0.2);
+      background: rgba(245, 216, 216, 0.2);
       border-color: rgba(255, 255, 255, 0.3);
+      color: rgba(200, 19, 19, 0.874);
+    }
+
+    .ranking-title.active .stat-badge .stat-icon {
+      background: linear-gradient(145deg, #ec8de4, #56e3c2);
+      border-radius: 12px;
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+      border: 6px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 4px 12px rgba(233, 170, 170, 0.2);
       color: white;
+      font-size: 1.5rem;
+
     }
 
     .stat-icon {
+      font-size: 1rem;
+    }
+
+    .stat-icon.act {
       font-size: 1rem;
     }
 
@@ -4036,10 +4122,10 @@
     }
 
     .stat-circle {
-      width: 80px;
-      height: 80px;
+      width: 110px;
+      height: 110px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #16a34a, #0891b2);
+      background: linear-gradient(135deg, #eabc98, #84def7);
       display: flex;
       flex-direction: column;
       align-items: center;

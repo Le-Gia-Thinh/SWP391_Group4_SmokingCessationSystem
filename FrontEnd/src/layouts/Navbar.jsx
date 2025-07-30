@@ -97,7 +97,7 @@ export default function Navbar() {
     }
   };
   const getMenuItems = () => {
-    
+
     if (!user) {
       // Chưa đăng nhập -> chỉ hiển thị trang chủ và đăng nhập
       return [
@@ -127,7 +127,7 @@ export default function Navbar() {
         },
       ];
     }
-    if (isAdmin()) { 
+    if (isAdmin()) {
       return [
         {
           key: "/",
@@ -282,16 +282,16 @@ export default function Navbar() {
         ? `Premium ${remainingDays} ngày`
         : `Premium ${Math.floor(remainingDays / 30)} tháng`
       : user?.role === "admin"
-      ? "Quản trị viên"
-      : user?.role === "coach"
-      ? "Huấn luyện viên"
-      : "Thành viên";
+        ? "Quản trị viên"
+        : user?.role === "coach"
+          ? "Huấn luyện viên"
+          : "Thành viên";
   const badgeColor =
     remainingDays && remainingDays > 0
       ? "#52c41a"
       : user?.role === "admin"
-      ? "#ff4d4f"
-      : "#52c41a";
+        ? "#ff4d4f"
+        : "#52c41a";
 
   return (
     <Header className="navbar">

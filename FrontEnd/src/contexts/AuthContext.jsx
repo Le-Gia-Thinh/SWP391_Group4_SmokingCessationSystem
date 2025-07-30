@@ -15,6 +15,8 @@ export { useAuth };
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isPremium, setPremium] = useState(false);
+
 
   // Check if user is logged in when app loads - Kiểm tra user đã đăng nhập chưa khi load app
   useEffect(() => {
@@ -36,11 +38,22 @@ export const AuthProvider = ({ children }) => {
         if (!res.ok) throw new Error("Không lấy được user");
 
         const data = await res.json();
+
         setUser({ ...data, role: data.user_role });
         localStorage.setItem("user", JSON.stringify(data));
+
+
+        const subRes = await fetch("http://localhost:5000/api/subscriptions/current", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (subRes.ok) {
+          const subData = await subRes.json();
+          setPremium((subData.subscription?.remaining_days ?? 0) > 0);
+        }
       } catch (err) {
         console.error("Lỗi khi xác thực:", err);
         setUser(null);
+        setPremium(false);
       } finally {
         setLoading(false);
       }
@@ -141,6 +154,7 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     hasRole,
+    isPremium,
     isUser,
     isCoach,
     isAdmin,
