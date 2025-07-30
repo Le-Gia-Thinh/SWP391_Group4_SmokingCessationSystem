@@ -1,6 +1,6 @@
 const { sql, dbConfig } = require("../config/database");
 
-// 1. Lấy danh sách tất cả nhiệm vụ (tùy chọn lọc theo phase_code)
+// 1. Lấy danh sách tất cả nhiệm vụ
 exports.getAllTasks = async (req, res) => {
   const { phase_code } = req.query;
 
@@ -152,7 +152,7 @@ exports.deleteTask = async (req, res) => {
   }
 };
 
-// 5. Lấy danh sách phase cho dropdown (behavior phase)
+// 5. Lấy danh sách phase
 exports.getBehaviorPhaseList = async (req, res) => {
   try {
     const pool = await sql.connect(dbConfig);
