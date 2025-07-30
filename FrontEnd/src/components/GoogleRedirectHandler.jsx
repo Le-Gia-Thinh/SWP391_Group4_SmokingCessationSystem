@@ -73,7 +73,7 @@ const GoogleRedirectHandler = () => {
         }, 100);
       } catch (e) {
         console.error("Invalid token format or cannot decode:", e);
-        setStatus("Token không hợp lệ");
+        setStatus("Đang xác thực");
         setTimeout(() => {
           navigate("/login?error=invalid_token");
         }, 2000);
