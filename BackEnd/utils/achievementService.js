@@ -113,14 +113,9 @@ const checkFunctions = {
         AND total_cigarettes = 0 
         AND date <= CAST(GETDATE() AS DATE)
     `);
-<<<<<<< HEAD
 
   return result.recordset[0].clean_days >= 7;
 },
-=======
-    return result.recordset[0].clean_days >= 7;
-  },
->>>>>>> 481d2a28754b5ac83efa1d970d7797e59fa34552
 
   clean_15_days: async (pool, userId) => {
     const result = await pool.request().input("user_id", sql.Int, userId)
