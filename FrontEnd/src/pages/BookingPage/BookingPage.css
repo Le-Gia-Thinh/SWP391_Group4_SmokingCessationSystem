@@ -54,6 +54,262 @@
     padding: 0;
 }
 
+/* Left Panel Styling */
+.booking-left-panel {
+    border-radius: 8px;
+    padding: 24px;
+    background-color: #f9fafb;
+    border: 1px solid #e8e8e8;
+    height: 100%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.date-selection {
+    display: flex;
+    flex-direction: column;
+}
+
+.date-selection-subtitle {
+    color: #666;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.field-label {
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #333;
+    font-size: 15px;
+}
+
+.date-selection-field,
+.time-selection-field,
+.service-selection-field {
+    margin-bottom: 20px;
+}
+
+/* Coach List Styling */
+.coaches-section {
+    padding: 0 10px;
+}
+
+.coach-availability-subtitle {
+    color: #666;
+    margin-bottom: 20px;
+    font-style: italic;
+    font-size: 14px;
+}
+
+.coach-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.coach-card-horizontal {
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+    overflow: hidden;
+    margin-bottom: 16px;
+    border: 1px solid #f0f0f0;
+}
+
+.coach-card-horizontal:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+}
+
+.coach-card-content {
+    display: flex;
+    padding: 0;
+}
+
+.coach-card-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    min-width: 120px;
+    background-color: #f9fafb;
+    border-right: 1px solid #f0f0f0;
+}
+
+.coach-price {
+    margin-top: 12px;
+    font-weight: 700;
+    color: #189c38;
+    text-align: center;
+    font-size: 15px;
+}
+
+.coach-card-middle {
+    flex-grow: 1;
+    padding: 20px;
+}
+
+.coach-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: #189c38;
+    margin-bottom: 4px;
+}
+
+.coach-specialization {
+    color: #189c38;
+    font-weight: 500;
+    margin-bottom: 10px;
+}
+
+.coach-experience {
+    color: #666;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.coach-location {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.coach-card-right {
+    padding: 20px;
+    min-width: 250px;
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid #f0f0f0;
+    background-color: #f9fafb;
+}
+
+.coach-slot-info {
+    flex-grow: 1;
+}
+
+.slot-title {
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #333;
+}
+
+.available-slots {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.view-profile-btn {
+    text-align: center;
+    width: 100%;
+}
+
+/* Modal Styling */
+.booking-modal-content {
+    padding: 0 10px;
+}
+
+.booking-modal-header {
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.booking-modal-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #189c38;
+    margin-bottom: 8px;
+}
+
+.booking-modal-subtitle {
+    font-size: 14px;
+    color: #666;
+}
+
+.booking-modal-coach-info {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    background: #f9fafb;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 1px solid #f0f0f0;
+}
+
+.booking-modal-coach-details {
+    flex-grow: 1;
+    margin-left: 16px;
+}
+
+.booking-modal-coach-name {
+    font-weight: 700;
+    font-size: 16px;
+    color: #189c38;
+    margin-bottom: 4px;
+}
+
+.booking-modal-coach-specialization {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.booking-modal-coach-location {
+    display: flex;
+    gap: 8px;
+}
+
+.booking-modal-coach-price {
+    font-weight: 700;
+    font-size: 18px;
+    color: #189c38;
+    text-align: right;
+}
+
+.booking-modal-coach-price-info {
+    font-size: 12px;
+    color: #666;
+    font-weight: normal;
+}
+
+.booking-modal-details {
+    margin-bottom: 20px;
+}
+
+.booking-modal-details-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #333;
+}
+
+.booking-modal-details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+.booking-modal-details-item {
+    background: #f9fafb;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid #f0f0f0;
+}
+
+.booking-modal-details-label {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+.booking-modal-details-value {
+    font-weight: 600;
+    color: #333;
+    font-size: 15px;
+}
+
 /* Loading States */
 .booking-loading-container {
     background: #f8f9fa;
@@ -96,6 +352,50 @@
     height: 4px;
     background: linear-gradient(90deg, #52c41a 0%, #389e0d 50%, #52c41a 100%);
     border-radius: 16px 16px 0 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .coach-card-content {
+        flex-direction: column;
+    }
+    
+    .coach-card-middle,
+    .coach-card-right {
+        border-left: none;
+        border-right: none;
+        border-top: 1px solid #f0f0f0;
+        padding-top: 16px;
+        min-width: auto;
+    }
+    
+    .coach-card-left {
+        padding-bottom: 8px;
+        border-right: none;
+    }
+
+    .booking-modal-details-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .booking-modal-coach-info {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .booking-modal-coach-details {
+        margin-left: 0;
+        margin-top: 12px;
+    }
+    
+    .booking-modal-coach-price {
+        margin-top: 12px;
+        text-align: center;
+    }
+    
+    .booking-modal-coach-location {
+        justify-content: center;
+    }
 }
 
 .booking-loading-container .text-center::after {

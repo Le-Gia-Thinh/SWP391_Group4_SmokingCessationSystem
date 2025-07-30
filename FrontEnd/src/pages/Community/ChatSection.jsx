@@ -43,10 +43,11 @@ export default function ChatSection({ token, socket, isConnected }) {
     const [topicsLoading, setTopicsLoading] = useState(false);
     // Coach chat states
     const [coachingSessions, setCoachingSessions] = useState([]);
-    const [selectedSession, setSelectedSession] = useState(null);
+    const [selectedCoach, setSelectedCoach] = useState(null);
     const [coachMessages, setCoachMessages] = useState([]);
     const [coachLoading, setCoachLoading] = useState(false);
     const [sessionsLoading, setSessionsLoading] = useState(false);
+    const [joinedThreadId, setJoinedThreadId] = useState(null);
     const communityEndRef = useRef(null);
     const topicEndRef = useRef(null);
     const coachEndRef = useRef(null);
@@ -90,21 +91,121 @@ export default function ChatSection({ token, socket, isConnected }) {
     // Socket.IO event listeners
     useEffect(() => {
         if (!socket) return;
-        // Listen for guided chat messages (coach-member)
-        socket.on('receiveGuidedMessage', (messageData) => {
-            if (selectedSession && messageData.thread_id === selectedSession.session_id) {
-                setCoachMessages(prev => [...prev, {
-                    message_id: Date.now(),
-                    thread_id: messageData.thread_id,
-                    sender_id: messageData.sender_id,
-                    sender_role: messageData.sender_role || 'member',
-                    message: messageData.message,
-                    file_url: messageData.file_url,
-                    sent_at: messageData.sent_at,
-                    is_read: 0
-                }]);
+        
+        socket.on('connect', () => {
+            // Khi socket kết nối lại, join vào các room nếu cần
+            if (activeChatTab === "community") {
+                socket.emit('joinRoom', 'community-chat');
+                setTimeout(() => {
+                    socket.emit('forceJoinRoom', 'community-chat');
+                }, 1000);
+            } else if (activeChatTab === "topics" && selectedTopic) {
+                const roomId = `topic-${selectedTopic.id}`;
+                socket.emit('joinRoom', roomId);
+                setTimeout(() => {
+                    socket.emit('forceJoinRoom', roomId);
+                }, 1000);
+            } else if (activeChatTab === "coach" && joinedThreadId) {
+                const roomId = `chat-${joinedThreadId}`;
+                socket.emit('joinRoom', roomId);
+                setTimeout(() => {
+                    socket.emit('forceJoinRoom', roomId);
+                }, 1000);
             }
         });
+        
+        socket.on('joinSuccess', (data) => {
+            // Room joined successfully
+        });
+        
+        socket.on('disconnect', (reason) => {
+            // Socket disconnected
+        });
+        
+        // User joined/left events
+        socket.on('userJoined', (data) => {
+            // User joined room
+        });
+        
+        socket.on('userLeft', (data) => {
+            // User left room
+        });
+
+        // Listen for guided chat messages (coach-member)
+        socket.on('receiveGuidedMessage', (messageData) => {
+            // Kiểm tra thread_id để chỉ hiển thị tin nhắn thuộc thread đang xem
+            if (selectedCoach && joinedThreadId && messageData.thread_id && messageData.thread_id.toString() === joinedThreadId.toString()) {
+                // Kiểm tra xem đây có phải là tin nhắn từ chính người dùng hiện tại không
+                const isMyMessage = messageData.sender_id && user?.id && messageData.sender_id.toString() === user.id.toString();
+                const socketId = messageData._socketId;
+                
+                // Kiểm tra xem tin nhắn này đã có trong danh sách chưa (dựa vào message_id)
+                const isDuplicate = coachMessages.some(msg => {
+                    // Kiểm tra trùng message_id (tin nhắn thực từ server)
+                    const hasSameId = msg.message_id && messageData.message_id && 
+                                     msg.message_id.toString() === messageData.message_id.toString();
+                    
+                    // Hoặc kiểm tra trùng nội dung và người gửi (tin nhắn optimistic)
+                    const isOptimisticDuplicate = msg._isOptimistic && 
+                                                  msg.message === messageData.message && 
+                                                  msg.sender_id && messageData.sender_id && 
+                                                  msg.sender_id.toString() === messageData.sender_id.toString();
+                                                  
+                    return hasSameId || isOptimisticDuplicate;
+                });
+                
+                if (isDuplicate) {
+                    console.log('🔄 Message already exists in the list, updating instead');
+                    
+                    // Cập nhật tin nhắn optimistic với dữ liệu thực từ server
+                    setCoachMessages(prev => prev.map(msg => {
+                        // Nếu tìm thấy tin nhắn optimistic có cùng nội dung, thay thế bằng tin nhắn thực
+                        if (msg._isOptimistic && msg.message === messageData.message && 
+                            msg.sender_id && messageData.sender_id && 
+                            msg.sender_id.toString() === messageData.sender_id.toString()) {
+                            console.log('✅ Replacing optimistic message with real message');
+                            return {
+                                ...messageData,
+                                _tempId: msg._tempId // Giữ lại _tempId để đánh dấu
+                            };
+                        }
+                        return msg;
+                    }));
+                } else if (isMyMessage && socket.id !== socketId) {
+                    const newMessage = {
+                        message_id: messageData.message_id || Date.now(),
+                        thread_id: messageData.thread_id,
+                        sender_id: messageData.sender_id,
+                        sender_role: messageData.sender_role || 'member',
+                        message: messageData.message,
+                        file_url: messageData.file_url,
+                        sent_at: messageData.sent_at || new Date().toISOString(),
+                        is_read: 0,
+                        _tempId: Date.now() // Thêm ID tạm thời cho key render
+                    };
+                    
+                    setCoachMessages(prev => [...prev, newMessage]);
+                } else if (!isMyMessage) {
+                    // Nếu là tin nhắn từ người khác, thêm vào bình thường
+                    const newMessage = {
+                        message_id: messageData.message_id || Date.now(),
+                        thread_id: messageData.thread_id,
+                        sender_id: messageData.sender_id,
+                        sender_role: messageData.sender_role || 'member',
+                        message: messageData.message,
+                        file_url: messageData.file_url,
+                        sent_at: messageData.sent_at || new Date().toISOString(),
+                        is_read: 0,
+                        _tempId: Date.now() // Thêm ID tạm thời cho key render
+                    };
+                    
+                    setCoachMessages(prev => [...prev, newMessage]);
+                }
+            } else {
+                // Message is for another thread, ignoring
+            }
+        });
+
         // Community chat
         socket.on('communityMessage', (messageData) => {
             setCommunityMessages(prev => {
@@ -112,30 +213,69 @@ export default function ChatSection({ token, socket, isConnected }) {
                 return updated;
             });
         });
+
         // Topic chat
         socket.on('topicMessage', (messageData) => {
             if (selectedTopic && messageData.topic_id === selectedTopic.topic_id) {
                 setTopicMessages(prev => [...prev, messageData]);
             }
         });
+
         return () => {
             socket.off('receiveGuidedMessage');
             socket.off('communityMessage');
             socket.off('topicMessage');
         };
-    }, [socket, selectedSession, selectedTopic]);
+    }, [socket, selectedCoach, selectedTopic, joinedThreadId]);
 
-    // Join socket room khi chọn phiên tư vấn
+    // Biến theo dõi xem đã join room cho thread hiện tại chưa
+    const hasJoinedRoom = useRef(false);
+    
+    // Join socket room khi chọn coach (theo thread_id, chuẩn backend)
     useEffect(() => {
-        if (!socket || !selectedSession) return;
-        // Lấy thread_id từ backend (cần fetch lại hoặc mapping)
-        // Ở đây ta giả định thread_id = selectedSession.session_id (nếu không đúng, cần sửa lại mapping)
-        const threadRoom = `chat-${selectedSession.session_id}`;
-        socket.emit('joinRoom', threadRoom);
-        return () => {
-            socket.emit('leaveRoom', threadRoom);
-        };
-    }, [socket, selectedSession]);
+        if (!socket || !joinedThreadId) {
+            hasJoinedRoom.current = false;
+            return;
+        }
+        
+        // Reset trạng thái join room khi thread_id thay đổi
+        hasJoinedRoom.current = false;
+        
+        // Đợi một chút để đảm bảo component đã render xong và socket đã sẵn sàng
+        const setupTimer = setTimeout(() => {
+            // Chỉ tiếp tục nếu socket đã kết nối
+            if (!socket?.connected) {
+                return;
+            }
+
+            const threadRoom = `chat-${joinedThreadId}`;
+            
+            // Đánh dấu đã join room
+            hasJoinedRoom.current = true;
+            
+            // Sử dụng hàm từ SocketContext
+            socket.emit('joinRoom', threadRoom);
+            
+            // Đảm bảo đã tham gia phòng - kiểm tra trước để tránh join nhiều lần
+            setTimeout(() => {
+                if (socket?.connected) {
+                    socket.emit('forceJoinRoom', threadRoom);
+                    // Kiểm tra các room đã join
+                    socket.emit('getRooms');
+                }
+            }, 1000);
+
+            return () => {
+                if (socket?.connected) {
+                    socket.emit('leaveRoom', threadRoom);
+                    hasJoinedRoom.current = false;
+                }
+            };
+        }, 300);
+        
+        // Cleanup timer nếu component unmount trước khi timer chạy xong
+        return () => clearTimeout(setupTimer);
+    }, [socket, joinedThreadId]);
 
     // ========== API FUNCTIONS ==========
     const fetchCoachingSessions = async () => {
@@ -158,6 +298,7 @@ export default function ChatSection({ token, socket, isConnected }) {
             setSessionsLoading(false);
         }
     };
+    // Fetch coach messages by partnerId (API cũ)
     const fetchCoachMessages = async (partnerId) => {
         if (!partnerId) return;
         setCoachLoading(true);
@@ -167,11 +308,89 @@ export default function ChatSection({ token, socket, isConnected }) {
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             if (response.data.success) {
-                console.log('API messages:', response.data.data);
                 setCoachMessages(response.data.data); // Không reverse nữa
             }
         } catch (err) {
+            console.error("❌ Lỗi khi lấy tin nhắn theo partnerId:", err);
             message.error("Lỗi khi tải tin nhắn");
+        } finally {
+            setCoachLoading(false);
+        }
+    };
+
+    // Fetch coach messages by thread_id (API mới)
+    const fetchCoachMessagesByThreadId = async (threadId) => {
+        if (!threadId) {
+            console.error("❌ Không có thread_id");
+            return;
+        }
+
+        setCoachLoading(true);
+
+
+        try {
+            // Thử cách 1: Dùng API mới (truyền thread_id)
+            try {
+                const response = await axios.get(
+                    `http://localhost:5000/api/chat/thread/${threadId}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
+                    }
+                );
+
+                if (response.data.success) {
+
+                    setCoachMessages(response.data.data);
+                    return; // Thoát sớm nếu thành công
+                } else {
+                    console.error("❌ API trả về thất bại:", response.data);
+                }
+            } catch (threadErr) {
+                console.error("❌ API thread_id không khả dụng:", threadErr.message);
+                // Tiếp tục với cách 2
+            }
+
+            // Thử cách 2: Sử dụng API markGuidedAsRead (truyền thread_id)
+            try {
+                const messagesResponse = await axios.get(
+                    `http://localhost:5000/api/chat/guided/${threadId}/messages`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
+                    }
+                );
+
+                if (messagesResponse.data.success) {
+
+                    setCoachMessages(messagesResponse.data.data);
+                    return; // Thoát sớm nếu thành công
+                } else {
+                    console.error("❌ API trả về thất bại:", messagesResponse.data);
+                }
+            } catch (directErr) {
+                console.error("❌ API messages direct không khả dụng:", directErr.message);
+                // Tiếp tục với cách 3
+            }
+
+            // Fallback - Cách 3: Sử dụng API cũ (partnerId)
+            // Fallback to old API method
+            if (selectedCoach) {
+                await fetchCoachMessages(selectedCoach.coach_id);
+            } else {
+                message.error("Không thể lấy dữ liệu tin nhắn");
+            }
+
+        } catch (err) {
+            console.error("❌ Lỗi nghiêm trọng khi lấy tin nhắn:", err);
+            message.error("Lỗi khi tải tin nhắn");
+
+            // Final fallback
+            if (selectedCoach) {
+                fetchCoachMessages(selectedCoach.coach_id);
+            }
         } finally {
             setCoachLoading(false);
         }
@@ -220,17 +439,104 @@ export default function ChatSection({ token, socket, isConnected }) {
             setChatLoading(false);
         }
     };
-    // ========== HANDLERS ==========
-    const handleSessionSelect = (session) => {
-        setSelectedSession(session);
-        if (!user) return;
-        if (user.role === 'coach') {
-            console.log('Chọn phiên (coach):', session);
-            fetchCoachMessages(session.member_id);
-        } else if (user.role === 'member') {
-            console.log('Chọn phiên (member):', session);
-            fetchCoachMessages(session.coach_id);
+    // ========== HANDLERS ========== 
+    // Gộp các phiên tư vấn theo coach_id và lấy thread_id
+    const groupedCoaches = Object.values(
+        coachingSessions.reduce((acc, session) => {
+            // Kiểm tra xem phiên này có thread_id hay không
+            
+            if (!acc[session.coach_id]) {
+                acc[session.coach_id] = {
+                    coach_id: session.coach_id,
+                    coach_name: session.coach_name,
+                    sessions: [],
+                    thread_id: session.thread_id || null // lấy thread_id từ session, mặc định là null
+                };
+            } else if (!acc[session.coach_id].thread_id && session.thread_id) {
+                // Nếu session hiện tại có thread_id nhưng coach tổng hợp chưa có
+                acc[session.coach_id].thread_id = session.thread_id;
+            }
+            
+            acc[session.coach_id].sessions.push(session);
+            return acc;
+        }, {})
+    );
+
+    // Khi chọn coach, lấy toàn bộ tin nhắn với coach đó bằng thread_id
+    const handleCoachSelect = (coach) => {
+        // Không thực hiện gì nếu đã chọn coach này rồi
+        if (selectedCoach?.coach_id === coach.coach_id) {
+            return;
         }
+        
+        // Bước 1: Thiết lập trạng thái coach mới
+        setSelectedCoach(coach);
+        
+        // Bước 2: Tìm thread_id từ sessions nếu chưa có
+        const findThreadId = async () => {
+            let threadId = coach.thread_id;
+            
+            // Nếu đã có thread_id trong object coach, sử dụng nó
+            if (threadId) {
+                // Fetch messages bằng thread_id
+                fetchCoachMessagesByThreadId(threadId);
+                setJoinedThreadId(threadId); // Cập nhật thread_id
+                return;
+            }
+            
+            // Kiểm tra xem có session nào có thread_id không
+            if (coach.sessions && coach.sessions.length > 0) {
+                for (const session of coach.sessions) {
+                    if (session.thread_id) {
+                        threadId = session.thread_id;
+                        fetchCoachMessagesByThreadId(threadId);
+                        setJoinedThreadId(threadId);
+                        return;
+                    }
+                }
+            }
+            
+            // Nếu không tìm thấy thread_id, thử gọi API với coach_id
+            try {
+                // Tìm thread_id từ backend
+                const response = await axios.get(
+                    `http://localhost:5000/api/chat/find-thread-by-coach/${coach.coach_id}`,
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+                
+                if (response.data.success && response.data.thread_id) {
+                    console.log(`✅ Đã tìm thấy thread_id: ${response.data.thread_id} từ API`);
+                    fetchCoachMessagesByThreadId(response.data.thread_id);
+                    setJoinedThreadId(response.data.thread_id);
+                    return;
+                }
+            } catch (err) {
+                console.error("❌ Lỗi khi tìm thread_id từ API:", err);
+            }
+            
+            // Fallback cuối cùng: Sử dụng coach_id
+            fetchCoachMessages(coach.coach_id);
+        };
+        
+        // Thực hiện tìm thread_id
+        findThreadId();
+        
+        // Bước 3: Lên lịch rời phòng cũ
+        // Đảm bảo rằng chúng ta không thực hiện join và leave cùng lúc
+        setTimeout(() => {
+            // Rời khỏi phòng cũ nếu có
+            const oldThreadId = joinedThreadId;
+            if (oldThreadId && socket?.connected) {
+                const oldRoomId = `chat-${oldThreadId}`;
+                try {
+                    // Đánh dấu đã rời phòng trước khi thực sự rời
+                    hasJoinedRoom.current = false;
+                    socket.emit('leaveRoom', oldRoomId);
+                } catch (err) {
+                    console.error('❌ Lỗi khi rời phòng:', err);
+                }
+            }
+        }, 300);
     };
     const handleTopicSelect = (topic) => {
         setSelectedTopic(topic);
@@ -240,7 +546,7 @@ export default function ChatSection({ token, socket, isConnected }) {
         setActiveChatTab(key);
         setSelectedTopic(null);
         setTopicMessages([]);
-        setSelectedSession(null);
+        setSelectedCoach(null);
         setCoachMessages([]);
         if (key === "community") {
             fetchCommunityMessages();
@@ -306,33 +612,70 @@ export default function ChatSection({ token, socket, isConnected }) {
             message.error("Vui lòng nhập nội dung tin nhắn!");
             return;
         }
-        if (!selectedSession) {
-            message.error("Vui lòng chọn phiên tư vấn!");
+        if (!selectedCoach) {
+            message.error("Vui lòng chọn coach!");
             return;
         }
+
         try {
             const formData = new FormData();
             formData.append('message', newMessage);
-            // Xác định recipient_id là người còn lại trong thread
+
+            if (joinedThreadId) {
+                formData.append('thread_id', joinedThreadId); // Thêm thread_id vào request nếu có
+            }
+
+            // Xác định recipient_id là coach_id hoặc member_id (vẫn giữ để tương thích với API cũ)
             let recipientId;
             if (!user) {
                 message.error("Không xác định được người dùng hiện tại");
                 return;
             }
+
             if (user.role === 'coach') {
-                recipientId = selectedSession.member_id;
+                // Nếu là coach, gửi cho member đầu tiên trong danh sách sessions
+                recipientId = selectedCoach.sessions[0]?.member_id;
             } else if (user.role === 'member') {
-                recipientId = selectedSession.coach_id;
+                recipientId = selectedCoach.coach_id;
             } else {
                 message.error("Vai trò không hợp lệ");
                 return;
             }
+
             formData.append('recipient_id', recipientId);
-            // Thêm log để debug
-            console.log('recipient_id:', recipientId, 'message:', newMessage, 'selectedSession:', selectedSession, 'user:', user);
-            for (let pair of formData.entries()) {
-                console.log('formData', pair[0] + ': ' + pair[1]);
+
+            // Thêm socketId để backend có thể truyền lại, dùng cho việc theo dõi
+            if (socket && socket.id) {
+                formData.append('_socketId', socket.id);
             }
+            
+            // Tạo một ID tạm thời cho tin nhắn để có thể theo dõi và tránh hiển thị trùng lặp
+            const tempMessageId = Date.now().toString();
+            formData.append('_tempMessageId', tempMessageId);
+            
+            // Prepare formData for sending
+            
+            // Hiển thị tin nhắn ngay lập tức (optimistic UI)
+            const optimisticMessage = {
+                message_id: tempMessageId,
+                thread_id: joinedThreadId,
+                sender_id: user.id,
+                sender_role: user.role,
+                message: newMessage,
+                file_url: null,
+                sent_at: new Date().toISOString(),
+                is_read: 0,
+                _tempId: tempMessageId,
+                _isOptimistic: true // Đánh dấu tin nhắn này là optimistic
+            };
+            
+            // Thêm tin nhắn vào state ngay lập tức để UI cập nhật
+            setCoachMessages(prev => [...prev, optimisticMessage]);
+            
+            // Xóa tin nhắn đang soạn
+            setNewMessage("");
+
+            // Gửi tin nhắn lên server
             const response = await axios.post(
                 `http://localhost:5000/api/chat/guided/send`,
                 formData,
@@ -343,20 +686,33 @@ export default function ChatSection({ token, socket, isConnected }) {
                     }
                 }
             );
+
             if (response.data.success) {
-                // Thêm tin nhắn mới vào mảng coachMessages (không fetch lại toàn bộ)
-                setCoachMessages(prev => [
-                    ...prev,
-                    response.data.data // backend trả về bản ghi vừa lưu
-                ]);
-                setNewMessage("");
+                console.log('✅ Message sent successfully:', response.data.data);
+                // Tìm và thay thế tin nhắn optimistic bằng tin nhắn thật từ server
+                const realMessage = response.data.data;
+                
+                setCoachMessages(prev => prev.map(msg => {
+                    // Nếu là tin nhắn optimistic với cùng nội dung, thay thế nó
+                    if (msg._isOptimistic && msg.message === realMessage.message) {
+                        return {
+                            ...realMessage,
+                            _tempId: msg._tempId // Giữ lại _tempId để đánh dấu
+                        };
+                    }
+                    return msg;
+                }));
             }
         } catch (err) {
+            console.error('❌ Error sending message:', err);
             if (err.response?.status === 403) {
                 message.error("Chỉ được chat trong khung giờ tư vấn");
             } else {
                 message.error("Lỗi khi gửi tin nhắn");
             }
+            
+            // Xóa tin nhắn optimistic nếu gặp lỗi
+            setCoachMessages(prev => prev.filter(msg => !msg._isOptimistic));
         }
     };
     // ========== TOPIC MODAL ==========
@@ -612,33 +968,25 @@ export default function ChatSection({ token, socket, isConnected }) {
                             <div className="topics-section">
                                 <div className="sessions-sidebar">
                                     <div className="sessions-header">
-                                        <Title level={5}>Phiên Tư Vấn</Title>
+                                        <Title level={5}>Coach đã từng chat</Title>
                                     </div>
                                     <div className="sessions-list">
                                         {sessionsLoading ? (
                                             <Spin />
-                                        ) : coachingSessions.length === 0 ? (
-                                            <Empty description="Chưa có phiên tư vấn nào" />
+                                        ) : groupedCoaches.length === 0 ? (
+                                            <Empty description="Chưa từng chat với coach nào" />
                                         ) : (
                                             <List
-                                                dataSource={coachingSessions}
-                                                renderItem={(session) => (
+                                                dataSource={groupedCoaches}
+                                                renderItem={(coach) => (
                                                     <List.Item
-                                                        className={`session-item ${selectedSession?.session_id === session.session_id ? 'selected' : ''}`}
-                                                        onClick={() => handleSessionSelect(session)}
+                                                        className={`session-item ${selectedCoach?.coach_id === coach.coach_id ? 'selected' : ''}`}
+                                                        onClick={() => handleCoachSelect(coach)}
                                                     >
                                                         <div>
                                                             <Text strong>
-                                                                {session.coach_name || `Coach ${session.coach_id}`}
+                                                                {coach.coach_name || `Coach ${coach.coach_id}`}
                                                             </Text>
-                                                            <br />
-                                                            <Text type="secondary">
-                                                                {formatSessionTime(session.scheduled_time)}
-                                                            </Text>
-                                                            <br />
-                                                            <Tag color={isSessionActive(session) ? 'green' : 'default'}>
-                                                                {isSessionActive(session) ? 'Đang hoạt động' : 'Không hoạt động'}
-                                                            </Tag>
                                                         </div>
                                                     </List.Item>
                                                 )}
@@ -647,18 +995,12 @@ export default function ChatSection({ token, socket, isConnected }) {
                                     </div>
                                 </div>
                                 <div className="topic-chat">
-                                    {selectedSession ? (
+                                    {selectedCoach ? (
                                         <>
                                             <div className="session-header">
                                                 <Title level={4}>
-                                                    {selectedSession.coach_name || `Coach ${selectedSession.coach_id}`}
+                                                    {selectedCoach.coach_name || `Coach ${selectedCoach.coach_id}`}
                                                 </Title>
-                                                <Text type="secondary">
-                                                    {formatSessionTime(selectedSession.scheduled_time)} - {selectedSession.duration_minutes} phút
-                                                </Text>
-                                                <Tag color={isSessionActive(selectedSession) ? 'green' : 'red'}>
-                                                    {isSessionActive(selectedSession) ? '🟢 Có thể chat' : '🔴 Không thể chat'}
-                                                </Tag>
                                             </div>
                                             <div className="messages-container">
                                                 {coachLoading ? (
@@ -668,7 +1010,7 @@ export default function ChatSection({ token, socket, isConnected }) {
                                                 ) : (
                                                     <List
                                                         dataSource={coachMessages}
-                                                        locale={{ emptyText: 'Chưa có tin nhắn nào trong phiên này. Hãy bắt đầu cuộc trò chuyện!' }}
+                                                        locale={{ emptyText: 'Chưa có tin nhắn nào với coach này. Hãy bắt đầu cuộc trò chuyện!' }}
                                                         renderItem={(msg) => (
                                                             <List.Item className="chat-message-item">
                                                                 <div className="message-content">
@@ -714,7 +1056,7 @@ export default function ChatSection({ token, socket, isConnected }) {
                                         </>
                                     ) : (
                                         <div className="no-topic-selected">
-                                            <Empty description="Chọn phiên tư vấn để bắt đầu chat" />
+                                            <Empty description="Chọn coach để bắt đầu chat" />
                                         </div>
                                     )}
                                 </div>
@@ -754,4 +1096,4 @@ export default function ChatSection({ token, socket, isConnected }) {
             </Modal>
         </div>
     );
-} 
+}
