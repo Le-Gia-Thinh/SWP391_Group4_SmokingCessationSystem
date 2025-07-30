@@ -1,5 +1,6 @@
 // controllers/ftndController.js
 const { sql, dbConfig } = require("../config/database");
+const { evaluateAndUnlockAchievements } = require("../utils/achievementService");
 
 const pool = new sql.ConnectionPool(dbConfig);
 const poolConnect = pool.connect();
@@ -40,49 +41,17 @@ exports.submitFTNDResult = async (req, res) => {
       );
       
       await pool
-      .request()
-      .input("user_id", sql.Int, user_id)
-      .input("level", sql.NVarChar, level)
-      .input("submitted_at", sql.DateTime, new Date())
-      .input("q4_value", sql.Int, q4_value)
-      .query(`
-        INSERT INTO FTND_RESULT (user_id, level, submitted_at, q4_value)
-        VALUES (@user_id, @level, @submitted_at, @q4_value)
-      `);
+    .request()
+    .input("user_id", sql.Int, user_id)
+    .input("level", sql.NVarChar, level)
+    .input("submitted_at", sql.DateTime, new Date())
+    .input("q4_value", sql.Int, q4_value)
+    .query(`
+      INSERT INTO FTND_RESULT (user_id, level, submitted_at, q4_value)
+      VALUES (@user_id, @level, @submitted_at, @q4_value)
+    `);
 
-      // tao id
-      const achResult = await pool
-      .request()
-      .input("title", sql.NVarChar, "Hoàn thành FTND")
-      .query("SELECT achievement_id FROM ACHIEVEMENT WHERE title = @title");
-
-    const achievement_id = achResult.recordset[0]?.achievement_id;
-
-    if (achievement_id) {
-      //  Kiểm tra nếu user đã có thành tựu chưa
-      const existCheck = await pool
-        .request()
-        .input("user_id", sql.Int, user_id)
-        .input("achievement_id", sql.Int, achievement_id)
-        .query(`
-          SELECT 1 FROM USER_ACHIEVEMENT
-          WHERE user_id = @user_id AND achievement_id = @achievement_id
-        `);
-
-      if (existCheck.recordset.length === 0) {
-        // Nếu chưa có thì thêm mới vào USER_ACHIEVEMENT
-        await pool
-          .request()
-          .input("user_id", sql.Int, user_id)
-          .input("achievement_id", sql.Int, achievement_id)
-          .input("earned_date", sql.Date, new Date())
-          .query(`
-            INSERT INTO USER_ACHIEVEMENT (user_id, achievement_id, earned_date)
-            VALUES (@user_id, @achievement_id, @earned_date)
-          `);
-      }
-    }
-
+    await evaluateAndUnlockAchievements(user_id);
 
     res.json({ success: true, message: "Đã cập nhật ftnd_level" });
   } catch (err) {

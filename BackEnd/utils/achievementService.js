@@ -12,7 +12,7 @@ const checkFunctions = {
     const result = await pool.request().input("user_id", sql.Int, userId)
       .query(`
         SELECT COUNT(*) AS count FROM COMMUNITY_POST
-        WHERE user_id = @user_id AND created_at >= DATEADD(DAY, -6, CAST(GETDATE() AdS DATE))
+        WHERE user_id = @user_id AND created_at >= DATEADD(DAY, -6, CAST(GETDATE() AS DATE))
       `);
     return result.recordset[0].count >= 5;
   },
@@ -243,4 +243,6 @@ async function grantIfNotExist(pool, userId, achievementId) {
         VALUES (@user_id, @title, @content, @notification_type, @created_at, @is_read)
       `);
   }
+
+  
 }

@@ -1,4 +1,3 @@
-// src/pages/Admin_Page/AchievementCrudPage.jsx
 import React, { useState, useEffect } from "react";
 import {
   Table,
@@ -13,6 +12,7 @@ import {
   Card,
 } from "antd";
 import axios from "axios";
+
 
 export default function AchievementCrudPage() {
   const [data, setData] = useState([]);
