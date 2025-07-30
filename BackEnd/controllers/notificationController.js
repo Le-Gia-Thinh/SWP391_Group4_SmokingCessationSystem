@@ -1,6 +1,5 @@
 const { sql, dbConfig } = require("../config/database");
 
-// GET /api/notifications – Lấy thông báo của user hiện tại
 exports.getUserNotifications = async (req, res) => {
   try {
     const pool = await sql.connect(dbConfig);

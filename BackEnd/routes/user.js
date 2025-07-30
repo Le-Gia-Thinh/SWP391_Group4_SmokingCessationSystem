@@ -7,8 +7,6 @@ const userStatsController = require("../controllers/userStatsController");
 const { sql, dbConfig } = require('../config/database');
 
 router.get('/savings', auth, userStatsController.getUserSavings);
-router.get('/frequency', auth, userStatsController.getUserFrequency);
-router.get('/score', auth, userStatsController.getUserScore);
 router.get('/achievements', auth, userStatsController.getUserAchievements);
 router.get('/progress-summary', auth, userStatsController.getUserProgressSummary);
 router.get("/me", auth, userController.getMe);

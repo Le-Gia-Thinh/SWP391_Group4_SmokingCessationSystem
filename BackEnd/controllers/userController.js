@@ -1,4 +1,3 @@
-// controllers/userController.js
 const { sql, dbConfig } = require("../config/database");
 const bcrypt = require("bcrypt");
 

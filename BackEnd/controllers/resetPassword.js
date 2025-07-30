@@ -5,7 +5,7 @@ const sendResetEmail = require('../utils/mailer');
 
 const { sql, dbConfig } = require('../config/database');
 
-//  Hàm kiểm tra user có tồn tại theo email
+// Kiểm tra xem email có tồn tại không
 const checkUserExists = async (email) => {
   const pool = await sql.connect(dbConfig);
   const result = await pool.request()
@@ -15,27 +15,26 @@ const checkUserExists = async (email) => {
 };
 
 
-//  Bạn phải khai báo hàm trước khi export
 const requestResetPassword = async (req, res) => {
   try {
     const { email } = req.body;
 
-    console.log(' Email gửi reset:', email);
+    console.log('📩 Email gửi reset:', email);
 
     const token = crypto.randomBytes(32).toString('hex');
     const resetLink = `http://localhost:5173/reset-password/${token}`;
 
-    // Lưu token vào DB
+    //Lưu token
     await saveResetToken(token, email);
 
-    //  Gửi email thật nếu bạn muốn (nếu chưa có thì log ra)
+    // Gửi email với link reset
     await sendResetEmail(email, resetLink);
-    console.log(' Reset link:', resetLink);
+    console.log('🔗 Reset link:', resetLink);
 
-    return res.json({ message: 'Đã gửi link reset (tạm thời)', resetLink });
+    return res.json({ message: 'Đã gửi link reset', resetLink });
 
   } catch (err) {
-    console.error(' Lỗi trong requestResetPassword:', err);
+    console.error('❌ Lỗi trong requestResetPassword:', err);
     res.status(500).json({ message: 'Lỗi server trong reset password' });
   }
 };
@@ -60,7 +59,7 @@ const saveResetToken = async (token, email) => {
   const pool = await sql.connect(dbConfig);
   const user = await checkUserExists(email);
   if (!user) {
-  console.error(` Email không thuộc tài khoản local: ${email}`);
+  console.error(`❌ Email không thuộc tài khoản local: ${email}`);
   throw new Error('Không hỗ trợ reset password cho tài khoản Google');
 }
 
@@ -99,7 +98,7 @@ const updatePassword = async (email, newPassword) => {
               AND login_provider = 'local'`);
 
   if (check.recordset.length === 0) {
-    console.error(" Không tìm thấy tài khoản local để cập nhật mật khẩu");
+    console.error("❌ Không tìm thấy tài khoản local để cập nhật mật khẩu");
     throw new Error("Không thể cập nhật mật khẩu – tài khoản không phải local");
   }
 
@@ -112,10 +111,9 @@ const updatePassword = async (email, newPassword) => {
       WHERE user_id = (SELECT user_id FROM CUSTOMER WHERE email = @email)
         AND login_provider = 'local'`);
 
-  console.log(" UPDATE thành công, rowsAffected =", result.rowsAffected);
+  console.log("✅ UPDATE thành công, rowsAffected =", result.rowsAffected);
 };
 
-//  Export đúng cách
 module.exports = {
   requestResetPassword,
   resetPassword

@@ -24,7 +24,7 @@ exports.checkFTNDExists = async (req, res) => {
 
 // Ghi nhận kết quả FTND (cập nhật ftnd_level cho user)
 exports.submitFTNDResult = async (req, res) => {
-  const { user_id, level, q4_value} = req.body;
+  const { user_id, level, frequency } = req.body;
 
   if (!user_id || !level) {
     return res.status(400).json({ message: "Thiếu user_id hoặc level" });
@@ -45,10 +45,10 @@ exports.submitFTNDResult = async (req, res) => {
     .input("user_id", sql.Int, user_id)
     .input("level", sql.NVarChar, level)
     .input("submitted_at", sql.DateTime, new Date())
-    .input("q4_value", sql.Int, q4_value)
+    .input("frequency", sql.Int, frequency)
     .query(`
-      INSERT INTO FTND_RESULT (user_id, level, submitted_at, q4_value)
-      VALUES (@user_id, @level, @submitted_at, @q4_value)
+      INSERT INTO FTND_RESULT (user_id, level, submitted_at, frequency)
+      VALUES (@user_id, @level, @submitted_at, @frequency)
     `);
 
     await evaluateAndUnlockAchievements(user_id);
@@ -59,6 +59,7 @@ exports.submitFTNDResult = async (req, res) => {
   }
 };
 
+// Lấy cấp độ FTND của user
 exports.getFtndLevel = async (req, res) => {
   try {
     await poolConnect;
