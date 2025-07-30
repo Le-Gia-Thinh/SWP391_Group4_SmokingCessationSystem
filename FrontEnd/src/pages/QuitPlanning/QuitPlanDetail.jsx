@@ -171,7 +171,7 @@ const QuitPlanDetail = () => {
         setSelectedTask(fallbackSelected);
       });
 
-    // ✅ 3. Lấy nhiệm vụ đã làm
+    //  3. Lấy nhiệm vụ đã làm
     fetch(
       `http://localhost:5000/api/habit-log/completed-tasks?date=${formattedDate}`,
       {
@@ -217,7 +217,7 @@ const QuitPlanDetail = () => {
         }),
       });
 
-      message.success(newState ? "✅ Đã ghi nhận!" : "🗑️ Đã bỏ tích!");
+      message.success(newState ? " Đã ghi nhận!" : "🗑️ Đã bỏ tích!");
     } catch (err) {
       console.error("Lỗi khi ghi log:", err);
       message.error("Lỗi cập nhật hành vi.");
@@ -322,9 +322,9 @@ const QuitPlanDetail = () => {
         });
       }
 
-      message.success("✅ Đã ghi nhận nhiệm vụ!");
+      message.success(" Đã ghi nhận nhiệm vụ!");
     } catch {
-      message.error("❌ Lỗi khi ghi nhận nhiệm vụ.");
+      message.error(" Lỗi khi ghi nhận nhiệm vụ.");
     }
   };
 
@@ -390,7 +390,7 @@ const QuitPlanDetail = () => {
           <Checkbox
             className={taskDone[index] ? "ant-checkbox-wrapper-checked" : ""}
             checked={completed[index]}
-            disabled={isPast} // ❌ Khóa nếu đã qua ngày
+            disabled={isPast} //  Khóa nếu đã qua ngày
             onChange={() => handleCheckbox(index)}
           >
             Tôi đã không hút
@@ -478,7 +478,7 @@ const QuitPlanDetail = () => {
             className={completed[index] ? "ant-checkbox-wrapper-checked" : ""}
             checked={taskDone[index]}
             onChange={() => handleTaskDoneCheckbox(index)}
-            disabled={isPast} // ✅ Khóa nếu ngày đã qua
+            disabled={isPast} //  Khóa nếu ngày đã qua
           >
             Tôi đã làm
           </Checkbox>
@@ -550,7 +550,7 @@ const QuitPlanDetail = () => {
                 showInfo
               />
             </div>
-            {/* 🎯 Mốc không hút trong ngày */}
+            {/*  Mốc không hút trong ngày */}
             <div style={{ marginTop: 24 }}>
               <Title level={5} style={{ marginBottom: 12 }}>
                 🎯 Mốc không hút trong ngày
@@ -567,7 +567,7 @@ const QuitPlanDetail = () => {
                   return (
                     <Badge.Ribbon
                       key={milestone}
-                      text={`✅ ${milestone}/9`}
+                      text={` ${milestone}/9`}
                       color={reached ? colors[milestone] : "gray"}
                     >
                       <Card
@@ -598,7 +598,7 @@ const QuitPlanDetail = () => {
               </div>
             </div>
 
-            {/* 🎯 Mốc nhiệm vụ trong ngày */}
+            {/*  Mốc nhiệm vụ trong ngày */}
             <div style={{ marginTop: 24 }}>
               <Title level={5} style={{ marginBottom: 12 }}>
                 🎯 Mốc nhiệm vụ trong ngày
@@ -615,7 +615,7 @@ const QuitPlanDetail = () => {
                   return (
                     <Badge.Ribbon
                       key={milestone}
-                      text={`✅ ${milestone}/9`}
+                      text={` ${milestone}/9`}
                       color={reached ? colors[milestone] : "gray"}
                     >
                       <Card

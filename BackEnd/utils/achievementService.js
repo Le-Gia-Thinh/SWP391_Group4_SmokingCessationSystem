@@ -230,7 +230,7 @@ async function grantIfNotExist(pool, userId, achievementId) {
     const { title, description } = info.recordset[0];
     const content = `🏆 Bạn vừa đạt thành tựu: ${title}! ${description}`;
 
-    // ✅ 3. Gửi thông báo lên bảng NOTIFICATION
+    //  3. Gửi thông báo lên bảng NOTIFICATION
     await pool.request()
       .input("user_id", sql.Int, userId)
       .input("title", sql.NVarChar, "🎉 Thành tựu mới")

@@ -131,7 +131,7 @@ const QuitPlan = () => {
           throw new Error("API returned error response");
         }
       } catch (error) {
-        console.error("❌ Không thể tải dữ liệu phases từ API:", error.message);
+        console.error(" Không thể tải dữ liệu phases từ API:", error.message);
         setApiError("Không thể kết nối tới server. Vui lòng thử lại sau.");
         message.error("Không thể tải dữ liệu giai đoạn từ server");
       } finally {
@@ -169,12 +169,12 @@ const QuitPlan = () => {
             totalSlots: data.totalSlots,
           };
         } else if (Array.isArray(data.data)) {
-          const count = data.data.filter(Boolean).length; // ✅ tính số lượng true
+          const count = data.data.filter(Boolean).length; // tính số lượng true
           logs[dateKey] = {
             completedCount: count,
             totalSlots: data.data.length,
           };
-          console.log("🎯 Log processed:", dateKey, logs[dateKey]); // ✅ giữ lại dòng log này
+          console.log(" Log processed:", dateKey, logs[dateKey]); // giữ lại dòng log này
         } else {
           logs[dateKey] = { completedCount: 0, totalSlots: 9 };
         }
@@ -309,6 +309,7 @@ const QuitPlan = () => {
     setStartDate(dayjs(startDate));
     setMonths(months);
     setShowModal(false);
+    
   };
 
   const handleResetPlan = async () => {
@@ -1125,17 +1126,17 @@ const SmokingInputCell = ({
       );
       const data = await res.json();
       if (data.success) {
-        message.success("✅ Đã lưu!");
+        message.success("Đã lưu!");
         setSmokingLog((prev) => ({ ...prev, [date]: inputValue }));
         setTempSmokingLog((prev) => {
           const { [date]: _, ...rest } = prev;
           return rest;
         });
       } else {
-        message.error("❌ Không thể lưu.");
+        message.error("Không thể lưu.");
       }
     } catch {
-      message.error("❌ Lỗi khi kết nối server.");
+      message.error("Lỗi khi kết nối server.");
     }
     setLoading(false);
   };

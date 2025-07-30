@@ -167,7 +167,7 @@ const getActiveCoachCount = async (req, res) => {
   }
 };
 
-// 1️⃣ API: Doanh thu theo ngày trong khoảng (range)
+// 1️ API: Doanh thu theo ngày trong khoảng (range)
 const getRevenueByDateRange = async (req, res) => {
   const { from, to } = req.query;
   try {
@@ -275,7 +275,7 @@ const getRevenueByWeekRange = async (req, res) => {
   }
 };
 
-// 3️⃣ API: Doanh thu 12 tháng của 1 năm
+// 3️ API: Doanh thu 12 tháng của 1 năm
 const getMonthlyRevenueByYear = async (req, res) => {
   const { year } = req.query;
   try {

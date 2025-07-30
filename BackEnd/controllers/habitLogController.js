@@ -50,7 +50,7 @@ const getHabitLogByDate = async (req, res) => {
       totalSlots: 9,
     });
   } catch (err) {
-    console.error("❌ Lỗi khi truy vấn habit log:", err);
+    console.error(" Lỗi khi truy vấn habit log:", err);
     res.status(500).json({
       success: false,
       error: "Lỗi máy chủ khi truy vấn habit log",
@@ -160,7 +160,7 @@ const submitSingleLog = async (req, res) => {
 
     const currentPoints = scoreRes.recordset[0]?.total_points || 0;
 
-    // ✅ Tính tổng điểm từ cả 2 bảng
+    //  Tính tổng điểm từ cả 2 bảng
     const [habitRes, behaviorRes] = await Promise.all([
       pool
         .request()
@@ -201,7 +201,7 @@ const submitSingleLog = async (req, res) => {
 
     res.json({ success: true, message: "Đã lưu hành vi" });
   } catch (err) {
-    console.error("❌ Lỗi ghi hành vi đơn:", err);
+    console.error(" Lỗi ghi hành vi đơn:", err);
     res.status(500).json({ success: false, message: "Lỗi server" });
   }
 };
@@ -272,7 +272,7 @@ const deleteHabitLogEntry = async (req, res) => {
 
     res.json({ success: true, message: "Đã bỏ tích hành vi và cập nhật điểm" });
   } catch (err) {
-    console.error("❌ Lỗi khi bỏ tích habit log:", err);
+    console.error(" Lỗi khi bỏ tích habit log:", err);
     res.status(500).json({ success: false, message: "Lỗi server khi bỏ tích" });
   }
 };
@@ -405,7 +405,7 @@ const deleteBehaviorTaskLogEntry = async (req, res) => {
       message: "Đã bỏ tích nhiệm vụ và cập nhật điểm",
     });
   } catch (err) {
-    console.error("❌ Lỗi khi bỏ tích task:", err);
+    console.error(" Lỗi khi bỏ tích task:", err);
     res
       .status(500)
       .json({ success: false, message: "Lỗi server khi bỏ tích nhiệm vụ" });
@@ -449,7 +449,7 @@ const chooseBehaviorTask = async (req, res) => {
 
     res.json({ success: true, message: "Đã lưu lựa chọn nhiệm vụ" });
   } catch (err) {
-    console.error("❌ Lỗi ghi task hành vi:", err);
+    console.error(" Lỗi ghi task hành vi:", err);
     res.status(500).json({ success: false, message: "Lỗi server" });
   }
 };
@@ -481,7 +481,7 @@ const getSelectedTasksByDate = async (req, res) => {
   }
 };
 
-// ✅ GET các task đã làm (is_completed = 1)
+//  GET các task đã làm (is_completed = 1)
 const getCompletedTasksByDate = async (req, res) => {
   const userId = req.user.id;
   const { date } = req.query;
@@ -504,7 +504,7 @@ const getCompletedTasksByDate = async (req, res) => {
 
     res.json({ success: true, data: result.recordset });
   } catch (err) {
-    console.error("❌ Lỗi get completed-tasks:", err);
+    console.error(" Lỗi get completed-tasks:", err);
     res.status(500).json({ success: false, message: "Lỗi server" });
   }
 };
@@ -617,7 +617,7 @@ const submitBehaviorTaskPoint = async (req, res) => {
       message: "Đã cập nhật điểm cho nhiệm vụ hành vi",
     });
   } catch (err) {
-    console.error("❌ Lỗi tính điểm task hành vi:", err);
+    console.error(" Lỗi tính điểm task hành vi:", err);
     res.status(500).json({ success: false, message: "Lỗi server" });
   }
 };
@@ -663,7 +663,7 @@ const submitBehaviorTaskCompletion = async (req, res) => {
       message: "Đã cập nhật trạng thái hoàn thành nhiệm vụ",
     });
   } catch (err) {
-    console.error("❌ Lỗi tick nhiệm vụ hành vi:", err);
+    console.error(" Lỗi tick nhiệm vụ hành vi:", err);
     res.status(500).json({ success: false, message: "Lỗi server" });
   }
 };
