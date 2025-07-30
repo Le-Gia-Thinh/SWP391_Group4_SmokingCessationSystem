@@ -13,19 +13,16 @@ import {
   Badge,
   Layout,
   Tooltip,
-  Modal,
-  Divider,
-  Timeline,
+
 
 } from "antd";
 import {
   CheckOutlined,
   FacebookOutlined,
   InstagramOutlined,
-  TwitterOutlined,
+  EnvironmentOutlined,
   YoutubeOutlined,
   MailOutlined,
-  PinterestOutlined,
   RightOutlined,
   LeftOutlined,
   ExperimentOutlined, TeamOutlined,
@@ -34,8 +31,7 @@ import {
   MessageOutlined,
   BookOutlined,
   TrophyOutlined,
-  CloseOutlined,
-  CheckCircleOutlined,
+  PhoneOutlined,
   StarOutlined,
   UserOutlined,
   BulbOutlined,
@@ -73,9 +69,7 @@ import Navbar from "../../layouts/Navbar";
 import { useNavigate } from "react-router-dom";
 import PlanUpgradeModal from "./PlanUpgradeModal";
 import { useScrollReveal } from "../../hooks/useScrollReveal";
-import meditationImg from "../../assets/img/meditation.jpg";
 import healthyEatingImg from "../../assets/img/healthy-eating.jpg";
-import fitnessImg from "../../assets/img/fitness.jpg";
 import { useAuth } from "../../contexts/AuthContext";
 
 import RankingSection from "../../components/RankingSection";
@@ -90,8 +84,6 @@ import testi4 from "../../assets/img/anh3.jpg";
 import quitSupportImg from "../../assets/img/smokingsupport.jpg";
 import therapySessionImg from "../../assets/img/theory.jpg";
 import breathingImg from "../../assets/img/thien.jpg";
-
-/* ---------- ASSETS CHO 2 KHỐI MỚI ---------- */
 import about1 from "../../assets/img/quit-smoking-illustration_23-2148683677.jpg";
 import about2 from "../../assets/img/OIP.jpg";
 import about3 from "../../assets/img/OIP_2.jpg";
@@ -108,15 +100,16 @@ import { Parallax } from 'react-parallax';
 import { FaStar, FaUsers, FaCheck, FaMugHot } from "react-icons/fa";
 
 import "animate.css/animate.min.css";
-import AOS from 'aos';
-import 'aos/dist/aos.css';
 import CountUp from 'react-countup';
 import "./HomePage.css";
 const { Title, Paragraph, Text } = Typography;
 const { Footer } = Layout;
+import AboutUs from '../../components/AboutUs';
 
-
-
+const handleBackFromAbout = () => {
+  setShowAboutUs(false);
+  setAnimationKey(prev => prev + 1); // Force re-render animations
+};
 const videoModules = import.meta.glob("/src/assets/video/*.mp4", {
   eager: true,
   query: "?url",
@@ -204,26 +197,6 @@ const expertQualifications = [
   "Có chứng chỉ hỗ trợ điều trị nghiện từ các tổ chức y tế uy tín",
   "Cam kết đồng hành 1:1 và xây dựng lộ trình bỏ thuốc cá nhân hóa",
   "Thường xuyên cập nhật các phương pháp và công nghệ mới trong hỗ trợ cai nghiện",
-];
-
-
-
-const footerLinks = [
-  "Về chúng tôi",
-  "Tính năng",
-  "Blog",
-  "Thực phẩm",
-  "Công thức",
-  "Đánh giá",
-  "Đăng nhập",
-];
-
-const legalLinks = [
-  "Điều khoản & Điều kiện",
-  "Chính sách bảo mật",
-  "Liên hệ",
-  "Chính sách cookie",
-  "Hỗ trợ",
 ];
 const quitMethods = [
   {
@@ -519,7 +492,10 @@ const HomePage = () => {
   ============================================================= */
   const PrevArrow = makeArrow("prev", slideTimerRef);
   const NextArrow = makeArrow("next", slideTimerRef);
-
+  const [showAboutUs, setShowAboutUs] = useState(false);
+  if (showAboutUs) {
+    return <AboutUs onBack={() => setShowAboutUs(false)} />;
+  }
   return (
     <Layout className="homepage" ref={homepageRef}>
       <Navbar />
@@ -587,16 +563,6 @@ const HomePage = () => {
                           >
                             {s.title}
                           </Title>
-                          <Button
-                            key={`btn-${keySuffix}`}
-                            type="primary"
-                            size="large"
-                            className={`${isActive ? getAnimCls("slideInDown") : ""} hero-btn`}
-                            style={ANIMATE_STYLE}
-                            icon={<RightOutlined />}
-                          >
-                            Learn More
-                          </Button>
                         </Col>
                         {/* image */}
                         <Col
@@ -838,15 +804,7 @@ const HomePage = () => {
                 size="large"
                 type="primary"
                 className="mt-4 rounded-pill"
-                onClick={() => setShowFeatureModal(true)}
-                style={{
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  border: 'none',
-                  padding: '8px 32px',
-                  height: 'auto',
-                  fontSize: '16px',
-                  fontWeight: '600'
-                }}
+                onClick={() => setShowAboutUs(true)}
               >
                 Tìm Hiểu Thêm
               </Button>
@@ -869,7 +827,15 @@ const HomePage = () => {
                 <li><CheckOutlined /> Nhắc nhở & động viên hàng ngày</li>
                 <li><CheckOutlined /> Đổi điểm lấy quà và huy hiệu khích lệ</li>
               </ul>
-              <Button size="large" type="primary" className="mt-3 rounded-pill">
+              <Button
+                size="large"
+                type="primary"
+                className="mt-3 rounded-pill"
+                onClick={() => {
+                  console.log('Navigating to FTND Test...');
+                  navigate('/QuitPlanCalendar');
+                }}
+              >
                 Bắt Đầu Ngay
               </Button>
             </Col>
@@ -940,7 +906,9 @@ const HomePage = () => {
                     <Paragraph className="text-white mb-4">
                       Khám phá công cụ cá nhân hóa để bỏ thuốc lá, cải thiện sức khỏe và tiết kiệm chi phí.
                     </Paragraph>
-                    <Button className="btn-read-more" href="#">
+                    <Button className="btn-read-more" onClick={() => {
+                      navigate('/QuitPlanCalendar');
+                    }} >
                       Tìm Hiểu Thêm
                     </Button>
                   </div>
@@ -963,7 +931,9 @@ const HomePage = () => {
                     <Paragraph className="text-white mb-4">
                       Tham gia nhóm chia sẻ kinh nghiệm, hỗ trợ lẫn nhau và nhận huy hiệu khích lệ.
                     </Paragraph>
-                    <Button className="btn-read-more" href="#">
+                    <Button className="btn-read-more" onClick={() => {
+                      navigate('/Community');
+                    }} >
                       Tham Gia Ngay
                     </Button>
                   </div>
@@ -1012,7 +982,9 @@ const HomePage = () => {
                     <p className="mb-4">
                       Lộ trình giảm dần liều thuốc thiết kế riêng theo mức độ nghiện.
                     </p>
-                    <a className="btn btn-square rounded-circle" href="#">
+                    <a className="btn btn-square rounded-circle" onClick={() => {
+                      navigate('/QuitPlanCalendar');
+                    }} >
                       <i className="bi bi-chevron-double-right"></i>
                     </a>
                   </div>
@@ -1039,7 +1011,9 @@ const HomePage = () => {
                     <p className="mb-4">
                       Biểu đồ trực quan về ngày không hút, tiền tiết kiệm và huy hiệu.
                     </p>
-                    <a className="btn btn-square rounded-circle" href="#">
+                    <a className="btn btn-square rounded-circle" onClick={() => {
+                      navigate('/user/stats');
+                    }}>
                       <i className="bi bi-chevron-double-right"></i>
                     </a>
                   </div>
@@ -1066,7 +1040,9 @@ const HomePage = () => {
                     <p className="mb-4">
                       Chat trực tiếp với bác sĩ và coach để nhận tư vấn cá nhân.
                     </p>
-                    <a className="btn btn-square rounded-circle" href="#">
+                    <a className="btn btn-square rounded-circle" onClick={() => {
+                      navigate('/book-coach');
+                    }}>
                       <i className="bi bi-chevron-double-right"></i>
                     </a>
                   </div>
@@ -1159,13 +1135,20 @@ const HomePage = () => {
                     </div>
 
                     <div className="method-actions">
-                      <button className="btn-primary">
+                      <button
+                        onClick={() => {
+                          navigate('/QuitPlanCalendar');
+                        }}
+                        className="btn-primary">
                         <Target className="btn-icon" />
                         Bắt Đầu Phương Pháp Này
                       </button>
-                      <button className="btn-secondary">
+                      <button
+                        onClick={() => setShowAboutUs(true)}
+                        className="btn-secondary">
                         <BookOpen className="btn-icon" />
                         Tìm Hiểu Thêm
+
                       </button>
                     </div>
                   </div>
@@ -1212,7 +1195,6 @@ const HomePage = () => {
             </div>
           </div>
         </section>
-
         {/* Success Stories Section */}
         <section className={`success-stories-section ${isVisible ? 'fade-in' : ''}`}>
           <div className="container">
@@ -1296,14 +1278,15 @@ const HomePage = () => {
                 </div>
 
                 <div className="story-actions">
-                  <button className="btn-primary">
+                  <button
+                    onClick={() => {
+                      navigate('/community');
+                    }}
+                    className="btn-primary">
                     <MessageCircle className="btn-icon" />
                     Chia Sẻ Câu Chuyện Của Bạn
                   </button>
-                  <button className="btn-secondary">
-                    <Users className="btn-icon" />
-                    Kết Nối Với {successStories[activeSuccess].name.split(' ')[1]}
-                  </button>
+
                 </div>
               </div>
 
@@ -1316,7 +1299,11 @@ const HomePage = () => {
                     <h4>Cộng Đồng Hỗ Trợ</h4>
                     <p>5,247 thành viên đang cùng hành trình</p>
                     <div className="community-actions">
-                      <button className="join-btn">
+                      <button
+                        onClick={() => {
+                          navigate('/community');
+                        }}
+                        className="join-btn">
                         <Users className="btn-icon-small" />
                         Tham Gia Ngay
                       </button>
@@ -1634,347 +1621,286 @@ const HomePage = () => {
       {/* ---------- FOOTER ---------- */}
       <Footer className="footer-section scroll-section">
         <div className="container">
-          <Space
-            direction="vertical"
-            size="middle"
-            style={{ width: "100%", textAlign: "center" }}
-          >
-            <img
-              src={healthyEatingImg}
-              alt="HealthyBite logo"
-              className="footer-logo"
-              style={{ height: 48, borderRadius: 12, marginBottom: 8 }}
-            />
-
-            <Space wrap size="middle" className="footer-links">
-              {footerLinks.map((link, i) => (
-                <Button
-                  key={i}
-                  type="link"
-                  style={{ fontSize: 16, fontWeight: 500, color: "#222" }}
-                >
-                  {link}
-                </Button>
-              ))}
-            </Space>
-
-            <Space wrap size="small" className="footer-legal">
-              {legalLinks.map((text, i) => (
-                <Button
-                  key={i}
-                  type="link"
-                  size="small"
-                  style={{ fontSize: 14, color: "#666" }}
-                >
-                  {text}
-                </Button>
-              ))}
-            </Space>
-
-            <Space size="middle">
-              <Tooltip title="Facebook">
-                <Button
-                  type="text"
-                  shape="circle"
-                  icon={
-                    <FacebookOutlined
-                      style={{ color: "#4267B2", fontSize: 24 }}
-                    />
-                  }
-                  className="social-btn"
-                />
-              </Tooltip>
-              <Tooltip title="Instagram">
-                <Button
-                  type="text"
-                  shape="circle"
-                  icon={
-                    <InstagramOutlined
-                      style={{ color: "#E1306C", fontSize: 24 }}
-                    />
-                  }
-                  className="social-btn"
-                />
-              </Tooltip>
-              <Tooltip title="Twitter">
-                <Button
-                  type="text"
-                  shape="circle"
-                  icon={
-                    <TwitterOutlined
-                      style={{ color: "#1DA1F2", fontSize: 24 }}
-                    />
-                  }
-                  className="social-btn"
-                />
-              </Tooltip>
-              <Tooltip title="Pinterest">
-                <Button
-                  type="text"
-                  shape="circle"
-                  icon={
-                    <PinterestOutlined
-                      style={{ color: "#E60023", fontSize: 24 }}
-                    />
-                  }
-                  className="social-btn"
-                />
-              </Tooltip>
-              <Tooltip title="YouTube">
-                <Button
-                  type="text"
-                  shape="circle"
-                  icon={
-                    <YoutubeOutlined
-                      style={{ color: "#FF0000", fontSize: 24 }}
-                    />
-                  }
-                  className="social-btn"
-                />
-              </Tooltip>
-              <Tooltip title="Email">
-                <Button
-                  type="text"
-                  shape="circle"
-                  icon={
-                    <MailOutlined style={{ color: "#38f9d7", fontSize: 24 }} />
-                  }
-                  className="social-btn"
-                />
-              </Tooltip>
-            </Space>
-
-            <div
-              className="footer-copyright"
-              style={{ color: "#666", fontSize: 14 }}
-            >
-              &copy; {new Date().getFullYear()}{" "}
-              <span style={{ color: "#38cfcf", fontWeight: 600 }}>
-                HealthyBite
-              </span>
-              . All rights reserved.
+          {/* Header Section với logo và tagline */}
+          <div className="footer-header" style={{ textAlign: "center", marginBottom: "48px" }}>
+            <div className="footer-brand">
+              <img
+                src={healthyEatingImg}
+                alt="Quit Smoking Coach"
+                className="footer-logo"
+              />
+              <Title level={3} style={{ color: "#222", margin: "16px 0 8px 0", fontWeight: 700 }}>
+                Smoking Cessation System
+              </Title>
+              <Text style={{ color: "#666", fontSize: 16, fontStyle: "italic" }}>
+                "Hành trình tự do, không khói thuốc"
+              </Text>
             </div>
-          </Space>
-        </div>
-      </Footer>
-
-
-
-      {/* Feature Introduction Modal */}
-      <Modal
-        visible={showFeatureModal}
-        onCancel={() => setShowFeatureModal(false)}
-        footer={null}
-        width={1000}
-        centered
-        closeIcon={<CloseOutlined style={{ fontSize: 18, color: '#fff' }} />}
-        styles={{
-          header: {
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            borderRadius: '8px 8px 0 0',
-            padding: '20px 24px'
-          },
-          body: {
-            padding: 0,
-            background: '#f8fafc'
-          }
-        }}
-        title={
-          <div style={{ color: '#fff', textAlign: 'center' }}>
-            <Title level={2} style={{ color: '#fff', margin: 0, fontSize: '28px' }}>
-              🚭 Khám Phá Hệ Thống Hỗ Trợ Bỏ Thuốc Toàn Diện
-            </Title>
-            <Text style={{ color: '#e6f7ff', fontSize: '16px' }}>
-              Hành trình khỏe mạnh bắt đầu từ những bước đi đầu tiên
-            </Text>
-          </div>
-        }
-      >
-        <div style={{ padding: '24px' }}>
-          {/* Hero Section */}
-          <div style={{
-            textAlign: 'center',
-            marginBottom: '32px',
-            padding: '24px',
-            background: 'linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%)',
-            borderRadius: '12px'
-          }}>
-            <Title level={3} style={{ color: '#1565c0', marginBottom: '16px' }}>
-              Tại sao chọn hệ thống của chúng tôi?
-            </Title>
-            <Paragraph style={{ fontSize: '16px', color: '#37474f', maxWidth: '800px', margin: '0 auto' }}>
-              Với hơn <strong>5 năm kinh nghiệm</strong> và <strong>hàng nghìn người thành công</strong> bỏ thuốc,
-              chúng tôi đã phát triển một hệ sinh thái hoàn chỉnh để đồng hành cùng bạn từ những ngày đầu khó khăn
-              cho đến khi hoàn toàn tự do khỏi thuốc lá.
-            </Paragraph>
-
-            <Row gutter={[16, 16]} style={{ marginTop: '20px' }} justify="center">
-              <Col>
-                <Badge count="5+" style={{ backgroundColor: '#52c41a' }}>
-                  <div style={{ padding: '8px 16px', background: '#fff', borderRadius: '8px', minWidth: '80px' }}>
-                    <Text strong>Năm kinh nghiệm</Text>
-                  </div>
-                </Badge>
-              </Col>
-              <Col>
-                <Badge count="1000+" style={{ backgroundColor: '#1890ff' }}>
-                  <div style={{ padding: '8px 16px', background: '#fff', borderRadius: '8px', minWidth: '80px' }}>
-                    <Text strong>Người thành công</Text>
-                  </div>
-                </Badge>
-              </Col>
-              <Col>
-                <Badge count="95%" style={{ backgroundColor: '#722ed1' }}>
-                  <div style={{ padding: '8px 16px', background: '#fff', borderRadius: '8px', minWidth: '80px' }}>
-                    <Text strong>Tỷ lệ thành công</Text>
-                  </div>
-                </Badge>
-              </Col>
-            </Row>
           </div>
 
-          {/* Features Grid */}
-          <Row gutter={[24, 24]} style={{ marginBottom: '32px' }}>
-            {modalFeatures.map((feature, index) => (
-              <Col xs={24} md={12} key={index}>
-                <Card
-                  hoverable
+          <Row gutter={[40, 40]} className="footer-content">
+            {/* Cột 1: Về chúng tôi */}
+            <Col xs={24} md={8}>
+              <Space direction="vertical" size="large" style={{ width: "100%" }}>
+                <Title level={5} style={{ color: "#222", marginBottom: 20, fontSize: 18 }}>
+                  <HeartOutlined style={{ marginRight: 10, color: "#38cfcf" }} />
+                  Về Chúng Tôi
+                </Title>
+
+                <Paragraph style={{ color: "#555", fontSize: 15, lineHeight: 1.7, marginBottom: 24 }}>
+                  Đồng hành cùng bạn trên hành trình thoát khỏi thuốc lá.
+                  Với phương pháp khoa học, hỗ trợ chuyên gia và cộng đồng
+                  nhiệt tình, chúng tôi cam kết giúp bạn thành công.
+                </Paragraph>
+
+                {/* Thống kê nhanh */}
+                <div style={{
+                  background: "linear-gradient(135deg, rgba(56, 207, 207, 0.08), rgba(56, 207, 207, 0.12))",
+                  padding: "20px",
+                  borderRadius: "16px",
+                  border: "1px solid rgba(56, 207, 207, 0.25)",
+                  boxShadow: "0 4px 12px rgba(56, 207, 207, 0.1)"
+                }}>
+                  <Row gutter={24}>
+                    <Col span={12}>
+                      <div style={{ textAlign: "center" }}>
+                        <div style={{ fontSize: "24px", fontWeight: "bold", color: "#38cfcf", marginBottom: "4px" }}>5000+</div>
+                        <div style={{ fontSize: "13px", color: "#666", fontWeight: 500 }}>Người thành công</div>
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <div style={{ textAlign: "center" }}>
+                        <div style={{ fontSize: "24px", fontWeight: "bold", color: "#38cfcf", marginBottom: "4px" }}>95%</div>
+                        <div style={{ fontSize: "13px", color: "#666", fontWeight: 500 }}>Tỷ lệ thành công</div>
+                      </div>
+                    </Col>
+                  </Row>
+                </div>
+              </Space>
+            </Col>
+
+            {/* Cột 2: Dịch vụ chính */}
+            <Col xs={24} md={8}>
+              <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+                <Title level={5} style={{ color: "#222", marginBottom: 20, fontSize: 18 }}>
+                  <BulbOutlined style={{ marginRight: 10, color: "#38cfcf" }} />
+                  Dịch Vụ
+                </Title>
+
+                <Space direction="vertical" size="small" style={{ width: "100%" }}>
+                  {[
+                    { text: "Kế hoạch cá nhân", icon: <CalendarOutlined />, onClick: () => navigate('/QuitPlanCalendar') },
+                    { text: "Book Coach", icon: <UserOutlined />, onClick: () => navigate('/book-coach') },
+                    { text: "Cộng đồng", icon: <TeamOutlined />, onClick: () => navigate('/Community') },
+                    { text: "Thống kê tiến trình", icon: <TrophyOutlined />, onClick: () => navigate('/user/stats') },
+                  ].map((item, i) => (
+                    <Button
+                      key={i}
+                      type="link"
+                      onClick={item.onClick}
+                      className="footer-service-link"
+                      style={{
+                        fontSize: 15,
+                        color: "#555",
+                        padding: "12px 0",
+                        height: "auto",
+                        textAlign: "left",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "flex-start",
+                        fontWeight: 500,
+                        width: "100%",
+                        transition: "all 0.3s ease"
+                      }}
+                    >
+                      <span style={{ marginRight: 12, color: "#38cfcf", fontSize: "16px" }}>{item.icon}</span>
+                      {item.text}
+                    </Button>
+                  ))}
+                </Space>
+              </Space>
+            </Col>
+
+            {/* Cột 3: Liên hệ & Social */}
+            <Col xs={24} md={8}>
+              <Space direction="vertical" size="large" style={{ width: "100%" }}>
+                <Title level={5} style={{ color: "#222", marginBottom: 20, fontSize: 18 }}>
+                  <MailOutlined style={{ marginRight: 10, color: "#38cfcf" }} />
+                  Liên Hệ
+                </Title>
+
+                {/* Contact Info */}
+                <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+                  <Space align="start" size="middle">
+                    <MailOutlined style={{ color: "#38cfcf", fontSize: 18, marginTop: 2 }} />
+                    <div style={{ color: "#555", fontSize: 14 }}>
+                      <div style={{ fontWeight: 600, marginBottom: "2px" }}>support@quitcoach.vn</div>
+                      <div style={{ color: "#777" }}>info@quitcoach.vn</div>
+                    </div>
+                  </Space>
+
+                  <Space align="start" size="middle">
+                    <PhoneOutlined style={{ color: "#38cfcf", fontSize: 18, marginTop: 2 }} />
+                    <div style={{ color: "#555", fontSize: 14 }}>
+                      <div style={{ fontWeight: 600, marginBottom: "2px" }}>Hotline: 1900 xxxx</div>
+                      <div style={{ color: "#777" }}>Hỗ trợ 24/7</div>
+                    </div>
+                  </Space>
+
+                  <Space align="start" size="middle">
+                    <EnvironmentOutlined style={{ color: "#38cfcf", fontSize: 18, marginTop: 2 }} />
+                    <div style={{ color: "#555", fontSize: 14, lineHeight: 1.5 }}>
+                      Tầng 10, Tòa nhà ABC<br />
+                      123 Nguyễn Văn Linh, Q.7<br />
+                      TP. Hồ Chí Minh
+                    </div>
+                  </Space>
+                </Space>
+
+                {/* Social Media */}
+                <div>
+                  <Text style={{ color: "#666", fontSize: 15, fontWeight: 600, display: "block", marginBottom: 16 }}>
+                    Kết nối với chúng tôi:
+                  </Text>
+                  <Space size="large">
+                    <Tooltip title="Facebook - Cộng đồng hỗ trợ">
+                      <Button
+                        type="text"
+                        shape="circle"
+                        icon={<FacebookOutlined />}
+                        className="social-btn"
+                        size="large"
+                        style={{ fontSize: "18px" }}
+                      />
+                    </Tooltip>
+                    <Tooltip title="YouTube - Video hướng dẫn">
+                      <Button
+                        type="text"
+                        shape="circle"
+                        icon={<YoutubeOutlined />}
+                        className="social-btn"
+                        size="large"
+                        style={{ fontSize: "18px" }}
+                      />
+                    </Tooltip>
+                    <Tooltip title="Email - Liên hệ trực tiếp">
+                      <Button
+                        type="text"
+                        shape="circle"
+                        icon={<MailOutlined />}
+                        className="social-btn"
+                        size="large"
+                        style={{ fontSize: "18px" }}
+                      />
+                    </Tooltip>
+                  </Space>
+                </div>
+
+                {/* Emergency Support */}
+                <div
                   style={{
-                    height: '100%',
-                    border: activeFeature === index ? '2px solid #1890ff' : '1px solid #e8e8e8',
-                    borderRadius: '12px',
-                    background: activeFeature === index ? '#f6ffed' : '#fff',
-                    transition: 'all 0.3s ease',
-                    cursor: 'pointer'
+                    background: "linear-gradient(135deg, #fff2e6, #ffe7d9)",
+                    padding: "20px",
+                    borderRadius: "16px",
+                    border: "2px solid #ffa940",
+                    boxShadow: "0 4px 12px rgba(255, 169, 64, 0.2)"
                   }}
-                  onClick={() => setActiveFeature(index)}
-                  
-                  bodyStyle={{ padding: 0, background: '#f8fafc' }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
+                  <Space align="start" size="middle">
                     <div style={{
-                      padding: '12px',
-                      background: activeFeature === index ? '#fff' : '#f5f5f5',
-                      borderRadius: '8px',
+                      backgroundColor: "#ffa940",
+                      borderRadius: "50%",
+                      width: 32,
+                      height: 32,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
                       flexShrink: 0
                     }}>
-                      {feature.icon}
+                      <HeartOutlined style={{ color: "#fff", fontSize: 16 }} />
                     </div>
-                    <div style={{ flex: 1 }}>
-                      <Title level={4} style={{ margin: '0 0 4px 0', color: '#262626' }}>
-                        {feature.title}
-                      </Title>
-                      <Text type="secondary" style={{ fontSize: '14px' }}>
-                        {feature.subtitle}
-                      </Text>
-                      <Paragraph style={{
-                        margin: '12px 0 16px 0',
-                        fontSize: '14px',
-                        color: '#595959'
-                      }}>
-                        {feature.description}
-                      </Paragraph>
-                      <div>
-                        {feature.highlights.map((highlight, idx) => (
-                          <div key={idx} style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                            marginBottom: '6px'
-                          }}>
-                            <CheckCircleOutlined style={{ color: '#52c41a', fontSize: '12px' }} />
-                            <Text style={{ fontSize: '13px', color: '#666' }}>
-                              {highlight}
-                            </Text>
-                          </div>
-                        ))}
+                    <div>
+                      <div style={{ color: "#d46b08", fontSize: 15, fontWeight: 700, marginBottom: "4px" }}>
+                        Cần hỗ trợ khẩn cấp?
+                      </div>
+                      <div style={{ color: "#ad4e00", fontSize: 14, marginBottom: "4px" }}>
+                        Hotline 24/7: <strong>1900 xxxx</strong>
+                      </div>
+                      <div style={{ color: "#8c3a00", fontSize: 13 }}>
+                        Luôn có ai đó lắng nghe bạn
                       </div>
                     </div>
-                  </div>
-                </Card>
-              </Col>
-            ))}
+                  </Space>
+                </div>
+              </Space>
+            </Col>
           </Row>
 
-          <Divider style={{ margin: '32px 0' }} />
-
-          {/* Process Timeline */}
+          {/* Footer Bottom */}
           <div style={{
-            padding: '24px',
-            background: '#fff',
-            borderRadius: '12px',
-            border: '1px solid #e8e8e8'
+            marginTop: "48px",
+            paddingTop: "24px",
+            borderTop: "1px solid rgba(56, 207, 207, 0.2)",
+            textAlign: "center"
           }}>
-            <Title level={4} style={{ textAlign: 'center', marginBottom: '24px', color: '#1565c0' }}>
-              <TrophyOutlined style={{ marginRight: '8px', color: '#faad14' }} />
-              Hành Trình Thành Công Của Bạn
-            </Title>
-            <Timeline
-              items={successSteps.map((step, index) => ({
-                color: step.status === 'finish' ? '#52c41a' :
-                  step.status === 'process' ? '#1890ff' : '#d9d9d9',
-                children: (
-                  <div>
-                    <Text strong style={{ fontSize: '16px' }}>{step.title}</Text>
-                    <br />
-                    <Text type="secondary">{step.description}</Text>
-                  </div>
-                )
-              }))}
-              style={{ paddingLeft: '24px' }}
-            />
-          </div>
+            <div style={{ color: "#666", fontSize: 14, textAlign: "center", marginBottom: "24px" }}>
+              &copy; {new Date().getFullYear()}{" "}
+              <span style={{ color: "#38cfcf", fontWeight: 600 }}>
+                SmokingCessationSystem
+              </span>
+              . Bản quyền thuộc về chúng tôi.
+            </div>
 
-          {/* Call to Action */}
-          <div style={{
-            textAlign: 'center',
-            marginTop: '24px',
-            padding: '24px',
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            borderRadius: '12px',
-            color: '#fff'
-          }}>
-            <Title level={3} style={{ color: '#fff', marginBottom: '12px' }}>
-              Sẵn sàng bắt đầu hành trình thay đổi cuộc đời?
-            </Title>
-            <Paragraph style={{ color: '#e6f7ff', fontSize: '16px', marginBottom: '20px' }}>
-              Hàng nghìn người đã thành công - Bạn cũng có thể làm được!
-            </Paragraph>
-            <Space size="middle">
-              <Button
-                type="primary"
-                size="large"
-                style={{
-                  background: '#fff',
-                  color: '#667eea',
-                  border: 'none',
-                  fontWeight: '600'
-                }}
-                onClick={() => {
-                  setShowFeatureModal(false);
-                  // Navigate to sign up or start journey page
-                }}
-              >
-                Bắt Đầu Ngay
-              </Button>
-              <Button
-                size="large"
-                style={{
-                  background: 'transparent',
-                  color: '#fff',
-                  borderColor: '#fff'
-                }}
-                onClick={() => {
-                  setShowFeatureModal(false);
-                  // Navigate to consultation page
-                }}
-              >
-                Tư Vấn Miễn Phí
-              </Button>
-            </Space>
+            {/* Inspirational Quote */}
+            <div style={{
+              textAlign: "center",
+              marginTop: "24px",
+              padding: "20px",
+              background: "linear-gradient(135deg, rgba(56, 207, 207, 0.1), rgba(56, 207, 207, 0.05))",
+              borderRadius: "16px",
+              border: "1px solid rgba(56, 207, 207, 0.2)"
+            }}>
+              <Text style={{
+                fontSize: 16,
+                fontStyle: "italic",
+                color: "#555",
+                fontWeight: 500,
+                lineHeight: 1.6
+              }}>
+                <span style={{ color: "#38cfcf", fontSize: 20, fontWeight: "bold" }}>"</span>
+                Mỗi ngày không hút thuốc là một chiến thắng nhỏ dẫn đến thành công lớn
+                <span style={{ color: "#38cfcf", fontSize: 20, fontWeight: "bold" }}>"</span>
+              </Text>
+            </div>
+
+            {/* Disclaimer */}
+            <div style={{
+              marginTop: "24px",
+              padding: "20px",
+              background: "linear-gradient(135deg, #fff7e6, #fff2e6)",
+              borderRadius: "16px",
+              border: "1px solid #ffe7ba",
+              fontSize: 13,
+              color: "#8c4a00",
+              textAlign: "left",
+              boxShadow: "0 2px 8px rgba(255, 169, 64, 0.1)"
+            }}>
+              <Space align="start" size="middle" style={{ width: "100%" }}>
+                <SafetyOutlined style={{ color: "#ffa940", fontSize: 16, marginTop: 2, flexShrink: 0 }} />
+                <div>
+                  <Text style={{ color: "#d46b08", fontWeight: 700, fontSize: 14, display: "block", marginBottom: "8px" }}>
+                    Lưu ý quan trọng:
+                  </Text>
+                  <Text style={{ color: "#8c4a00", fontSize: 13, lineHeight: 1.6 }}>
+                    Ứng dụng này chỉ mang tính chất hỗ trợ và không thay thế cho việc tư vấn y tế chuyên nghiệp.
+                    Nếu bạn có vấn đề sức khỏe nghiêm trọng, vui lòng tham khảo ý kiến bác sĩ.
+                  </Text>
+                </div>
+              </Space>
+            </div>
           </div>
         </div>
-      </Modal>
+      </Footer>
     </Layout>
   );
 };

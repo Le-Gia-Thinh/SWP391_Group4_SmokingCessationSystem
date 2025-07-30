@@ -75,55 +75,33 @@ const RankingSection = () => {
             setLoading(true);
             setError(null);
 
-            const response = await axios.get(`${API_BASE_URL}/api/user-score/ranking`, {
-                timeout: 10000, // 10 seconds timeout
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            });
+            const response = await axios.get(`${API_BASE_URL}/api/user-score/ranking`, { /* ... */ });
 
-            console.log('✅ Response từ API ranking:', response.data);
-
-            if (response.data && response.data.success && Array.isArray(response.data.data)) {
-                // Thêm thông tin mở rộng cho mỗi user
+            if (response.data?.success && Array.isArray(response.data.data)) {
                 const enrichedData = response.data.data.map((user, index) => ({
                     ...user,
-                    // Đảm bảo có rank nếu API không trả về
                     rank: user.rank || (index + 1),
-                    // Tính toán smokeFree và moneySaved từ total_points (có thể thay bằng API thật)
                     smokeFree: calculateSmokeFreedays(user.total_points),
                     moneySaved: calculateMoneySaved(user.total_points),
                     description: getDescriptionByLevel(user.current_level, user.full_name),
                     avatar_url: user.avatar_url || getRandomAvatar()
                 }));
 
-                setRankingData(enrichedData);
-                console.log('✅ Đã cập nhật ranking data:', enrichedData);
+                const top4 = enrichedData
+                    .sort((a, b) => a.rank - b.rank)
+                    .slice(0, 4);
+                setRankingData(top4);
             } else {
                 throw new Error('Dữ liệu API không hợp lệ');
             }
         } catch (err) {
-            console.error('❌ Lỗi khi lấy dữ liệu ranking:', err);
-
-            let errorMessage = 'Không thể tải dữ liệu từ server.';
-
-            if (err.code === 'ECONNABORTED') {
-                errorMessage = 'Kết nối timeout. Vui lông thử lại.';
-            } else if (err.response) {
-                errorMessage = `Lỗi server: ${err.response.status}`;
-            } else if (err.request) {
-                errorMessage = 'Không thể kết nối đến server.';
-            }
-
-            setError(errorMessage + ' Hiển thị dữ liệu mẫu.');
-            setRankingData(mockRankingData);
-
-            // Hiển thị thông báo lỗi
+            setRankingData(mockRankingData.slice(0, 4));
             message.warning('Đang sử dụng dữ liệu mẫu do không thể kết nối server');
         } finally {
             setLoading(false);
         }
     };
+
 
     // Fetch my ranking
     const fetchMyRanking = async () => {
@@ -160,12 +138,11 @@ const RankingSection = () => {
 
     // Helper functions
     const calculateSmokeFreedays = (points) => {
-        // Giả sử 1 điểm = 1 ngày không hút thuốc
         return Math.floor(points / 5) + Math.floor(Math.random() * 50) + 30;
     };
 
     const calculateMoneySaved = (points) => {
-        // Giả sử tiết kiệm được dựa trên điểm số
+
         return Math.floor(points / 50) + Math.floor(Math.random() * 20) + 5;
     };
 
