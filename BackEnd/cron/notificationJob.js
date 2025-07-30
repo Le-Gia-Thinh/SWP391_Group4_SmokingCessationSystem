@@ -11,7 +11,6 @@ const typeMap = {
   '📅': 'appointment',
 };
 
-// ========== Cron job: Gửi thông báo coaching session ==========
 cron.schedule("* * * * *", async () => {
   try {
     const pool = await sql.connect(dbConfig);

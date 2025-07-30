@@ -5,7 +5,6 @@ exports.getUserSavings = async (req, res) => {
   const userId = req.user.id;
   const pricePerCig = 3000;
 
-  // Bản đồ quy đổi q4_value → số điếu trung bình
   const q4Map = {
     0: 5,   // ≤10
     1: 15,  // 11–20
@@ -16,7 +15,7 @@ exports.getUserSavings = async (req, res) => {
   try {
     const pool = await sql.connect(dbConfig);
 
-  // 1. Lấy FTND q4_value gần nhất
+  // 1. Lấy số trung bình tần xuất hút
 const ftnd = await pool.request()
   .input("user_id", sql.Int, userId)
   .query(`
@@ -72,56 +71,6 @@ const logs = await pool.request()
   }
 };
 
-// API 2: Lấy tần suất hút thuốc 
-exports.getUserFrequency = async (req, res) => {
-  const userId = req.user.id;
-
-  try {
-    const pool = await sql.connect(dbConfig);
-
-    const plan = await pool.request()
-      .input('user_id', sql.Int, userId)
-      .query(`SELECT frequency_per_day FROM CESSATION_PLAN WHERE user_id = @user_id AND is_active = 1;`);
-
-    if (!plan.recordset.length)
-      return res.status(400).json({ message: 'Chưa có kế hoạch cai thuốc.' });
-
-    const freqPerDay = plan.recordset[0].frequency_per_day;
-
-    const habit = await pool.request()
-      .input('user_id', sql.Int, userId)
-      .query(`SELECT AVG(total_cigarettes) AS avg_cigs FROM DAILY_SMOKING_SUMMARY WHERE user_id = @user_id;`);
-
-    const avgCigs = habit.recordset[0]?.avg_cigs || 0;
-
-    res.json({
-      initial: freqPerDay,
-      current: avgCigs,
-      reductionRate: Math.round((1 - avgCigs / (freqPerDay || 1)) * 100)
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Lỗi lấy tần suất hút thuốc' });
-  }
-};
-
-// API 3: Lấy điểm số
-exports.getUserScore = async (req, res) => {
-  const userId = req.user.id;
-
-  try {
-    const pool = await sql.connect(dbConfig);
-
-    const result = await pool.request()
-      .input('user_id', sql.Int, userId)
-      .query(`SELECT total_points FROM USER_SCORE WHERE user_id = @user_id;`);
-
-    res.json({ score: result.recordset[0]?.total_points || 0 });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Lỗi lấy điểm tích lũy' });
-  }
-};
 
 // API 4: Lấy thành tựu
 exports.getUserAchievements = async (req, res) => {

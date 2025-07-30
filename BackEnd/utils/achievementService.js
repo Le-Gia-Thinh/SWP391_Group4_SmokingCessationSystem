@@ -113,9 +113,14 @@ const checkFunctions = {
         AND total_cigarettes = 0 
         AND date <= CAST(GETDATE() AS DATE)
     `);
+<<<<<<< HEAD
 
   return result.recordset[0].clean_days >= 7;
 },
+=======
+    return result.recordset[0].clean_days >= 7;
+  },
+>>>>>>> 481d2a28754b5ac83efa1d970d7797e59fa34552
 
   clean_15_days: async (pool, userId) => {
     const result = await pool.request().input("user_id", sql.Int, userId)
@@ -189,6 +194,7 @@ const checkFunctions = {
   },
 };
 
+// Hàm kiểm tra và mở khóa thành tựu
 exports.evaluateAndUnlockAchievements = async (userId) => {
   const pool = await sql.connect(dbConfig);
   const achievements = await pool.request()
@@ -222,7 +228,7 @@ async function grantIfNotExist(pool, userId, achievementId) {
     const { title, description } = info.recordset[0];
     const content = `🏆 Bạn vừa đạt thành tựu: ${title}! ${description}`;
 
-    // ✅ 3. Gửi thông báo lên bảng NOTIFICATION
+    // Gửi thông báo cho người dùng
     await pool.request()
       .input("user_id", sql.Int, userId)
       .input("title", sql.NVarChar, "🎉 Thành tựu mới")
