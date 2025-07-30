@@ -69,9 +69,8 @@ import Navbar from "../../layouts/Navbar";
 import { useNavigate } from "react-router-dom";
 import PlanUpgradeModal from "./PlanUpgradeModal";
 import { useScrollReveal } from "../../hooks/useScrollReveal";
-import healthyEatingImg from "../../assets/img/healthy-eating.jpg";
+import logoImg from "../../assets/img/logo.jpg";
 import { useAuth } from "../../contexts/AuthContext";
-
 import RankingSection from "../../components/RankingSection";
 
 import bg2 from "../../assets/img/carousel-bg-2.jpg";
@@ -1625,7 +1624,7 @@ const HomePage = () => {
           <div className="footer-header" style={{ textAlign: "center", marginBottom: "48px" }}>
             <div className="footer-brand">
               <img
-                src={healthyEatingImg}
+                src={logoImg}
                 alt="Quit Smoking Coach"
                 className="footer-logo"
               />
