@@ -760,6 +760,13 @@ export default function ChatSection({ token, socket, isConnected }) {
             fetchCoachingSessions();
         }
     }, [token]);
+
+    // Kiểm tra và chuyển tab nếu user không phải member mà đang ở tab coach
+    useEffect(() => {
+        if (activeChatTab === "coach" && user && user.role !== 'member') {
+            setActiveChatTab("community");
+        }
+    }, [user, activeChatTab]);
     // ========== KEY PRESS ==========
     const handleKeyPress = (e) => {
         if (e.key === "Enter" && !e.shiftKey) {
@@ -956,7 +963,8 @@ export default function ChatSection({ token, socket, isConnected }) {
                             </div>
                         ),
                     },
-                    {
+                    // Chỉ hiển thị tab Chat Coach nếu user là member
+                    ...(user && user.role === 'member' ? [{
                         key: "coach",
                         label: (
                             <span>
@@ -1062,7 +1070,7 @@ export default function ChatSection({ token, socket, isConnected }) {
                                 </div>
                             </div>
                         ),
-                    },
+                    }] : [])
                 ]}
             />
             {/* Create Topic Modal */}

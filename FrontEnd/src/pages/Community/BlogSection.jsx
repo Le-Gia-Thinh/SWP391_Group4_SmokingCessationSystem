@@ -15,13 +15,61 @@ import {
   message,
   Space,
 } from "antd";
-import { PlusOutlined, StarFilled } from "@ant-design/icons";
+import { PlusOutlined, StarFilled, EyeOutlined } from "@ant-design/icons";
 import axios from "axios";
 import { Editor } from "@tinymce/tinymce-react";
 import CommentSection from "./CommentSection";
 import "./BlogSection.css";
 
 const { Paragraph, Title, Text } = Typography;
+
+// Component để hiển thị nội dung blog với khả năng rút gọn
+const BlogContent = ({ content, maxHeight = 150, showReadMore = true }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [shouldShowReadMore, setShouldShowReadMore] = useState(false);
+
+  useEffect(() => {
+    // Kiểm tra nếu nội dung dài hơn maxHeight
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = content;
+    tempDiv.style.position = 'absolute';
+    tempDiv.style.left = '-9999px';
+    tempDiv.style.maxHeight = `${maxHeight}px`;
+    tempDiv.style.overflow = 'hidden';
+    document.body.appendChild(tempDiv);
+    
+    const actualHeight = tempDiv.scrollHeight;
+    setShouldShowReadMore(actualHeight > maxHeight);
+    
+    document.body.removeChild(tempDiv);
+  }, [content, maxHeight]);
+
+  return (
+    <div className="blog-content-display">
+      <div 
+        className={`blog-content ${isExpanded ? 'expanded' : ''}`}
+        style={{ 
+          maxHeight: isExpanded ? 'none' : `${maxHeight}px`,
+          overflow: isExpanded ? 'visible' : 'hidden'
+        }}
+        dangerouslySetInnerHTML={{ __html: content }}
+      />
+      {shouldShowReadMore && showReadMore && (
+        <Button 
+          type="link" 
+          size="small" 
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsExpanded(!isExpanded);
+          }}
+          style={{ padding: '4px 0', height: 'auto' }}
+        >
+          {isExpanded ? 'Thu gọn' : 'Xem thêm'}
+        </Button>
+      )}
+    </div>
+  );
+};
 
 export default function BlogSection({ token }) {
   const [blogs, setBlogs] = useState([]);
@@ -105,65 +153,100 @@ export default function BlogSection({ token }) {
           </Button>
         )}
       </div>
-      {blogLoading ? (
-        <div style={{ textAlign: "center", margin: "50px 0" }}>
-          <Spin size="large" />
-        </div>
-      ) : (
-        <>
-          {featuredBlogs.length > 0 && (
-            <div className="featured-blogs">
-              <Title level={4} style={{ color: "#52c41a" }}>
-                Bài Viết Nổi Bật
-              </Title>
-              <Carousel className="blog-carousel" autoplay dots={true}>
-                {featuredBlogs.map((item) => (
-                  <div key={item.post_id}>
-                    <Badge.Ribbon text="Nổi bật" color="green">
-                      <Card
-                        hoverable
-                        onClick={() => setViewBlog(item)}
-                        title={
-                          <Text strong>
-                            <StarFilled
-                              style={{ color: "#faad14", marginRight: 8 }}
+      <div className="blog-content-wrapper">
+        {blogLoading ? (
+          <div className="blog-loading-container">
+            <Spin size="large" />
+          </div>
+        ) : (
+          <>
+            {featuredBlogs.length > 0 && (
+              <div className="featured-blogs">
+                <Title level={4} style={{ color: "#52c41a", marginBottom: "16px" }}>
+                  Bài Viết Nổi Bật
+                </Title>
+                <div className="featured-blogs-grid">
+                  {featuredBlogs.map((item) => (
+                    <div key={item.post_id} className="featured-blog-item">
+                      <Badge.Ribbon text="Nổi bật" color="green">
+                        <Card
+                          hoverable
+                          onClick={() => setViewBlog(item)}
+                          title={
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <StarFilled style={{ color: "#faad14", fontSize: "14px" }} />
+                              <Text strong style={{ fontSize: "16px" }}>
+                                {item.title}
+                              </Text>
+                            </div>
+                          }
+                          style={{ 
+                            borderColor: "#52c41a", 
+                            height: "100%",
+                            boxShadow: "0 2px 8px rgba(82, 196, 26, 0.15)"
+                          }}
+                          bodyStyle={{ padding: "16px" }}
+                        >
+                          <div className="featured-blog-content">
+                            <BlogContent 
+                              content={item.content} 
+                              maxHeight={100}
+                              showReadMore={false}
                             />
-                            {item.title}
-                          </Text>
-                        }
-                        style={{ borderColor: "#52c41a", margin: "0 20px" }}
-                      >
-                        <div className="blog-content">
-                          <div
-                            dangerouslySetInnerHTML={{ __html: item.content }}
-                          />
-                        </div>
-                        <Divider style={{ margin: "12px 0" }} />
-                        <Space>
-                          <Avatar src={item.avatar}>
-                            {item.full_name?.[0] || "U"}
-                          </Avatar>
-                          <Text strong>{item.full_name || "Ẩn danh"}</Text>
-                          <Text type="secondary">
-                            • {new Date(item.created_at).toLocaleDateString()}
-                          </Text>
-                        </Space>
-                      </Card>
-                    </Badge.Ribbon>
-                  </div>
-                ))}
-              </Carousel>
-            </div>
-          )}
+                          </div>
+                          <Divider style={{ margin: "12px 0" }} />
+                          <div className="featured-blog-meta">
+                            <Space>
+                              <Avatar 
+                                src={item.avatar}
+                                size={32}
+                                style={{ backgroundColor: "#87d068" }}
+                              >
+                                {item.full_name?.[0] || "U"}
+                              </Avatar>
+                              <div>
+                                <Text strong style={{ fontSize: "13px" }}>
+                                  {item.full_name || "Ẩn danh"}
+                                </Text>
+                                <br />
+                                <Text type="secondary" style={{ fontSize: "12px" }}>
+                                  {new Date(item.created_at).toLocaleDateString()}
+                                </Text>
+                              </div>
+                            </Space>
+                          </div>
+                        </Card>
+                      </Badge.Ribbon>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           <Divider />
           <div className="normal-blogs">
-            <Title level={4} style={{ color: "#389e0d" }}>
-              Tất Cả Bài Viết
-            </Title>
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center', 
+              marginBottom: '16px' 
+            }}>
+              <Title level={4} style={{ color: "#389e0d", margin: 0 }}>
+                Tất Cả Bài Viết
+              </Title>
+              <Text type="secondary">
+                {blogs.length} bài viết
+              </Text>
+            </div>
             <List
               itemLayout="vertical"
               dataSource={normalBlogs}
-              pagination={{ pageSize: 5 }}
+              pagination={{ 
+                pageSize: 6, 
+                showSizeChanger: false,
+                showQuickJumper: true,
+                showTotal: (total, range) => 
+                  `${range[0]}-${range[1]} của ${total} bài viết`
+              }}
               locale={{
                 emptyText: <Empty description="Chưa có bài viết nào." />,
               }}
@@ -185,7 +268,7 @@ export default function BlogSection({ token }) {
                       } vào ${new Date(item.created_at).toLocaleDateString()}`}
                     />
                     <div className="blog-content" style={{ marginTop: 16 }}>
-                      <div dangerouslySetInnerHTML={{ __html: item.content }} />
+                      <BlogContent content={item.content} maxHeight={150} />
                     </div>
                   </Card>
                 </List.Item>
@@ -193,7 +276,8 @@ export default function BlogSection({ token }) {
             />
           </div>
         </>
-      )}
+        )}
+      </div>
       {/* Blog Modal */}
       <Modal
         title="Viết bài mới"
@@ -307,8 +391,23 @@ export default function BlogSection({ token }) {
         open={!!viewBlog}
         onCancel={() => setViewBlog(null)}
         footer={null}
-        title={viewBlog?.title}
-        width={700}
+        title={
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '8px' 
+          }}>
+            <EyeOutlined />
+            {viewBlog?.title}
+          </div>
+        }
+        width={800}
+        style={{ top: 20 }}
+        bodyStyle={{ 
+          maxHeight: '70vh', 
+          overflowY: 'auto',
+          padding: '24px'
+        }}
       >
         <div className="blog-content">
           <div dangerouslySetInnerHTML={{ __html: viewBlog?.content }} />
