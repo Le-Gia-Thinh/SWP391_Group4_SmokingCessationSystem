@@ -293,6 +293,7 @@ FROM CUSTOMER WHERE username = 'member5';
 
         CONSTRAINT fk_ftnd_user FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id) ON DELETE SET NULL
     );
+      ALTER TABLE FTND_RESULT ADD pricePerCigarette INT; thêm cột tiền mỗi điếu
 
 -- 15.1 FTND_RESULT: Gán kết quả bài test FTND cho 20 member
 INSERT INTO FTND_RESULT (user_id, level, submitted_at)
