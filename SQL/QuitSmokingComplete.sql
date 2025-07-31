@@ -290,9 +290,12 @@ FROM CUSTOMER WHERE username = 'member5';
         user_id INT NULL,                                                      -- Cho phép null nếu user bị xóa
         level NVARCHAR(20) NOT NULL CHECK (level IN (N'Low', N'Medium', N'High')),  -- Mức độ nghiện
         submitted_at DATETIME DEFAULT GETDATE(),                               -- Thời gian nộp
-
+        frequency INT,
         CONSTRAINT fk_ftnd_user FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id) ON DELETE SET NULL
     );
+    UPDATE FTND_RESULT
+    SET frequency = CAST(RAND(CHECKSUM(NEWID())) * 4 AS INT)
+    WHERE user_id BETWEEN 14 AND 33;
 
 -- 15.1 FTND_RESULT: Gán kết quả bài test FTND cho 20 member
 INSERT INTO FTND_RESULT (user_id, level, submitted_at)
