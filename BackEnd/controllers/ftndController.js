@@ -1,6 +1,8 @@
 // controllers/ftndController.js
 const { sql, dbConfig } = require("../config/database");
-const { evaluateAndUnlockAchievements } = require("../utils/achievementService");
+const {
+  evaluateAndUnlockAchievements,
+} = require("../utils/achievementService");
 
 const pool = new sql.ConnectionPool(dbConfig);
 const poolConnect = pool.connect();
@@ -24,7 +26,7 @@ exports.checkFTNDExists = async (req, res) => {
 
 // Ghi nhận kết quả FTND (cập nhật ftnd_level cho user)
 exports.submitFTNDResult = async (req, res) => {
-  const { user_id, level, frequency } = req.body;
+  const { user_id, level, frequency, pricePerCigarette } = req.body;
 
   if (!user_id || !level) {
     return res.status(400).json({ message: "Thiếu user_id hoặc level" });
@@ -39,16 +41,16 @@ exports.submitFTNDResult = async (req, res) => {
       .query(
         "UPDATE CUSTOMER SET ftnd_level = @level WHERE user_id = @user_id"
       );
-      
-      await pool
-    .request()
-    .input("user_id", sql.Int, user_id)
-    .input("level", sql.NVarChar, level)
-    .input("submitted_at", sql.DateTime, new Date())
-    .input("frequency", sql.Int, frequency)
-    .query(`
-      INSERT INTO FTND_RESULT (user_id, level, submitted_at, frequency)
-      VALUES (@user_id, @level, @submitted_at, @frequency)
+
+    await pool
+      .request()
+      .input("user_id", sql.Int, user_id)
+      .input("level", sql.NVarChar, level)
+      .input("submitted_at", sql.DateTime, new Date())
+      .input("frequency", sql.Int, frequency)
+      .input("pricePerCigarette", sql.Int, pricePerCigarette).query(`
+      INSERT INTO FTND_RESULT (user_id, level, submitted_at, frequency, pricePerCigarette)
+      VALUES (@user_id, @level, @submitted_at, @frequency, @pricePerCigarette)
     `);
 
     await evaluateAndUnlockAchievements(user_id);

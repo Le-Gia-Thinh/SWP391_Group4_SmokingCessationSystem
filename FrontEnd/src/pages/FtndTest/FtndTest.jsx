@@ -1,4 +1,4 @@
-import React, { useState , useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Form,
   Radio,
@@ -9,6 +9,7 @@ import {
   Card,
   Row,
   Col,
+  InputNumber,
 } from "antd";
 import {
   CheckCircleOutlined,
@@ -57,12 +58,20 @@ const FTNDTest = () => {
       return;
     }
 
+    // Chuyển số điếu thuốc thành điểm
+    const q4Number = parseInt(values.q4);
+    let q4Score = 0;
+    if (q4Number >= 31) q4Score = 3;
+    else if (q4Number >= 21) q4Score = 2;
+    else if (q4Number >= 11) q4Score = 1;
+    else q4Score = 0;
+
     let score = 0;
     score += parseInt(values.q1);
     ["q2", "q3", "q5", "q6"].forEach((key) => {
       score += parseInt(values[key]);
     });
-    score += parseInt(values.q4);
+    score += q4Score;
 
     let level = "";
     if (score <= 3) level = "Low";
@@ -72,14 +81,16 @@ const FTNDTest = () => {
     console.log("📤 FTND sending:", {
       user_id: user.id,
       level,
-      frequency: parseInt(values.q4),
+      frequency: q4Number,
+      pricePerCigarette: values.pricePerCigarette * 1000,
     });
 
     try {
       await axios.post("http://localhost:5000/api/ftnd/result", {
         user_id: user.id,
         level,
-        frequency: parseInt(values.q4),
+        frequency: q4Number,
+        pricePerCigarette: values.pricePerCigarette * 1000,
       });
 
       notification.success({
@@ -225,16 +236,41 @@ const FTNDTest = () => {
                       }
                       name="q4"
                       rules={[
-                        { required: true, message: "Vui lòng chọn đáp án!" },
+                        { required: true, message: "Vui lòng nhập số!" },
+                        { type: "number", min: 0, message: "Số phải >= 0" },
                       ]}
                       className="ftndTest-form-item"
                     >
-                      <Radio.Group className="ftndTest-options">
-                        <Radio value={3}>&ge; 31</Radio>
-                        <Radio value={2}>21–30</Radio>
-                        <Radio value={1}>11–20</Radio>
-                        <Radio value={0}>&le; 10</Radio>
-                      </Radio.Group>
+                      <InputNumber
+                        min={0}
+                        className="ant-input"
+                        placeholder="Nhập số điếu thuốc mỗi ngày"
+                        style={{ width: "100%" }}
+                      />
+                    </Form.Item>
+                  </div>
+                </div>
+                <div className="row">
+                  <div className="col-12">
+                    <Form.Item
+                      label={
+                        <span className="ftndTest-question-label">
+                          Tiền mỗi điếu thuốc bạn hút (x 1000 VNĐ)
+                        </span>
+                      }
+                      name="pricePerCigarette"
+                      rules={[
+                        { required: true, message: "Vui lòng nhập số tiền!" },
+                        { type: "number", min: 0, message: "Số phải >= 0" },
+                      ]}
+                      className="ftndTest-form-item"
+                    >
+                      <InputNumber
+                        min={0}
+                        className="ant-input"
+                        placeholder="Nhập số, mỗi đơn vị là 1000 VNĐ"
+                        style={{ width: "100%" }}
+                      />
                     </Form.Item>
                   </div>
                 </div>
