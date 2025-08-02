@@ -52,6 +52,18 @@ const ScheduleManagement = () => {
   const [initialLoading, setInitialLoading] = useState(true);
   const [modalCoach, setModalCoach] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+
+  // Allow scroll background when modal is open
+  useEffect(() => {
+    if (scheduleModal || modalOpen) {
+      document.body.style.overflow = "unset";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [scheduleModal, modalOpen]);
   const token = localStorage.getItem("token");
 
   // API Base URL
@@ -370,7 +382,7 @@ const ScheduleManagement = () => {
           rowKey="coach_id"
           pagination={{
             pageSize: 10,
-            showSizeChanger: true,
+            showSizeChanger: false,
             showQuickJumper: true,
             showTotal: (total, range) =>
               `${range[0]}-${range[1]} của ${total} coach`,
@@ -395,7 +407,18 @@ const ScheduleManagement = () => {
         open={scheduleModal}
         onCancel={handleScheduleCancel}
         footer={null}
-        width={800}
+        style={{
+          top: "50%",
+          transform: "translateY(-50%)",
+          maxWidth: "95vw",
+          borderRadius: 16,
+          padding: 0,
+        }}
+        styles={{
+          padding: 24,
+          maxHeight: "80vh",
+          overflowY: "auto",
+        }}
       >
         <Form
           form={scheduleForm}

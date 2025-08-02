@@ -18,6 +18,18 @@ export default function PackageCrudPage() {
   const [modal, setModal] = useState({ visible: false, record: null });
   const [form] = Form.useForm();
 
+  // Allow scroll background when modal is open
+  useEffect(() => {
+    if (modal.visible) {
+      document.body.style.overflow = "unset";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [modal.visible]);
+
   const token = localStorage.getItem("token");
   const headers = { Authorization: `Bearer ${token}` };
   const baseURL = import.meta.env.VITE_API_URL || "";
@@ -222,7 +234,18 @@ export default function PackageCrudPage() {
         onOk={() => form.validateFields().then(save)}
         destroyOnHidden
         className="modernModal"
-        style={{ borderRadius: 16 }}
+        style={{
+          top: "50%",
+          transform: "translateY(-50%)",
+          maxWidth: "95vw",
+          borderRadius: 16,
+          padding: 0,
+        }}
+        styles={{
+          padding: 24,
+          maxHeight: "80vh",
+          overflowY: "auto",
+        }}
         okButtonProps={{ className: "aum-action-btn aum-edit-btn" }}
         cancelButtonProps={{ className: "aum-action-btn aum-delete-btn" }}
       >

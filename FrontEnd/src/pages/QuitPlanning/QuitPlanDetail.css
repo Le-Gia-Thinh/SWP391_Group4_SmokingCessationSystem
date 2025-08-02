@@ -1,3 +1,54 @@
+/* --- CSS cho highlight lựa chọn nhiệm vụ chi tiết --- */
+.quitplan-task-list {
+  padding-left: 0;
+  margin: 0;
+  list-style: none;
+}
+.quitplan-task-item {
+  background: #f7faff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px #e6f7ff80;
+  margin-bottom: 18px;
+  padding: 18px 22px 14px 22px;
+  font-size: 16px;
+  transition: box-shadow 0.2s;
+  border: 1px solid #e6f7ff;
+}
+.quitplan-task-item:hover {
+  box-shadow: 0 4px 16px #bae7ff80;
+  border-color: #91d5ff;
+}
+.quitplan-task-time {
+  font-weight: 600;
+  color: #1890ff;
+  margin-bottom: 8px;
+  font-size: 17px;
+}
+.quitplan-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.quitplan-radio-btn {
+  background: #fff0f6 !important;
+  border-radius: 8px !important;
+  margin-bottom: 0 !important;
+  border: 1px solid #ffadd2 !important;
+  transition: border 0.2s, box-shadow 0.2s;
+  box-shadow: 0 1px 4px #ffd6e7;
+  padding: 0 10px !important;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+}
+.quitplan-radio-btn.selected,
+.quitplan-radio-btn[aria-checked="true"],
+.quitplan-radio-btn.ant-radio-button-wrapper-checked {
+  background: #e6f7ff !important;
+  border-color: #1890ff !important;
+  color: #1890ff !important;
+  box-shadow: 0 2px 8px #91d5ff80;
+}
 /* ====== Các hàng trạng thái ====== */
 .row-both {
   background: linear-gradient(to right, #d4edda, #cce5ff) !important;

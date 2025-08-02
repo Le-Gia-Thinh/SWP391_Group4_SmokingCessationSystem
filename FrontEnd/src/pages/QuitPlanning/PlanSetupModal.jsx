@@ -168,7 +168,6 @@ const PlanSetupModal = ({ userId, onPlanReady }) => {
             className="planSetupModal-input"
             size="large"
             min={1}
-            max={24}
           />
           {ftndLevel && (
             <div className="planSetupModal-suggestion-text">

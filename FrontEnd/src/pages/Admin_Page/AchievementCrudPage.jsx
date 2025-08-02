@@ -13,11 +13,22 @@ import {
 } from "antd";
 import axios from "axios";
 
-
 export default function AchievementCrudPage() {
   const [data, setData] = useState([]);
   const [modal, setModal] = useState({ visible: false, record: null });
   const [form] = Form.useForm();
+
+  // Allow scroll background when modal is open
+  useEffect(() => {
+    if (modal.visible) {
+      document.body.style.overflow = "unset";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [modal.visible]);
 
   const token = localStorage.getItem("token");
   const headers = { Authorization: `Bearer ${token}` };
@@ -163,6 +174,18 @@ export default function AchievementCrudPage() {
         onOk={() => form.validateFields().then(save)}
         destroyOnClose
         className="achievement-modal"
+        style={{
+          top: "50%",
+          transform: "translateY(-50%)",
+          maxWidth: "95vw",
+          borderRadius: 16,
+          padding: 0,
+        }}
+        styles={{
+          padding: 24,
+          maxHeight: "80vh",
+          overflowY: "auto",
+        }}
       >
         <Form form={form} layout="vertical">
           <Form.Item

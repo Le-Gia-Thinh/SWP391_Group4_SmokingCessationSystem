@@ -28,6 +28,43 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Hàm để cập nhật user data
+  const updateUser = (updatedData) => {
+    setUser(prevUser => ({
+      ...prevUser,
+      ...updatedData
+    }));
+    // Cập nhật localStorage
+    const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+    localStorage.setItem("user", JSON.stringify({
+      ...currentUser,
+      ...updatedData
+    }));
+  };
+
+  // Hàm để refresh user data từ server
+  const refreshUser = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return false;
+
+      const meRes = await fetch("http://localhost:5000/api/user/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!meRes.ok) throw new Error("Cannot fetch user");
+
+      const data = await meRes.json();
+      setUser({ ...data, role: data.user_role });
+      localStorage.setItem("user", JSON.stringify(data));
+
+      return true;
+    } catch (err) {
+      console.error("Error refreshing user:", err);
+      return false;
+    }
+  };
+
   // Chạy 1 lần khi mount để lấy user + premium
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -112,6 +149,9 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider
       value={{
         user,
+        setUser, 
+        updateUser, 
+        refreshUser, 
         loading,
         isPremium,
         fetchPremium,

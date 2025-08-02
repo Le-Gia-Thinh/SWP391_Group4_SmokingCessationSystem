@@ -141,8 +141,17 @@ const QuitPlanDetail = () => {
     )
       .then((res) => res.json())
       .then((result) => {
-        const fallbackSelected = {};
-        if (Array.isArray(detailPlan)) {
+        let fallbackSelected = {};
+        // Nếu có dữ liệu từ API thì ưu tiên, nếu không thì fallback slot 1
+        if (
+          result.success &&
+          Array.isArray(result.data) &&
+          result.data.length > 0
+        ) {
+          result.data.forEach(({ time_slot, task_id }) => {
+            fallbackSelected[time_slot] = task_id;
+          });
+        } else if (Array.isArray(detailPlan)) {
           detailPlan.forEach((item, idx) => {
             const phaseCode = currentPhaseCode || "P0";
             const timeStr = item.time.split(":")[0].padStart(2, "0");
@@ -150,16 +159,10 @@ const QuitPlanDetail = () => {
           });
         }
 
-        if (result.success && Array.isArray(result.data)) {
-          result.data.forEach(({ time_slot, task_id }) => {
-            fallbackSelected[time_slot] = task_id;
-          });
-        }
-
-        // Validate task
+        // Validate task: fix index lệch (taskIdx - 1)
         Object.entries(fallbackSelected).forEach(([slotIdx, taskId]) => {
           const parts = taskId.split("_");
-          const taskIdx = parseInt(parts[2]);
+          const taskIdx = parseInt(parts[2], 10) - 1;
           const taskList = detailPlan[slotIdx]?.replacement || [];
           const taskLabel = taskList[taskIdx];
           if (!taskLabel) delete fallbackSelected[slotIdx];
@@ -168,7 +171,7 @@ const QuitPlanDetail = () => {
         setSelectedTask(fallbackSelected);
       });
 
-    // ✅ 3. Lấy nhiệm vụ đã làm
+    //  3. Lấy nhiệm vụ đã làm
     fetch(
       `http://localhost:5000/api/habit-log/completed-tasks?date=${formattedDate}`,
       {
@@ -214,7 +217,7 @@ const QuitPlanDetail = () => {
         }),
       });
 
-      message.success(newState ? "✅ Đã ghi nhận!" : "🗑️ Đã bỏ tích!");
+      message.success(newState ? " Đã ghi nhận!" : "🗑️ Đã bỏ tích!");
     } catch (err) {
       console.error("Lỗi khi ghi log:", err);
       message.error("Lỗi cập nhật hành vi.");
@@ -319,9 +322,9 @@ const QuitPlanDetail = () => {
         });
       }
 
-      message.success("✅ Đã ghi nhận nhiệm vụ!");
+      message.success(" Đã ghi nhận nhiệm vụ!");
     } catch {
-      message.error("❌ Lỗi khi ghi nhận nhiệm vụ.");
+      message.error(" Lỗi khi ghi nhận nhiệm vụ.");
     }
   };
 
@@ -387,7 +390,7 @@ const QuitPlanDetail = () => {
           <Checkbox
             className={taskDone[index] ? "ant-checkbox-wrapper-checked" : ""}
             checked={completed[index]}
-            disabled={isPast} // ❌ Khóa nếu đã qua ngày
+            disabled={isPast} //  Khóa nếu đã qua ngày
             onChange={() => handleCheckbox(index)}
           >
             Tôi đã không hút
@@ -475,7 +478,7 @@ const QuitPlanDetail = () => {
             className={completed[index] ? "ant-checkbox-wrapper-checked" : ""}
             checked={taskDone[index]}
             onChange={() => handleTaskDoneCheckbox(index)}
-            disabled={isPast} // ✅ Khóa nếu ngày đã qua
+            disabled={isPast} //  Khóa nếu ngày đã qua
           >
             Tôi đã làm
           </Checkbox>
@@ -547,7 +550,7 @@ const QuitPlanDetail = () => {
                 showInfo
               />
             </div>
-            {/* 🎯 Mốc không hút trong ngày */}
+            {/*  Mốc không hút trong ngày */}
             <div style={{ marginTop: 24 }}>
               <Title level={5} style={{ marginBottom: 12 }}>
                 🎯 Mốc không hút trong ngày
@@ -564,7 +567,7 @@ const QuitPlanDetail = () => {
                   return (
                     <Badge.Ribbon
                       key={milestone}
-                      text={`✅ ${milestone}/9`}
+                      text={` ${milestone}/9`}
                       color={reached ? colors[milestone] : "gray"}
                     >
                       <Card
@@ -595,7 +598,7 @@ const QuitPlanDetail = () => {
               </div>
             </div>
 
-            {/* 🎯 Mốc nhiệm vụ trong ngày */}
+            {/*  Mốc nhiệm vụ trong ngày */}
             <div style={{ marginTop: 24 }}>
               <Title level={5} style={{ marginBottom: 12 }}>
                 🎯 Mốc nhiệm vụ trong ngày
@@ -612,7 +615,7 @@ const QuitPlanDetail = () => {
                   return (
                     <Badge.Ribbon
                       key={milestone}
-                      text={`✅ ${milestone}/9`}
+                      text={` ${milestone}/9`}
                       color={reached ? colors[milestone] : "gray"}
                     >
                       <Card
@@ -681,50 +684,61 @@ const QuitPlanDetail = () => {
           <CheckCircleTwoTone twoToneColor="#13c2c2" /> Chi tiết nhiệm vụ
         </Divider>
         {Array.isArray(detailPlan) && detailPlan.length > 0 ? (
-          <ul style={{ paddingLeft: 24 }}>
-            {detailPlan.map((item, timeSlotIdx) => (
-              <li key={timeSlotIdx} style={{ marginBottom: 16, fontSize: 16 }}>
-                <div style={{ fontWeight: 500, marginBottom: 4 }}>
-                  {item.time}:
-                </div>
-                <Radio.Group
-                  value={selectedTask[timeSlotIdx]}
-                  onChange={(e) =>
-                    handleSelectTask(timeSlotIdx, e.target.value)
-                  }
-                >
-                  {(Array.isArray(item.replacement)
-                    ? item.replacement
-                    : [item.replacement]
-                  ).map((task, taskIdx) => {
-                    // Sử dụng currentPhaseCode để tạo taskId đúng chuẩn
-                    const phaseCode = currentPhaseCode || "P0";
-                    const timeStr = item.time.split(":")[0].padStart(2, "0");
-                    const taskId = `${phaseCode}_${timeStr}_${taskIdx + 1}`;
-                    const recordDate = dayjs(item.rawDate, [
-                      "DD/MM/YYYY",
-                      "DD-MM-YYYY",
-                      "YYYY-MM-DD",
-                    ]).startOf("day");
-                    const today = dayjs().startOf("day");
-                    const isPast = recordDate.isBefore(today); // ✅ kiểm tra quá khứ
-
-                    return (
-                      <Radio.Button
-                        key={taskId}
-                        value={taskId}
-                        disabled={isPast} // ✅ Khóa nếu quá ngày
-                        style={{ display: "block", marginBottom: 4 }}
-                      >
-                        <Tag color="magenta" style={{ fontSize: 15 }}>
-                          {task}
-                        </Tag>
-                      </Radio.Button>
-                    );
-                  })}
-                </Radio.Group>
-              </li>
-            ))}
+          <ul className="quitplan-task-list">
+            {detailPlan.map((item, timeSlotIdx) => {
+              // Tính toán taskId mặc định nếu chưa chọn
+              const phaseCode = currentPhaseCode || "P0";
+              const timeStr = item.time.split(":")[0].padStart(2, "0");
+              const tasks = Array.isArray(item.replacement)
+                ? item.replacement
+                : [item.replacement];
+              const selectedId =
+                selectedTask[timeSlotIdx] || `${phaseCode}_${timeStr}_1`;
+              return (
+                <li key={timeSlotIdx} className="quitplan-task-item">
+                  <div className="quitplan-task-time">{item.time}:</div>
+                  <Radio.Group
+                    value={selectedId}
+                    onChange={(e) =>
+                      handleSelectTask(timeSlotIdx, e.target.value)
+                    }
+                    className="quitplan-radio-group"
+                  >
+                    {tasks.map((task, taskIdx) => {
+                      const taskId = `${phaseCode}_${timeStr}_${taskIdx + 1}`;
+                      const recordDate = dayjs(item.rawDate, [
+                        "DD/MM/YYYY",
+                        "DD-MM-YYYY",
+                        "YYYY-MM-DD",
+                      ]).startOf("day");
+                      const today = dayjs().startOf("day");
+                      const isPast = recordDate.isBefore(today);
+                      // Highlight nếu được chọn
+                      const isSelected = selectedId === taskId;
+                      return (
+                        <Radio.Button
+                          key={taskId}
+                          value={taskId}
+                          disabled={isPast}
+                          className={
+                            isSelected
+                              ? "quitplan-radio-btn selected"
+                              : "quitplan-radio-btn"
+                          }
+                        >
+                          <Tag
+                            color={isSelected ? "blue" : "magenta"}
+                            style={{ fontSize: 15 }}
+                          >
+                            {task}
+                          </Tag>
+                        </Radio.Button>
+                      );
+                    })}
+                  </Radio.Group>
+                </li>
+              );
+            })}
           </ul>
         ) : (
           <Paragraph type="secondary" italic>

@@ -127,12 +127,11 @@ const QuitPlan = () => {
         if (phasesData.success && behaviorPhasesData.success) {
           setPhases(phasesData.data);
           setBehaviorPlanPhases(behaviorPhasesData.data);
-          console.log("✅ API phases loaded successfully");
         } else {
           throw new Error("API returned error response");
         }
       } catch (error) {
-        console.error("❌ Không thể tải dữ liệu phases từ API:", error.message);
+        console.error(" Không thể tải dữ liệu phases từ API:", error.message);
         setApiError("Không thể kết nối tới server. Vui lòng thử lại sau.");
         message.error("Không thể tải dữ liệu giai đoạn từ server");
       } finally {
@@ -170,12 +169,12 @@ const QuitPlan = () => {
             totalSlots: data.totalSlots,
           };
         } else if (Array.isArray(data.data)) {
-          const count = data.data.filter(Boolean).length; // ✅ tính số lượng true
+          const count = data.data.filter(Boolean).length; // tính số lượng true
           logs[dateKey] = {
             completedCount: count,
             totalSlots: data.data.length,
           };
-          console.log("🎯 Log processed:", dateKey, logs[dateKey]); // ✅ giữ lại dòng log này
+          console.log(" Log processed:", dateKey, logs[dateKey]); // giữ lại dòng log này
         } else {
           logs[dateKey] = { completedCount: 0, totalSlots: 9 };
         }
@@ -653,14 +652,30 @@ const QuitPlan = () => {
                 Mức độ nghiện hiện tại: <b>{ftndLevel}</b>
               </span>
             }
-            description={
-              <span>
-                <b>Hãy tuân thủ kế hoạch</b> để đạt hiệu quả tốt nhất!
-                <Tag color="success" style={{ marginLeft: 8 }}>
-                  Đang thực hiện
-                </Tag>
-              </span>
-            }
+            description={(() => {
+              // Tính ngày kết thúc
+              const endDate = startDate
+                ? startDate.clone().add(months * 30 - 1, "day")
+                : null;
+              const now = dayjs();
+              const isFinished =
+                animatedPercent >= 100 ||
+                (endDate && now.isAfter(endDate, "day"));
+              return (
+                <span>
+                  <b>Hãy tuân thủ kế hoạch</b> để đạt hiệu quả tốt nhất!
+                  {isFinished ? (
+                    <Tag color="gold" style={{ marginLeft: 8 }}>
+                      Hoàn thành
+                    </Tag>
+                  ) : (
+                    <Tag color="success" style={{ marginLeft: 8 }}>
+                      Đang thực hiện
+                    </Tag>
+                  )}
+                </span>
+              );
+            })()}
             type="info"
             showIcon
             style={{ marginBottom: 16, textAlign: "center" }}
@@ -695,8 +710,8 @@ const QuitPlan = () => {
                 width: "100%", // Thêm width 100%
                 padding: 32,
               }}
-              bodyStyle={{ padding: 0, width: "100%" }}
-              bordered={false}
+              styles={{ padding: 0, width: "100%" }}
+              variant={false}
             >
               <div
                 style={{
@@ -829,8 +844,8 @@ const QuitPlan = () => {
                 flexDirection: "column",
                 justifyContent: "center",
               }}
-              bodyStyle={{ padding: 0, width: "100%" }}
-              bordered={false}
+              styles={{ padding: 0, width: "100%" }}
+              variant={false}
             >
               <div
                 style={{
@@ -1126,17 +1141,17 @@ const SmokingInputCell = ({
       );
       const data = await res.json();
       if (data.success) {
-        message.success("✅ Đã lưu!");
+        message.success("Đã lưu!");
         setSmokingLog((prev) => ({ ...prev, [date]: inputValue }));
         setTempSmokingLog((prev) => {
           const { [date]: _, ...rest } = prev;
           return rest;
         });
       } else {
-        message.error("❌ Không thể lưu.");
+        message.error("Không thể lưu.");
       }
     } catch {
-      message.error("❌ Lỗi khi kết nối server.");
+      message.error("Lỗi khi kết nối server.");
     }
     setLoading(false);
   };
