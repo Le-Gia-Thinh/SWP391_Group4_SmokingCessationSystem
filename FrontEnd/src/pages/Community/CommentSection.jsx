@@ -44,36 +44,98 @@ const CommentSection = ({ postId, token }) => {
         }
     };
 
+    // Xử lý phím Enter để gửi comment
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleAddComment();
+        }
+        // Shift+Enter để xuống dòng mới
+    };
+
     return (
         <div style={{ marginTop: 16 }}>
             <Title level={5}>Bình luận</Title>
-            {commentLoading ? <Spin /> : (
+            {commentLoading ? (
+                <div style={{ textAlign: 'center', padding: '20px' }}>
+                    <Spin size="large" />
+                </div>
+            ) : (
                 <List
                     dataSource={comments}
                     locale={{ emptyText: "Chưa có bình luận nào." }}
+                    style={{ 
+                        maxHeight: '300px', 
+                        overflowY: 'auto',
+                        border: '1px solid #f0f0f0',
+                        borderRadius: '8px',
+                        padding: '8px'
+                    }}
                     renderItem={item => (
-                        <List.Item>
+                        <List.Item key={item.comment_id || item.id}>
                             <List.Item.Meta
-                                avatar={<Avatar>{item.full_name?.[0] || "U"}</Avatar>}
-                                title={item.full_name || "Ẩn danh"}
-                                description={item.content}
+                                avatar={
+                                    <Avatar 
+                                        style={{ backgroundColor: "#87d068" }}
+                                        src={item.avatar}
+                                    >
+                                        {item.full_name?.[0] || "U"}
+                                    </Avatar>
+                                }
+                                title={
+                                    <span style={{ fontWeight: 600, fontSize: '14px' }}>
+                                        {item.full_name || "Ẩn danh"}
+                                    </span>
+                                }
+                                description={
+                                    <div style={{ marginTop: '4px' }}>
+                                        <div style={{ 
+                                            fontSize: '14px', 
+                                            lineHeight: '1.5',
+                                            color: '#262626',
+                                            marginBottom: '4px'
+                                        }}>
+                                            {item.content}
+                                        </div>
+                                        <span style={{ 
+                                            color: "#888", 
+                                            fontSize: '12px',
+                                            fontStyle: 'italic'
+                                        }}>
+                                            {new Date(item.created_at).toLocaleString('vi-VN')}
+                                        </span>
+                                    </div>
+                                }
                             />
-                            <span style={{ color: "#888", fontSize: 12 }}>{new Date(item.created_at).toLocaleString()}</span>
                         </List.Item>
                     )}
                 />
             )}
             {token && (
-                <Input.Group compact style={{ marginTop: 8 }}>
+                <div style={{ marginTop: 12 }}>
                     <Input.TextArea
                         value={commentContent}
                         onChange={e => setCommentContent(e.target.value)}
-                        rows={2}
-                        placeholder="Nhập bình luận..."
-                        style={{ width: "80%" }}
+                        onKeyDown={handleKeyDown}
+                        rows={3}
+                        placeholder="Nhập bình luận... (Enter để gửi, Shift+Enter để xuống dòng)"
+                        style={{ 
+                            width: "100%",
+                            marginBottom: 8,
+                            resize: 'none'
+                        }}
                     />
-                    <Button type="primary" onClick={handleAddComment}>Gửi</Button>
-                </Input.Group>
+                    <div style={{ textAlign: 'right' }}>
+                        <Button 
+                            type="primary" 
+                            onClick={handleAddComment}
+                            disabled={!commentContent.trim()}
+                            size="small"
+                        >
+                            Gửi
+                        </Button>
+                    </div>
+                </div>
             )}
         </div>
     );

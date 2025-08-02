@@ -95,6 +95,46 @@ export default function BlogSection({ token }) {
     fetchBlogs();
   }, []);
 
+  // Ngăn body scroll khi modal mở
+  useEffect(() => {
+    if (viewBlog) {
+      document.body.style.overflow = 'hidden';
+      
+      // Force center modal positioning
+      setTimeout(() => {
+        const modalElement = document.querySelector('.blog-view-modal-wrap .ant-modal');
+        if (modalElement) {
+          modalElement.style.position = 'fixed';
+          modalElement.style.top = '50%';
+          modalElement.style.left = '50%';
+          modalElement.style.transform = 'translate(-50%, -50%)';
+          modalElement.style.margin = '0';
+          modalElement.style.zIndex = '1001';
+        }
+        
+        const wrapElement = document.querySelector('.blog-view-modal-wrap');
+        if (wrapElement) {
+          wrapElement.style.position = 'fixed';
+          wrapElement.style.top = '0';
+          wrapElement.style.left = '0';
+          wrapElement.style.width = '100vw';
+          wrapElement.style.height = '100vh';
+          wrapElement.style.display = 'flex';
+          wrapElement.style.alignItems = 'center';
+          wrapElement.style.justifyContent = 'center';
+          wrapElement.style.zIndex = '1000';
+        }
+      }, 100);
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    // Cleanup khi component unmount
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [viewBlog]);
+
   const handleCreateBlog = async (values) => {
     if (!token) {
       message.error("Bạn cần đăng nhập để viết bài!");
@@ -402,7 +442,26 @@ export default function BlogSection({ token }) {
           </div>
         }
         width={800}
-        style={{ top: 20 }}
+        centered={true}
+        destroyOnClose={true}
+        maskClosable={true}
+        getContainer={() => document.body}
+        style={{
+          position: 'fixed',
+          top: '50% !important',
+          left: '50% !important', 
+          transform: 'translate(-50%, -50%) !important',
+          margin: '0 !important'
+        }}
+        wrapClassName="blog-view-modal-wrap"
+        maskStyle={{
+          position: 'fixed !important',
+          top: '0 !important',
+          left: '0 !important',
+          width: '100vw !important',
+          height: '100vh !important',
+          zIndex: '1000 !important'
+        }}
         bodyStyle={{ 
           maxHeight: '70vh', 
           overflowY: 'auto',
