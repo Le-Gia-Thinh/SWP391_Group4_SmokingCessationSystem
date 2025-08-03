@@ -3,14 +3,6 @@ const { sql, dbConfig } = require('../config/database');
 // API 1: Lấy số tiền tiết kiệm
 exports.getUserSavings = async (req, res) => {
   const userId = req.user.id;
-  const pricePerCig = 3000;
-
-  const frequencyMap = {
-    0: 5,   // ≤10
-    1: 15,  // 11–20
-    2: 25,  // 21–30
-    3: 35   // ≥31
-  };
 
   try {
     const pool = await sql.connect(dbConfig);
@@ -29,8 +21,23 @@ if (!ftnd.recordset.length) {
   return res.status(400).json({ message: "Chưa có dữ liệu FTND." });
 }
 
-const ftndFreqLevel = ftnd.recordset[0].frequency;
-const estimatedPerDay = frequencyMap[ftndFreqLevel] || 15;
+const estimatedPerDay = ftnd.recordset[0].frequency;
+
+
+const pricePerCig = await pool.request()
+  .input("user_id", sql.Int, userId)
+  .query(`
+    SELECT TOP 1 pricePerCigarette
+    FROM FTND_RESULT
+    WHERE user_id = @user_id AND pricePerCigarette IS NOT NULL
+    ORDER BY submitted_at DESC
+  `);
+
+if (!pricePerCig.recordset.length) {
+  return res.status(400).json({ message: "Chưa có dữ liệu giá thuốc lá." });
+}
+
+const pricePerCigarette = pricePerCig.recordset[0].pricePerCigarette;
 
 // 2. Lấy ngày bắt đầu kế hoạch cai thuốc
 const plan = await pool.request()
@@ -61,8 +68,8 @@ const logs = await pool.request()
   let totalSaved = 0;
   logs.recordset.forEach(entry => {
     const reduced = Math.max(0, estimatedPerDay - entry.total_cigarettes);
-    totalSaved += reduced * pricePerCig;
-    });
+    totalSaved += reduced * pricePerCigarette;
+  });
 
     res.json({ amount: totalSaved, startDate: startDate  });
   } catch (err) {
@@ -97,12 +104,6 @@ exports.getUserAchievements = async (req, res) => {
 
 exports.getUserProgressSummary = async (req, res) => {
   const userId = req.user.id;
-  const frequencyMap = {
-    0: 5,   // ≤10 điếu/ngày
-    1: 15,  // 11–20
-    2: 25,  // 21–30
-    3: 35   // ≥31
-  };
 
   try {
     const pool = await sql.connect(dbConfig);
@@ -121,8 +122,15 @@ exports.getUserProgressSummary = async (req, res) => {
     }
 
     const startDate = planResult.recordset[0].start_date;
+    const start = new Date(startDate);
+    const today = new Date();
 
-    // 2. Lấy frequency từ FTND_RESULT
+    // 2. Nếu kế hoạch chưa bắt đầu thì return sớm
+    if (start > today) {
+      return res.json({ avoidedCigarettes: 0, smokeFreeDays: 0 });
+    }
+
+    // 3. Lấy frequency thực tế (số điếu/ngày) từ FTND_RESULT
     const ftnd = await pool.request()
       .input('user_id', sql.Int, userId)
       .query(`
@@ -136,20 +144,12 @@ exports.getUserProgressSummary = async (req, res) => {
       return res.status(400).json({ message: "Chưa có dữ liệu FTND." });
     }
 
-    const freqCode = ftnd.recordset[0].frequency;
-    const freqPerDay = frequencyMap[freqCode] || 15;
+    const freqPerDay = ftnd.recordset[0].frequency;
 
-    const today = new Date();
-    const start = new Date(startDate);
-
-    // 3. Nếu kế hoạch chưa bắt đầu thì return 0
-    if (start > today) {
-      return res.json({ avoidedCigarettes: 0, smokeFreeDays: 0 });
-    }
-
+    // 4. Tính số ngày cai thuốc
     const totalDays = Math.floor((today - start) / (1000 * 60 * 60 * 24)) + 1;
 
-    // 4. Lấy dữ liệu hút thuốc
+    // 5. Lấy dữ liệu log hút thuốc từ DAILY_SMOKING_SUMMARY
     const result = await pool.request()
       .input('user_id', sql.Int, userId)
       .input('start_date', sql.Date, startDate)
@@ -163,6 +163,8 @@ exports.getUserProgressSummary = async (req, res) => {
       `);
 
     const { total_actual, smoked_days } = result.recordset[0];
+
+    // 6. Tính toán kết quả
     const avoidedCigarettes = Math.max(0, (totalDays * freqPerDay) - total_actual);
     const smokeFreeDays = Math.max(0, totalDays - smoked_days);
 
@@ -172,3 +174,4 @@ exports.getUserProgressSummary = async (req, res) => {
     res.status(500).json({ message: 'Lỗi lấy tiến trình bỏ thuốc' });
   }
 };
+

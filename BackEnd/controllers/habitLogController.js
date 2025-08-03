@@ -638,8 +638,6 @@ const submitBehaviorTaskCompletion = async (req, res) => {
 
   try {
     const pool = await sql.connect(dbConfig);
-
-    // Nếu đã có dòng thì update is_completed, nếu chưa có thì insert với is_completed và task_id = null
     await pool
       .request()
       .input("user_id", sql.Int, userId)
