@@ -51,6 +51,7 @@ const FormModal = ({
             width={width}
             className={`form-modal ${className}`}
             destroyOnClose
+            centered
             {...props}
         >
             <Form
