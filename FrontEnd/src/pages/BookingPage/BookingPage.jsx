@@ -478,12 +478,6 @@ const BookingPage = () => {
                                       })}
                                     </div>
                                   </div>
-                                  <Button
-                                    className="view-profile-btn"
-                                    style={{ marginTop: 8 }}
-                                  >
-                                    Xem hồ sơ
-                                  </Button>
                                 </div>
                               </div>
                             </Card>
@@ -565,14 +559,6 @@ const BookingPage = () => {
                       </div>
                     </div>
                   </div>
-
-                  <Alert
-                    message="Lưu ý quan trọng"
-                    description="Vui lòng đặt lịch trước ít nhất 1 giờ. Bạn có thể hủy lịch hẹn trước 24 giờ mà không mất phí. Huấn luyện viên sẽ xác nhận lịch hẹn trong vòng 2 giờ."
-                    type="info"
-                    showIcon
-                    style={{ marginBottom: 16, marginTop: 16 }}
-                  />
 
                   <Form.Item name="notes" label="Ghi chú bổ sung (Tùy chọn)">
                     <Input.TextArea
