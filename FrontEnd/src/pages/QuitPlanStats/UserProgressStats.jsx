@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Tabs, Card, Typography, Spin, message } from "antd";
+import { Tabs, Card, Typography, Spin, message, Progress } from "antd";
 import {
   DollarOutlined,
   CalendarOutlined,
@@ -29,6 +29,11 @@ const UserProgressStats = () => {
     avoidedCigarettes: 0,
     smokeFreeDays: 0,
   });
+
+  // Thêm state để lưu số tiền tiết kiệm đến thời điểm hiện tại
+  const [savedMoneyNow, setSavedMoneyNow] = useState(0);
+  const [currentTimeStr, setCurrentTimeStr] = useState("");
+  const [percentOfDay, setPercentOfDay] = useState(0);
 
   const fetchSavings = async () => {
     try {
@@ -90,6 +95,33 @@ const UserProgressStats = () => {
 
     fetchData();
   }, [activeTab, loadedTabs]);
+
+  useEffect(() => {
+    let interval;
+    if (stats.savings.amount) {
+      interval = setInterval(() => {
+        const now = new Date();
+        const hour = now.getHours();
+        const minute = now.getMinutes();
+        const second = now.getSeconds();
+        const currentHour = hour + minute / 60 + second / 3600;
+        const saved = stats.savings.amount * (currentHour / 24);
+        setSavedMoneyNow(saved);
+
+        // Hiển thị giờ hiện tại
+        setCurrentTimeStr(
+          `${hour.toString().padStart(2, "0")}:${minute
+            .toString()
+            .padStart(2, "0")}:${second.toString().padStart(2, "0")}`
+        );
+        // Tính phần trăm thời gian đã qua trong ngày
+        setPercentOfDay(Math.round((currentHour / 24) * 100));
+      }, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [stats.savings.amount]);
 
   const { savings, achievements } = stats;
 
@@ -215,6 +247,59 @@ const UserProgressStats = () => {
                             <div className="savings-stat-label">
                               Điếu thuốc đã tránh
                             </div>
+                          </div>
+                        </div>
+
+                        {/* Thêm thanh tiến độ tiết kiệm hôm nay */}
+                        <div style={{ width: "100%", margin: "24px 0" }}>
+                          <div style={{ fontWeight: 600, marginBottom: 8 }}>
+                            Tiết kiệm hôm nay đến thời điểm hiện tại:
+                          </div>
+                          <div
+                            style={{
+                              marginBottom: 8,
+                              fontSize: 14,
+                              color: "#555",
+                            }}
+                          >
+                            Đã qua: <b>{currentTimeStr}</b> ({percentOfDay}%
+                            trong ngày)
+                          </div>
+                          <Progress
+                            percent={
+                              stats.savings.amount
+                                ? Math.min(
+                                    (savedMoneyNow / stats.savings.amount) *
+                                      100,
+                                    100
+                                  )
+                                : 0
+                            }
+                            format={() =>
+                              `${savedMoneyNow.toLocaleString(undefined, {
+                                maximumFractionDigits: 0,
+                              })} VND`
+                            }
+                            strokeColor={{
+                              from: "#1890ff",
+                              to: "#52c41a",
+                            }}
+                            strokeWidth={24}
+                            showInfo={true}
+                            status="active"
+                          />
+                          <div
+                            style={{
+                              fontSize: 12,
+                              color: "#888",
+                              marginTop: 4,
+                            }}
+                          >
+                            Tổng tiết kiệm/ngày:{" "}
+                            {stats.savings.amount
+                              ? stats.savings.amount.toLocaleString()
+                              : 0}{" "}
+                            VND
                           </div>
                         </div>
 

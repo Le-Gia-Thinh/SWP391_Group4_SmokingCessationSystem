@@ -542,7 +542,7 @@ const QuitPlan = () => {
           const val = tempVal !== undefined ? tempVal : smokingLog[date] || 0;
           return sum + Number(val);
         }, 0);
-        const remain = Math.max(0, quota - totalUsed);
+        const remain = quota - totalUsed;
 
         if (remain <= 10) color = "orange";
         if (remain <= 3) color = "red";
