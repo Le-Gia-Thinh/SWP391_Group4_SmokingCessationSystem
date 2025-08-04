@@ -47,3 +47,14 @@
 body.ant-modal-open {
   overflow: auto !important;
 }
+
+
+body[style*="overflow: hidden"] {
+  overflow: auto !important;
+}
+
+
+.form-modal ~ body,
+body:has(.form-modal) {
+  overflow: auto !important;
+}

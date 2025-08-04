@@ -251,15 +251,13 @@ const CoachDashboard = () => {
           </Col>
           <Col>
             <Space>
-              <Badge count={todayStats.pendingRequests} size="small">
-                <Button
-                  type="primary"
-                  icon={<BellOutlined />}
-                  onClick={() => setActiveTab("bookings")}
-                >
-                  Xem lại yêu cầu
-                </Button>
-              </Badge>
+              <Button
+                type="primary"
+                icon={<BellOutlined />}
+                onClick={() => setActiveTab("bookings")}
+              >
+                Xem lại yêu cầu
+              </Button>
               <Button
                 icon={<CalendarOutlined />}
                 onClick={() => setActiveTab("schedule")}
@@ -533,12 +531,10 @@ const CoachDashboard = () => {
                 </TabPane>
                 <TabPane
                   tab={
-                    <Badge count={todayStats.pendingRequests} size="small">
-                      <span>
-                        <CheckCircleOutlined />
-                        Quản lý đặt lịch
-                      </span>
-                    </Badge>
+                    <span>
+                      <CheckCircleOutlined />
+                      Quản lý đặt lịch
+                    </span>
                   }
                   key="bookings"
                 >

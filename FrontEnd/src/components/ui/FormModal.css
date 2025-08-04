@@ -1,27 +1,4 @@
-/* Modal always centered in current viewport, not document */
-.form-modal .ant-modal-wrap {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    z-index: 1000 !important;
-}
-
-.form-modal .ant-modal {
-    position: relative !important;
-    margin: 0 !important;
-    top: auto !important;
-    left: auto !important;
-    transform: none !important;
-    max-height: 90vh !important;
-    overflow-y: auto !important;
-}
-
-/* Simple modal styling - let Ant Design handle centering */
+/* Simple modal styling - let Ant Design handle centering and scroll */
 .form-modal .ant-modal-content {
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
