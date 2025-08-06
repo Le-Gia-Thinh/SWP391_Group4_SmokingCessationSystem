@@ -72,6 +72,74 @@ exports.getUserSavings = async (req, res) => {
   }
 };
 
+exports.getUserSavingsPerDay = async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const pool = await sql.connect(dbConfig);
+
+    // 1. Lấy tần suất hút trung bình
+    const ftndResult = await pool.request()
+      .input("user_id", sql.Int, userId)
+      .query(`
+        SELECT TOP 1 frequency
+        FROM FTND_RESULT
+        WHERE user_id = @user_id AND frequency IS NOT NULL
+        ORDER BY submitted_at DESC
+      `);
+
+    if (!ftndResult.recordset.length) {
+      return res.status(400).json({ message: "Chưa có dữ liệu FTND." });
+    }
+
+    const estimatedPerDay = ftndResult.recordset[0].frequency;
+
+    // 2. Lấy giá thuốc
+    const priceResult = await pool.request()
+      .input("user_id", sql.Int, userId)
+      .query(`
+        SELECT TOP 1 pricePerCigarette
+        FROM FTND_RESULT
+        WHERE user_id = @user_id AND pricePerCigarette IS NOT NULL
+        ORDER BY submitted_at DESC
+      `);
+
+    if (!priceResult.recordset.length) {
+      return res.status(400).json({ message: "Chưa có dữ liệu giá thuốc lá." });
+    }
+
+    const pricePerCigarette = priceResult.recordset[0].pricePerCigarette;
+
+    // 3. Lấy tổng số thuốc hút trong ngày hôm nay
+    const today = new Date();
+    const todayStr = today.toISOString().split("T")[0]; // YYYY-MM-DD
+
+    const smokingLog = await pool.request()
+      .input("user_id", sql.Int, userId)
+      .input("today", sql.Date, todayStr)
+      .query(`
+        SELECT total_cigarettes
+        FROM DAILY_SMOKING_SUMMARY
+        WHERE user_id = @user_id AND date = @today
+      `);
+
+    const smokedToday = smokingLog.recordset.length > 0
+      ? smokingLog.recordset[0].total_cigarettes
+      : 0;
+
+    const reduced = Math.max(0, estimatedPerDay - smokedToday);
+    const savedToday = reduced * pricePerCigarette;
+
+    res.json({
+      date: todayStr,
+      amount: savedToday
+    });
+  } catch (err) {
+    console.error("Lỗi tính tiền tiết kiệm hôm nay:", err);
+    res.status(500).json({ message: "Lỗi tính tiền tiết kiệm hôm nay." });
+  }
+};
+
 // API 4: Lấy thành tựu
 exports.getUserAchievements = async (req, res) => {
   const userId = req.user.id;

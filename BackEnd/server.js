@@ -220,7 +220,7 @@ app.use((err, req, res, next) => {
     .json({ success: false, message: "Lỗi server không xác định" });
 });
 
-// 21) 404 handler - PHẢI Ở CUỐI CÙNG
+// 21) 404 handler 
 app.use("*", (req, res) => {
   console.log(`❌ 404 - Route not found: ${req.method} ${req.originalUrl}`);
   res.status(404).json({ success: false, message: "Endpoint không tồn tại" });
