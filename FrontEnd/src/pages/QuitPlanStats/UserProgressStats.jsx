@@ -45,6 +45,7 @@ const UserProgressStats = () => {
   const [percentOfDay, setPercentOfDay] = useState(0);
   const [pricePerCigarette, setPricePerCigarette] = useState();
   const [updatingPrice, setUpdatingPrice] = useState(false);
+  const [todaySavings, setTodaySavings] = useState(0);
 
   const fetchSavings = async () => {
     try {
@@ -90,6 +91,18 @@ const UserProgressStats = () => {
     }
   };
 
+  const fetchTodaySavings = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get("/api/user/saving-per-day", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setTodaySavings(res.data.amount || 0);
+    } catch (err) {
+      setTodaySavings(0);
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       if (loadedTabs[activeTab]) return;
@@ -98,6 +111,7 @@ const UserProgressStats = () => {
       if (activeTab === "1") {
         await fetchSavings();
         await fetchProgressSummary();
+        await fetchTodaySavings(); // Thêm dòng này
       }
       if (activeTab === "2") await fetchAchievements();
       setLoading(false);
@@ -286,31 +300,13 @@ const UserProgressStats = () => {
                           </div>
                         </div>
 
-                        {/* Thêm thanh tiến độ tiết kiệm hôm nay */}
+                        {/* Thêm thanh tiến độ tiết kiệm hôm nay và giờ hiện tại */}
                         <div style={{ width: "100%", margin: "24px 0" }}>
                           <div style={{ fontWeight: 600, marginBottom: 8 }}>
-                            Tiết kiệm hôm nay đến thời điểm hiện tại:
-                          </div>
-                          <div
-                            style={{
-                              marginBottom: 8,
-                              fontSize: 14,
-                              color: "#555",
-                            }}
-                          >
-                            Đã qua: <b>{currentTimeStr}</b> ({percentOfDay}%
-                            trong ngày)
+                            Tiết kiệm hôm nay (tính đến {currentTimeStr}):
                           </div>
                           <Progress
-                            percent={
-                              stats.savings.amount
-                                ? Math.min(
-                                    (savedMoneyNow / stats.savings.amount) *
-                                      100,
-                                    100
-                                  )
-                                : 0
-                            }
+                            percent={percentOfDay}
                             format={() =>
                               `${savedMoneyNow.toLocaleString(undefined, {
                                 maximumFractionDigits: 0,
@@ -331,11 +327,10 @@ const UserProgressStats = () => {
                               marginTop: 4,
                             }}
                           >
-                            Tổng tiết kiệm/ngày:{" "}
-                            {stats.savings.amount
-                              ? stats.savings.amount.toLocaleString()
-                              : 0}{" "}
-                            VND
+                            Số tiền bạn đã tiết kiệm được hôm nay:{" "}
+                            <span style={{ color: "#52c41a", fontWeight: 600 }}>
+                              {todaySavings.toLocaleString()} VND
+                            </span>
                           </div>
                         </div>
 
@@ -410,15 +405,13 @@ const UserProgressStats = () => {
                           <div className="achievements-container">
                             {achievements.map((achievement, index) => (
                               <div key={index} className="achievement-card">
-                                <TrophyOutlined
-                                  className="achievement-icon"
-                                  style={{ color: "#faad14" }}
-                                />
-                                <div className="achievement-title">
-                                  {achievement.title}
-                                </div>
-                                <div className="achievement-description">
-                                  {achievement.description}
+                                <div className="achievement-content">
+                                  <div className="achievement-title">
+                                    {achievement.title}
+                                  </div>
+                                  <div className="achievement-description">
+                                    {achievement.description}
+                                  </div>
                                 </div>
                               </div>
                             ))}
