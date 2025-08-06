@@ -1,5 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { Tabs, Card, Typography, Spin, message, Progress } from "antd";
+import {
+  Tabs,
+  Card,
+  Typography,
+  Spin,
+  message,
+  Progress,
+  InputNumber,
+  Button,
+} from "antd";
 import {
   DollarOutlined,
   CalendarOutlined,
@@ -34,6 +43,8 @@ const UserProgressStats = () => {
   const [savedMoneyNow, setSavedMoneyNow] = useState(0);
   const [currentTimeStr, setCurrentTimeStr] = useState("");
   const [percentOfDay, setPercentOfDay] = useState(0);
+  const [pricePerCigarette, setPricePerCigarette] = useState();
+  const [updatingPrice, setUpdatingPrice] = useState(false);
 
   const fetchSavings = async () => {
     try {
@@ -122,6 +133,31 @@ const UserProgressStats = () => {
       if (interval) clearInterval(interval);
     };
   }, [stats.savings.amount]);
+
+  const handleUpdatePrice = async () => {
+    setUpdatingPrice(true);
+    try {
+      const token = localStorage.getItem("token");
+      const user = JSON.parse(localStorage.getItem("user"));
+      const user_id = user?.id;
+      if (!user_id) {
+        message.error("Không tìm thấy user_id!");
+        setUpdatingPrice(false);
+        return;
+      }
+
+      await axios.post(
+        "/api/ftnd/updatePricePerCigarette",
+        { user_id, pricePerCigarette: pricePerCigarette * 1000 }, // nhân 1000
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      message.success("Cập nhật giá tiền thành công!");
+      fetchSavings();
+    } catch (err) {
+      message.error("Cập nhật giá tiền thất bại!");
+    }
+    setUpdatingPrice(false);
+  };
 
   const { savings, achievements } = stats;
 
@@ -219,7 +255,7 @@ const UserProgressStats = () => {
                               VND
                             </div>
                             <div className="savings-stat-label">
-                              Số tiền tiết kiệm
+                              Số tiền tiết kiệm cho đến hết ngày hôm nay
                             </div>
                           </div>
 
@@ -323,6 +359,29 @@ const UserProgressStats = () => {
                             hút thuốc, nhịp tim và huyết áp của bạn đã bắt đầu
                             giảm xuống mức bình thường.
                           </div>
+                        </div>
+
+                        {/* Thêm ô nhập giá tiền mỗi điếu thuốc */}
+                        <div style={{ margin: "24px 0" }}>
+                          <div style={{ marginBottom: 8, fontWeight: 600 }}>
+                            Tiền mỗi điếu thuốc bạn hút (x 1000 VNĐ)
+                          </div>
+                          <InputNumber
+                            min={1}
+                            step={1}
+                            value={pricePerCigarette}
+                            onChange={setPricePerCigarette}
+                            placeholder="Nhập số, mỗi đơn vị là 1000 VNĐ"
+                            style={{ marginRight: 8, width: 280 }}
+                          />
+                          <Button
+                            type="primary"
+                            loading={updatingPrice}
+                            onClick={handleUpdatePrice}
+                            disabled={!pricePerCigarette}
+                          >
+                            Cập nhật
+                          </Button>
                         </div>
                       </>
                     )}

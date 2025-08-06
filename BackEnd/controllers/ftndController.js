@@ -77,3 +77,31 @@ exports.getFtndLevel = async (req, res) => {
     res.status(500).json({ msg: "Lỗi server" });
   }
 };
+
+// cap nhat gia tien moi dieu
+exports.updatePricePerCigarette = async (req, res) => {
+  const { user_id, pricePerCigarette } = req.body;
+  if (!user_id || !pricePerCigarette) {
+    return res.status(400).json({ message: "Thiếu user_id hoặc pricePerCigarette" });
+  }
+
+  try {
+    await poolConnect;
+    // Update bản ghi mới nhất
+    const result = await pool.request()
+      .input("user_id", sql.Int, user_id)
+      .input("pricePerCigarette", sql.Int, pricePerCigarette)
+      .query(`
+        UPDATE FTND_RESULT
+        SET pricePerCigarette = @pricePerCigarette
+        WHERE user_id = @user_id AND submitted_at = (
+          SELECT MAX(submitted_at) FROM FTND_RESULT WHERE user_id = @user_id
+        )
+      `);
+
+    res.json({ success: true, message: "Đã cập nhật giá tiền mỗi điếu" });
+  } catch (err) {
+    console.error("Lỗi updatePricePerCigarette:", err);
+    res.status(500).json({ message: "Lỗi server" });
+  }
+};
