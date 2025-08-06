@@ -29,7 +29,7 @@ const FTNDTest = () => {
   const [form] = Form.useForm();
   const [currentStep, setCurrentStep] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
-  const totalQuestions = 6;
+  const totalQuestions = 7;
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);

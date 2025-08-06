@@ -39,13 +39,25 @@ const PostApprovalContent = () => {
     post: null,
   });
 
+  // Cho phép scroll background khi modal mở
+  useEffect(() => {
+    if (previewModal.visible) {
+      document.body.style.overflow = "unset";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [previewModal.visible]);
+
   // Function to get preview text from HTML content
   const getPreviewText = (htmlContent, maxLength = 200) => {
     const tempDiv = document.createElement("div");
     tempDiv.innerHTML = htmlContent || "";
     const textContent = tempDiv.textContent || tempDiv.innerText || "";
-    return textContent.length > maxLength 
-      ? textContent.substring(0, maxLength) + "..." 
+    return textContent.length > maxLength
+      ? textContent.substring(0, maxLength) + "..."
       : textContent;
   };
 
@@ -257,15 +269,15 @@ const PostApprovalContent = () => {
                           <CalendarOutlined style={{ color: "#666" }} />
                           <Text type="secondary">
                             Ngày gửi:{" "}
-                            {new Date(item.created_at).toLocaleString("vi-VN", { 
+                            {new Date(item.created_at).toLocaleString("vi-VN", {
                               timeZone: "UTC",
-                              year: 'numeric',
-                              month: '2-digit', 
-                              day: '2-digit',
-                              hour: '2-digit',
-                              minute: '2-digit',
-                              second: '2-digit',
-                              hour12: false
+                              year: "numeric",
+                              month: "2-digit",
+                              day: "2-digit",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              second: "2-digit",
+                              hour12: false,
                             })}
                           </Text>
                         </Space>
@@ -289,13 +301,13 @@ const PostApprovalContent = () => {
                       dangerouslySetInnerHTML={{ __html: item.content }}
                     />
                     {/* Preview text for accessibility */}
-                    <Text 
-                      type="secondary" 
-                      style={{ 
-                        display: "block", 
-                        marginTop: 8, 
+                    <Text
+                      type="secondary"
+                      style={{
+                        display: "block",
+                        marginTop: 8,
                         fontSize: 12,
-                        fontStyle: "italic" 
+                        fontStyle: "italic",
                       }}
                     >
                       Preview: {getPreviewText(item.content, 100)}
@@ -355,7 +367,14 @@ const PostApprovalContent = () => {
       >
         {previewModal.post && (
           <div>
-            <div style={{ marginBottom: 24, padding: 16, background: "#fafafa", borderRadius: 8 }}>
+            <div
+              style={{
+                marginBottom: 24,
+                padding: 16,
+                background: "#fafafa",
+                borderRadius: 8,
+              }}
+            >
               <Title level={3} style={{ margin: 0, color: "#1890ff" }}>
                 {previewModal.post.title}
               </Title>
@@ -368,25 +387,30 @@ const PostApprovalContent = () => {
                   {previewModal.post.full_name?.[0] || "U"}
                 </Avatar>
                 <div>
-                  <Text strong>{previewModal.post.full_name || "Không rõ"}</Text>
+                  <Text strong>
+                    {previewModal.post.full_name || "Không rõ"}
+                  </Text>
                   <br />
                   <Text type="secondary" style={{ fontSize: 12 }}>
-                    {new Date(previewModal.post.created_at).toLocaleString("vi-VN", { 
-                      timeZone: "UTC",
-                      year: 'numeric',
-                      month: '2-digit', 
-                      day: '2-digit',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                      second: '2-digit',
-                      hour12: false
-                    })}
+                    {new Date(previewModal.post.created_at).toLocaleString(
+                      "vi-VN",
+                      {
+                        timeZone: "UTC",
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit",
+                        hour12: false,
+                      }
+                    )}
                   </Text>
                 </div>
               </Space>
             </div>
-            
-            <div 
+
+            <div
               className="blog-content"
               style={{
                 padding: 20,
