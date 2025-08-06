@@ -12,15 +12,6 @@ router.get('/achievements', auth, userStatsController.getUserAchievements);
 router.get('/progress-summary', auth, userStatsController.getUserProgressSummary);
 router.get("/me", auth, userController.getMe);
 router.put("/profile", auth, userController.updateProfile);
-router.get("/plan", auth, async (req, res) => {
-    const pool = await sql.connect(dbConfig);
-    const { recordset } = await pool
-        .request()
-        .input("uid", sql.Int, req.user.id)
-        .query("SELECT plan_type FROM CUSTOMER WHERE user_id = @uid");
-    res.json({ plan: recordset[0]?.plan_type || "member" });
-});
-
-
+router.get("/plan", auth, userController.getUserPlan);
 
 module.exports = router;

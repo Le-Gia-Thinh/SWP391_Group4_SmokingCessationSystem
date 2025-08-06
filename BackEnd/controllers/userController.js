@@ -30,6 +30,15 @@ async function getMe(req, res) {
   }
 }
 
+const getUserPlan = async (req, res) => {
+  const pool = await sql.connect(dbConfig);
+  const { recordset } = await pool
+    .request()
+    .input("uid", sql.Int, req.user.id)
+    .query("SELECT plan_type FROM CESSATION_PLAN WHERE user_id = @uid");
+
+  res.json({ plan: recordset[0]?.plan_type || "member" });
+};
 
 const updateProfile = async (req, res) => {
   const userId = req.user.id;
@@ -77,4 +86,4 @@ const updateProfile = async (req, res) => {
   }
 };
 
-module.exports = {getMe,updateProfile };
+module.exports = {getMe,updateProfile, getUserPlan };

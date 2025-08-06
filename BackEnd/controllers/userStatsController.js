@@ -112,7 +112,7 @@ exports.getUserSavingsPerDay = async (req, res) => {
 
     // 3. Lấy tổng số thuốc hút trong ngày hôm nay
     const today = new Date();
-    const todayStr = today.toISOString().split("T")[0]; // YYYY-MM-DD
+    const todayStr = today.toISOString().split("T")[0];
 
     const smokingLog = await pool.request()
       .input("user_id", sql.Int, userId)
@@ -140,7 +140,6 @@ exports.getUserSavingsPerDay = async (req, res) => {
   }
 };
 
-// API 4: Lấy thành tựu
 exports.getUserAchievements = async (req, res) => {
   const userId = req.user.id;
 
