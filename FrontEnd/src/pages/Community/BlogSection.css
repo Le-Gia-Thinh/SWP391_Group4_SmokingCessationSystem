@@ -248,7 +248,38 @@
     padding: 0;
 }
 
-/* Modal styling */
+/* Modal styling - Force center positioning */
+.blog-view-modal-wrap {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 1000 !important;
+}
+
+.blog-view-modal-wrap .ant-modal {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  transform: none !important;
+  margin: 0 !important;
+  max-width: 90vw !important;
+  max-height: 90vh !important;
+}
+
+.blog-section .ant-modal-mask {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 1000 !important;
+}
+
 .blog-section .ant-modal-content {
     border-radius: 12px !important;
 }

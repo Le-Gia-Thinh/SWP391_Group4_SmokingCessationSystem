@@ -71,28 +71,43 @@ const BookingPage = () => {
 
       if (response.ok) {
         const data = await response.json();
+        
         if (data.success) {
+          // Đếm booking trong sliding window 14 ngày (7 ngày trước + 7 ngày sau)
           const now = moment();
           const weekAgo = moment().subtract(7, "days");
+          const weekAhead = moment().add(7, "days");
 
           const weeklyBookings = data.data.filter((booking) => {
-            const bookingTime = moment.parseZone(booking.scheduled_time);
-            return (
-              bookingTime.isBetween(weekAgo, now) &&
-              ["pending", "accepted", "completed"].includes(
-                booking.session_status
-              )
+            const bookingTime = moment(booking.scheduled_time);
+            const isInWeekRange = bookingTime.isBetween(weekAgo, weekAhead, null, '[]');
+            const isValidStatus = ["pending", "accepted", "completed"].includes(
+              booking.session_status
             );
+            
+            return isInWeekRange && isValidStatus;
           });
 
-          setUserBookingStats({
+          const finalStats = {
             weeklyCount: weeklyBookings.length,
             maxAllowed: 3,
-          });
+          };
+          
+          setUserBookingStats(finalStats);
         }
+      } else {
+        // Đặt giá trị mặc định nếu không thể load được stats
+        setUserBookingStats({
+          weeklyCount: 0,
+          maxAllowed: 3,
+        });
       }
     } catch (error) {
-      console.error("Error loading user booking stats:", error);
+      // Đặt giá trị mặc định khi có lỗi
+      setUserBookingStats({
+        weeklyCount: 0,
+        maxAllowed: 3,
+      });
     }
   };
 
@@ -368,7 +383,7 @@ const BookingPage = () => {
               style={{ marginTop: 16, marginBottom: 16 }}
               icon={<ExclamationCircleOutlined />}
             />
-
+            
             <Card style={{ marginTop: 24 }}>
               <Row gutter={[24, 24]}>
                 {/* Left Side - Date Selection */}
@@ -478,12 +493,6 @@ const BookingPage = () => {
                                       })}
                                     </div>
                                   </div>
-                                  <Button
-                                    className="view-profile-btn"
-                                    style={{ marginTop: 8 }}
-                                  >
-                                    Xem hồ sơ
-                                  </Button>
                                 </div>
                               </div>
                             </Card>
@@ -565,14 +574,6 @@ const BookingPage = () => {
                       </div>
                     </div>
                   </div>
-
-                  <Alert
-                    message="Lưu ý quan trọng"
-                    description="Vui lòng đặt lịch trước ít nhất 1 giờ. Bạn có thể hủy lịch hẹn trước 24 giờ mà không mất phí. Huấn luyện viên sẽ xác nhận lịch hẹn trong vòng 2 giờ."
-                    type="info"
-                    showIcon
-                    style={{ marginBottom: 16, marginTop: 16 }}
-                  />
 
                   <Form.Item name="notes" label="Ghi chú bổ sung (Tùy chọn)">
                     <Input.TextArea

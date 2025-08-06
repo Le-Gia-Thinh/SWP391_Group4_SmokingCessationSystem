@@ -18,14 +18,13 @@ const BookingManagement = () => {
     const [initialLoading, setInitialLoading] = useState(true);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [selectedBooking, setSelectedBooking] = useState(null);
-    const [activeTab, setActiveTab] = useState('pending');
+    const [activeTab, setActiveTab] = useState('accepted');
     const [completeModal, setCompleteModal] = useState(false);
     const [reportModal, setReportModal] = useState(false);
     const [modalLoading, setModalLoading] = useState(false);
     const [completeNotes, setCompleteNotes] = useState('');
     const [reportReason, setReportReason] = useState('');
     const [currentSessionId, setCurrentSessionId] = useState(null);
-    const [rejectedBadge, setRejectedBadge] = useState(0);
 
     // API Base URL
     const API_BASE_URL = 'http://localhost:5000/api';
@@ -42,14 +41,6 @@ const BookingManagement = () => {
     useEffect(() => {
         loadBookings();
     }, []);
-
-    useEffect(() => {
-        setRejectedBadge(bookings.filter(b =>
-            b.session_status === 'rejected' ||
-            b.session_status === 'canceled_by_member' ||
-            b.session_status === 'canceled_by_coach'
-        ).length);
-    }, [bookings]);
 
     const loadBookings = async () => {
         try {
@@ -118,6 +109,7 @@ const BookingManagement = () => {
 
             message.success('Từ chối cuộc hẹn thành công!');
             loadBookings(); // Reload to get updated data
+            setActiveTab('rejected_cancelled'); // Chuyển sang tab từ chối/hủy
         } catch (error) {
             console.error('Lỗi từ chối cuộc hẹn:', error);
             message.error('Không thể từ chối cuộc hẹn');
@@ -188,6 +180,7 @@ const BookingManagement = () => {
             message.success('Đã hoàn thành buổi tư vấn!');
             setCompleteModal(false);
             loadBookings();
+            setActiveTab('completed'); // Chuyển sang tab đã hoàn thành
         } catch (error) {
             message.error(error.message || 'Không thể hoàn thành buổi tư vấn');
         } finally {
@@ -379,8 +372,10 @@ const BookingManagement = () => {
             return booking.session_status === 'accepted';
         } else if (activeTab === 'completed') {
             return booking.session_status === 'completed';
+        } else if (activeTab === 'pending') {
+            return booking.session_status === 'pending';
         } else {
-            return false;
+            return booking.session_status === 'accepted'; // Default fallback
         }
     });
     console.log('DEBUG: filteredBookings for active tab (', activeTab, '):', filteredBookings);
@@ -409,15 +404,12 @@ const BookingManagement = () => {
                 <Tabs
                     defaultActiveKey="accepted"
                     activeKey={activeTab === 'pending' ? 'accepted' : activeTab}
-                    onChange={key => {
-                        setActiveTab(key);
-                        if (key === 'rejected_cancelled') setRejectedBadge(0);
-                    }}
+                    onChange={key => setActiveTab(key)}
                 >
-                    {/* <TabPane tab={<span>Cuộc hẹn đang chờ <Badge count={bookings.filter(b => b.session_status === 'pending').length} /></span>} key="pending" /> */}
-                    <TabPane tab={<span>Cuộc hẹn đã chấp nhận <Badge count={bookings.filter(b => b.session_status === 'accepted').length} /></span>} key="accepted" />
-                    <TabPane tab={<span>Cuộc hẹn đã hoàn thành <Badge count={bookings.filter(b => b.session_status === 'completed').length} /></span>} key="completed" />
-                    <TabPane tab={<span>Cuộc hẹn bị từ chối/hủy <Badge count={rejectedBadge} /></span>} key="rejected_cancelled" />
+                    {/* <TabPane tab="Cuộc hẹn đang chờ" key="pending" /> */}
+                    <TabPane tab="Cuộc hẹn đã chấp nhận" key="accepted" />
+                    <TabPane tab="Cuộc hẹn đã hoàn thành" key="completed" />
+                    <TabPane tab="Cuộc hẹn bị từ chối/hủy" key="rejected_cancelled" />
                 </Tabs>
 
                 <DataTable

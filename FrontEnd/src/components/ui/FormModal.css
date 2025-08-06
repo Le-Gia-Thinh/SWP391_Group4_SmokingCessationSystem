@@ -1,5 +1,7 @@
+/* Simple modal styling - let Ant Design handle centering and scroll */
 .form-modal .ant-modal-content {
     border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .form-modal .ant-modal-header {
