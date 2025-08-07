@@ -308,7 +308,10 @@ const UserProgressStats = () => {
                           <Progress
                             percent={percentOfDay}
                             format={() =>
-                              `${savedMoneyNow.toLocaleString(undefined, {
+                              `${(
+                                todaySavings *
+                                (percentOfDay / 100)
+                              ).toLocaleString(undefined, {
                                 maximumFractionDigits: 0,
                               })} VND`
                             }
