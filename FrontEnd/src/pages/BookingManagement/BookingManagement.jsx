@@ -109,7 +109,6 @@ const BookingManagement = () => {
 
             message.success('Từ chối cuộc hẹn thành công!');
             loadBookings(); // Reload to get updated data
-            setActiveTab('rejected_cancelled'); // Chuyển sang tab từ chối/hủy
         } catch (error) {
             console.error('Lỗi từ chối cuộc hẹn:', error);
             message.error('Không thể từ chối cuộc hẹn');
@@ -364,11 +363,7 @@ const BookingManagement = () => {
     }
 
     const filteredBookings = bookings.filter(booking => {
-        if (activeTab === 'rejected_cancelled') {
-            return booking.session_status === 'rejected' ||
-                booking.session_status === 'canceled_by_member' ||
-                booking.session_status === 'canceled_by_coach';
-        } else if (activeTab === 'accepted') {
+        if (activeTab === 'accepted') {
             return booking.session_status === 'accepted';
         } else if (activeTab === 'completed') {
             return booking.session_status === 'completed';
@@ -409,7 +404,6 @@ const BookingManagement = () => {
                     {/* <TabPane tab="Cuộc hẹn đang chờ" key="pending" /> */}
                     <TabPane tab="Cuộc hẹn đã chấp nhận" key="accepted" />
                     <TabPane tab="Cuộc hẹn đã hoàn thành" key="completed" />
-                    <TabPane tab="Cuộc hẹn bị từ chối/hủy" key="rejected_cancelled" />
                 </Tabs>
 
                 <DataTable
