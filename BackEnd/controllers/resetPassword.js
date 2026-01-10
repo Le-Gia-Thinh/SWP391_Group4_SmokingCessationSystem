@@ -5,7 +5,7 @@ const sendResetEmail = require('../utils/mailer');
 
 const { sql, dbConfig } = require('../config/database');
 
-// ✅ Hàm kiểm tra user có tồn tại theo email
+// Kiểm tra xem email có tồn tại không
 const checkUserExists = async (email) => {
   const pool = await sql.connect(dbConfig);
   const result = await pool.request()
@@ -15,7 +15,6 @@ const checkUserExists = async (email) => {
 };
 
 
-// ✅ Bạn phải khai báo hàm trước khi export
 const requestResetPassword = async (req, res) => {
   try {
     const { email } = req.body;
@@ -25,14 +24,14 @@ const requestResetPassword = async (req, res) => {
     const token = crypto.randomBytes(32).toString('hex');
     const resetLink = `http://localhost:5173/reset-password/${token}`;
 
-    // ✅ Lưu token vào DB
+    //Lưu token
     await saveResetToken(token, email);
 
-    // ✅ Gửi email thật nếu bạn muốn (nếu chưa có thì log ra)
+    // Gửi email với link reset
     await sendResetEmail(email, resetLink);
     console.log('🔗 Reset link:', resetLink);
 
-    return res.json({ message: 'Đã gửi link reset (tạm thời)', resetLink });
+    return res.json({ message: 'Đã gửi link reset', resetLink });
 
   } catch (err) {
     console.error('❌ Lỗi trong requestResetPassword:', err);
@@ -94,7 +93,7 @@ const updatePassword = async (email, newPassword) => {
   // Check tài khoản local có tồn tại không
   const check = await pool.request()
     .input('email', sql.VarChar, email)
-    .query(`SELECT * FROM USER_LOGIN
+    .query(`SELECT * FROM CUSTOMER
             WHERE user_id = (SELECT user_id FROM CUSTOMER WHERE email = @email)
               AND login_provider = 'local'`);
 
@@ -107,7 +106,7 @@ const updatePassword = async (email, newPassword) => {
   const result = await pool.request()
     .input('email', sql.VarChar, email)
     .input('hashed', sql.VarChar, hashed)
-    .query(`UPDATE USER_LOGIN
+    .query(`UPDATE CUSTOMER 
       SET password_hash = @hashed
       WHERE user_id = (SELECT user_id FROM CUSTOMER WHERE email = @email)
         AND login_provider = 'local'`);
@@ -115,7 +114,6 @@ const updatePassword = async (email, newPassword) => {
   console.log("✅ UPDATE thành công, rowsAffected =", result.rowsAffected);
 };
 
-// ✅ Export đúng cách
 module.exports = {
   requestResetPassword,
   resetPassword

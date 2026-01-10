@@ -1,19 +1,35 @@
-.quit-plan-wrapper {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 24px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+/* /* ✅ Layout chuẩn, thu gọn như các trang khác
+body {
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(to bottom right, #d1f1c8, #f8fff2);
+  min-height: 100vh;
+  width: 100%;
 }
 
+.quit-plan-layout {
+  min-height: 100vh;
+  width: 100%;
+  background: linear-gradient(to bottom right, #d1f1c8, #f8fff2);
+}
+
+/* ✅ Thu gọn content ở giữa */
+.quit-plan-wrapper .ant-layout-content {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ✅ Bộ điều khiển */
 .quit-plan-controls {
   display: flex;
   gap: 16px;
   margin-bottom: 24px;
   align-items: center;
   flex-wrap: wrap;
-  justify-content: space-between; /* căn đều các ô */
+  justify-content: space-between;
 }
 
 .quit-plan-controls > * {
@@ -28,25 +44,43 @@
 .quit-plan-controls .ant-select {
   min-width: 160px;
 }
-.week-row-0 td {
-  border-left: 4px solid #FFA07A; /* cam nhạt */
+
+/* 🎨 Màu mỗi tuần */
+.week-row-0 td { border-left: 4px solid #FFA07A; }
+.week-row-1 td { border-left: 4px solid #87CEFA; }
+.week-row-2 td { border-left: 4px solid #90EE90; }
+.week-row-3 td { border-left: 4px solid #DDA0DD; }
+.week-row-4 td { border-left: 4px solid #FFD700; }
+.week-row-0 td:last-child { border-right: 4px solid #FFA07A; }
+.week-row-1 td:last-child { border-right: 4px solid #87CEFA; }
+.week-row-2 td:last-child { border-right: 4px solid #90EE90; }
+.week-row-3 td:last-child { border-right: 4px solid #DDA0DD; }
+.week-row-4 td:last-child { border-right: 4px solid #FFD700; }
+
+/* ✅ Hover nhẹ */
+tr:hover {
+  background-color: #f0f9ff;
+  transition: background-color 0.2s ease;
 }
 
-.week-row-1 td {
-  border-left: 4px solid #87CEFA; /* xanh nhạt */
+/* ✅ Highlight bằng box-shadow khi xác nhận */
+tr.highlighted td {
+  animation: flash-row-shadow 0.6s ease forwards;
 }
 
-.week-row-2 td {
-  border-left: 4px solid #90EE90; /* xanh lá nhạt */
+@keyframes flash-row-shadow {
+  0% {
+    box-shadow: inset 0 0 0 rgba(82, 196, 26, 0);
+  }
+  50% {
+    box-shadow: inset 0 0 12px rgba(82, 196, 26, 0.6);
+  }
+  100% {
+    box-shadow: inset 0 0 0 rgba(82, 196, 26, 0);
+  }
 }
 
-.week-row-3 td {
-  border-left: 4px solid #DDA0DD; /* tím nhạt */
-}
-
-.week-row-4 td {
-  border-left: 4px solid #FFD700; /* vàng */
-}
+/* ✅ Shake */
 .shake {
   animation: shake 0.3s;
 }
@@ -57,10 +91,14 @@
   75% { transform: translateX(-4px); }
   100% { transform: translateX(0); }
 }
+
+/* ✅ Highlight viền */
 .highlight {
   box-shadow: 0 0 8px #1890ff;
   border-color: #1890ff !important;
 }
+
+/* ✅ Nháy badge */
 .badge-blink {
   animation: blink 1s infinite;
 }
@@ -68,9 +106,57 @@
   0%, 100% { filter: brightness(1); }
   50% { filter: brightness(2); }
 }
-.ant-input-disabled, .ant-picker-disabled, .ant-input-number-disabled {
+
+/* ✅ Disable đẹp */
+.ant-input-disabled,
+.ant-picker-disabled,
+.ant-input-number-disabled {
   background: #f5f5f5 !important;
   color: #595959 !important;
   font-weight: 600;
   opacity: 1 !important;
 }
+
+/* ✅ Bo góc bảng */
+.ant-table-row:nth-child(7n + 1) td:first-child {
+  border-top-left-radius: 8px;
+}
+.ant-table-row:nth-child(7n + 1) td:last-child {
+  border-top-right-radius: 8px;
+}
+.ant-table-row:nth-child(7n) td:first-child {
+  border-bottom-left-radius: 8px;
+}
+.ant-table-row:nth-child(7n) td:last-child {
+  border-bottom-right-radius: 8px;
+}
+
+/* ✅ Nút xác nhận hiệu ứng */
+.confirm-btn.clicked {
+  background-color: #52c41a !important;
+  border-color: #52c41a !important;
+  animation: btnFlash 0.4s ease;
+}
+
+@keyframes btnFlash {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 rgba(82, 196, 26, 0.5);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 0 8px rgba(82, 196, 26, 0.6);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: none;
+  }
+}
+
+/* ✅ Responsive cho layout dọc */
+@media (max-width: 900px) {
+  .quit-plan-progress-row {
+    flex-direction: column !important;
+    gap: 16px !important;
+  }
+}  

@@ -1,5 +1,5 @@
-// controllers/quitPlanController.js
 const { sql, dbConfig } = require("../config/database");
+const { evaluateAndUnlockAchievements } = require("../utils/achievementService");
 
 const pool = new sql.ConnectionPool(dbConfig);
 const poolConnect = pool.connect();
@@ -11,7 +11,7 @@ exports.checkPlanExists = async (req, res) => {
       .request()
       .input("userId", sql.Int, req.params.userId)
       .query(`
-        SELECT TOP 1 start_date, plan_type
+        SELECT TOP 1 start_date, plan_type, month_quit
         FROM CESSATION_PLAN
         WHERE user_id = @userId AND is_active = 1
       `);
@@ -20,14 +20,14 @@ exports.checkPlanExists = async (req, res) => {
       res.json({
         hasPlan: true,
         start_date: result.recordset[0].start_date,
-        quit_months: 7, // có thể thay thế bằng giá trị động sau này
+        quit_months: result.recordset[0].month_quit,
       });
     } else {
       res.json({ hasPlan: false });
     }
   } catch (err) {
-    console.error("Error checking plan:", err);
-    res.status(500).json({ error: "Server error" });
+    console.error("Lỗi khi kiểm tra kế hoạch:", err);
+    res.status(500).json({ error: "Lỗi máy chủ" });
   }
 };
 
@@ -42,7 +42,6 @@ exports.savePlan = async (req, res) => {
   try {
     await poolConnect;
 
-    // 👉 Tính toán ngày kết thúc kế hoạch (end_date)
     const start = new Date(start_date);
     const endDate = new Date(start);
     endDate.setMonth(start.getMonth() + parseInt(quit_months));
@@ -62,25 +61,27 @@ exports.savePlan = async (req, res) => {
       `);
 
     // 2. Thêm kế hoạch mới với đầy đủ thông tin
-  await pool.request()
-  .input("user_id", sql.Int, user_id)
-  .input("start_date", sql.Date, start)
-  .input("end_date", sql.Date, endDate) // ĐÃ có dòng này
-  .input("plan_name", sql.NVarChar, `Kế hoạch ${user_id}`)
-  .input("month_quit", sql.Int, quit_months)
-  .query(`
-    INSERT INTO CESSATION_PLAN (
-      user_id, start_date, end_date, plan_type, is_active, created_at, plan_name, month_quit
-    )
-    VALUES (
-      @user_id, @start_date, @end_date, 'standard', 1, GETDATE(), @plan_name, @month_quit
-    )
-  `);
+    await pool.request()
+    .input("user_id", sql.Int, user_id)
+    .input("start_date", sql.Date, start)
+    .input("end_date", sql.Date, endDate) // ĐÃ có dòng này
+    .input("plan_name", sql.NVarChar, `Kế hoạch ${user_id}`)
+    .input("month_quit", sql.Int, quit_months)
+    .query(`
+      INSERT INTO CESSATION_PLAN (
+        user_id, start_date, end_date, plan_type, is_active, created_at, plan_name, month_quit
+      )
+      VALUES (
+        @user_id, @start_date, @end_date, 'standard', 1, GETDATE(), @plan_name, @month_quit
+      )
+    `);
 
-    res.json({ success: true, message: "Plan saved successfully" });
+  await evaluateAndUnlockAchievements(user_id);
+
+    res.json({ success: true, message: "Kế hoạch đã được lưu" });
   } catch (err) {
     console.error("❌ Error saving plan:", err);
-    res.status(500).json({ error: "Save failed. Please check server logs." });
+    res.status(500).json({ error: "Lưu không thành công. Vui lòng kiểm tra nhật ký máy chủ." });
   }
 };
 

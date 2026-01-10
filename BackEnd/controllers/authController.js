@@ -1,9 +1,10 @@
+
 // controllers/authController.js
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { sql, dbConfig } = require('../config/database');
 
-// Hàm tạo JWT token dựa trên object user (id, email, name, avatar)
+// Hàm tạo JWT token
 const generateToken = (userData) => {
   return jwt.sign(
     {
@@ -11,13 +12,13 @@ const generateToken = (userData) => {
       email: userData.email,
       name: userData.name,
       role: userData.role || userData.user_role
-      //avatar: userData.avatar || null // nếu bạn muốn kèm avatar
     },
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRE || '30d' }
   );
 };
-// Gửi response kèm token và thông tin user
+
+// Gửi token + user về client
 const sendTokenWithUser = (res, user) => {
   const token = generateToken({
     id: user.user_id || user.id,
@@ -26,15 +27,13 @@ const sendTokenWithUser = (res, user) => {
     role: user.user_role || user.role
   });
 
-  // ✅ THÊM cookie chứa token vào response
   res.cookie('token', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'Lax',
-    maxAge: 30 * 24 * 60 * 60 * 1000 // 30 ngày
+    maxAge: 30 * 24 * 60 * 60 * 1000
   });
 
-  // ✅ Gửi JSON response chứa user
   res.json({
     success: true,
     token,
@@ -84,6 +83,14 @@ const register = async (req, res) => {
       return res.status(400).json({ message: 'Email đã được sử dụng' });
     }
 
+    const checkPhone = await pool.request()
+      .input('phone_number', sql.VarChar, phone_number)
+      .query('SELECT * FROM CUSTOMER WHERE phone_number = @phone_number');
+
+    if (checkPhone.recordset.length > 0) {
+      return res.status(400).json({ message: 'Số điện thoại đã được sử dụng' }); 
+    }
+
     // Mã hóa mật khẩu
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
@@ -98,31 +105,22 @@ const register = async (req, res) => {
       .input('phone_number', sql.VarChar, phone_number)
       .input('role', sql.VarChar, 'member')
       .input('status', sql.VarChar, 'active')
+      .input('provider', sql.VarChar, 'local')
       .input('created', sql.Date, new Date())
       .query(`
-          INSERT INTO CUSTOMER (email, password_hash, full_name, username, phone_number, user_role, account_status, registration_date)
-          OUTPUT INSERTED.user_id
-          VALUES (@email, @password, @name, @username, @phone_number,@role, @status, @created)
-        `);
+        INSERT INTO CUSTOMER (email, password_hash, full_name, username, phone_number, user_role, account_status, login_provider, registration_date)
+        OUTPUT INSERTED.user_id
+        VALUES (@email, @password, @name, @username, @phone_number, @role, @status, @provider, @created)
+      `);
 
     const userId = insertResult.recordset[0].user_id;
 
-    await pool.request()
-  .input('user_id', sql.Int, userId)
-  .input('provider', sql.VarChar, 'local')
-  .input('username', sql.VarChar, username)
-  .input('password_hash', sql.VarChar, hashedPassword)
-  .query(`
-    INSERT INTO USER_LOGIN (user_id, login_provider, username, password_hash)
-    VALUES (@user_id, @provider, @username, @password_hash)
-  `);
-
     const token = generateToken({
-  id: userId,
-  email,
-  name
-});
-    
+      id: userId,
+      email,
+      name
+    });
+
 
     res.status(201).json({
       success: true,
@@ -144,49 +142,52 @@ const register = async (req, res) => {
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-
     if (!email || !password) {
-      return res.status(400).json({ success: false, message: 'Vui lòng điền email và mật khẩu' });
+      return res
+        .status(400)
+        .json({ success: false, message: 'Vui lòng điền email và mật khẩu' });
     }
 
     const pool = await sql.connect(dbConfig);
-
-    // 1️⃣ Lấy thông tin đăng nhập từ USER_LOGIN (local)
     const result = await pool.request()
       .input('email', sql.VarChar, email)
       .query(`
-        SELECT c.user_id, c.full_name, c.email, c.user_role, l.password_hash
-        FROM CUSTOMER c
-        JOIN USER_LOGIN l ON c.user_id = l.user_id
-        WHERE c.email = @email AND l.login_provider = 'local'
-      `);
-
+    SELECT 
+      user_id, 
+      full_name, 
+      email, 
+      user_role, 
+      password_hash 
+    FROM CUSTOMER
+    WHERE email = @email
+  `);
     if (result.recordset.length === 0) {
-      return res.status(400).json({ success: false, message: 'Email hoặc mật khẩu không đúng' });
+      return res
+        .status(400)
+        .json({ success: false, message: 'Email hoặc mật khẩu không đúng' });
     }
 
     const user = result.recordset[0];
     const stored = user.password_hash;
 
-    let isMatch = false;
-
-    // 2️⃣ So sánh mật khẩu
+    // Chỉ so sánh qua bcrypt.compare
+    let isMatch;
     if (typeof stored === 'string' && stored.startsWith('$2')) {
       isMatch = await bcrypt.compare(password, stored);
     } else {
-      isMatch = (password === stored); // fallback nếu đang dùng plain text (dev mode)
+      isMatch = password === stored;
     }
 
     if (!isMatch) {
       return res.status(400).json({ success: false, message: 'Email hoặc mật khẩu không đúng' });
     }
-
-    // 3️⃣ Gửi token nếu đúng
+    // Nếu đúng, trả token
     sendTokenWithUser(res, user);
-
   } catch (error) {
     console.error('❌ Lỗi đăng nhập:', error);
-    res.status(500).json({ success: false, message: 'Lỗi server khi đăng nhập' });
+    res
+      .status(500)
+      .json({ success: false, message: 'Lỗi server khi đăng nhập' });
   }
 };
 
@@ -218,11 +219,12 @@ const googleSuccess = (req, res) => {
       id: user.id,
       email: user.email,
       name: user.name,
+      role: user.role,
       // Nếu trong database bạn lưu avatarUrl, gán vào đây:
       // avatar: user.avatar  (nếu bảng CUSTOMER có field này)
     });
 
-    console.log('✅ User found:', { id: user.id, email: user.email, name: user.name });
+    console.log('✅ User found:', { id: user.id, email: user.email, name: user.name, role: user.role });
     console.log('🔑 Generated token:', token.substring(0, 20) + '...');
 
     // Redirect về React route với token

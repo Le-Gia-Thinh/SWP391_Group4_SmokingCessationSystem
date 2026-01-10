@@ -1,153 +1,169 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from "react";
 
 const AuthContext = createContext();
-
-const useAuth = () => {
-    const context = useContext(AuthContext);
-    if (!context) {
-        throw new Error('useAuth must be used within an AuthProvider');
-    }
-    return context;
+export const useAuth = () => {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+  return ctx;
 };
 
-export { useAuth };
-
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [isPremium, setPremium] = useState(false);
 
-    // Check if user is logged in when app loads - Kiểm tra user đã đăng nhập chưa khi load app
-    useEffect(() => {
-  const token = localStorage.getItem("token");
-
-  if (!token) {
-    setLoading(false);
-    return;
-  }
-
-  const fetchUser = async () => {
+  // Hàm riêng để fetch số ngày còn lại
+  const fetchPremium = async (token) => {
     try {
-      const res = await fetch("http://localhost:5000/api/user/me", {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-
-      if (!res.ok) throw new Error("Không lấy được user");
-
-      const data = await res.json();
-      setUser(data);
-      localStorage.setItem("user", JSON.stringify(data));
+      const res = await fetch(
+        "http://localhost:5000/api/subscriptions/remaining",
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (!res.ok) throw new Error("Cannot fetch remainingDays");
+      const { remainingDays } = await res.json();
+      setPremium(remainingDays > 0);
     } catch (err) {
-      console.error("Lỗi khi xác thực:", err);
-      setUser(null);
-    } finally {
-      setLoading(false);
+      console.error("Error fetching remainingDays:", err);
+      setPremium(false);
     }
   };
 
-  fetchUser();
-}, []);
+  // Hàm để cập nhật user data
+  const updateUser = (updatedData) => {
+    setUser(prevUser => ({
+      ...prevUser,
+      ...updatedData
+    }));
+    // Cập nhật localStorage
+    const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+    localStorage.setItem("user", JSON.stringify({
+      ...currentUser,
+      ...updatedData
+    }));
+  };
 
-    // Login with real API - Đăng nhập với API thực tế
-    const login = async (email, password) => {
+  // Hàm để refresh user data từ server
+  const refreshUser = async () => {
     try {
-        const response = await fetch('http://localhost:5000/api/auth/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email, password }),
-        });
+      const token = localStorage.getItem("token");
+      if (!token) return false;
 
-        const data = await response.json();
+      const meRes = await fetch("http://localhost:5000/api/user/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-        if (!response.ok || !data.success) {
-            throw new Error(data.message || 'Login failed');
-        }
+      if (!meRes.ok) throw new Error("Cannot fetch user");
 
-        // Lưu token
-        localStorage.setItem('token', data.token);
+      const data = await meRes.json();
+      setUser({ ...data, role: data.user_role });
+      localStorage.setItem("user", JSON.stringify(data));
 
-        // Gọi /api/user/me để lấy thông tin đầy đủ
-        const userRes = await fetch('http://localhost:5000/api/user/me', {
-            headers: {
-                Authorization: `Bearer ${data.token}`
-            }
-        });
-
-        const userData = await userRes.json();
-
-        if (!userRes.ok || !userData) {
-            throw new Error('Không lấy được thông tin chi tiết người dùng');
-        }
-        localStorage.setItem('user', JSON.stringify(userData));
-        setUser(userData);
-
-        return userData;
-    } catch (error) {
-        console.error('Login error:', error);
-        throw error;
+      return true;
+    } catch (err) {
+      console.error("Error refreshing user:", err);
+      return false;
     }
-    };
+  };
 
-    // Logout - Đăng xuất
-    const logout = () => {
-        localStorage.removeItem('user');
-        localStorage.removeItem('token');
+  // Chạy 1 lần khi mount để lấy user + premium
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+    (async () => {
+      try {
+        // 1) Fetch user info
+        const meRes = await fetch("http://localhost:5000/api/user/me", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!meRes.ok) throw new Error("Cannot fetch user");
+        const data = await meRes.json();
+        setUser({ ...data, role: data.user_role });
+        localStorage.setItem("user", JSON.stringify(data));
+
+        // 2) Fetch premium status
+        await fetchPremium(token);
+      } catch (err) {
+        console.error("AuthProvider init error:", err);
         setUser(null);
-    };
+        setPremium(false);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
 
-    // Check permissions - Kiểm tra quyền
-    const hasRole = (allowedRoles) => {
-        if (!user) return false;
-        return allowedRoles.includes(user.role);
-    };
+  // Login với API thực tế
+  const login = async (email, password) => {
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || "Login failed");
+      }
+      const token = data.token;
+      localStorage.setItem("token", token);
 
-    // Check if is regular User - Kiểm tra là User thường
-    const isUser = () => hasRole(['member', 'coach', 'admin']);
+      // Lấy lại user + premium ngay sau login
+      const meRes = await fetch("http://localhost:5000/api/user/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!meRes.ok) throw new Error("Cannot fetch user after login");
+      const userData = await meRes.json();
+      setUser({ ...userData, role: userData.user_role });
+      localStorage.setItem("user", JSON.stringify(userData));
 
-    // Check if is Coach - Kiểm tra là Coach
-    const isCoach = () => hasRole(['coach']);
+      await fetchPremium(token);
 
-    // Check if is Admin - Kiểm tra là Admin
-    const isAdmin = () => hasRole(['admin']);
+      return userData;
+    } catch (err) {
+      console.error("Login error:", err);
+      throw err;
+    }
+  };
 
-    // Admin function: Create coach account - Hàm Admin: Tạo tài khoản coach
-    const createCoachAccount = async (coachData) => {
-        // Simulate API call to create coach account
-        await new Promise(resolve => setTimeout(resolve, 1000));
+  // Logout
+  const logout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setUser(null);
+    setPremium(false);
+  };
 
-        // In real system, this would create a new coach account
-        // Trong hệ thống thực tế, điều này sẽ tạo tài khoản coach mới
-        console.log('Creating coach account:', coachData);
+  // Kiểm tra role
+  const hasRole = (allowedRoles) => {
+    if (!user) return false;
+    return allowedRoles.includes(user.role);
+  };
+  const isUser = () => hasRole(["member", "coach", "admin"]);
+  const isCoach = () => hasRole(["coach"]);
+  const isAdmin = () => hasRole(["admin"]);
 
-        return {
-            success: true,
-            message: 'Coach account created successfully. Credentials have been sent to the coach.',
-            coachCredentials: {
-                email: coachData.email,
-                temporaryPassword: 'Coach' + Math.random().toString(36).substr(2, 6) + '!'
-            }
-        };
-    };
-
-    const value = {
+  return (
+    <AuthContext.Provider
+      value={{
         user,
+        setUser, 
+        updateUser, 
+        refreshUser, 
+        loading,
+        isPremium,
+        fetchPremium,
         login,
         logout,
         hasRole,
         isUser,
         isCoach,
         isAdmin,
-        createCoachAccount,
-        loading
-    };
-
-    console.log("👤 user in Profile.jsx:", user);
-    return (
-        <AuthContext.Provider value={value}>
-            {children}
-        </AuthContext.Provider>
-    );
-}; 
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+};

@@ -17,6 +17,26 @@ const FormModal = ({
     className = '',
     ...props
 }) => {
+    React.useEffect(() => {
+        if (visible) {
+            // Override any scroll locks
+            const forceScroll = () => {
+                document.body.style.overflow = 'auto';
+                document.body.style.paddingRight = '0px';
+            };
+            
+            // Apply immediately
+            forceScroll();
+            
+            // Keep applying in case other code tries to change it
+            const interval = setInterval(forceScroll, 100);
+            
+            return () => {
+                clearInterval(interval);
+            };
+        }
+    }, [visible]);
+
     const handleSubmit = async () => {
         try {
             const values = await form.validateFields();
@@ -51,12 +71,12 @@ const FormModal = ({
             width={width}
             className={`form-modal ${className}`}
             destroyOnClose
+            centered
             {...props}
         >
             <Form
                 form={form}
                 layout="vertical"
-                preserve={false}
             >
                 {children}
             </Form>

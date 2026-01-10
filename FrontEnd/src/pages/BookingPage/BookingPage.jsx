@@ -1,334 +1,594 @@
-import React, { useState, useEffect } from 'react';
-import { Card, Button, Modal, Form, Input, Select, DatePicker, TimePicker, message, Avatar, Rate, Tag, Row, Col, Typography, Spin } from 'antd';
-import { CalendarOutlined, ClockCircleOutlined, UserOutlined, StarFilled } from '@ant-design/icons';
-import FormModal from '../../components/ui/FormModal';
-import Navbar from '../../layouts/Navbar';
-import { useAuth } from '../../contexts/AuthContext';
-import './BookingPage.css';
-import moment from 'moment';
+import React, { useState, useEffect } from "react";
+import {
+  Card,
+  Button,
+  Modal,
+  Form,
+  Input,
+  Select,
+  DatePicker,
+  TimePicker,
+  message,
+  Avatar,
+  Rate,
+  Tag,
+  Row,
+  Col,
+  Typography,
+  Spin,
+  Alert,
+} from "antd";
+import {
+  CalendarOutlined,
+  ClockCircleOutlined,
+  UserOutlined,
+  StarFilled,
+  ExclamationCircleOutlined,
+} from "@ant-design/icons";
+import FormModal from "../../components/ui/FormModal";
+import Navbar from "../../layouts/Navbar";
+import { useAuth } from "../../contexts/AuthContext";
+import "./BookingPage.css";
+import moment from "moment";
 
 const { TextArea } = Input;
 const { Option } = Select;
 const { Title, Text } = Typography;
 
 const BookingPage = () => {
-    const { user } = useAuth();
-    const [coaches, setCoaches] = useState([]);
-    const [selectedCoach, setSelectedCoach] = useState(null);
-    const [isModalVisible, setIsModalVisible] = useState(false);
-    const [bookingForm] = Form.useForm();
-    const [loading, setLoading] = useState(false);
-    const [selectedDate, setSelectedDate] = useState(null);
-    const [availableCoaches, setAvailableCoaches] = useState([]);
-    const [selectedSlot, setSelectedSlot] = useState(null);
-    const [initialLoading, setInitialLoading] = useState(true);
+  const { user } = useAuth();
+  const [coaches, setCoaches] = useState([]);
+  const [selectedCoach, setSelectedCoach] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [bookingForm] = Form.useForm();
+  const [loading, setLoading] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [availableCoaches, setAvailableCoaches] = useState([]);
+  const [selectedSlot, setSelectedSlot] = useState(null);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [userBookingStats, setUserBookingStats] = useState({
+    weeklyCount: 0,
+    maxAllowed: 3,
+  });
+  const [selectedTimeFrame, setSelectedTimeFrame] = useState(null);
 
-    useEffect(() => {
-        loadCoaches();
-    }, []);
+  useEffect(() => {
+    loadCoaches();
+    loadUserBookingStats();
+  }, []);
 
-    const loadCoaches = async () => {
-        try {
-            setInitialLoading(true);
-            const response = await fetch('http://localhost:5000/api/coach/list');
-
-            if (!response.ok) {
-                throw new Error('Failed to load coaches');
-            }
-
-            const data = await response.json();
-            if (data.success) {
-                // Transform the data to match the expected format
-                const transformedCoaches = data.data.map(coach => ({
-                    coach_id: coach.coach_id,
-                    name: coach.full_name,
-                    specialization: coach.specialization || 'Smoking Cessation Coach',
-                    bio: coach.bio || 'Experienced coach helping people quit smoking',
-                    rating: 4.5,
-                    totalSessions: 50,
-                    email: coach.email
-                }));
-                setCoaches(transformedCoaches);
-            } else {
-                setCoaches([]);
-            }
-        } catch (error) {
-            console.error('Error loading coaches:', error);
-            message.error('Failed to load coaches');
-            setCoaches([]);
-        } finally {
-            setInitialLoading(false);
+  const loadUserBookingStats = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        "http://localhost:5000/api/appointment/my-bookings",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-    };
+      );
 
-    // Load available schedules for selected date
-    useEffect(() => {
-        if (selectedDate) {
-            loadAvailableSchedules();
-        } else {
-            setAvailableCoaches([]);
+      if (response.ok) {
+        const data = await response.json();
+        
+        if (data.success) {
+          // Đếm booking trong sliding window 14 ngày (7 ngày trước + 7 ngày sau)
+          const now = moment();
+          const weekAgo = moment().subtract(7, "days");
+          const weekAhead = moment().add(7, "days");
+
+          const weeklyBookings = data.data.filter((booking) => {
+            const bookingTime = moment(booking.scheduled_time);
+            const isInWeekRange = bookingTime.isBetween(weekAgo, weekAhead, null, '[]');
+            const isValidStatus = ["pending", "accepted", "completed"].includes(
+              booking.session_status
+            );
+            
+            return isInWeekRange && isValidStatus;
+          });
+
+          const finalStats = {
+            weeklyCount: weeklyBookings.length,
+            maxAllowed: 3,
+          };
+          
+          setUserBookingStats(finalStats);
         }
-    }, [selectedDate]);
-
-    const loadAvailableSchedules = async () => {
-        try {
-            const dateStr = selectedDate.format('YYYY-MM-DD');
-            const availableCoachesWithSchedules = [];
-
-            for (const coach of coaches) {
-                try {
-                    const response = await fetch(`http://localhost:5000/api/schedule/available/${coach.coach_id}`);
-
-                    if (!response.ok) {
-                        console.error(`Failed to load schedules for coach ${coach.coach_id}`);
-                        continue;
-                    }
-
-                    const data = await response.json();
-                    const schedules = data || [];
-
-                    // Filter schedules for selected date
-                    const daySchedules = schedules.filter(schedule => {
-                        const scheduleDate = moment(schedule.start_time).format('YYYY-MM-DD');
-                        return scheduleDate === dateStr && !schedule.is_booked;
-                    });
-
-                    if (daySchedules.length > 0) {
-                        availableCoachesWithSchedules.push({
-                            ...coach,
-                            availableSchedules: daySchedules
-                        });
-                    }
-                } catch (error) {
-                    console.error(`Error loading schedules for coach ${coach.coach_id}:`, error);
-                }
-            }
-
-            setAvailableCoaches(availableCoachesWithSchedules);
-        } catch (error) {
-            console.error('Error loading available schedules:', error);
-            message.error('Failed to load available schedules');
-        }
-    };
-
-    const handleDateChange = (date) => {
-        setSelectedDate(date);
-    };
-
-    const formatTimeSlot = (schedule) => {
-        const startTime = moment(schedule.start_time);
-        const endTime = moment(schedule.end_time);
-        const duration = endTime.diff(startTime, 'minutes');
-
-        return {
-            schedule_id: schedule.schedule_id,
-            time: startTime.format('HH:mm'),
-            endTime: endTime.format('HH:mm'),
-            duration: duration,
-            start_time: schedule.start_time,
-            end_time: schedule.end_time
-        };
-    };
-
-    const handleSelectSlotForBooking = (coach, schedule) => {
-        setSelectedCoach(coach);
-        setSelectedSlot(formatTimeSlot(schedule));
-        bookingForm.setFieldsValue({
-            duration: formatTimeSlot(schedule).duration,
+      } else {
+        // Đặt giá trị mặc định nếu không thể load được stats
+        setUserBookingStats({
+          weeklyCount: 0,
+          maxAllowed: 3,
         });
-        setIsModalVisible(true);
-    };
+      }
+    } catch (error) {
+      // Đặt giá trị mặc định khi có lỗi
+      setUserBookingStats({
+        weeklyCount: 0,
+        maxAllowed: 3,
+      });
+    }
+  };
 
-    const handleBookingSubmit = async (values) => {
-        setLoading(true);
+  const loadCoaches = async () => {
+    try {
+      setInitialLoading(true);
+      const response = await fetch("http://localhost:5000/api/coach/list");
+
+      if (!response.ok) {
+        throw new Error("Failed to load coaches");
+      }
+
+      const data = await response.json();
+      if (data.success) {
+        // Transform the data to match the expected format
+        const transformedCoaches = data.data.map((coach) => ({
+          coach_id: coach.coach_id,
+          name: coach.full_name,
+          specialization: coach.specialization || "Huấn luyện viên bỏ thuốc lá",
+          bio:
+            coach.bio ||
+            "Huấn luyện viên có kinh nghiệm giúp mọi người bỏ thuốc lá",
+          rating: 4.5,
+          totalSessions: 50,
+          email: coach.email,
+        }));
+        setCoaches(transformedCoaches);
+      } else {
+        setCoaches([]);
+      }
+    } catch (error) {
+      console.error("Error loading coaches:", error);
+      message.error("Không thể tải danh sách huấn luyện viên");
+      setCoaches([]);
+    } finally {
+      setInitialLoading(false);
+    }
+  };
+
+  // Load available schedules for selected date
+  useEffect(() => {
+    if (selectedDate) {
+      loadAvailableSchedules();
+    } else {
+      setAvailableCoaches([]);
+    }
+  }, [selectedDate, selectedTimeFrame]);
+
+  const loadAvailableSchedules = async () => {
+    try {
+      const dateStr = selectedDate.format("YYYY-MM-DD");
+      const availableCoachesWithSchedules = [];
+
+      for (const coach of coaches) {
         try {
-            const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:5000/api/appointment', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ schedule_id: selectedSlot.schedule_id })
+          const response = await fetch(
+            `http://localhost:5000/api/schedule/available/${coach.coach_id}`
+          );
+
+          if (!response.ok) {
+            console.error(
+              `Failed to load schedules for coach ${coach.coach_id}`
+            );
+            continue;
+          }
+
+          const data = await response.json();
+          const schedules = data || [];
+
+          // Filter schedules for selected date and check time constraints
+          const now = moment();
+          let daySchedules = schedules.filter((schedule) => {
+            const scheduleDate = moment
+              .parseZone(schedule.start_time)
+              .format("YYYY-MM-DD");
+            const scheduleTime = moment.parseZone(schedule.start_time);
+            const diffInMinutes = scheduleTime.diff(now, "minutes");
+
+            return (
+              scheduleDate === dateStr &&
+              !schedule.is_booked &&
+              diffInMinutes >= 60
+            ); // Chặn đặt lịch trong vòng 1 tiếng
+          });
+
+          // Lọc thêm theo khung giờ nếu có
+          if (selectedTimeFrame) {
+            daySchedules = daySchedules.filter((schedule) => {
+              const hour = moment.parseZone(schedule.start_time).hour();
+              
+              switch (selectedTimeFrame) {
+                case "morning":
+                  return hour >= 8 && hour < 12;
+                case "afternoon":
+                  return hour >= 13 && hour < 17;
+                case "evening":
+                  return hour >= 18 && hour < 21;
+                default:
+                  return true;
+              }
             });
+          }
 
-            if (!response.ok) {
-                const data = await response.json();
-                throw new Error(data.message || 'Failed to book appointment');
-            }
-
-            message.success('Booking submitted successfully! The coach will review your request.');
-            setIsModalVisible(false);
-            bookingForm.resetFields();
-            setSelectedCoach(null);
-            setSelectedSlot(null);
-
-            // Reload available schedules
-            loadAvailableSchedules();
+          if (daySchedules.length > 0) {
+            availableCoachesWithSchedules.push({
+              ...coach,
+              availableSchedules: daySchedules,
+            });
+          }
         } catch (error) {
-            console.error('Error booking appointment:', error);
-            message.error(error.message || 'Failed to book appointment');
-        } finally {
-            setLoading(false);
+          console.error(
+            `Error loading schedules for coach ${coach.coach_id}:`,
+            error
+          );
         }
-    };
+      }
 
-    const handleCancel = () => {
-        setIsModalVisible(false);
-        bookingForm.resetFields();
-        setSelectedCoach(null);
-        setSelectedSlot(null);
-    };
+      setAvailableCoaches(availableCoachesWithSchedules);
+    } catch (error) {
+      console.error("Error loading available schedules:", error);
+      message.error("Không thể tải lịch trình có sẵn");
+    }
+  };
 
-    if (initialLoading) {
-        return (
-            <div>
-                <Navbar />
-                <div style={{ textAlign: 'center', padding: '50px' }}>
-                    <Spin size="large" />
-                    <div style={{ marginTop: '16px' }}>Loading coaches...</div>
-                </div>
-            </div>
-        );
+  const handleDateChange = (date) => {
+    setSelectedDate(date);
+  };
+  
+  const handleTimeFrameChange = (value) => {
+    setSelectedTimeFrame(value);
+  };
+
+  const formatTimeSlot = (schedule) => {
+    const startTime = moment.parseZone(schedule.start_time);
+    const endTime = moment.parseZone(schedule.end_time);
+    const duration = endTime.diff(startTime, "minutes");
+
+    return {
+      schedule_id: schedule.schedule_id,
+      time: startTime.format("HH:mm"),
+      endTime: endTime.format("HH:mm"),
+      duration: duration,
+      start_time: schedule.start_time,
+      end_time: schedule.end_time,
+    };
+  };
+
+  const handleSelectSlotForBooking = (coach, schedule) => {
+    // Kiểm tra giới hạn 3 cuộc hẹn/tuần
+    if (userBookingStats.weeklyCount >= userBookingStats.maxAllowed) {
+      message.error(
+        `Bạn đã đặt ${userBookingStats.weeklyCount} buổi. Chỉ được phép tối đa ${userBookingStats.maxAllowed} buổi tư vấn mỗi tuần.`
+      );
+      return;
     }
 
+    setSelectedCoach(coach);
+    setSelectedSlot(formatTimeSlot(schedule));
+    bookingForm.setFieldsValue({
+      duration: formatTimeSlot(schedule).duration,
+    });
+    setIsModalVisible(true);
+  };
+
+  const handleBookingSubmit = async (values) => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch("http://localhost:5000/api/appointment", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ schedule_id: selectedSlot.schedule_id }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to book appointment");
+      }
+
+      message.success(
+        "Đặt lịch thành công! Huấn luyện viên sẽ xem xét yêu cầu của bạn."
+      );
+      setIsModalVisible(false);
+      bookingForm.resetFields();
+      setSelectedCoach(null);
+      setSelectedSlot(null);
+
+      // Reload available schedules and user stats
+      loadAvailableSchedules();
+      loadUserBookingStats();
+    } catch (error) {
+      console.error("Error booking appointment:", error);
+      message.error(error.message || "Không thể đặt lịch");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setIsModalVisible(false);
+    bookingForm.resetFields();
+    setSelectedCoach(null);
+    setSelectedSlot(null);
+  };
+
+  if (initialLoading) {
     return (
-        <div>
-            <Navbar />
-            <div className="booking-page">
-                <div className="booking-container">
-                    <Title level={2}>Book a Coaching Session</Title>
-                    <Text type="secondary">
-                        Select a date and choose from available coaches to book your smoking cessation session.
-                    </Text>
-
-                    <Card style={{ marginTop: 24 }}>
-                        <div className="date-selection" style={{ maxWidth: 350, margin: '0 auto', marginBottom: 32 }}>
-                            <Title level={4}>
-                                <CalendarOutlined /> Select Date
-                            </Title>
-                            <DatePicker
-                                style={{ width: '100%' }}
-                                placeholder="Choose a date"
-                                onChange={handleDateChange}
-                                disabledDate={(current) => current && current < moment().startOf('day')}
-                            />
-                        </div>
-                        <div className="coaches-section-below">
-                            <Title level={4} style={{ textAlign: 'center', marginBottom: 24 }}>
-                                <UserOutlined /> Available Coaches
-                            </Title>
-                            {selectedDate ? (
-                                availableCoaches.length > 0 ? (
-                                    <Row gutter={[24, 24]} justify="center">
-                                        {availableCoaches.map((coach) => (
-                                            <Col xs={24} sm={12} md={8} key={coach.coach_id} style={{ display: 'flex', justifyContent: 'center' }}>
-                                                <Card className="coach-card improved-coach-card">
-                                                    <div className="coach-header improved-coach-header">
-                                                        <Avatar size={72} icon={<UserOutlined />} className="improved-coach-avatar" />
-                                                    </div>
-                                                    <div className="coach-info improved-coach-info" style={{ alignItems: 'center', textAlign: 'center' }}>
-                                                        <Title level={5} style={{ marginBottom: 0, color: '#189c38', fontWeight: 700 }}>{coach.name}</Title>
-                                                        <Text type="secondary" style={{ color: '#189c38', fontWeight: 500 }}>{coach.specialization}</Text>
-                                                        <div className="coach-stats improved-coach-stats">
-                                                            <Rate disabled defaultValue={coach.rating} style={{ color: '#52c41a' }} />
-                                                            <Text type="secondary" style={{ marginLeft: 8 }}>({coach.totalSessions} sessions)</Text>
-                                                        </div>
-                                                    </div>
-                                                    <div className="coach-bio improved-coach-bio" style={{ textAlign: 'center', margin: '10px 0', color: '#333', fontSize: 14 }}>
-                                                        <Text>{coach.bio}</Text>
-                                                    </div>
-                                                    <div className="available-slots improved-available-slots">
-                                                        <Title level={5} style={{ color: '#189c38', marginBottom: 8, fontSize: 15 }}>
-                                                            <ClockCircleOutlined /> Available Slots
-                                                        </Title>
-                                                        <div className="slots-grid improved-slots-grid">
-                                                            {coach.availableSchedules.map((schedule) => {
-                                                                const slot = formatTimeSlot(schedule);
-                                                                return (
-                                                                    <Button
-                                                                        key={schedule.schedule_id}
-                                                                        type="primary"
-                                                                        size="small"
-                                                                        onClick={() => handleSelectSlotForBooking(coach, schedule)}
-                                                                        style={{ margin: '4px', background: '#52c41a', borderColor: '#52c41a', fontWeight: 600, fontSize: 15, borderRadius: 8 }}
-                                                                    >
-                                                                        {slot.time} - {slot.endTime}
-                                                                    </Button>
-                                                                );
-                                                            })}
-                                                        </div>
-                                                    </div>
-                                                </Card>
-                                            </Col>
-                                        ))}
-                                    </Row>
-                                ) : (
-                                    <div className="no-availability" style={{ textAlign: 'center', margin: '32px 0' }}>
-                                        <Text type="secondary">
-                                            No coaches available for the selected date. Please try another date.
-                                        </Text>
-                                    </div>
-                                )
-                            ) : (
-                                <div className="select-date-prompt" style={{ textAlign: 'center', margin: '32px 0' }}>
-                                    <Text type="secondary">
-                                        Please select a date to see available coaches and time slots.
-                                    </Text>
-                                </div>
-                            )}
-                        </div>
-                    </Card>
-                </div>
-
-                {/* Booking Modal */}
-                <FormModal
-                    title="Book Appointment"
-                    visible={isModalVisible}
-                    onCancel={handleCancel}
-                    onSubmit={handleBookingSubmit}
-                    form={bookingForm}
-                    loading={loading}
-                    width={600}
-                >
-                    {selectedCoach && selectedSlot && (
-                        <>
-                            <div style={{ marginBottom: 16 }}>
-                                <h4>Coach Information</h4>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                                    <Avatar size={48} icon={<UserOutlined />} />
-                                    <div>
-                                        <div style={{ fontWeight: 'bold' }}>{selectedCoach.name}</div>
-                                        <div style={{ color: '#666' }}>{selectedCoach.specialization}</div>
-                                        <Rate disabled defaultValue={selectedCoach.rating} style={{ fontSize: 14 }} />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div style={{ marginBottom: 16 }}>
-                                <h4>Session Details</h4>
-                                <div style={{ background: '#f6ffed', padding: 12, borderRadius: 6 }}>
-                                    <div><strong>Date:</strong> {selectedDate?.format('MMMM DD, YYYY')}</div>
-                                    <div><strong>Time:</strong> {selectedSlot.time} - {selectedSlot.endTime}</div>
-                                    <div><strong>Duration:</strong> {selectedSlot.duration} minutes</div>
-                                </div>
-                            </div>
-
-                            <Form.Item
-                                name="notes"
-                                label="Additional Notes (Optional)"
-                            >
-                                <Input.TextArea
-                                    rows={4}
-                                    placeholder="Any specific concerns or topics you'd like to discuss..."
-                                />
-                            </Form.Item>
-                        </>
-                    )}
-                </FormModal>
+      <>
+        <Navbar />
+        <div className="booking-page">
+          <div className="booking-loading-container">
+            <div className="text-center">
+              <div className="loading-icon">
+                <Spin size="large" style={{ color: "#52c41a" }} />
+              </div>
+              <div
+                style={{
+                  fontSize: 20,
+                  color: "#2c3e50",
+                  fontWeight: "600",
+                  textShadow: "2px 2px 8px rgba(0,0,0,0.1)",
+                }}
+              >
+                📅 Đang tải huấn luyện viên...
+              </div>
+              <div
+                style={{
+                  fontSize: 14,
+                  color: "#7f8c8d",
+                  marginTop: 8,
+                  fontStyle: "italic",
+                }}
+              >
+                Chuẩn bị danh sách huấn luyện viên cho bạn
+              </div>
             </div>
+          </div>
         </div>
+      </>
     );
+  }
+
+  return (
+    <>
+      <Navbar />
+      <div className="booking-page">
+        <div className="booking-wrapper">
+          <div className="booking-container">
+            {/* Header Section */}
+            <div className="booking-header-section">
+              <h1 className="booking-header-title">Đặt lịch huấn luyện</h1>
+              <div className="booking-header-badge">
+                📅 Hành trình cai nghiện thuốc lá của bạn
+              </div>
+              <p className="booking-header-subtitle">
+                Chọn ngày và thời gian phù hợp để đặt lịch với các huấn luyện viên chuyên nghiệp. Chúng tôi sẽ hỗ trợ bạn trong hành trình cai thuốc lá thành công.
+              </p>
+            </div>
+
+            {/* Hiển thị thống kê đặt lịch của user */}
+            <Alert
+              message={`Bạn đã đặt ${userBookingStats.weeklyCount}/${userBookingStats.maxAllowed} buổi tư vấn trong tuần này`}
+              type={
+                userBookingStats.weeklyCount >= userBookingStats.maxAllowed
+                  ? "warning"
+                  : "info"
+              }
+              showIcon
+              style={{ marginTop: 16, marginBottom: 16 }}
+              icon={<ExclamationCircleOutlined />}
+            />
+            
+            <Card style={{ marginTop: 24 }}>
+              <Row gutter={[24, 24]}>
+                {/* Left Side - Date Selection */}
+                <Col xs={24} md={8}>
+                  <div className="booking-left-panel">
+                    <div className="date-selection">
+                      <Title level={4}>
+                        <CalendarOutlined /> Chọn lịch hẹn
+                      </Title>
+                      <p className="date-selection-subtitle">Vui lòng chọn ngày và khung giờ để xem các huấn luyện viên có sẵn</p>
+                      
+                      <div className="date-selection-field">
+                        <div className="field-label">Chọn ngày</div>
+                        <DatePicker
+                          style={{ width: "100%" }}
+                          placeholder="Chọn một ngày"
+                          onChange={handleDateChange}
+                          disabledDate={(current) =>
+                            current && current < moment().startOf("day")
+                          }
+                        />
+                      </div>
+                      
+                      <div className="time-selection-field">
+                        <div className="field-label">Chọn khung giờ</div>
+                        <Select
+                          placeholder="Tất cả khung giờ"
+                          style={{ width: "100%" }}
+                          disabled={!selectedDate}
+                          onChange={handleTimeFrameChange}
+                          allowClear
+                        >
+                          <Option value="morning">Buổi sáng (8:00 - 12:00)</Option>
+                          <Option value="afternoon">Buổi chiều (13:00 - 17:00)</Option>
+                          <Option value="evening">Buổi tối (18:00 - 21:00)</Option>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
+                </Col>
+
+                {/* Right Side - Available Coaches */}
+                <Col xs={24} md={16}>
+                  <div className="coaches-section">
+                    <Title level={4}>
+                      <UserOutlined /> Huấn luyện viên có sẵn
+                    </Title>
+                    <div className="coach-availability-subtitle">
+                      {selectedDate ? 
+                        `${availableCoaches.length} huấn luyện viên đang có sẵn vào ngày ${selectedDate.format('DD/MM/YYYY')}` : 
+                        'Vui lòng chọn ngày ở bên trái để xem các huấn luyện viên có sẵn'}
+                    </div>
+                    
+                    {selectedDate ? (
+                      availableCoaches.length > 0 ? (
+                        <div className="coach-list">
+                          {availableCoaches.map((coach) => (
+                            <Card className="coach-card-horizontal" key={coach.coach_id}>
+                              <div className="coach-card-content">
+                                <div className="coach-card-left">
+                                  <Avatar
+                                    size={80}
+                                    icon={<UserOutlined />}
+                                    style={{ backgroundColor: "#189c38" }}
+                                  />
+                                </div>
+                                <div className="coach-card-middle">
+                                  <div className="coach-name">{coach.name}</div>
+                                  <div className="coach-specialization">{coach.specialization}</div>
+                                </div>
+                                <div className="coach-card-right">
+                                  <div className="coach-slot-info">
+                                    <div className="slot-title">
+                                      <ClockCircleOutlined /> Slot tiếp theo:
+                                    </div>
+                                    <div className="available-slots">
+                                      {coach.availableSchedules.map((schedule) => {
+                                        const slot = formatTimeSlot(schedule);
+                                        const isDisabled =
+                                          userBookingStats.weeklyCount >=
+                                          userBookingStats.maxAllowed;
+                                        return (
+                                          <Button
+                                            key={schedule.schedule_id}
+                                            type="primary"
+                                            disabled={isDisabled}
+                                            onClick={() =>
+                                              handleSelectSlotForBooking(
+                                                coach,
+                                                schedule
+                                              )
+                                            }
+                                            style={{
+                                              margin: "4px",
+                                              background: isDisabled
+                                                ? "#d9d9d9"
+                                                : "#52c41a",
+                                              borderColor: isDisabled
+                                                ? "#d9d9d9"
+                                                : "#52c41a",
+                                              borderRadius: 8,
+                                            }}
+                                          >
+                                            {slot.time} - {slot.endTime}
+                                          </Button>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </Card>
+                          ))}
+                        </div>
+                      ) : (
+                        <div
+                          className="no-availability"
+                          style={{ textAlign: "center", margin: "32px 0" }}
+                        >
+                          <Text type="secondary">
+                            Không có huấn luyện viên nào có sẵn cho ngày đã chọn.
+                            Vui lòng thử ngày khác.
+                          </Text>
+                        </div>
+                      )
+                    ) : (
+                      <div
+                        className="select-date-prompt"
+                        style={{ textAlign: "center", margin: "32px 0" }}
+                      >
+                        <Text type="secondary">
+                          Vui lòng chọn ngày ở bên trái để xem danh sách huấn luyện viên và khung giờ có sẵn.
+                        </Text>
+                      </div>
+                    )}
+                  </div>
+                </Col>
+              </Row>
+            </Card>
+          </div>
+
+          {/* Booking Modal */}
+          <FormModal
+            title="Xác nhận đặt lịch hẹn"
+            visible={isModalVisible}
+            onCancel={handleCancel}
+            onSubmit={handleBookingSubmit}
+            form={bookingForm}
+            loading={loading}
+            width={650}
+            okText="Đặt lịch ngay"
+            cancelText="Hủy"
+          >
+            {selectedCoach && selectedSlot && (
+              <>
+                <div className="booking-modal-content">
+                  <div className="booking-modal-header">
+                    <div className="booking-modal-title">Buổi tư vấn với huấn luyện viên</div>
+                    <div className="booking-modal-subtitle">Vui lòng xác nhận thông tin đặt lịch của bạn</div>
+                  </div>
+                  
+                  <div className="booking-modal-coach-info">
+                    <Avatar size={64} icon={<UserOutlined />} style={{ backgroundColor: "#189c38" }} />
+                    <div className="booking-modal-coach-details">
+                      <div className="booking-modal-coach-name">{selectedCoach.name}</div>
+                      <div className="booking-modal-coach-specialization">{selectedCoach.specialization}</div>
+                    </div>
+                  </div>
+
+                  <div className="booking-modal-details">
+                    <div className="booking-modal-details-title">Chi tiết buổi tư vấn</div>
+                    <div className="booking-modal-details-grid">
+                      <div className="booking-modal-details-item">
+                        <div className="booking-modal-details-label">Ngày</div>
+                        <div className="booking-modal-details-value">
+                          <CalendarOutlined /> {selectedDate?.format("DD/MM/YYYY")}
+                        </div>
+                      </div>
+                      <div className="booking-modal-details-item">
+                        <div className="booking-modal-details-label">Thời gian</div>
+                        <div className="booking-modal-details-value">
+                          <ClockCircleOutlined /> {selectedSlot.time} - {selectedSlot.endTime}
+                        </div>
+                      </div>
+                      <div className="booking-modal-details-item">
+                        <div className="booking-modal-details-label">Thời lượng</div>
+                        <div className="booking-modal-details-value">{selectedSlot.duration} phút</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Form.Item name="notes" label="Ghi chú bổ sung (Tùy chọn)">
+                    <Input.TextArea
+                      rows={3}
+                      placeholder="Bất kỳ mối quan tâm cụ thể hoặc chủ đề nào bạn muốn thảo luận..."
+                    />
+                  </Form.Item>
+                </div>
+              </>
+            )}
+          </FormModal>
+        </div>
+      </div>
+    </>
+  );
 };
 
-export default BookingPage; 
+export default BookingPage;

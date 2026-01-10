@@ -1,0 +1,125 @@
+/* Profile page specific styles - scoped module CSS */
+
+.profileLoadingContainer {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.profileHeader {
+  background: white;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e8e8e8;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  position: relative;
+  z-index: 10;
+}
+
+.profileBackBtn {
+  color: #1890ff;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.profileBackBtn:hover {
+  color: #40a9ff;
+  background-color: #f0f8ff;
+}
+
+.profileContent {
+  padding: 24px;
+  min-height: calc(100vh - 90px);
+  background: #f5f5f5;
+}
+
+.profileInfoCard {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.profileInfoCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.profileAvatarSection {
+  margin-bottom: 24px;
+}
+
+.profileRoleSection {
+  margin-bottom: 24px;
+}
+
+.profileDetailsSection {
+  text-align: left;
+}
+
+.profileDetailItem {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #fafafa;
+  border-radius: 8px;
+  border-left: 4px solid #1890ff;
+}
+
+.profileEditCard {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.profileEditCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .profileHeader {
+    padding: 12px 16px;
+  }
+
+  .profileContent {
+    padding: 16px;
+  }
+
+  .profileDetailItem {
+    padding: 8px;
+  }
+}
+
+/* Custom form styles */
+.profileEditCard .ant-form-item-label>label {
+  font-weight: 600;
+  color: #262626;
+}
+
+.profileEditCard .ant-input,
+.profileEditCard .ant-picker {
+  border-radius: 8px;
+  border: 1px solid #d9d9d9;
+  transition: all 0.3s ease;
+}
+
+.profileEditCard .ant-input:hover,
+.profileEditCard .ant-picker:hover {
+  border-color: #40a9ff;
+}
+
+.profileEditCard .ant-input:focus,
+.profileEditCard .ant-picker:focus {
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+.profileEditCard .ant-btn-primary {
+  background: linear-gradient(135deg, #1890ff 0%, #40a9ff 100%);
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.profileEditCard .ant-btn-primary:hover {
+  background: linear-gradient(135deg, #40a9ff 0%, #1890ff 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+}

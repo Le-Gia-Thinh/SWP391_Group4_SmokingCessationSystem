@@ -1,0 +1,598 @@
+/* Community Page Styles - Combined Blog and Chat */
+.community-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f4fff6 0%, #e8f5e8 100%);
+}
+
+.community-content-page {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    min-height: 0;
+}
+
+.community-container-page {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.community-card-page {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    height: 100%;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1.5px solid #d9f7be;
+}
+
+/* Responsive Design, Tab Styles, Empty State Styles, Form Modal Styles, Scrollbar Styles, ... giữ lại nếu dùng chung */
+@media (max-width: 768px) {
+    .community-content-page {
+        padding: 16px;
+    }
+
+    .topics-section {
+        flex-direction: column;
+        height: auto;
+    }
+
+    .topics-sidebar,
+    .sessions-sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid #f0f0f0;
+        padding-right: 0;
+        padding-bottom: 16px;
+        margin-bottom: 16px;
+    }
+
+    .message-input {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .send-button {
+        width: 100%;
+    }
+
+    .blog-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+}
+
+.messages-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.messages-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.messages-container::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.messages-container::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+.message-item {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.ant-tabs-tab {
+    font-weight: 500;
+}
+
+.ant-tabs-tab-active {
+    font-weight: 600;
+}
+
+.ant-tabs-ink-bar {
+    background: #52c41a;
+}
+
+.ant-empty {
+    color: #999;
+}
+
+.ant-empty-description {
+    color: #666;
+}
+
+.ant-modal-content {
+    border-radius: 12px;
+}
+
+.ant-form-item-label>label {
+    font-weight: 600;
+    color: #333;
+}
+
+.ant-input,
+.ant-input-textarea {
+    border-radius: 8px;
+    border: 1px solid #d9d9d9;
+    transition: all 0.3s ease;
+}
+
+.ant-input:focus,
+.ant-input-textarea:focus {
+    border-color: #52c41a;
+    box-shadow: 0 0 0 2px rgba(82, 196, 26, 0.2);
+}
+
+.ant-input-textarea textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+.ant-form-vertical .ant-form-item {
+    margin-bottom: 24px;
+}
+
+.ant-form-item-explain-error {
+    color: #ff4d4f;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+.ant-tabs-content-holder {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    height: 100%;
+}
+
+/* --- START: Gộp từ Blog/Blog.css --- */
+.blog-page {
+    width: 100%;
+    min-height: 100vh;
+    background: linear-gradient(180deg, #eaffd0 0%, #d2f7c5 60%, #eaffd0 100%);
+    display: flex;
+    justify-content: center;
+    padding: 60px 0;
+}
+
+.blog-content-container {
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    padding: 40px;
+    width: 100%;
+    max-width: 960px;
+}
+
+.blog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.featured-blogs {
+    margin-bottom: 48px;
+}
+
+.normal-blogs {
+    margin-bottom: 32px;
+}
+
+.blog-meta {
+    margin-top: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.blog-feature-card {
+    border: 1px solid #52c41a !important;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 1;
+    background: #fff;
+}
+
+.blog-feature-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+    border: 1px solid #52c41a !important;
+    z-index: 2;
+}
+
+.ant-badge-ribbon-wrapper {
+    overflow: visible !important;
+    display: block;
+    position: relative;
+}
+
+.ant-carousel .slick-slide>div {
+    padding: 0 12px;
+}
+
+@media (max-width: 768px) {
+    .blog-page {
+        padding: 24px 0;
+    }
+
+    .blog-content-container {
+        padding: 24px 16px;
+    }
+
+    .blog-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+}
+
+.ant-modal-content {
+    border-radius: 12px;
+}
+
+.ant-form-item-label>label {
+    font-weight: 600;
+    color: #333;
+}
+
+.ant-input,
+.ant-input-textarea {
+    border-radius: 8px;
+    border: 1px solid #d9d9d9;
+    transition: all 0.3s ease;
+}
+
+.ant-input:focus,
+.ant-input-textarea:focus {
+    border-color: #52c41a;
+    box-shadow: 0 0 0 2px rgba(82, 196, 26, 0.2);
+}
+
+.ant-input-textarea textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+.ant-form-vertical .ant-form-item {
+    margin-bottom: 24px;
+}
+
+.ant-form-item-explain-error {
+    color: #ff4d4f;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+/* --- END: Gộp từ Blog/Blog.css --- */
+
+/* --- START: Gộp từ Chat/ChatPage.css --- */
+.chat-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f4fff6 0%, #e8f5e8 100%);
+}
+
+.chat-content {
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: calc(100vh - 64px);
+}
+
+.chat-container {
+    width: 100%;
+    max-width: none;
+}
+
+.chat-card {
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1.5px solid #d9f7be;
+}
+
+.chat-section {
+    height: 70vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.messages-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    background: #f6ffed;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    max-height: 50vh;
+}
+
+.loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    gap: 20px;
+}
+
+.message-item {
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.message-item:last-child {
+    border-bottom: none;
+}
+
+.message-content {
+    width: 100%;
+}
+
+.message-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.message-text {
+    margin: 0;
+    padding: 8px 12px;
+    background: white;
+    border-radius: 8px;
+    border-left: 3px solid #52c41a;
+}
+
+.message-input {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+}
+
+.message-input .ant-input {
+    flex: 1;
+    border-radius: 8px;
+}
+
+.send-button {
+    height: 40px;
+    border-radius: 8px;
+    background: linear-gradient(90deg, #52c41a 0%, #73d13d 100%);
+    border-color: #52c41a;
+}
+
+.send-button:hover {
+    background: #73d13d;
+    border-color: #73d13d;
+}
+
+.topics-section {
+    display: flex;
+    flex-direction: row;
+    height: 70vh;
+    gap: 20px;
+}
+
+.topics-sidebar,
+.sessions-sidebar {
+    width: 300px;
+    border-right: 1px solid #f0f0f0;
+    padding-right: 16px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.topics-header,
+.sessions-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f0f0f0;
+    flex-shrink: 0;
+}
+
+.topics-list,
+.sessions-list {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.topic-item {
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 8px;
+}
+
+.topic-item:hover {
+    background: #f5f5f5;
+}
+
+.topic-item.selected,
+.session-item.selected {
+    background: #f6ffed;
+    border: 1.5px solid #52c41a;
+}
+
+.topic-content {
+    width: 100%;
+    font-size: 13px;
+    color: #666;
+}
+
+.topic-creator {
+    font-size: 12px;
+    margin-top: 4px;
+    display: block;
+}
+
+.topic-description {
+    margin: 8px 0 0 0;
+}
+
+.session-item {
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 8px;
+}
+
+.session-item:hover {
+    background: #f5f5f5;
+}
+
+.topic-chat {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.topic-chat>.messages-container {
+    max-height: none;
+    margin-bottom: 0;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.topic-header {
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+.topic-header h4 {
+    margin: 0 0 8px 0;
+}
+
+.session-header {
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+.no-topic-selected {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    color: #999;
+}
+
+@media (max-width: 768px) {
+    .chat-content {
+        padding: 10px;
+    }
+
+    .topics-section {
+        flex-direction: column;
+        height: auto;
+    }
+
+    .topics-sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid #f0f0f0;
+        padding-right: 0;
+        padding-bottom: 16px;
+        margin-bottom: 16px;
+    }
+
+    .message-input {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .send-button {
+        width: 100%;
+    }
+}
+
+.messages-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.messages-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.messages-container::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.messages-container::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+.message-item {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.ant-tabs-tab {
+    font-weight: 600;
+}
+
+.ant-tabs-tab-active {
+    color: #52c41a !important;
+}
+
+.ant-tabs-ink-bar {
+    background: #52c41a !important;
+}
+
+.ant-empty {
+    padding: 40px 0;
+}
+
+.ant-empty-description {
+    color: #999;
+}
+
+/* --- END: Gộp từ Chat/ChatPage.css --- */
