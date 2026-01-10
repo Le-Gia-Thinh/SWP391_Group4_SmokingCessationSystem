@@ -1,0 +1,98 @@
+		FE:
+npm i (để cài đặt thư viện react)
+npm i axios antd (để cài thư viện giao diện và lấy api nếu pull bị thiếu)
+npm run dev (để deloy web)
+		BE:
+npm i 
+npm server.js (để deloy api)
+npm install node-cron
+
+npm install morgan cookie-parser body-parser express-session cors config moment request
+-- 27/6/2025
+npm install socket.io  (giao tiếp hai chiều liên tục)
+npm install multer
+
+npm install canvas-confetti
+npm install howler
+
+Front-End 
+Chạy npm install react-icons để cài bộ icon đã
+npm install bootstrap 
+npm install react-slick slick-carousel
+npm install moment --legacy-peer-deps
+npm install uuid
+
+chạy cả hai front and end
+npm install react-credit-cards-2 --legacy-peer-deps
+npm install prop-types --save --legacy-peer-deps
+npm install uuid --legacy-peer-deps
+
+
+payment 
+
+ npm install -g ngrok
+ mở powershell chạy admin 
+ # 1. Cho phép chạy scripts trong phiên này
+  Set-ExecutionPolicy Bypass -Scope Process -Force
+
+# 2. Bật chế độ TLS 1.2 để tải về an toàn
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+# 3. Tải về và cài Chocolatey
+iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+tiếp tục gõ
+choco --version
+choco install ngrok
+ngrok version 
+sẽ báo version, nghĩa là ngrok đã sẵn sàng.
+  
+
+  ngrok http 5000
+
+  sau đó hiện lên bảng forward :  https://279d-171-249-255-195.ngrok-free.app -> http://localhost:5000  
+//có tiền mới làm đc :)))
+tiếp tục đăng ký sub domain :
+Đăng ký tài khoản ngrok miễn phí → lấy authtoken ở https://dashboard.ngrok.com/get-started/your-authtoken
+ngrok config add-authtoken YOUR_NGROK_AUTHTOKEN
+
+authtoken: YOUR_NGROK_AUTHTOKEN
+tunnels:
+  smokingsession:
+    proto: http
+    addr: 5000
+    subdomain: smokingsession
+Mỗi lần chạy server xong chỉ việc:
+ngrok start smokingsession
+npx ngrok http 5000    
+
+// làm miễn phíWWW
+npm install axios dayjs
+npm i @payos/node
+npm install moment
+npm install canvas-confetti
+
+npm install howler
+<<<<<<< HEAD
+<<<<<<< HEAD
+
+npm install chart.js react-chartjs-2 --legacy-peer-deps
+npm install bootstrap
+
+npm install bootstrap hoặc npm install bootstrap --save --legacy-peer-dep    
+npm i jquery
+	npm i owl.carousel
+ npm i wow.js
+
+ ĐẦY ĐỦ : npm i jquery jquery.counterup owl.carousel wowjs bootstrap bootstrap-icons
+
+ npm i react-countup (--legacy-peer-deps nếu bên kia không tải được thì thêm dòng --....)
+ npm install wowjs animate.css (--legacy-peer-deps)
+ npm install react-use --save --legacy-peer-dep 
+ npm install react-parallax --save --legacy-peer-dep 
+
+
+npm install chart.js react-chartjs-2 --legacy-peer-deps
+npm install bootstrap
+npm install @tinymce/tinymce-react --legacy-peer-deps
+
+

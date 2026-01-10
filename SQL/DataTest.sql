@@ -1,0 +1,507 @@
+-- ===============================
+-- TEST DATA – SMOKING CESSATION
+-- ===============================
+
+-- xóa hết dữ liệu trong bảng USER_BEHAVIOR_TASK_LOG để tránh lỗi khi tạo mới
+  DELETE FROM USER_BEHAVIOR_TASK_LOG;
+
+-- 1. CUSTOMER
+INSERT INTO CUSTOMER (
+    username, password_hash, full_name, email, phone_number, date_of_birth,
+    registration_date, user_role, account_status, ftnd_level, login_provider, google_id
+)
+VALUES
+-- Admins
+('sysadmin_swp391', 'hashed_123456', N'Admin', 'admin1@gmail.com', '0901234567', '1990-01-01', GETDATE(), 'admin', 'active', NULL, 'local', NULL),
+('manage', 'hashed_123456', N'Quản Trị Viên', 'admin2@gmail.com', '0905555555', '1982-04-15', GETDATE(), 'admin', 'active', NULL, 'local', NULL),
+('qtv', 'hashed_123456', N'Điều Hành viên', 'admin3@gmail.com', '0906666666', '1983-08-22', GETDATE(), 'admin', 'active', NULL, 'local', NULL),
+
+-- Coaches
+('coach1', 'hashed_123456', N'Thịnh Lừa Đảo', 'coach1@gmail.com', '0903456789', '1985-05-20', GETDATE(), 'coach', 'active', NULL, 'local', NULL),
+('coach2', 'hashed_123456', N'Nguyễn Quốc Bảo', 'coach2@gmail.com', '0907777777', '1980-07-10', GETDATE(), 'coach', 'active', NULL, 'local', NULL),
+('coach3', 'hashed_123456', N'Huỳnh Trung Chính', 'coach3@gmail.com', '0908888888', '1987-12-05', GETDATE(), 'coach', 'active', NULL, 'local', NULL),
+
+-- Members
+('member1', 'hashed_123456', N'Nghiêm Tuấn Anh', 'member1@gmail.com', '0902345678', '1995-03-10', GETDATE(), 'member', 'active', N'Medium', 'local', NULL),
+('member2', 'hashed_123456', N'Nguyễn Văn Khoa', 'member2@gmail.com', '0911111111', '1993-07-20', GETDATE(), 'member', 'active', N'High', 'local', NULL),
+('member3', 'hashed_123456', N'Hoàng Văn Chung', 'mem3@gmail.com', '0922222222', '1992-02-02', GETDATE(), 'member', 'active', N'Medium', 'local', NULL),
+('member4', 'hashed_123456', N'Phạm Thị Dung', 'mem4@gmail.com', '0933333333', '1991-11-11', GETDATE(), 'member', 'active', N'High', 'local', NULL),
+('member5', 'hashed_123456', N'Vũ Minh Anh', 'mem5@gmail.com', '0944444444', '1990-12-12', GETDATE(), 'member', 'active', N'Low', 'local', NULL),
+('member6', 'hashed_123456', N'Nguyễn Thị Thiên Huyền', 'member6@gmail.com', '0944444444', '1990-12-10', GETDATE(), 'member', 'active', N'Low', 'local', NULL),
+('member7', 'hashed_123456', N'Vũ Đào Hoa', 'member7@test.com', '0944444444', '1990-12-8', GETDATE(), 'member', 'active', N'Low', 'local', NULL);
+
+
+-- 2. COACH
+INSERT INTO COACH (user_id, specialization, bio, experience_years, google_meet_link)
+SELECT user_id, N'Tâm lý – Hành vi', N'Tôi đã hỗ trợ hơn 100 người cai nghiện thành công.', 7, 'https://meet.google.com/test-link-coach1'
+FROM CUSTOMER WHERE username = 'coach1';
+
+INSERT INTO COACH (user_id, specialization, bio, experience_years, google_meet_link)
+SELECT user_id, N'Kỹ thuật thay thế thói quen', N'Tôi giúp học viên sử dụng hành vi thay thế tích cực để giảm cảm giác thèm thuốc.', 5, 'https://meet.google.com/test-link-coach2'
+FROM CUSTOMER WHERE username = 'coach2';
+
+INSERT INTO COACH (user_id, specialization, bio, experience_years, google_meet_link)
+SELECT user_id, N'Dinh dưỡng – Lối sống lành mạnh', N'Tôi hỗ trợ người dùng cải thiện sức khỏe thông qua chế độ ăn và sinh hoạt.', 4, 'https://meet.google.com/test-link-coach3'
+FROM CUSTOMER WHERE username = 'coach3';
+
+
+-- 3. USER_PROFILE
+INSERT INTO USER_PROFILE (user_id, smoking_years, daily_cigarettes, monthly_expense, preferred_brand, quit_reasons, health_issues, target_quit_date)
+SELECT user_id, 5, 15, 100000, N'Vinataba', N'Vì gia đình', N'Ho nhiều, khó thở', '2025-07-01'
+FROM CUSTOMER WHERE username = 'member2';
+
+
+-- 4. FTND_RESULT
+INSERT INTO FTND_RESULT (user_id, level, submitted_at)
+SELECT user_id, N'High', GETDATE() FROM CUSTOMER WHERE username = 'member1';
+INSERT INTO FTND_RESULT (user_id, level, submitted_at)
+SELECT user_id, N'Medium', GETDATE() FROM CUSTOMER WHERE username = 'member2';
+INSERT INTO FTND_RESULT (user_id, level, submitted_at)
+SELECT user_id, N'High', GETDATE() FROM CUSTOMER WHERE username = 'member3';
+INSERT INTO FTND_RESULT (user_id, level, submitted_at)
+SELECT user_id, N'Low', GETDATE() FROM CUSTOMER WHERE username = 'member4';
+INSERT INTO FTND_RESULT (user_id, level, submitted_at)
+SELECT user_id, N'Low', GETDATE() FROM CUSTOMER WHERE username = 'member5';
+
+
+-- 5. CESSATION_PLAN
+INSERT INTO CESSATION_PLAN (
+    user_id, plan_name, start_date, end_date, month_quit,
+    target_quit_date, frequency_per_day, plan_type, plan_source,
+    current_stage, strategy, is_active, created_at, last_updated, template_id,
+    quit_reason_summary
+)
+SELECT user_id, N'Giảm hút trong 14 ngày', '2025-06-10', '2025-06-24', 1, '2025-06-24', 8,
+       'template', 'user', 'Phase 1', 
+       N'Bắt đầu giảm từ từ và ghi nhận cảm xúc mỗi ngày.', 1, GETDATE(), GETDATE(), NULL, 
+       N'Vì sức khỏe con cái'
+FROM CUSTOMER WHERE username = 'member2';
+
+INSERT INTO CESSATION_PLAN (
+    user_id, plan_name, start_date, end_date, month_quit,
+    target_quit_date, frequency_per_day, plan_type, plan_source,
+    current_stage, strategy, is_active, created_at, last_updated, template_id,
+    quit_reason_summary
+)
+SELECT user_id, N'Tránh kích thích hút thuốc', '2025-06-15', '2025-07-15', 1, '2025-07-15', 12,
+       'custom', 'user', 'Phase 1', 
+       N'Ghi chú môi trường dễ hút thuốc và thay đổi không gian sống.', 1, GETDATE(), GETDATE(), NULL,
+       N'Tôi muốn kiểm soát bản thân tốt hơn'
+FROM CUSTOMER WHERE username = 'member3';
+
+INSERT INTO CESSATION_PLAN (
+    user_id, plan_name, start_date, end_date, month_quit,
+    target_quit_date, frequency_per_day, plan_type, plan_source,
+    current_stage, strategy, is_active, created_at, last_updated, template_id,
+    quit_reason_summary
+)
+SELECT user_id, N'Tập trung vào thể dục thay thế', '2025-06-20', '2025-07-10', 1, '2025-07-10', 10,
+       'template', 'user', 'Phase 2', 
+       N'Tập luyện mỗi sáng để thay thế cảm giác thèm hút.', 1, GETDATE(), GETDATE(), NULL, 
+       N'Tôi đang cải thiện thể lực'
+FROM CUSTOMER WHERE username = 'member4';
+
+INSERT INTO CESSATION_PLAN (
+    user_id, plan_name, start_date, end_date, month_quit,
+    target_quit_date, frequency_per_day, plan_type, plan_source,
+    current_stage, strategy, is_active, created_at, last_updated, template_id,
+    quit_reason_summary
+)
+SELECT user_id, N'Kế hoạch test', '2025-06-20', '2025-07-10', 1, '2025-07-10', 10,
+       'template', 'user', 'Phase 1', 
+       N'Test kế hoạch để kiểm tra thành tựu.', 1, GETDATE(), GETDATE(), NULL, 
+       N'Test mục tiêu'
+FROM CUSTOMER WHERE username = 'member5';
+
+
+-- 6. USER_SCORE
+-- member1
+MERGE USER_SCORE AS target
+USING (SELECT user_id FROM CUSTOMER WHERE username = 'member1') AS source
+ON target.user_id = source.user_id
+WHEN MATCHED THEN
+  UPDATE SET total_points = 120, current_level = 'Intermediate', last_updated = GETDATE()
+WHEN NOT MATCHED THEN
+  INSERT (user_id, total_points, current_level, last_updated)
+  VALUES (source.user_id, 120, 'Intermediate', GETDATE());
+
+-- member2
+MERGE USER_SCORE AS target
+USING (SELECT user_id FROM CUSTOMER WHERE username = 'member2') AS source
+ON target.user_id = source.user_id
+WHEN MATCHED THEN
+  UPDATE SET total_points = 500, current_level = 'Advanced', last_updated = GETDATE()
+WHEN NOT MATCHED THEN
+  INSERT (user_id, total_points, current_level, last_updated)
+  VALUES (source.user_id, 500, 'Advanced', GETDATE());
+
+-- member3
+MERGE USER_SCORE AS target
+USING (SELECT user_id FROM CUSTOMER WHERE username = 'member3') AS source
+ON target.user_id = source.user_id
+WHEN MATCHED THEN
+  UPDATE SET total_points = 1200, current_level = 'Master', last_updated = GETDATE()
+WHEN NOT MATCHED THEN
+  INSERT (user_id, total_points, current_level, last_updated)
+  VALUES (source.user_id, 1200, 'Master', GETDATE());
+
+-- member4
+MERGE USER_SCORE AS target
+USING (SELECT user_id FROM CUSTOMER WHERE username = 'member4') AS source
+ON target.user_id = source.user_id
+WHEN MATCHED THEN
+  UPDATE SET total_points = 50, current_level = 'Beginner', last_updated = GETDATE()
+WHEN NOT MATCHED THEN
+  INSERT (user_id, total_points, current_level, last_updated)
+  VALUES (source.user_id, 50, 'Beginner', GETDATE());
+
+
+-- 7. HABIT_LOG
+-- member2
+INSERT INTO HABIT_LOG (user_id, log_date, time_slot, completed, points_awarded)
+SELECT c.user_id, '2025-06-20', 2, 1, 5
+FROM CUSTOMER c WHERE c.username = 'member2';
+
+-- member3
+INSERT INTO HABIT_LOG (user_id, log_date, time_slot, completed, points_awarded)
+SELECT c.user_id, '2025-06-20', 3, 1, 5
+FROM CUSTOMER c WHERE c.username = 'member3';
+
+-- member4
+INSERT INTO HABIT_LOG (user_id, log_date, time_slot, completed, points_awarded)
+SELECT c.user_id, '2025-06-20', 4, 1, 5
+FROM CUSTOMER c WHERE c.username = 'member4';
+
+
+-- 8. COACH_SCHEDULE
+DECLARE @start1 DATETIME = DATEADD(DAY, -2, DATEADD(HOUR, 9, CONVERT(DATETIME, CONVERT(DATE, GETDATE()))));
+DECLARE @end1   DATETIME = DATEADD(HOUR, 1, @start1);
+
+DECLARE @start2 DATETIME = DATEADD(DAY, -1, DATEADD(HOUR, 14, CONVERT(DATETIME, CONVERT(DATE, GETDATE()))));
+DECLARE @end2   DATETIME = DATEADD(HOUR, 1, @start2);
+
+INSERT INTO COACH_SCHEDULE (coach_id, start_time, end_time)
+SELECT coach_id, @start1, @end1
+FROM COACH WHERE user_id = (SELECT user_id FROM CUSTOMER WHERE username = 'coach1');
+
+INSERT INTO COACH_SCHEDULE (coach_id, start_time, end_time)
+SELECT coach_id, @start2, @end2
+FROM COACH WHERE user_id = (SELECT user_id FROM CUSTOMER WHERE username = 'coach1');
+
+
+-- 9. COACHING_SESSION
+-- Phiên accepted (member2)
+INSERT INTO COACHING_SESSION (
+    user_id, coach_id, schedule_id, scheduled_time,
+    duration_minutes, session_status, session_type
+)
+SELECT u.user_id, c.coach_id, s.schedule_id, s.start_time,
+       DATEDIFF(MINUTE, s.start_time, s.end_time),
+       'accepted', 'online'
+FROM CUSTOMER u
+JOIN COACH c ON c.user_id = (SELECT user_id FROM CUSTOMER WHERE username = 'coach1')
+JOIN COACH_SCHEDULE s ON s.coach_id = c.coach_id
+WHERE u.username = 'member2' AND s.start_time = @start1;
+
+-- Phiên pending (member3)
+INSERT INTO COACHING_SESSION (
+    user_id, coach_id, schedule_id, scheduled_time,
+    duration_minutes, session_status, session_type
+)
+SELECT u.user_id, c.coach_id, s.schedule_id, s.start_time,
+       DATEDIFF(MINUTE, s.start_time, s.end_time),
+       'pending', 'online'
+FROM CUSTOMER u
+JOIN COACH c ON c.user_id = (SELECT user_id FROM CUSTOMER WHERE username = 'coach1')
+JOIN COACH_SCHEDULE s ON s.coach_id = c.coach_id
+WHERE u.username = 'member3' AND s.start_time = @start2;
+
+
+-- 10. DIRECT_CHAT_THREAD: Tạo luồng chat giữa member2 và coach1
+DECLARE @member_id INT = (SELECT user_id FROM CUSTOMER WHERE username = 'member2');
+DECLARE @coach_user_id INT = (SELECT user_id FROM CUSTOMER WHERE username = 'coach1');
+DECLARE @coach_id INT = (SELECT coach_id FROM COACH WHERE user_id = @coach_user_id);
+
+-- Kiểm tra nếu chưa có thread thì mới tạo
+IF NOT EXISTS (
+    SELECT 1 FROM DIRECT_CHAT_THREAD WHERE member_id = @member_id AND coach_id = @coach_id
+)
+BEGIN
+    INSERT INTO DIRECT_CHAT_THREAD (member_id, coach_id, created_at)
+    VALUES (@member_id, @coach_id, GETDATE());
+END;
+
+
+-- 10.1. DIRECT_MESSAGE: Coach và member trò chuyện qua thread chat
+DECLARE @thread_id1 INT;
+
+-- Lấy thread_id vừa tạo hoặc đã tồn tại
+SELECT @thread_id1 = thread_id
+FROM DIRECT_CHAT_THREAD
+WHERE member_id = @member_id AND coach_id = @coach_id;
+
+-- Coach → Member
+INSERT INTO DIRECT_MESSAGE (thread_id, sender_id, sender_role, message, file_url)
+VALUES (
+    @thread_id1,
+    @coach_user_id,
+    'coach',
+    N'Chào bạn, chúng ta sẽ bắt đầu buổi tư vấn lúc 9h nhé!',
+    NULL
+);
+
+-- Member → Coach
+INSERT INTO DIRECT_MESSAGE (thread_id, sender_id, sender_role, message, file_url)
+VALUES (
+    @thread_id1,
+    @member_id,
+    'member',
+    N'Dạ vâng, em đã sẵn sàng!',
+    NULL
+);
+
+
+-- 11. COACHING_MESSAGE
+DECLARE @session_id1 INT;
+
+-- Gán session_id của buổi hẹn giữa member2 và coach1 vào biến
+SELECT @session_id1 = session_id
+FROM COACHING_SESSION
+WHERE user_id = (SELECT user_id FROM CUSTOMER WHERE username = 'member2')
+  AND scheduled_time = @start1;
+
+-- Chèn tin nhắn vào bảng COACHING_MESSAGE
+INSERT INTO COACHING_MESSAGE (session_id, user_id, coach_id, content, sent_at)
+SELECT @session_id1, u.user_id, c.coach_id,
+       N'Lịch hẹn đã được duyệt. Link Meet: ' + c.google_meet_link, GETDATE()
+FROM CUSTOMER u
+JOIN COACH c ON c.user_id = (SELECT user_id FROM CUSTOMER WHERE username = 'coach1')
+WHERE u.username = 'member2';
+
+
+-- 12. COMMUNITY_POST
+INSERT INTO COMMUNITY_POST (user_id, title, content, created_at)
+SELECT user_id, N'Câu chuyện bỏ thuốc thành công của tôi',
+       N'Tôi đã bỏ thuốc nhờ sự hỗ trợ của kế hoạch và huấn luyện viên.', GETDATE()
+FROM CUSTOMER WHERE username = 'member2';
+
+-- Test đạt thành tựu
+INSERT INTO COMMUNITY_POST (user_id, title, content, created_at)
+SELECT user_id, N'Bài viết test thành tựu', N'Mình đang test hệ thống đạt thành tựu', GETDATE()
+FROM CUSTOMER WHERE username = 'member5';
+
+
+-- 13. POST_COMMENT
+INSERT INTO POST_COMMENT (post_id, user_id, content, created_at)
+SELECT p.post_id, c.user_id, N'Bạn làm rất tốt! Hãy tiếp tục cố gắng và kiên trì nhé 💪', GETDATE()
+FROM COMMUNITY_POST p
+JOIN CUSTOMER c ON c.username = 'coach1'
+WHERE p.title = N'Câu chuyện bỏ thuốc thành công của tôi';
+
+
+-- 14. COMMUNITY_CHAT
+INSERT INTO COMMUNITY_CHAT (user_id, content)
+SELECT user_id, N'Chào mọi người, mình vừa bắt đầu hành trình cai thuốc hôm nay!'
+FROM CUSTOMER WHERE username = 'member1';
+
+INSERT INTO COMMUNITY_CHAT (user_id, content)
+SELECT user_id, N'Chúc mừng bạn nhé! Cố lên 💪'
+FROM CUSTOMER WHERE username = 'coach1';
+
+INSERT INTO COMMUNITY_CHAT (user_id, content)
+SELECT user_id, N'Mọi người có mẹo nào giúp vượt qua cơn thèm thuốc không?'
+FROM CUSTOMER WHERE username = 'member3';
+
+
+-- 15. CHAT_TOPIC
+INSERT INTO CHAT_TOPIC (creator_id, title, description)
+SELECT user_id, N'Giảm căng thẳng khi bỏ thuốc',
+       N'Chia sẻ cách bạn thư giãn, thiền, vận động giúp vượt qua cảm giác thèm thuốc.'
+FROM CUSTOMER WHERE username = 'member2';
+
+INSERT INTO CHAT_TOPIC (creator_id, title, description)
+SELECT user_id, N'Bí quyết giữ vững tinh thần mỗi sáng',
+       N'Hãy chia sẻ thói quen buổi sáng lành mạnh giúp bạn không nghĩ đến thuốc lá.'
+FROM CUSTOMER WHERE username = 'coach2';
+
+
+-- 16. TOPIC_MESSAGE
+-- Chủ đề 1
+INSERT INTO TOPIC_MESSAGE (topic_id, user_id, content)
+SELECT 1, user_id, N'Tôi thường nghe nhạc nhẹ và đi dạo khi cảm thấy thèm thuốc.'
+FROM CUSTOMER WHERE username = 'member3';
+
+INSERT INTO TOPIC_MESSAGE (topic_id, user_id, content)
+SELECT 1, user_id, N'Thiền 10 phút mỗi sáng giúp mình rất nhiều. Mọi người nên thử!'
+FROM CUSTOMER WHERE username = 'coach1';
+
+-- Chủ đề 2
+INSERT INTO TOPIC_MESSAGE (topic_id, user_id, content)
+SELECT 2, user_id, N'Mỗi sáng mình uống nước chanh ấm và đọc 10 phút sách.'
+FROM CUSTOMER WHERE username = 'member4';
+
+
+-- 17. ACHIEVEMENTv- xong
+INSERT INTO ACHIEVEMENT (title, description, badge_image, achievement_type, difficulty_level, phase, check_code)
+VALUES
+(N'Hoàn thành FTND', N'“Biết mình biết ta, trăm trận trăm thắng.”', NULL, 'milestone', 1, 1, 'ftnd_submitted'),
+(N'Tạo kế hoạch đầu tiên', N'“Bạn đã bắt đầu hành trình.”', NULL, 'milestone', 1, 1, 'plan_created'),
+(N'Ngày đầu không thuốc', N'“Một ngày sạch thuốc đầu tiên!”', NULL, 'daily', 1, 1, 'first_day_clean'),
+(N'Thành thật với bản thân', N'“Ghi nhận cơn thèm đầu tiên.”', NULL, 'blog', 1, 1, 'blog_first_post'),
+(N'Bắt đầu thay đổi', N'“Bạn đã thử hành vi thay thế đầu tiên.”', NULL, 'daily', 1, 1, 'task_first'),
+
+-- GIAI ĐOẠN 2
+(N'Chiến binh một ngày', N'“Hoàn thành tất cả hành vi thay thế trong một ngày!”', NULL, 'daily', 2, 2, 'task_full_day'),
+(N'Liên tục 3 ngày sạch thuốc', N'“Bạn đang tạo nền móng vững chắc.”', NULL, 'milestone', 2, 2, 'clean_3_days'),
+(N'Hoàn thành 10 nhiệm vụ hành vi', N'“10 bước nhỏ, 1 bước lớn cho sức khỏe.”', NULL, 'daily', 2, 2, 'task_10_total'),
+(N'5 ngày viết blog liên tiếp', N'“Mỗi ngày một bước tiến.”', NULL, 'blog', 2, 2, 'blog_5_in_7days'),
+(N'Chiến binh tuần đầu', N'“Bạn đã không hút thuốc 7 ngày liên tiếp.”', NULL, 'milestone', 2, 2, 'clean_7_days'),
+
+-- GIAI ĐOẠN 3
+(N'Thành tựu 15 ngày', N'“Một nửa tháng đầy ý chí.”', NULL, 'milestone', 3, 3, 'clean_15_days'),
+(N'Đồng hành cùng Coach', N'“Bạn đã tham gia buổi tư vấn đầu tiên.”', NULL, 'coach', 2, 3, 'coach_session_done'),
+(N'Hoàn thành 20 nhiệm vụ hành vi', N'“Thói quen mới đang hình thành.”', NULL, 'daily', 3, 3, 'task_20_total'),
+(N'7 ngày liên tiếp hoàn thành tối thiểu 5 nhiệm vụ mỗi ngày', N'“Bạn đã giữ vững nhịp độ thay đổi trong cả tuần.”', NULL, 'daily', 3, 3, 'task_7days_consistent'),
+(N'Chiến binh 30 ngày', N'“Một tháng – một đời khác biệt.”', NULL, 'milestone', 3, 3, 'clean_30_days'),
+
+-- GIAI ĐOẠN 4–5
+(N'Hoàn thành 40 nhiệm vụ hành vi', N'“Bạn đang xây dựng lại chính mình từng chút một.”', NULL, 'daily', 4, 4, 'task_40_total'),
+(N'Chiến binh 60 ngày', N'“Hai tháng kiên cường – sức khỏe bền vững.”', NULL, 'milestone', 4, 4, 'clean_60_days'),
+(N'Người truyền cảm hứng', N'“Bài viết của bạn đã chạm đến nhiều người.”', NULL, 'community', 4, 4, 'inspiring_post'),
+(N'Chiến thắng bản thân', N'“Bạn đã vượt mốc 90 ngày không thuốc!”', NULL, 'milestone', 5, 4, 'clean_90_days'),
+(N'Mỗi mốc giờ một lựa chọn', N'“Bạn đã thử đủ mọi cách phù hợp với bản thân.”', NULL, 'daily', 4, 4, 'tried_all_slots');
+
+
+-- 18. USER_ACHIEVEMENT - xong
+INSERT INTO USER_ACHIEVEMENT (user_id, achievement_id, earned_date, is_shared)
+SELECT user_id, 1, GETDATE(), 1
+FROM CUSTOMER WHERE username = 'member2';
+
+INSERT INTO USER_ACHIEVEMENT (user_id, achievement_id, earned_date, is_shared)
+SELECT user_id, 2, GETDATE(), 1
+FROM CUSTOMER WHERE username = 'member3';
+
+
+-- 19. USER_BEHAVIOR_TASK_LOG
+INSERT INTO USER_BEHAVIOR_TASK_LOG (user_id, log_date, time_slot, task_id, is_completed, points_awarded)
+SELECT user_id, CAST(GETDATE() AS DATE), 0, 'P1_test', 1, 5
+FROM CUSTOMER WHERE username = 'member5';
+
+
+-- 20. DAILY_SMOKING_SUMMARY
+INSERT INTO DAILY_SMOKING_SUMMARY (user_id, date, total_cigarettes, relapsed)
+SELECT user_id, CAST(GETDATE() AS DATE), 0, 0
+FROM CUSTOMER WHERE username = 'member5';
+
+
+
+
+
+-- ================================================
+-- 21. SUBSCRIPTION & PAYMENT – Test cho member6 (4 gói)
+-- ================================================
+
+SET NOCOUNT ON;
+
+DECLARE @now     DATETIME = GETDATE();
+DECLARE @today   DATE = GETDATE();
+DECLARE @userId  INT;
+DECLARE @subId   INT;
+
+-- Lấy user_id từ username
+SELECT @userId = user_id FROM CUSTOMER WHERE username = 'member6';
+
+-- ─────────────────────────────────────────────
+-- (1) Tạo subscription 3 tháng – package_id = 3
+-- ─────────────────────────────────────────────
+INSERT INTO USER_SUBSCRIPTION
+    (user_id, package_id, start_date, end_date,
+     auto_renew, payment_status)
+VALUES
+    (@userId, 3, @today, DATEADD(DAY, 90, @today),
+     0, 'paid');
+
+SET @subId = SCOPE_IDENTITY();
+
+INSERT INTO PAYMENT
+    (subscription_id, amount, payment_date,
+     transaction_id, payment_method, payment_status,
+     note, order_code)
+VALUES
+    (@subId, 2690000, @today,
+     CONCAT('TEST_', NEWID()), 'redirect', 'paid',
+     N'Thanh toán gói Premium 3 tháng (test)',
+     100000 + ABS(CHECKSUM(NEWID())) % 900000);
+
+-- ─────────────────────────────────────────────
+-- (2) Tạo subscription 6 tháng – package_id = 4
+-- ─────────────────────────────────────────────
+DECLARE @sub6Id INT;
+
+INSERT INTO USER_SUBSCRIPTION
+    (user_id, package_id, start_date, end_date,
+     auto_renew, payment_status)
+VALUES
+    (@userId, 4, @today, DATEADD(DAY, 180, @today),
+     0, 'paid');
+
+SET @sub6Id = SCOPE_IDENTITY();
+
+INSERT INTO PAYMENT
+    (subscription_id, amount, payment_date,
+     order_code, transaction_id, payment_method,
+     payment_status, note)
+VALUES
+    (@sub6Id, 5490000, @today,
+     100000 + ABS(CHECKSUM(NEWID())) % 900000,
+     NEWID(), 'redirect', 'paid',
+     N'Thanh toán gói Premium 6 tháng (test)');
+
+-- ─────────────────────────────────────────────
+-- (3) Tạo subscription 10 ngày – package_id = 7
+-- ─────────────────────────────────────────────
+DECLARE @sub10Id INT;
+
+INSERT INTO USER_SUBSCRIPTION
+    (user_id, package_id, start_date, end_date,
+     auto_renew, payment_status)
+VALUES
+    (@userId, 1, @today, DATEADD(DAY, 10, @today),
+     0, 'paid');
+
+SET @sub10Id = SCOPE_IDENTITY();
+
+INSERT INTO PAYMENT
+    (subscription_id, amount, payment_date,
+     order_code, transaction_id, payment_method,
+     payment_status, note)
+VALUES
+    (@sub10Id, 10000, @today,
+     100000 + ABS(CHECKSUM(NEWID())) % 900000,
+     NEWID(), 'redirect', 'paid',
+     N'Thanh toán gói Test 10 ngày (test)');
+
+-- ─────────────────────────────────────────────
+-- (4) Tạo subscription 1 tháng đã dùng 5 ngày – package_id = 2
+-- ─────────────────────────────────────────────
+DECLARE @sub30Id INT;
+DECLARE @start DATE = DATEADD(DAY, -5, @today);
+DECLARE @end   DATE = DATEADD(DAY, 25, @today);
+
+INSERT INTO USER_SUBSCRIPTION
+    (user_id, package_id, start_date, end_date,
+     auto_renew, payment_status)
+VALUES
+    (@userId, 2, @start, @end, 0, 'paid');
+
+SET @sub30Id = SCOPE_IDENTITY();
+
+INSERT INTO PAYMENT
+    (subscription_id, amount, payment_date,
+     order_code, transaction_id, payment_method,
+     payment_status, note)
+VALUES
+    (@sub30Id, 99000, @start,
+     100000 + ABS(CHECKSUM(NEWID())) % 900000,
+     NEWID(), 'redirect', 'paid',
+     N'Thanh toán gói Premium 1 tháng (test còn 25 ngày)');

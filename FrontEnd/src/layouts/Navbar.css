@@ -1,0 +1,127 @@
+.navbar {
+  background: white !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 0 !important;
+  height: 64px !important;
+  line-height: 64px !important;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.navbar-content {
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+/* Logo */
+.navbar-logo .logo-text {
+  font-weight: 700;
+  font-size: 24px;
+  color: #52c41a;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Desktop Menu */
+.navbar-menu {
+  flex: 1;
+  min-width: 0;
+  /* ← cho phép shrink & overflow */
+  background: transparent !important;
+}
+
+.navbar-menu .ant-menu-item {
+  margin: 0 !important;
+  flex: 0 1 auto;
+  text-align: center;
+}
+
+.navbar-menu .ant-menu-item:hover,
+.navbar-menu .ant-menu-item-selected {
+  background-color: #f6ffed !important;
+  color: #52c41a !important;
+}
+
+.navbar-menu .ant-menu-item-selected {
+  border-bottom: 2px solid #52c41a !important;
+}
+
+.navbar-menu .ant-menu-ink-bar,
+.navbar-menu.ant-menu-horizontal>.ant-menu-item::after {
+  display: none !important;
+}
+
+.navbar-menu>.ant-menu {
+  display: flex !important;
+  justify-content: space-evenly !important;
+  align-items: center;
+  width: 100%;
+}
+
+/* Action buttons */
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-left: 32px;
+
+}
+
+.navbar-actions .username-text {
+  white-space: nowrap;
+}
+
+/* Hamburger button (mobile) */
+.mobile-menu-button {
+  display: none;
+  margin-left: auto;
+  font-size: 24px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .navbar-menu {
+    display: none;
+    /* ẩn menu desktop */
+  }
+
+  .mobile-menu-button {
+    display: block;
+    /* hiện hamburger */
+  }
+
+  .navbar-content {
+    padding: 0 16px;
+  }
+
+  .navbar-actions {
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar-logo .logo-text {
+    font-size: 20px;
+  }
+
+  .navbar-actions .ant-btn {
+    padding: 2px 6px;
+    font-size: 11px;
+  }
+}
+
+@media (min-width: 769px) {
+  .navbar-menu>.ant-menu {
+    display: grid !important;
+    grid-auto-flow: column;
+    grid-auto-columns: max-content;
+    justify-content: space-evenly;
+    align-items: center;
+    width: 100%;
+  }
+}

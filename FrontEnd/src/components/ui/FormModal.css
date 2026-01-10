@@ -1,0 +1,82 @@
+/* Simple modal styling - let Ant Design handle centering and scroll */
+.form-modal .ant-modal-content {
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.form-modal .ant-modal-header {
+    border-bottom: 1px solid #f0f0f0;
+    border-radius: 8px 8px 0 0;
+    padding: 16px 24px;
+}
+
+.form-modal .ant-modal-title {
+    font-weight: 600;
+    color: #2d3748;
+    font-size: 16px;
+}
+
+.form-modal .ant-modal-body {
+    padding: 24px;
+}
+
+.form-modal .ant-modal-footer {
+    border-top: 1px solid #f0f0f0;
+    padding: 16px 24px;
+    border-radius: 0 0 8px 8px;
+}
+
+/* Form styling */
+.form-modal .ant-form-item-label>label {
+    font-weight: 500;
+    color: #2d3748;
+}
+
+.form-modal .ant-input,
+.form-modal .ant-select-selector,
+.form-modal .ant-picker {
+    border-radius: 6px;
+}
+
+.form-modal .ant-input:focus,
+.form-modal .ant-select-focused .ant-select-selector,
+.form-modal .ant-picker-focused {
+    border-color: #52c41a;
+    box-shadow: 0 0 0 2px rgba(82, 196, 26, 0.2);
+}
+
+/* Button styling */
+.form-modal .ant-btn {
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.form-modal .ant-btn-primary {
+    background-color: #52c41a;
+    border-color: #52c41a;
+}
+
+.form-modal .ant-btn-primary:hover {
+    background-color: #389e0d;
+    border-color: #389e0d;
+}
+
+.form-modal .ant-btn-primary:focus {
+    background-color: #52c41a;
+    border-color: #52c41a;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .form-modal .ant-modal-header {
+        padding: 12px 16px;
+    }
+
+    .form-modal .ant-modal-body {
+        padding: 16px;
+    }
+
+    .form-modal .ant-modal-footer {
+        padding: 12px 16px;
+    }
+}

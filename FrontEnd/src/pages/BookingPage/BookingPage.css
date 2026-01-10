@@ -1,0 +1,936 @@
+.booking-page {
+    min-height: 100vh;
+    background: #f8f9fa;
+    position: relative;
+    overflow: hidden;
+    padding: 0;
+}
+
+/* Wrapper for main content - creates distinct section from navbar */
+.booking-wrapper {
+    min-height: 100vh;
+    width: 100%;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 16px 64px rgba(0, 0, 0, 0.06);
+    border: 1px solid #f0f0f0;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    margin: 0;
+}
+
+.booking-wrapper:hover {
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.12), 0 20px 80px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+}
+
+.booking-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #52c41a 0%, #389e0d 50%, #52c41a 100%);
+    border-radius: 16px 16px 0 0;
+}
+
+.booking-wrapper::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(82, 196, 26, 0.02) 0%, rgba(56, 158, 13, 0.02) 100%);
+    pointer-events: none;
+}
+
+.booking-container {
+    position: relative;
+    z-index: 1;
+    padding: 0;
+}
+
+/* Left Panel Styling */
+.booking-left-panel {
+    border-radius: 8px;
+    padding: 24px;
+    background-color: #f9fafb;
+    border: 1px solid #e8e8e8;
+    height: 100%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.date-selection {
+    display: flex;
+    flex-direction: column;
+}
+
+.date-selection-subtitle {
+    color: #666;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.field-label {
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #333;
+    font-size: 15px;
+}
+
+.date-selection-field,
+.time-selection-field,
+.service-selection-field {
+    margin-bottom: 20px;
+}
+
+/* Coach List Styling */
+.coaches-section {
+    padding: 0 10px;
+}
+
+.coach-availability-subtitle {
+    color: #666;
+    margin-bottom: 20px;
+    font-style: italic;
+    font-size: 14px;
+}
+
+.coach-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.coach-card-horizontal {
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+    overflow: hidden;
+    margin-bottom: 16px;
+    border: 1px solid #f0f0f0;
+}
+
+.coach-card-horizontal:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+}
+
+.coach-card-content {
+    display: flex;
+    padding: 0;
+}
+
+.coach-card-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    min-width: 120px;
+    background-color: #f9fafb;
+    border-right: 1px solid #f0f0f0;
+}
+
+.coach-price {
+    margin-top: 12px;
+    font-weight: 700;
+    color: #189c38;
+    text-align: center;
+    font-size: 15px;
+}
+
+.coach-card-middle {
+    flex-grow: 1;
+    padding: 20px;
+}
+
+.coach-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: #189c38;
+    margin-bottom: 4px;
+}
+
+.coach-specialization {
+    color: #189c38;
+    font-weight: 500;
+    margin-bottom: 10px;
+}
+
+.coach-experience {
+    color: #666;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.coach-location {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.coach-card-right {
+    padding: 20px;
+    min-width: 250px;
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid #f0f0f0;
+    background-color: #f9fafb;
+}
+
+.coach-slot-info {
+    flex-grow: 1;
+}
+
+.slot-title {
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #333;
+}
+
+.available-slots {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.view-profile-btn {
+    text-align: center;
+    width: 100%;
+}
+
+/* Modal Styling */
+.booking-modal-content {
+    padding: 0 10px;
+}
+
+.booking-modal-header {
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.booking-modal-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #189c38;
+    margin-bottom: 8px;
+}
+
+.booking-modal-subtitle {
+    font-size: 14px;
+    color: #666;
+}
+
+.booking-modal-coach-info {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    background: #f9fafb;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 1px solid #f0f0f0;
+}
+
+.booking-modal-coach-details {
+    flex-grow: 1;
+    margin-left: 16px;
+}
+
+.booking-modal-coach-name {
+    font-weight: 700;
+    font-size: 16px;
+    color: #189c38;
+    margin-bottom: 4px;
+}
+
+.booking-modal-coach-specialization {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.booking-modal-coach-location {
+    display: flex;
+    gap: 8px;
+}
+
+.booking-modal-coach-price {
+    font-weight: 700;
+    font-size: 18px;
+    color: #189c38;
+    text-align: right;
+}
+
+.booking-modal-coach-price-info {
+    font-size: 12px;
+    color: #666;
+    font-weight: normal;
+}
+
+.booking-modal-details {
+    margin-bottom: 20px;
+}
+
+.booking-modal-details-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #333;
+}
+
+.booking-modal-details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+.booking-modal-details-item {
+    background: #f9fafb;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid #f0f0f0;
+}
+
+.booking-modal-details-label {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+.booking-modal-details-value {
+    font-weight: 600;
+    color: #333;
+    font-size: 15px;
+}
+
+/* Loading States */
+.booking-loading-container {
+    background: #f8f9fa;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.booking-loading-container .text-center {
+    min-height: 100vh;
+    width: 100%;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 16px 64px rgba(0, 0, 0, 0.06);
+    border: 1px solid #f0f0f0;
+    padding: 32px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+}
+
+.booking-loading-container .text-center:hover {
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.12), 0 20px 80px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+}
+
+.booking-loading-container .text-center::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #52c41a 0%, #389e0d 50%, #52c41a 100%);
+    border-radius: 16px 16px 0 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .coach-card-content {
+        flex-direction: column;
+    }
+    
+    .coach-card-middle,
+    .coach-card-right {
+        border-left: none;
+        border-right: none;
+        border-top: 1px solid #f0f0f0;
+        padding-top: 16px;
+        min-width: auto;
+    }
+    
+    .coach-card-left {
+        padding-bottom: 8px;
+        border-right: none;
+    }
+
+    .booking-modal-details-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .booking-modal-coach-info {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .booking-modal-coach-details {
+        margin-left: 0;
+        margin-top: 12px;
+    }
+    
+    .booking-modal-coach-price {
+        margin-top: 12px;
+        text-align: center;
+    }
+    
+    .booking-modal-coach-location {
+        justify-content: center;
+    }
+}
+
+.booking-loading-container .text-center::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(82, 196, 26, 0.02) 0%, rgba(56, 158, 13, 0.02) 100%);
+    pointer-events: none;
+}
+
+.loading-icon {
+    background: linear-gradient(135deg, #52c41a 0%, #389e0d 100%);
+    box-shadow: 0 8px 32px rgba(82, 196, 26, 0.3);
+    border: 3px solid rgba(82, 196, 26, 0.2);
+    padding: 24px;
+    border-radius: 50%;
+    margin-bottom: 24px;
+    animation: rotate 2s linear infinite;
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Header Section */
+.booking-header-section {
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 8px 0;
+}
+
+.booking-header-title {
+    color: #2c3e50;
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+
+.booking-header-subtitle {
+    color: #7f8c8d;
+    font-size: 0.95rem;
+    margin-bottom: 12px;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.booking-header-badge {
+    display: inline-block;
+    background: rgba(82, 196, 26, 0.1);
+    border: 2px solid rgba(82, 196, 26, 0.3);
+    border-radius: 20px;
+    padding: 4px 12px;
+    color: #52c41a;
+    font-weight: 600;
+    margin-top: 6px;
+    margin-bottom: 12px;
+    font-size: 0.85rem;
+}
+
+.booking-header {
+    text-align: center;
+    margin-bottom: 40px;
+    color: white;
+}
+
+.booking-header h1 {
+    font-size: 3rem;
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+.booking-header p {
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+
+/* Date Selection */
+.date-selection {
+    margin-bottom: 40px;
+}
+
+.date-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    border: none;
+}
+
+.date-picker-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.date-picker-container .ant-typography {
+    margin-bottom: 0;
+}
+
+/* Available Coaches */
+.available-coaches {
+    margin-bottom: 40px;
+    min-height: 200px;
+}
+
+.no-availability-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    border: none;
+}
+
+/* All Coaches */
+.all-coaches {
+    margin-bottom: 40px;
+    min-height: 200px;
+}
+
+.coach-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+    height: 100%;
+}
+
+.coach-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.coach-info {
+    display: flex;
+    gap: 20px;
+    padding: 24px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.coach-avatar {
+    flex-shrink: 0;
+}
+
+.coach-details {
+    flex: 1;
+}
+
+.coach-details h3 {
+    font-size: 1.5rem;
+    margin-bottom: 8px;
+    color: #333;
+    font-weight: 600;
+}
+
+.specialization {
+    color: #666;
+    font-size: 1rem;
+    margin-bottom: 12px;
+}
+
+.rating {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.rating-text {
+    font-weight: 600;
+    color: #333;
+}
+
+.stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.bio {
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 0;
+}
+
+.available-slots {
+    padding: 20px 24px;
+    background: #f8f9fa;
+}
+
+.available-slots h4 {
+    margin-bottom: 12px;
+    color: #333;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+}
+
+.slots-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.time-slot {
+    font-weight: 500;
+    padding: 4px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, opacity 0.2s ease;
+}
+
+.time-slot:hover {
+    opacity: 0.8;
+}
+
+.time-slot-disabled {
+    background-color: #f0f0f0 !important;
+    color: #999 !important;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.coach-card-footer {
+    padding: 20px 24px;
+    background: #f8f9fa;
+    text-align: center;
+    border-top: 1px solid #f0f0f0;
+}
+
+.coach-card .ant-card-body {
+    padding: 0;
+}
+
+.coach-card .ant-btn {
+    margin: 24px;
+    height: 48px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 8px;
+    background: #52c41a;
+    border-color: #52c41a;
+}
+
+.coach-card .ant-btn:hover {
+    background: #73d13d;
+    border-color: #73d13d;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.modal-actions .ant-btn {
+    min-width: 120px;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .booking-wrapper {
+        margin: 20px;
+        padding: 30px;
+    }
+    
+    .booking-loading-container .text-center {
+        margin: 20px;
+        padding: 30px;
+    }
+}
+
+@media (max-width: 768px) {
+    .booking-wrapper {
+        margin: 10px;
+        padding: 20px;
+        border-radius: 12px;
+    }
+    
+    .booking-loading-container .text-center {
+        margin: 10px;
+        padding: 20px;
+        border-radius: 12px;
+    }
+    
+    .booking-container {
+        padding: 20px 15px;
+    }
+    
+    .booking-header-title {
+        font-size: 1.8rem;
+    }
+    
+    .booking-header-subtitle {
+        font-size: 0.9rem;
+    }
+
+    .booking-header h1 {
+        font-size: 2rem;
+    }
+
+    .booking-header p {
+        font-size: 1rem;
+    }
+
+    .date-picker-container {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .coach-info {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .coach-avatar {
+        align-self: center;
+    }
+
+    .stats {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .booking-wrapper {
+        margin: 10px;
+        padding: 15px;
+        border-radius: 12px;
+    }
+    
+    .booking-loading-container .text-center {
+        margin: 10px;
+        padding: 15px;
+        border-radius: 12px;
+    }
+    
+    .booking-header-title {
+        font-size: 1.6rem;
+    }
+    
+    .booking-header-subtitle {
+        font-size: 0.85rem;
+    }
+    
+    .booking-header h1 {
+        font-size: 1.8rem;
+    }
+
+    .coach-card .ant-btn {
+        margin: 16px;
+        height: 44px;
+        font-size: 1rem;
+    }
+
+    .coach-info {
+        padding: 16px;
+    }
+
+    .available-slots {
+        padding: 16px;
+    }
+
+    .coach-card-footer {
+        padding: 16px;
+    }
+}
+
+/* Fallback Section */
+.fallback-section {
+    margin-bottom: 40px;
+    min-height: 200px;
+}
+
+.fallback-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    border: none;
+}
+
+.coaches-section-below {
+    margin-top: 16px;
+    margin-bottom: 8px;
+}
+
+.improved-coach-card {
+    border: 1.5px solid #b7eb8f !important;
+    box-shadow: 0 4px 18px rgba(82, 196, 26, 0.07);
+    border-radius: 16px;
+    margin-bottom: 8px;
+    transition: box-shadow 0.3s;
+    width: 100%;
+    max-width: 340px;
+    min-height: 340px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.improved-coach-card:hover {
+    box-shadow: 0 8px 32px rgba(82, 196, 26, 0.13);
+}
+
+.improved-coach-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 22px 0 0 0;
+}
+
+.improved-coach-avatar {
+    border: 2.5px solid #52c41a;
+    background: #eaffea;
+    box-shadow: 0 2px 8px rgba(82, 196, 26, 0.08);
+}
+
+.improved-coach-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    margin-top: 8px;
+}
+
+.improved-coach-stats {
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+}
+
+.improved-available-slots {
+    background: #f6ffed;
+    border-radius: 0 0 14px 14px;
+    padding: 12px 0 8px 0;
+    margin-top: 6px;
+    width: 100%;
+}
+
+.improved-slots-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .booking-wrapper {
+        margin: 0;
+        padding: 16px;
+    }
+    
+    .booking-loading-container .text-center {
+        margin: 0;
+        padding: 16px;
+    }
+}
+
+@media (max-width: 768px) {
+    .booking-page {
+        padding: 0;
+    }
+    
+    .booking-wrapper {
+        margin: 0;
+        padding: 12px;
+        border-radius: 12px;
+        min-height: 100vh;
+    }
+    
+    .booking-loading-container .text-center {
+        margin: 0;
+        padding: 12px;
+        border-radius: 12px;
+        min-height: 100vh;
+    }
+    
+    .booking-header-section {
+        padding: 4px 0;
+        margin-bottom: 16px;
+    }
+    
+    .booking-header-title {
+        font-size: 1.5rem;
+        margin-bottom: 4px;
+    }
+    
+    .booking-header-subtitle {
+        font-size: 0.9rem;
+        margin-bottom: 8px;
+    }
+    
+    .booking-header-badge {
+        font-size: 0.8rem;
+        padding: 3px 10px;
+        margin-top: 4px;
+        margin-bottom: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .booking-wrapper {
+        margin: 0;
+        padding: 8px;
+        border-radius: 8px;
+        min-height: 100vh;
+    }
+    
+    .booking-loading-container .text-center {
+        margin: 0;
+        padding: 8px;
+        border-radius: 8px;
+        min-height: 100vh;
+    }
+    
+    .booking-header-title {
+        font-size: 1.25rem;
+    }
+    
+    .booking-header-subtitle {
+        font-size: 0.85rem;
+    }
+    
+    .booking-header-badge {
+        font-size: 0.75rem;
+        padding: 2px 8px;
+    }
+}
